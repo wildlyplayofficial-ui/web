@@ -19,10 +19,9 @@ Source: Playbook (Nick) + QnA answered 11/6/2026 + group chat 11/6/2026.
 
 ## Competitor reference: AsianBookie (beta.asianbookie.com, reviewed 11/6/2026)
 
-**Borrow later:** (1) virtual-currency tipster seasons + per-league leaderboards — the upgrade
-path for our forum once enabled (user picks in play money, no real stakes); (2) Hot Picks-style
-social proof (% split, live bet feed); (3) compact AH/OU/1X2 board grouped by day — Daily Board
-layout reference.
+**Nick's instruction (11/6): do NOT copy AsianBookie — build strictly to the WildlyPlay
+playbook.** These notes are background awareness only, not feature inputs.
 
-**Avoid:** bookmaker promo spam inside forum topics and wall-to-wall casino ads — their trust
-killer is our wedge. WildlyPlay stays clean: no affiliates, transparent per-pick record.
+Observed there: virtual-currency tipster seasons + leaderboards, Hot Picks social proof,
+compact AH/OU/1X2 day board. Their weakness (bookmaker promo spam in forums, wall-to-wall
+casino ads) confirms our wedge: clean, no affiliates, transparent per-pick record.
