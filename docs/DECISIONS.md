@@ -16,3 +16,13 @@ Source: Playbook (Nick) + QnA answered 11/6/2026 + group chat 11/6/2026.
 | 10 | Human gate | At the FRONT of the pipeline only: Curator submits pick via Telegram bot, everything downstream is automatic. No morning approval gate. |
 | 11 | Pick frequency | Not fixed. Zero-pick days are normal — Board must handle empty days gracefully. |
 | 12 | Monetization | Phase 1 free, no bookmaker affiliates ever. Premium options stay open for phase 2 (after one full season of track record). |
+
+## Competitor reference: AsianBookie (beta.asianbookie.com, reviewed 11/6/2026)
+
+**Borrow later:** (1) virtual-currency tipster seasons + per-league leaderboards — the upgrade
+path for our forum once enabled (user picks in play money, no real stakes); (2) Hot Picks-style
+social proof (% split, live bet feed); (3) compact AH/OU/1X2 board grouped by day — Daily Board
+layout reference.
+
+**Avoid:** bookmaker promo spam inside forum topics and wall-to-wall casino ads — their trust
+killer is our wedge. WildlyPlay stays clean: no affiliates, transparent per-pick record.
