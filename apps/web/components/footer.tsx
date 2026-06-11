@@ -1,0 +1,54 @@
+"use client";
+
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { getDict, resolveLang, withLang } from "@/lib/i18n";
+
+export function Footer() {
+  const searchParams = useSearchParams();
+  const lang = resolveLang(searchParams.get("lang") ?? undefined);
+  const dict = getDict(lang);
+
+  const links: ReadonlyArray<{ href: string; label: string }> = [
+    { href: "/about", label: dict.nav.about },
+    { href: "/archive", label: dict.nav.archive },
+    { href: "/news", label: dict.nav.news },
+    { href: "/responsible-play", label: dict.nav.responsiblePlay },
+    { href: "/donate", label: dict.nav.donate },
+    { href: "/forum", label: dict.nav.forum },
+  ];
+
+  return (
+    <footer className="mt-16 border-t border-line py-12">
+      <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-5 text-center">
+        <div>
+          <span className="font-display text-xl font-bold">
+            <span className="text-ink">Wildly</span>
+            <span className="text-brand">Play</span>
+          </span>
+          <p className="mt-2 text-sm text-muted">{dict.footerDisclaimer}</p>
+        </div>
+        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={withLang(link.href, lang)}
+              className="text-sm text-muted transition-colors hover:text-brand"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <a
+            href="https://t.me/wildlyplay"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted transition-colors hover:text-brand"
+          >
+            Telegram
+          </a>
+        </nav>
+        <p className="text-xs text-muted">© 2026 WildlyPlay. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+}

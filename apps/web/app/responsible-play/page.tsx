@@ -1,0 +1,90 @@
+import type { Metadata } from "next";
+import { resolveLang, type Lang } from "@/lib/i18n";
+
+export const revalidate = 300;
+
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+interface Copy {
+  title: string;
+  intro: string;
+  rulesTitle: string;
+  rules: readonly string[];
+  helpTitle: string;
+  helpBody: string;
+}
+
+const copy: Record<Lang, Copy> = {
+  en: {
+    title: "Responsible Play",
+    intro:
+      "WildlyPlay is entertainment, full stop. Our picks are perspectives on the beautiful game — not predictions, not investment advice, and never a way to make a living. If you choose to play along, do it for fun and keep it that way.",
+    rulesTitle: "House rules for yourself",
+    rules: [
+      "Only play with money you can comfortably afford to lose.",
+      "Set a budget and a time limit before you start — and stick to both.",
+      "Never chase losses. A bad day stays a bad day; don't make it a bad week.",
+      "Don't play when upset, tired, or under the influence.",
+      "Gambling is not a source of income. If it stops being fun, stop.",
+      "Be honest with yourself and the people around you about how much you play.",
+    ],
+    helpTitle: "If it stops being fun",
+    helpBody:
+      "If you or someone you know struggles with gambling, please reach out to a local support organisation such as Gamblers Anonymous (gamblersanonymous.org) or the support services available in your country. Talking to someone is the first step — and it works.",
+  },
+  vi: {
+    title: "Chơi Có Trách Nhiệm",
+    intro:
+      "WildlyPlay là giải trí, chấm hết. Kèo của chúng tôi là góc nhìn về bóng đá — không phải dự đoán chắc thắng, không phải lời khuyên đầu tư, và không bao giờ là cách kiếm sống. Nếu bạn chọn chơi theo, hãy chơi cho vui và giữ đúng tinh thần đó.",
+    rulesTitle: "Nguyên tắc cho chính bạn",
+    rules: [
+      "Chỉ chơi với số tiền bạn hoàn toàn có thể mất mà không ảnh hưởng cuộc sống.",
+      "Đặt ngân sách và giới hạn thời gian trước khi bắt đầu — và tuân thủ cả hai.",
+      "Đừng bao giờ gỡ. Một ngày xấu là một ngày xấu; đừng biến nó thành một tuần xấu.",
+      "Không chơi khi đang buồn bực, mệt mỏi hay có men.",
+      "Cá cược không phải nguồn thu nhập. Khi hết vui, hãy dừng lại.",
+      "Trung thực với bản thân và người thân về mức độ chơi của mình.",
+    ],
+    helpTitle: "Khi không còn vui nữa",
+    helpBody:
+      "Nếu bạn hoặc người quen gặp vấn đề với cờ bạc, hãy tìm đến các tổ chức hỗ trợ như Gamblers Anonymous (gamblersanonymous.org) hoặc dịch vụ hỗ trợ tại quốc gia của bạn. Nói chuyện với ai đó là bước đầu tiên — và nó thực sự hiệu quả.",
+  },
+};
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const lang = resolveLang((await searchParams).lang);
+  return {
+    title: copy[lang].title,
+    description: copy[lang].intro.slice(0, 160),
+    openGraph: { title: `${copy[lang].title} | WildlyPlay` },
+  };
+}
+
+export default async function ResponsiblePlayPage({ searchParams }: Props) {
+  const lang = resolveLang((await searchParams).lang);
+  const c = copy[lang];
+
+  return (
+    <div className="mx-auto max-w-[720px] px-5 py-12">
+      <h1 className="gradient-text text-center font-display text-4xl font-bold">{c.title}</h1>
+      <p className="mt-6 leading-relaxed text-ink/90">{c.intro}</p>
+
+      <section className="mt-10 rounded-card border border-line bg-card p-8">
+        <h2 className="font-display text-xl font-bold">{c.rulesTitle}</h2>
+        <ul className="mt-4 flex flex-col gap-3">
+          {c.rules.map((rule) => (
+            <li key={rule} className="flex gap-3 text-sm leading-relaxed text-ink/90">
+              <span className="mt-0.5 text-brand">•</span>
+              {rule}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-8 rounded-card border border-brand/30 bg-brand-dim p-8">
+        <h2 className="font-display text-xl font-bold text-brand">{c.helpTitle}</h2>
+        <p className="mt-3 text-sm leading-relaxed text-ink/90">{c.helpBody}</p>
+      </section>
+    </div>
+  );
+}

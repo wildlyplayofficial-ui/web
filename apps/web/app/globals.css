@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/* Design tokens extracted from the live Astro site (wildlyplay.com) */
+@theme {
+  --color-bg: #0d1117;
+  --color-card: #161b22;
+  --color-card-hover: #1c2333;
+  --color-ink: #e6edf3;
+  --color-muted: #8b949e;
+  --color-line: #30363d;
+  --color-brand: #00e676;
+  --color-brand-dim: rgba(0, 230, 118, 0.15);
+  --color-indigo-soft: #818cf8;
+  --color-violet-soft: #c084fc;
+  --color-loss: #f85149;
+  --color-loss-dim: rgba(248, 81, 73, 0.15);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), sans-serif;
+
+  --radius-card: 12px;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.hero-gradient-text {
+  background: linear-gradient(135deg, var(--color-ink) 0%, #818cf8 50%, var(--color-brand) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.hero-glow {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.08) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Markdown body for Newsroom posts */
+.prose-md {
+  line-height: 1.7;
+}
+.prose-md h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem;
+  line-height: 1.25;
+}
+.prose-md h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  color: var(--color-brand);
+}
+.prose-md p {
+  margin: 0.875rem 0;
+  color: var(--color-ink);
+}
+.prose-md strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.prose-md ul,
+.prose-md ol {
+  margin: 0.875rem 0;
+  padding-left: 1.5rem;
+  color: var(--color-ink);
+}
+.prose-md li {
+  margin: 0.375rem 0;
+}
+.prose-md ul {
+  list-style: disc;
+}
+.prose-md ol {
+  list-style: decimal;
+}
+.prose-md a {
+  color: var(--color-brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-md blockquote {
+  border-left: 3px solid var(--color-brand);
+  padding-left: 1rem;
+  color: var(--color-muted);
+  margin: 1rem 0;
+}
+.prose-md code {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.875em;
+}
