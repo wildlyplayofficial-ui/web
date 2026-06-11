@@ -1,3 +1,4 @@
+import { teamFlag } from "@/lib/flags";
 import { badgeFor, formatKickoff, formatOdds, formatUnits } from "@/lib/format";
 import { getDict, type Lang } from "@/lib/i18n";
 import type { Pick } from "@/lib/types";
@@ -16,6 +17,8 @@ export function PickCard({ pick, lang }: { pick: Pick; lang: Lang }) {
   const badge = badgeFor(pick);
   const settled = pick.units_pl !== null;
   const isHalf = pick.raw_outcome === "half_win" || pick.raw_outcome === "half_loss";
+  const homeFlag = teamFlag(pick.home_team);
+  const awayFlag = teamFlag(pick.away_team);
 
   return (
     <article className="rounded-card border border-line bg-card p-6 transition-colors hover:border-[#484f58] hover:bg-card-hover">
@@ -27,7 +30,10 @@ export function PickCard({ pick, lang }: { pick: Pick; lang: Lang }) {
       </div>
 
       <h3 className="mt-3 font-display text-xl font-bold">
-        {pick.home_team} <span className="text-muted">vs</span> {pick.away_team}
+        {homeFlag && <span className="mr-1.5">{homeFlag}</span>}
+        {pick.home_team} <span className="text-muted">vs</span>{" "}
+        {awayFlag && <span className="mr-1.5">{awayFlag}</span>}
+        {pick.away_team}
         {pick.home_score !== null && pick.away_score !== null && (
           <span className="ml-3 text-base font-semibold text-muted">
             {dict.pick.finalScore} {pick.home_score}–{pick.away_score}
