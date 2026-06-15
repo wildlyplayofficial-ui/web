@@ -51,14 +51,17 @@ export function selectAnalysisTopics(
   const topics: AnalysisTopic[] = [];
   const seenFixtures = new Set<number>();
 
-  // Sort: upcoming fixtures first (within 24h), then recent settled
-  const sorted = [...picks].sort((a, b) => {
+  // Only picks for matches NOT YET STARTED (pre-match analysis only)
+  const upcoming = picks.filter((p) => new Date(p.kickoff_utc).getTime() > now);
+
+  // Sort: soonest first (within 24h priority)
+  const sorted = [...upcoming].sort((a, b) => {
     const aTime = new Date(a.kickoff_utc).getTime();
     const bTime = new Date(b.kickoff_utc).getTime();
-    const aUpcoming = aTime > now && aTime - now < 24 * 60 * 60 * 1000;
-    const bUpcoming = bTime > now && bTime - now < 24 * 60 * 60 * 1000;
-    if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
-    return bTime - aTime;
+    const aUrgent = aTime - now < 24 * 60 * 60 * 1000;
+    const bUrgent = bTime - now < 24 * 60 * 60 * 1000;
+    if (aUrgent !== bUrgent) return aUrgent ? -1 : 1;
+    return aTime - bTime;
   });
 
   for (const pick of sorted) {
