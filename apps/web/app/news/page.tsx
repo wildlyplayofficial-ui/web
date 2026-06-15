@@ -41,18 +41,25 @@ const TYPE_BADGE_COLORS: Record<PostType, string> = {
 
 const PICK_TYPES: PostType[] = ["preview", "recap"];
 const RAIL_COUNT = 5;
+const PAGE_SIZE = 10;
 
 function resolveTab(value: string | string[] | undefined): FilterTab {
   if (typeof value === "string" && value in TAB_TYPES) return value as FilterTab;
   return "all";
 }
 
+function resolvePage(value: string | string[] | undefined): number {
+  const n = typeof value === "string" ? parseInt(value, 10) : NaN;
+  return Number.isFinite(n) && n >= 1 ? n : 1;
+}
+
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
   const lang = resolveLang(params.lang);
   const tab = resolveTab(params.type);
+  const page = resolvePage(params.page);
   const dict = getDict(lang);
-  const canonical = buildTabHref(tab, lang);
+  const canonical = buildTabHref(tab, lang, page > 1 ? page : undefined);
   return {
     title: dict.news.title,
     description: dict.news.subtitle,
@@ -71,10 +78,13 @@ function formatDate(iso: string | null, lang: Lang): string {
   }).format(new Date(iso));
 }
 
-function buildTabHref(tab: FilterTab, lang: Lang): string {
-  const base = tab === "all" ? "/news" : `/news?type=${tab}`;
-  if (lang === "en") return base;
-  return base.includes("?") ? `${base}&lang=${lang}` : `${base}?lang=${lang}`;
+function buildTabHref(tab: FilterTab, lang: Lang, page?: number): string {
+  const params = new URLSearchParams();
+  if (tab !== "all") params.set("type", tab);
+  if (page && page > 1) params.set("page", String(page));
+  if (lang !== "en") params.set("lang", lang);
+  const qs = params.toString();
+  return qs ? `/news?${qs}` : "/news";
 }
 
 function PostCard({ post, lang }: { post: Post; lang: Lang }) {
@@ -102,21 +112,27 @@ export default async function Newsroom({ searchParams }: Props) {
   const params = await searchParams;
   const lang = resolveLang(params.lang);
   const tab = resolveTab(params.type);
+  const page = resolvePage(params.page);
   const dict = getDict(lang);
   const allPosts = await getPosts(lang);
 
   // Rail: 5 latest pick-related posts
   const railPosts = allPosts.filter((p) => PICK_TYPES.includes(p.type)).slice(0, RAIL_COUNT);
   const railIds = new Set(railPosts.map((p) => p.id));
-  const showRail = tab === "all" || tab === "picks";
+  const showRail = (tab === "all" || tab === "picks") && page === 1;
 
   // Feed: filtered by tab, dedupe rail posts when rail is shown
   const allowedTypes = TAB_TYPES[tab];
-  const feedPosts = allPosts.filter((p) => {
+  const allFeedPosts = allPosts.filter((p) => {
     if (allowedTypes && !allowedTypes.includes(p.type)) return false;
     if (showRail && railIds.has(p.id)) return false;
     return true;
   });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(allFeedPosts.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const feedPosts = allFeedPosts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
@@ -163,11 +179,38 @@ export default async function Newsroom({ searchParams }: Props) {
           {dict.news.empty}
         </div>
       ) : feedPosts.length > 0 ? (
-        <div className="flex flex-col gap-4 pb-8">
-          {feedPosts.map((post) => (
-            <PostCard key={post.id} post={post} lang={lang} />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-4 pb-4">
+            {feedPosts.map((post) => (
+              <PostCard key={post.id} post={post} lang={lang} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <nav className="flex items-center justify-center gap-3 pb-8 pt-4">
+              {safePage > 1 && (
+                <Link
+                  href={buildTabHref(tab, lang, safePage - 1)}
+                  className="rounded-card border border-line bg-card px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-line-hover hover:text-foreground"
+                >
+                  ← Prev
+                </Link>
+              )}
+              <span className="text-sm text-muted">
+                Page {safePage} of {totalPages}
+              </span>
+              {safePage < totalPages && (
+                <Link
+                  href={buildTabHref(tab, lang, safePage + 1)}
+                  className="rounded-card border border-line bg-card px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-line-hover hover:text-foreground"
+                >
+                  Next →
+                </Link>
+              )}
+            </nav>
+          )}
+        </>
       ) : null}
     </div>
   );
