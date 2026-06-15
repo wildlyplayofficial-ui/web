@@ -7,6 +7,8 @@ const FLAGS: Record<string, string> = {
   "Bosnia and Herzegovina": "🇧🇦",
   Brazil: "🇧🇷",
   Cameroon: "🇨🇲",
+  "Cape Verde": "🇨🇻",
+  Curacao: "🇨🇼",
   Canada: "🇨🇦",
   Chile: "🇨🇱",
   Colombia: "🇨🇴",
@@ -22,6 +24,8 @@ const FLAGS: Record<string, string> = {
   Germany: "🇩🇪",
   Ghana: "🇬🇭",
   Greece: "🇬🇷",
+  Haiti: "🇭🇹",
+  Honduras: "🇭🇳",
   Iran: "🇮🇷",
   Italy: "🇮🇹",
   "Ivory Coast": "🇨🇮",
@@ -53,6 +57,7 @@ const FLAGS: Record<string, string> = {
   Thailand: "🇹🇭",
   Tunisia: "🇹🇳",
   Turkey: "🇹🇷",
+  Turkiye: "🇹🇷",
   Ukraine: "🇺🇦",
   "United States": "🇺🇸",
   USA: "🇺🇸",
@@ -63,5 +68,6 @@ const FLAGS: Record<string, string> = {
 };
 
 export function teamFlag(team: string): string {
-  return FLAGS[team] ?? "";
+  // Data sources vary between "&" and "and" (e.g. "Bosnia & Herzegovina").
+  return FLAGS[team] ?? FLAGS[team.replace(/\s*&\s*/g, " and ")] ?? "";
 }

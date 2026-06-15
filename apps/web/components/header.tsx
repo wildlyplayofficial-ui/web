@@ -3,24 +3,27 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { ThemeToggle } from "./theme-toggle";
 
-const navItems: ReadonlyArray<{ href: string; key: "board" | "archive" | "news" | "about" | "donate" }> = [
+const navItems: ReadonlyArray<{ href: string; key: "board" | "archive" | "stats" | "news" | "about" | "donate" }> = [
   { href: "/", key: "board" },
   { href: "/archive", key: "archive" },
+  { href: "/stats", key: "stats" },
   { href: "/news", key: "news" },
   { href: "/about", key: "about" },
   { href: "/donate", key: "donate" },
 ];
 
-function LocaleSwitch({ pathname, lang }: { pathname: string; lang: Lang }) {
+function LocaleSwitch({ pathname, lang, onNavigate }: { pathname: string; lang: Lang; onNavigate?: () => void }) {
   const base = (l: Lang) => (l === "en" ? pathname : withLang(pathname, l));
   return (
     <div className="flex gap-1 rounded-lg bg-card p-1">
-      {(["en", "vi"] as const).map((l) => (
+      {LANGS.map((l) => (
         <Link
           key={l}
           href={base(l)}
+          onClick={onNavigate}
           className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
             l === lang ? "bg-brand text-bg" : "text-muted hover:text-ink"
           }`}
@@ -77,7 +80,10 @@ export function Header() {
               </li>
             ))}
           </ul>
-          <LocaleSwitch pathname={pathname} lang={lang} />
+          <div className="flex items-center gap-2">
+            <LocaleSwitch pathname={pathname} lang={lang} onNavigate={() => setOpen(false)} />
+            <ThemeToggle onToggle={() => setOpen(false)} />
+          </div>
         </nav>
       </div>
     </header>

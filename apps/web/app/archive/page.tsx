@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PickCard } from "@/components/pick-card";
-import { getArchiveMonths, getSettledPicks, getTrackRecord } from "@/lib/data";
+import { getArchiveMonths, getSettledPicks, getThesisTranslations, getTrackRecord } from "@/lib/data";
 import { formatMonth, formatUnits } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
-export const revalidate = 300;
+export const revalidate = 600;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -15,7 +15,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: dict.archive.title,
     description: dict.archive.subtitle,
-    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle },
+    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle, images: ["/api/og/home"] },
   };
 }
 
@@ -37,6 +37,7 @@ export default async function PlayArchive({ searchParams }: Props) {
     getTrackRecord(),
     getArchiveMonths(),
   ]);
+  const translations = await getThesisTranslations(picks.map((p) => p.id));
 
   return (
     <div className="mx-auto max-w-[1100px] px-5">
@@ -106,7 +107,12 @@ export default async function PlayArchive({ searchParams }: Props) {
         ) : (
           <div className="flex flex-col gap-5">
             {picks.map((pick) => (
-              <PickCard key={pick.id} pick={pick} lang={lang} />
+              <PickCard
+                key={pick.id}
+                pick={pick}
+                lang={lang}
+                thesisText={translations[pick.id]?.[lang] ?? pick.thesis}
+              />
             ))}
           </div>
         )}

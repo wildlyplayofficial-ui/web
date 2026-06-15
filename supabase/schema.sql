@@ -12,6 +12,7 @@ create type raw_outcome as enum ('win', 'half_win', 'push', 'half_loss', 'loss',
 create type post_type   as enum ('recap', 'preview', 'news');
 create type post_status as enum ('draft', 'published');
 create type lang_code   as enum ('en', 'vi', 'th', 'es');
+create type vote_kind   as enum ('follow', 'fade', 'skip');
 
 -- ── Picks (the trust object) ─────────────────────────────────────────────────
 create table picks (
@@ -29,6 +30,16 @@ create table picks (
   thesis        text   not null,                 -- The Curator's reasoning (human input)
   status        pick_status not null default 'draft',
   published_at  timestamptz,
+  -- CLV (enhancement batch 12/6): closing odds for the SAME selection+line,
+  -- captured by the poller near kickoff. Null = not captured (line gone / manual pick).
+  odds_close    numeric(6,3),
+  -- Running picks (Nick, 12/6): score when the bet was placed in-play. Null = pre-match.
+  -- AH settles on goals scored AFTER this score; OU/1x2/btts settle on the full final score.
+  publish_score_home integer,
+  publish_score_away integer,
+  -- odds-api participant ids for team logos (13/6); null for older picks / manual picks.
+  home_id       integer,
+  away_id       integer,
   -- settlement fields (the only writable fields after publish)
   home_score    int,
   away_score    int,
@@ -37,6 +48,16 @@ create table picks (
   settled_at    timestamptz,
   created_at    timestamptz not null default now()
 );
+
+-- migration 12/6 (running picks) — run on the live DB:
+-- alter table picks
+--   add column publish_score_home integer,
+--   add column publish_score_away integer;
+
+-- migration 13/6 (team logos) — run on the live DB:
+-- alter table picks
+--   add column home_id integer,
+--   add column away_id integer;
 
 create index picks_kickoff_idx   on picks (kickoff_utc desc);
 create index picks_status_idx    on picks (status);
@@ -99,12 +120,24 @@ create table channel_log (
   id          uuid primary key default gen_random_uuid(),
   pick_id     uuid references picks(id),
   post_id     uuid references posts(id),
-  channel     text not null check (channel in ('web','telegram','x')),
+  channel     text not null check (channel in ('web','telegram','x','facebook')),
   external_id text,
   ok          boolean not null default true,
   detail      text,
   posted_at   timestamptz not null default now()
 );
+
+-- ── Crowd poll: Follow / Fade / Skip (decision #5, 11/6: v1 lightweight engagement) ─
+-- voter_id is an anonymous uuid from an httpOnly cookie — no accounts in v1.
+create table pick_votes (
+  id         uuid primary key default gen_random_uuid(),
+  pick_id    uuid not null references picks(id),
+  vote       vote_kind not null,
+  voter_id   uuid not null,
+  created_at timestamptz default now(),
+  unique (pick_id, voter_id)                       -- one vote per voter; upsert to change it
+);
+create index pick_votes_pick_idx on pick_votes (pick_id);
 
 -- ── Feature flags (forum off until ~200 daily visitors) ─────────────────────
 create table feature_flags (
@@ -156,6 +189,7 @@ where status in ('won','lost','push');
 -- ── RLS ──────────────────────────────────────────────────────────────────────
 alter table picks          enable row level security;
 alter table pick_content   enable row level security;
+alter table pick_votes     enable row level security;
 alter table posts          enable row level security;
 alter table feature_flags  enable row level security;
 alter table profiles       enable row level security;
@@ -167,6 +201,10 @@ alter table channel_log    enable row level security;
 create policy picks_public_read on picks for select
   using (status <> 'draft');
 create policy pick_content_public_read on pick_content for select
+  using (exists (select 1 from picks p where p.id = pick_id and p.status <> 'draft'));
+-- crowd poll counts are public; NO insert policy — votes go through the web
+-- server with the service role, like all other writes (decision #5, 11/6)
+create policy pick_votes_public_read on pick_votes for select
   using (exists (select 1 from picks p where p.id = pick_id and p.status <> 'draft'));
 create policy posts_public_read on posts for select
   using (status = 'published');

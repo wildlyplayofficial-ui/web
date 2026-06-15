@@ -64,6 +64,56 @@ const copy: Record<Lang, Copy> = {
       "Thua chúng tôi cũng đăng. Chỉ mang tính giải trí — không phải lời khuyên tài chính.",
     ],
   },
+  th: {
+    title: "เกี่ยวกับ WildlyPlay",
+    intro:
+      "WildlyPlay คือเว็บทีเด็ดฟุตบอลที่คัดโดยมนุษย์ คนหนึ่งคน — The Curator — เป็นผู้เลือกแมตช์และมุมมอง ส่วน AI ดำเนินการทุกอย่างที่เหลือ: เขียนบทวิเคราะห์ เผยแพร่ ตัดสินผล และเก็บทุกทีเด็ดไว้ต่อสาธารณะตลอดไป มนุษย์เลือก AI ดำเนินการ — เปิดเผยไว้ในทุกทีเด็ด",
+    cards: [
+      {
+        heading: "คัดสรร ไม่ใช่ทำนาย",
+        body: "ทุกทีเด็ดผ่านการค้นคว้าและมีเหตุผลรองรับ — ไม่สุ่ม ไม่มีการการันตี เราแบ่งปันมุมมอง ไม่ใช่คำพยากรณ์",
+      },
+      {
+        heading: "ทุกทีเด็ด เปิดเผยตลอดไป",
+        body: "ราคาต่อรองถูกบันทึกทันทีที่เผยแพร่ทีเด็ดและไม่มีการแก้ไข ชนะ แพ้ คืนทุน — สถิติทั้งหมดแสดงไว้เสมอ เริ่มต้นจากศูนย์",
+      },
+      {
+        heading: "ฟรี เพื่อคอบอลทั่วโลก",
+        body: "ไม่มีระดับ VIP ไม่มีกำแพงจ่ายเงิน ไม่มีพันธมิตรเจ้ามือรับแทง ผู้เล่นจากทุกไทม์โซน เชื่อมกันด้วยความรักในเกมลูกหนัง",
+      },
+    ],
+    promiseTitle: "คำมั่นสัญญา",
+    promises: [
+      "มีมนุษย์เพียงด่านเดียว: The Curator เป็นผู้ส่งทีเด็ด ทุกขั้นตอนหลังจากนั้นเป็นอัตโนมัติและแทรกแซงไม่ได้",
+      "ป้ายสถานะนับชนะครึ่งเป็น ชนะ และแพ้ครึ่งเป็น แพ้ — แต่กำไร/ขาดทุนยูนิตตามราคาต่อรองบอลเอเชียจริงจะแสดงคู่กับสถิติเสมอ",
+      "แพ้เราก็ลงให้ดู เพื่อความบันเทิงเท่านั้น — ไม่ใช่คำแนะนำทางการเงิน",
+    ],
+  },
+  es: {
+    title: "Acerca de WildlyPlay",
+    intro:
+      "WildlyPlay es un sitio de picks de fútbol dirigido por un curador. Un humano — The Curator — elige los partidos y los ángulos. La IA opera todo lo demás: escribe el análisis, publica, liquida el resultado y archiva cada pick públicamente, para siempre. Picks humanos, operación por IA — declarado en cada jugada.",
+    cards: [
+      {
+        heading: "Curado, no predicho",
+        body: "Cada pick se investiga y se razona — nunca al azar, nunca garantizado. Compartimos perspectivas, no predicciones.",
+      },
+      {
+        heading: "Cada pick, público para siempre",
+        body: "Las cuotas se capturan en el momento en que se publica un pick y nunca se editan. Ganadas, perdidas, push — el historial completo queda a la vista, empezando desde cero.",
+      },
+      {
+        heading: "Gratis, para la afición global",
+        body: "Sin niveles VIP, sin muros de pago, sin afiliados de casas de apuestas. Jugadores de todas las zonas horarias, unidos por el amor al fútbol.",
+      },
+    ],
+    promiseTitle: "La promesa",
+    promises: [
+      "Una sola puerta humana: The Curator envía el pick. Todo lo que sigue es automatizado y a prueba de manipulación.",
+      "Las medias ganancias cuentan como GANADA y las medias pérdidas como PERDIDA en la insignia — pero el G/P real en unidades del hándicap asiático siempre se muestra junto al balance.",
+      "También publicamos nuestras pérdidas. Solo entretenimiento — nunca asesoría financiera.",
+    ],
+  },
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -71,7 +121,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay` },
+    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: ["/api/og/home"] },
   };
 }
 

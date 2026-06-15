@@ -49,6 +49,40 @@ const copy: Record<Lang, Copy> = {
     helpBody:
       "Nếu bạn hoặc người quen gặp vấn đề với cờ bạc, hãy tìm đến các tổ chức hỗ trợ như Gamblers Anonymous (gamblersanonymous.org) hoặc dịch vụ hỗ trợ tại quốc gia của bạn. Nói chuyện với ai đó là bước đầu tiên — và nó thực sự hiệu quả.",
   },
+  th: {
+    title: "เล่นอย่างมีความรับผิดชอบ",
+    intro:
+      "WildlyPlay คือความบันเทิง จบแค่นั้น ทีเด็ดของเราคือมุมมองต่อเกมฟุตบอล — ไม่ใช่คำทำนาย ไม่ใช่คำแนะนำการลงทุน และไม่ใช่หนทางหาเลี้ยงชีพเด็ดขาด ถ้าคุณเลือกจะเล่นตาม ขอให้เล่นเพื่อความสนุกและรักษามันไว้แบบนั้น",
+    rulesTitle: "กติกาที่ตั้งไว้ให้ตัวคุณเอง",
+    rules: [
+      "เล่นเฉพาะด้วยเงินที่เสียไปแล้วไม่กระทบชีวิตของคุณเท่านั้น",
+      "ตั้งงบประมาณและกำหนดเวลาเล่นก่อนเริ่ม — และทำตามทั้งสองอย่าง",
+      "อย่าตามทุนเด็ดขาด วันที่แย่ก็ให้จบที่วันที่แย่ อย่าให้กลายเป็นสัปดาห์ที่แย่",
+      "อย่าเล่นตอนหงุดหงิด เหนื่อยล้า หรือมึนเมา",
+      "การพนันไม่ใช่แหล่งรายได้ เมื่อไหร่ที่ไม่สนุกแล้ว ให้หยุด",
+      "ซื่อสัตย์กับตัวเองและคนรอบข้างว่าคุณเล่นมากแค่ไหน",
+    ],
+    helpTitle: "เมื่อมันไม่สนุกอีกต่อไป",
+    helpBody:
+      "หากคุณหรือคนที่คุณรู้จักมีปัญหากับการพนัน โปรดติดต่อองค์กรช่วยเหลือ เช่น Gamblers Anonymous (gamblersanonymous.org) หรือบริการช่วยเหลือที่มีในประเทศของคุณ การได้พูดคุยกับใครสักคนคือก้าวแรก — และมันได้ผลจริง",
+  },
+  es: {
+    title: "Juego Responsable",
+    intro:
+      "WildlyPlay es entretenimiento, punto. Nuestros picks son perspectivas sobre el fútbol — no predicciones, no asesoría de inversión, y nunca una forma de ganarse la vida. Si decides jugar, hazlo por diversión y que siga siendo así.",
+    rulesTitle: "Reglas de la casa para ti mismo",
+    rules: [
+      "Juega solo con dinero que puedas permitirte perder sin problema.",
+      "Define un presupuesto y un límite de tiempo antes de empezar — y respeta ambos.",
+      "Nunca persigas las pérdidas. Un mal día se queda en un mal día; no lo conviertas en una mala semana.",
+      "No juegues si estás molesto, cansado o bajo los efectos del alcohol u otras sustancias.",
+      "Apostar no es una fuente de ingresos. Si deja de ser divertido, detente.",
+      "Sé honesto contigo mismo y con las personas a tu alrededor sobre cuánto juegas.",
+    ],
+    helpTitle: "Si deja de ser divertido",
+    helpBody:
+      "Si tú o alguien que conoces tiene problemas con el juego, busca una organización de apoyo local como Gamblers Anonymous (gamblersanonymous.org) o los servicios de ayuda disponibles en tu país. Hablar con alguien es el primer paso — y funciona.",
+  },
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -56,7 +90,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay` },
+    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: ["/api/og/home"] },
   };
 }
 

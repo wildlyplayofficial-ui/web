@@ -16,6 +16,13 @@ Source: Playbook (Nick) + QnA answered 11/6/2026 + group chat 11/6/2026.
 | 10 | Human gate | At the FRONT of the pipeline only: Curator submits pick via Telegram bot, everything downstream is automatic. No morning approval gate. |
 | 11 | Pick frequency | Not fixed. Zero-pick days are normal — Board must handle empty days gracefully. |
 | 12 | Monetization | Phase 1 free, no bookmaker affiliates ever. Premium options stay open for phase 2 (after one full season of track record). |
+| 13 | Web v1 scope | Board / Play detail / Record-Archive / About-Donate-Responsible. Recap pages + Newsroom display = later phase. (Nick, group 11/6) |
+| 14 | Public record | W-L-P shown WITH real units P/L (e.g. 12-8-2, +6.4u) — transparent even when negative. (Nick, group 11/6) |
+| 15 | Play detail transparency | Full thesis + odds at publish + stake units all public. (Nick, group 11/6) |
+| 16 | Recaps in DB | AI recaps (EN/VI) stored in `posts` as drafts from day 1; web display comes in a later phase. (Nick, group 11/6) |
+| 17 | Crowd poll | Follow/Fade/Skip ships in web v1 on the Board (not gated with forum). (Nick, group 11/6) |
+| 18 | Deploy path | Build Next.js → beta.wildlyplay.com in parallel → Nick reviews → swap main domain. Astro stays live until swap. (Nick, group 11/6) |
+| 19 | Pick-driven Newsroom | AI articles are generated ONLY from a Curator pick: bilingual preview auto-publishes when /pick lands, long-form recap article auto-publishes after settlement (supersedes #16 draft-only). Source material = pick data + thesis only, no invented facts; "Human-picked, AI-written." disclosure; AI failure never blocks the pick or the result announcement. (Nick, group 12/6: "TỰ publish thẳng") |
 
 ## Competitor reference: AsianBookie (beta.asianbookie.com, reviewed 11/6/2026)
 

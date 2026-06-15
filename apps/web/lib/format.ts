@@ -12,7 +12,22 @@ export function badgeFor(pick: Pick, now: Date = new Date()): BadgeKind {
   return pick.status;
 }
 
-const locales: Record<Lang, string> = { en: "en-GB", vi: "vi-VN" };
+/** Market display names (shared by the pick card and the play detail page). */
+export const marketLabels: Record<Pick["market"], string> = {
+  ah: "Asian Handicap",
+  ou: "Over/Under",
+  "1x2": "1X2",
+  btts: "BTTS",
+  other: "Special",
+};
+
+/** Intl locales per UI language (Gregorian calendar everywhere for consistency). */
+export const locales: Record<Lang, string> = {
+  en: "en-GB",
+  vi: "vi-VN",
+  th: "th-TH-u-ca-gregory",
+  es: "es-419",
+};
 
 /** Kickoff shown in UTC for a global audience (and stable server rendering). */
 export function formatKickoff(iso: string, lang: Lang): string {

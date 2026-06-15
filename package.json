@@ -1,0 +1,11 @@
+{
+  "name": "wildlyplay",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "cd apps/worker && npm ci",
+    "start": "cd apps/worker && npm start"
+  }
+}

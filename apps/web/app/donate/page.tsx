@@ -39,6 +39,28 @@ const copy: Record<Lang, Copy> = {
       "Chỉ gửi USDT trên mạng TRON (TRC-20). Tiền gửi qua mạng khác sẽ bị mất.",
     thanks: "Mọi khoản ủng hộ đều dành cho chi phí dữ liệu và duy trì hệ thống. Cảm ơn bạn.",
   },
+  th: {
+    title: "สนับสนุน WildlyPlay",
+    intro:
+      "WildlyPlay ฟรีตลอดไป ไม่มีระดับ VIP ไม่มีกำแพงจ่ายเงิน ไม่มีพันธมิตรเจ้ามือรับแทง — มีแค่ทีเด็ดวันละหนึ่งรายการกับสถิติที่เปิดเผยต่อสาธารณะ ถ้าทีเด็ดมีคุณค่ากับคุณและอยากเลี้ยงกาแฟ The Curator สักแก้ว คริปโตคือช่องทางเดียวที่เรารับ",
+    freeForever:
+      "ฟรีตลอดไป การสนับสนุนไม่ปลดล็อกอะไรทั้งนั้น — เพราะไม่มีอะไรให้ปลดล็อก",
+    networkLabel: "USDT — เครือข่าย TRC-20 เท่านั้น",
+    networkWarning:
+      "ส่ง USDT ผ่านเครือข่าย TRON (TRC-20) เท่านั้น เงินที่ส่งผ่านเครือข่ายอื่นจะสูญหาย",
+    thanks: "ทุกการสนับสนุนนำไปใช้เป็นค่าข้อมูลและค่าดูแลระบบ ขอบคุณมาก",
+  },
+  es: {
+    title: "Apoya a WildlyPlay",
+    intro:
+      "WildlyPlay es gratis, para siempre. Sin niveles VIP, sin muros de pago, sin afiliados de casas de apuestas — solo un pick al día y un historial público. Si los picks te aportan valor y quieres invitarle un café a The Curator, cripto es la única forma en que lo aceptamos.",
+    freeForever:
+      "Gratis para siempre. Las donaciones nunca desbloquean nada — no hay nada que desbloquear.",
+    networkLabel: "USDT — solo red TRC-20",
+    networkWarning:
+      "Envía USDT únicamente por la red TRON (TRC-20). Los fondos enviados por cualquier otra red se perderán.",
+    thanks: "Cada donación se destina a los costos de datos y a mantener el sitio en marcha. Gracias.",
+  },
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -46,7 +68,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay` },
+    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: ["/api/og/home"] },
   };
 }
 
