@@ -1,4 +1,4 @@
-import type { Pick, Post } from "./types";
+import type { Pick, Post, VoteCounts } from "./types";
 
 /**
  * Typed mock data used until the Supabase project exists.
@@ -28,6 +28,7 @@ export const mockPicks: Pick[] = [
     selection: "Mexico -0.75",
     line: -0.75,
     odds_publish: 1.92,
+    odds_close: null, // not yet captured (worker grabs it near kickoff)
     stake_units: 1,
     thesis:
       "Opening night at the Azteca, 87,000 behind them, and South Africa concede first in 7 of their last 9. Hosts cover the -0.75 before the hour mark.",
@@ -38,6 +39,10 @@ export const mockPicks: Pick[] = [
     raw_outcome: null,
     units_pl: null,
     settled_at: null,
+    publish_score_home: null,
+    publish_score_away: null,
+    home_id: null,
+    away_id: null,
   },
   {
     id: "00000000-0000-4000-8000-000000000003",
@@ -50,6 +55,7 @@ export const mockPicks: Pick[] = [
     selection: "Brazil win",
     line: null,
     odds_publish: 1.7,
+    odds_close: 1.78, // market moved against us: negative CLV
     stake_units: 1,
     thesis:
       "Full-strength Brazil in their final tune-up; Senegal resting four starters. Short price, but the gap is real.",
@@ -60,6 +66,10 @@ export const mockPicks: Pick[] = [
     raw_outcome: "loss",
     units_pl: -1.0,
     settled_at: dayAt(-1, 20),
+    publish_score_home: null,
+    publish_score_away: null,
+    home_id: null,
+    away_id: null,
   },
   {
     id: "00000000-0000-4000-8000-000000000002",
@@ -72,6 +82,7 @@ export const mockPicks: Pick[] = [
     selection: "Japan +0.25",
     line: 0.25,
     odds_publish: 1.96,
+    odds_close: 1.9, // we beat the close: positive CLV
     stake_units: 1,
     thesis:
       "Japan unbeaten in 11 at home and Colombia flying in 48 hours before kickoff. The quarter-line plus is the value side.",
@@ -82,6 +93,10 @@ export const mockPicks: Pick[] = [
     raw_outcome: "half_win", // 0-0 on +0.25: half push, half win
     units_pl: 0.48, // (1u / 2) * (1.96 - 1)
     settled_at: dayAt(-2, 13),
+    publish_score_home: null,
+    publish_score_away: null,
+    home_id: null,
+    away_id: null,
   },
   {
     id: "00000000-0000-4000-8000-000000000001",
@@ -94,6 +109,7 @@ export const mockPicks: Pick[] = [
     selection: "Over 2.5",
     line: 2.5,
     odds_publish: 1.85,
+    odds_close: 1.8,
     stake_units: 1,
     thesis:
       "Both camps said it out loud: this is an attacking rehearsal, not a result game. Overs in England's last 6 friendlies.",
@@ -104,6 +120,10 @@ export const mockPicks: Pick[] = [
     raw_outcome: "win",
     units_pl: 0.85,
     settled_at: dayAt(-3, 21),
+    publish_score_home: null,
+    publish_score_away: null,
+    home_id: null,
+    away_id: null,
   },
 ];
 
@@ -174,6 +194,10 @@ export const mockPosts: Post[] = [
     pick_ids: ["00000000-0000-4000-8000-000000000001"],
     status: "published",
     published_at: dayAt(-2, 7),
+    meta_title: null,
+    meta_description: null,
+    target_keyword: null,
+    source_refs: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000002",
@@ -185,6 +209,10 @@ export const mockPosts: Post[] = [
     pick_ids: ["00000000-0000-4000-8000-000000000001"],
     status: "published",
     published_at: dayAt(-2, 7),
+    meta_title: null,
+    meta_description: null,
+    target_keyword: null,
+    source_refs: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000003",
@@ -196,6 +224,10 @@ export const mockPosts: Post[] = [
     pick_ids: ["00000000-0000-4000-8000-000000000002"],
     status: "published",
     published_at: dayAt(-1, 7),
+    meta_title: null,
+    meta_description: null,
+    target_keyword: null,
+    source_refs: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000004",
@@ -207,9 +239,25 @@ export const mockPosts: Post[] = [
     pick_ids: ["00000000-0000-4000-8000-000000000002"],
     status: "published",
     published_at: dayAt(-1, 7),
+    meta_title: null,
+    meta_description: null,
+    target_keyword: null,
+    source_refs: null,
   },
 ];
 
 export const mockFlags: Record<string, boolean> = {
   forum: false, // enable at ~200 daily visitors (decision #4)
 };
+
+/** Stable fake crowd-poll counts derived from the pick id, so mock mode
+ *  survives reloads without persistence (decision #5). */
+export function mockVoteCounts(pickId: string): VoteCounts {
+  let h = 0;
+  for (let i = 0; i < pickId.length; i++) h = (h * 31 + pickId.charCodeAt(i)) >>> 0;
+  return {
+    follow: 5 + (h % 23),
+    fade: 2 + ((h >>> 5) % 11),
+    skip: 1 + ((h >>> 9) % 7),
+  };
+}

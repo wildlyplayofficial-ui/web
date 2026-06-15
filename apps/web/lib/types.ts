@@ -6,7 +6,7 @@
 export type PickMarket = "ah" | "ou" | "1x2" | "btts" | "other";
 export type PickStatus = "published" | "won" | "lost" | "push" | "void";
 export type RawOutcome = "win" | "half_win" | "push" | "half_loss" | "loss" | "void";
-export type PostType = "recap" | "preview" | "news";
+export type PostType = "recap" | "preview" | "news" | "analysis";
 
 export interface Pick {
   id: string;
@@ -19,6 +19,7 @@ export interface Pick {
   selection: string;
   line: number | null;
   odds_publish: number;
+  odds_close: number | null;
   stake_units: number;
   thesis: string;
   status: PickStatus;
@@ -28,6 +29,12 @@ export interface Pick {
   raw_outcome: RawOutcome | null;
   units_pl: number | null;
   settled_at: string | null;
+  /** Score at publish time for in-play picks — AH settles on final − publish. */
+  publish_score_home: number | null;
+  publish_score_away: number | null;
+  /** odds-api participant ids for team logos (13/6). Null for older/manual picks. */
+  home_id: number | null;
+  away_id: number | null;
 }
 
 export interface Post {
@@ -40,7 +47,15 @@ export interface Post {
   pick_ids: string[];
   status: "published";
   published_at: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  target_keyword: string | null;
+  source_refs: Record<string, unknown> | null;
 }
+
+/** Crowd poll (decision #5, 11/6): per-pick Follow / Fade / Skip tallies. */
+export type VoteKind = "follow" | "fade" | "skip";
+export type VoteCounts = Record<VoteKind, number>;
 
 /** Mirrors the `track_record` view. Display rule (decision #2): half-win counts
  *  as WON / half-loss as LOST in W-L-P, while units_pl keeps the real AH math. */
