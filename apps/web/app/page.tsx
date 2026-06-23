@@ -75,6 +75,8 @@ export default async function DailyBoard({ searchParams }: Props) {
         <div className="hero-glow" aria-hidden />
         {/* Pitch line-art V1 — football field lines behind hero */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13] dark:opacity-[0.2]" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid meet" aria-hidden>
+          {/* Outer boundary — touchlines + goal lines */}
+          <rect x="0" y="0" width="1100" height="400" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#0f9e7a] dark:text-brand" />
           <line x1="550" y1="0" x2="550" y2="400" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
           <circle cx="550" cy="200" r="70" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
           <circle cx="550" cy="200" r="3" fill="currentColor" className="text-[#0f9e7a] dark:text-brand" />
