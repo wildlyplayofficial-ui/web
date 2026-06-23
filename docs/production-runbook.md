@@ -116,6 +116,7 @@ When a secret is leaked:
 | ANTHROPIC_API_KEY | console.anthropic.com | Railway env |
 | FB_PAGE_TOKEN | Facebook Graph API Explorer (60-day token) | Railway env |
 | REVALIDATE_SECRET | Generate new: `openssl rand -hex 24` | Railway env + Vercel env |
+| ODDS_API_KEY | the-odds-api.com dashboard | Railway env |
 | TELEGRAM_BOT_TOKEN | @BotFather → /revoke + /newtoken | Railway env |
 
 After rotation: redeploy worker (`railway up --detach`).
