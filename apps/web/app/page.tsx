@@ -74,24 +74,35 @@ export default async function DailyBoard({ searchParams }: Props) {
     <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
-        {/* Pitch line-art V1 — football field lines behind hero */}
-        <svg className="pointer-events-none absolute inset-0 hidden h-full w-full opacity-[0.13] dark:opacity-[0.2] md:block" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid meet" aria-hidden>
-          {/* Outer boundary — touchlines + goal lines */}
+        {/* Pitch line-art — mobile: slice (fills frame, crops sides), desktop: meet (full pitch) */}
+        {/* Mobile pitch (slice) */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13] dark:opacity-[0.2] md:hidden" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid slice" aria-hidden>
           <rect x="0" y="0" width="1100" height="400" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#0f9e7a] dark:text-brand" />
           <line x1="550" y1="0" x2="550" y2="400" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
           <circle cx="550" cy="200" r="70" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
           <circle cx="550" cy="200" r="3" fill="currentColor" className="text-[#0f9e7a] dark:text-brand" />
           <rect x="0" y="80" width="120" height="240" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
           <rect x="0" y="130" width="50" height="140" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
-          {/* Goal posts — small rectangles at goal line */}
           <rect x="-8" y="170" width="8" height="60" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
-          {/* Penalty arc (D) */}
           <path d="M 120 160 A 40 40 0 0 1 120 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
           <rect x="980" y="80" width="120" height="240" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
           <rect x="1050" y="130" width="50" height="140" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
-          {/* Right goal posts */}
           <rect x="1100" y="170" width="8" height="60" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
-          {/* Right penalty arc */}
+          <path d="M 980 160 A 40 40 0 0 0 980 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
+        </svg>
+        {/* Desktop pitch (meet — full field with goal posts) */}
+        <svg className="pointer-events-none absolute inset-0 hidden h-full w-full opacity-[0.13] dark:opacity-[0.2] md:block" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid meet" aria-hidden>
+          <rect x="0" y="0" width="1100" height="400" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#0f9e7a] dark:text-brand" />
+          <line x1="550" y1="0" x2="550" y2="400" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
+          <circle cx="550" cy="200" r="70" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
+          <circle cx="550" cy="200" r="3" fill="currentColor" className="text-[#0f9e7a] dark:text-brand" />
+          <rect x="0" y="80" width="120" height="240" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
+          <rect x="0" y="130" width="50" height="140" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
+          <rect x="-8" y="170" width="8" height="60" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
+          <path d="M 120 160 A 40 40 0 0 1 120 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
+          <rect x="980" y="80" width="120" height="240" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
+          <rect x="1050" y="130" width="50" height="140" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
+          <rect x="1100" y="170" width="8" height="60" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
           <path d="M 980 160 A 40 40 0 0 0 980 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
         </svg>
         <div className="relative">
