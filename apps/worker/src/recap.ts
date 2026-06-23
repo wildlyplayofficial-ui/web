@@ -113,6 +113,13 @@ export function splitLangSections(text: string): Partial<Record<PostLang, string
   return sections.en ? sections : null;
 }
 
+/** Validate 4-lang completeness: all required langs have body > minChars. */
+const REQUIRED_LANGS: PostLang[] = ['en', 'vi', 'th', 'es'];
+export function validate4Lang(sections: Partial<Record<PostLang, string>>, minChars = 50): { ok: boolean; missing: PostLang[] } {
+  const missing = REQUIRED_LANGS.filter((l) => !sections[l] || (sections[l]?.length ?? 0) < minChars);
+  return { ok: missing.length === 0, missing };
+}
+
 const RECAP_TITLES: Record<PostLang, string> = {
   en: 'Recap', vi: 'Nhìn lại', th: 'สรุปผล', es: 'Resumen',
 };

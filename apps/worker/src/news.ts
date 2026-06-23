@@ -11,7 +11,7 @@ import { createRevalidator } from './revalidate';
 
 // Sonnet 4.6 unavailable on current API key — use Haiku until key upgraded
 export const ANALYSIS_MODEL = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 6000;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

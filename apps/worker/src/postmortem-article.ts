@@ -9,7 +9,7 @@ import type { NewPost, PostLang, PickRow, Store } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
 
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 6000;
 
 function buildPostmortemArticlePrompt(pick: PickRow): string {
   const score = `${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}`;

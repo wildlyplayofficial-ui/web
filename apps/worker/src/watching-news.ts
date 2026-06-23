@@ -3,14 +3,14 @@
  * auto-generate a neutral pre-match preview article for SEO and publish to /news.
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
-import { callClaude, DEFAULT_MODEL, POST_FLAGS, slugify } from './recap';
+import { callClaude, DEFAULT_MODEL, POST_FLAGS, slugify, validate4Lang } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
 
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 6000;
 
 // ── Slug ────────────────────────────────────────────────────────────────────
 
@@ -130,6 +130,11 @@ export async function publishWatchingNews(
     if (!text) return;
 
     const posts = buildNewsPosts(watching, text);
+    // Validation guard: check all 4 langs have body before publishing
+    const langBodies: Partial<Record<import('./store').PostLang, string>> = {};
+    for (const p of posts) langBodies[p.lang as import('./store').PostLang] = p.body_md;
+    const { ok, missing } = validate4Lang(langBodies);
+    if (!ok) log.warn(`watching-news: incomplete langs [${missing.join(',')}] for ${watching.home_team} vs ${watching.away_team} — publishing available langs`);
     for (const post of posts) {
       await deps.store.insertPost(post);
     }

@@ -11,7 +11,7 @@ import { createRevalidator } from './revalidate';
 import { log } from './log';
 import type { ParsedNoPlay, NoPlayReason } from './parse-noplay';
 
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 6000;
 
 // ── Reason labels ──────────────────────────────────────────────────────────
 
