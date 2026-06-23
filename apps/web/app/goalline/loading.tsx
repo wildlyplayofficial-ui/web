@@ -1,5 +1,5 @@
-import { GoalLineCardSkeleton } from "@/components/skeleton";
+import { BallLoader } from "@/components/ball-loader";
 
 export default function GoalLineLoading() {
-  return <GoalLineCardSkeleton />;
+  return <BallLoader />;
 }
