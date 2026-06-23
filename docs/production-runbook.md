@@ -89,6 +89,48 @@ curl -X POST https://www.wildlyplay.com/api/revalidate \
 ### 6. Dark mode flash (FOUC)
 **Resolved:** Theme script is first child of `<head>`. ThemeToggle re-syncs from localStorage.
 
+## Rollback
+
+### Web (Vercel)
+```bash
+# List recent deployments
+vercel ls
+
+# Rollback to previous production deployment
+vercel rollback
+# Or: Vercel Dashboard → Deployments → click previous → Promote to Production
+```
+
+### Worker (Railway)
+- Railway Dashboard → Deployments → click previous successful deploy → Redeploy
+- Or: `git revert HEAD && git push` then `railway up --detach`
+
+## Secret Rotation
+
+When a secret is leaked:
+
+| Secret | Rotate at | Update at |
+|--------|-----------|-----------|
+| SUPABASE_SERVICE_ROLE_KEY | Supabase Dashboard → Settings → API | Railway env + Vercel env |
+| LIVESCORE_API_KEY/SECRET | livescore-api.com dashboard | Railway env |
+| ANTHROPIC_API_KEY | console.anthropic.com | Railway env |
+| FB_PAGE_TOKEN | Facebook Graph API Explorer (60-day token) | Railway env |
+| REVALIDATE_SECRET | Generate new: `openssl rand -hex 24` | Railway env + Vercel env |
+| TELEGRAM_BOT_TOKEN | @BotFather → /revoke + /newtoken | Railway env |
+
+After rotation: redeploy worker (`railway up --detach`).
+
+## Monitoring
+
+**Current: manual** (no auto-alert). Check when issues suspected.
+- Future: add uptime ping → alert TG group when web/worker down.
+
+## Architecture Note
+
+**Score display: SINGLE SOURCE OF TRUTH = match_live_state table.**
+All components (ticker, cards, /matches, match detail) read scores from match_live_state.
+NEVER use picks table for live scores (picks only has final settled scores).
+
 ## Deploy Checklist
 
 ### Web (Vercel)
