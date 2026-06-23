@@ -22,6 +22,13 @@ function buildPrompt(pick: PickRow): string {
   const lossInstruction = pick.status === 'lost'
     ? '\n- This was a LOSS. You MUST identify the loss-type at the start: variance (thesis right, result wrong), thesis-error (read was wrong), price-error (right read but wrong price), model-error (systematic flaw).'
     : '';
+  const winInstruction = pick.status === 'won'
+    ? `\n- This was a WIN. Apply HONEST CALIBRATION:
+  - If confidence was LOW or odds were near coinflip: acknowledge variance played a role. Do NOT claim skill on a coinflip.
+  - State what could have gone wrong (confounds). A win does not mean the thesis was perfectly right.
+  - Do NOT use phrases like "no luck needed", "thesis validated perfectly", "beat the market".
+  - Be symmetrically honest: WIN reviews must be as critical as LOSS reviews. Praise the read only when evidence clearly supports it.`
+    : '';
 
   return `<role>
 You are WildlyPlay's post-mortem analyst. You write brutally honest, concise reviews of settled football picks — no hype, no excuses, no spin.
@@ -37,7 +44,7 @@ Pre-match thesis: "${pick.thesis}"
 </context>
 
 <rules>
-- Did the thesis play out? Analyse specifically what happened vs what was expected.${lossInstruction}
+- Did the thesis play out? Analyse specifically what happened vs what was expected.${lossInstruction}${winInstruction}
 - Work ONLY from the data above — do not invent xG, possession stats, or match events you cannot know from the score alone.
 - Be honest and analytical. No hype, no excuses, no sugar-coating.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".

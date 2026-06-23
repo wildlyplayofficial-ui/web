@@ -88,10 +88,11 @@ export async function seedFromGlMatches(supabase: SupabaseClient): Promise<void>
  * Detect matches stuck as "live" that should be "finished".
  * Requires 3 CONSECUTIVE absences from the live feed before marking FT.
  * This prevents false positives from feed blips or delayed second halves.
- * Additional guard: must be past kickoff + 115 min.
+ * Knockout-safe: 140 min threshold (covers 90' + 30' ET + 15' penalties + 5' buffer).
  */
 const absentCounts = new Map<string, number>();
-const ABSENT_THRESHOLD = 3; // 3 consecutive polls (~30 min at 10-min interval)
+const ABSENT_THRESHOLD = 3; // 3 consecutive polls
+const FT_THRESHOLD_MS = 140 * 60_000; // 140 min — safe for knockout (ET + penalties)
 
 export async function detectFinishedMatches(
   supabase: SupabaseClient,
@@ -105,7 +106,6 @@ export async function detectFinishedMatches(
     if (!liveEntries?.length) { absentCounts.clear(); return; }
 
     const now = Date.now();
-    const FT_THRESHOLD_MS = 115 * 60_000;
 
     for (const entry of liveEntries as { id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; kickoff_utc: string; minute: number | null }[]) {
       if (currentFeedIds.has(entry.id)) {
@@ -192,7 +192,7 @@ export async function fetchLivescoreForPersist(env: NodeJS.ProcessEnv): Promise<
         results.push({
           id: fid, home_team: m.home_name, away_team: m.away_name,
           home_score: sc?.home ?? null, away_score: sc?.away ?? null,
-          minute: parseInt(m.time, 10) || null, status: 'live',
+          minute: parseInt(m.time, 10) || null, status: status(m.status || ''),
           period: m.status?.toUpperCase() === 'HT' ? 'HT' : null,
           kickoff_utc: kickoff, competition: m.competition_name || 'FIFA World Cup',
           events_url: m.events || null,

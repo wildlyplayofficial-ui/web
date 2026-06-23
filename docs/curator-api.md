@@ -27,11 +27,11 @@ Create a new pick and trigger the full pipeline (preview article, thesis transla
 **Payload:**
 ```json
 {
-  "text": "match: Argentina vs Austria\nleague: FIFA World Cup 2026 — Group J\nkickoff: 2026-06-22T17:00:00Z\nmarket: Asian Handicap -1.25\nselection: Argentina -1.25\nodds: 1.95\nstake: 1.5\nconfidence: HIGH\nedge: TACTICAL_MATCHUP\nevidence: RECENT_FORM, EXPECTED_GOALS\nthesis: Argentina's pressing intensity should overwhelm Austria's build-up..."
+  "text": "match: Argentina vs Austria\nleague: FIFA World Cup 2026 — Group J\nkickoff: 2026-06-22T17:00:00Z\nmarket: ah\nline: -1.25\nselection: Argentina -1.25\nodds: 1.95\nstake: 1.5\nconfidence: HIGH\nedge: TACTICAL_MATCHUP\nevidence: RECENT_FORM, EXPECTED_GOALS\nthesis: Argentina's pressing intensity should overwhelm Austria's build-up..."
 }
 ```
 
-**Required fields in text:** match, league, kickoff, market, selection, odds, stake, thesis, confidence, edge
+**Required fields in text:** match, league, kickoff, market (enum: `ah`/`ou`/`1x2`/`btts`/`other`), line (required for ah/ou), selection, odds, stake, thesis, confidence, edge
 
 **Optional:** evidence (max 2, comma-separated), event (odds-api event ID)
 
@@ -126,7 +126,7 @@ Approve a post-mortem review. Triggers: post-mortem article (4 langs), TG+FB ann
 
 **Required:** pickId  
 **Required for losses:** lossType (`variance` · `thesis-error` · `price-error` · `model-error`)  
-**Optional:** reviewText
+**Optional:** reviewText (EN) — this text is the BASIS for the 4-lang post-mortem article. It is faithfully reflected in vi/th/es (not just EN override)
 
 **Response 200:**
 ```json
@@ -276,7 +276,7 @@ curl -X POST https://wildlyplay-worker-production.up.railway.app/api/pick \
   -H "Content-Type: application/json" \
   -H "x-webhook-secret: $SECRET" \
   -d '{
-    "text": "match: Argentina vs Austria\nleague: FIFA World Cup 2026\nkickoff: 2026-06-22T17:00:00Z\nmarket: Asian Handicap -1.25\nselection: Argentina -1.25\nodds: 1.95\nstake: 1.5\nconfidence: HIGH\nedge: TACTICAL_MATCHUP\nthesis: Argentina pressing intensity..."
+    "text": "match: Argentina vs Austria\nleague: FIFA World Cup 2026\nkickoff: 2026-06-22T17:00:00Z\nmarket: ah\nline: -1.25\nselection: Argentina -1.25\nodds: 1.95\nstake: 1.5\nconfidence: HIGH\nedge: TACTICAL_MATCHUP\nthesis: Argentina pressing intensity..."
   }'
 ```
 
@@ -295,7 +295,7 @@ print(r.json())  # {"ok": true, "id": "...", "match": "France vs Iraq"}
 
 # 2. Create pick
 r = requests.post(f"{BASE}/api/pick", headers=H, json={
-    "text": "match: France vs Iraq\nleague: FIFA World Cup 2026\nkickoff: 2026-06-22T21:00:00Z\nmarket: Over/Under 2.5\nselection: Over 2.5\nodds: 1.87\nstake: 1\nconfidence: MEDIUM\nedge: TACTICAL_MATCHUP\nthesis: France attacking quality..."
+    "text": "match: France vs Iraq\nleague: FIFA World Cup 2026\nkickoff: 2026-06-22T21:00:00Z\nmarket: ou\nline: 2.5\nselection: Over 2.5\nodds: 1.87\nstake: 1\nconfidence: MEDIUM\nedge: TACTICAL_MATCHUP\nthesis: France attacking quality..."
 })
 pick_id = r.json()["id"]
 

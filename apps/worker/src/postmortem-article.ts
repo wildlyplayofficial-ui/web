@@ -33,7 +33,9 @@ Thesis: ${pick.thesis}
 <rules>
 - Write an honest post-mortem: what happened, did the thesis play out, what we learned.
 - For losses: explain the loss-type honestly (variance vs bad read).
-- BANNED VOCABULARY: edge, value, value bet, +EV, beat the bookie.
+- For wins: apply honest calibration — acknowledge variance on coinflip/LOW-confidence picks, state confounds, do NOT claim skill on thin margins. WIN reviews must be as critical as LOSS reviews.
+- FAITHFULLY reflect the Curator review tone. If the Curator wrote honest/humble text, preserve that tone in ALL 4 languages. Do NOT embellish or add hype.
+- BANNED VOCABULARY: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
 - Do NOT invent stats or events not in the data above.
 </rules>
 

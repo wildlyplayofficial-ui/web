@@ -563,7 +563,8 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     supabase
       .from("picks")
       .select("home_team, away_team, kickoff_utc, settled_at, home_score, away_score, status")
-      .neq("status", "draft"),
+      .neq("status", "draft")
+      .neq("status", "void"),
     supabase
       .from("watching")
       .select("home_team, away_team, kickoff_utc, created_at"),

@@ -350,18 +350,47 @@ async function fetchLivePicksFromDb(): Promise<Match[]> {
 
     if (error || !data) return [];
 
-    return data.map((p) => ({
-      id: `pick-${p.id}`,
-      homeTeam: p.home_team,
-      awayTeam: p.away_team,
-      kickoffUtc: p.kickoff_utc,
-      status: "live" as MatchStatus,
-      minute: null,
-      homeScore: null,
-      awayScore: null,
-      competition: p.league || "FIFA World Cup",
-      eventsUrl: null,
-    }));
+    // Enrich with live scores from match_live_state + exclude finished matches
+    const { data: liveStates } = await supabase
+      .from("match_live_state")
+      .select("home_team, away_team, home_score, away_score, minute, status")
+      .in("status", ["live"]);
+
+    const liveMap = new Map<string, { home_score: number; away_score: number; minute: number | null }>();
+    const finishedSet = new Set<string>();
+    for (const ls of (liveStates ?? []) as { home_team: string; away_team: string; home_score: number; away_score: number; minute: number | null; status: string }[]) {
+      const key = `${ls.home_team.toLowerCase()}|${ls.away_team.toLowerCase()}`;
+      if (ls.status === "live") liveMap.set(key, ls);
+    }
+
+    // Also check finished to exclude
+    const { data: finStates } = await supabase
+      .from("match_live_state")
+      .select("home_team, away_team")
+      .eq("status", "finished")
+      .gte("kickoff_utc", threeHoursAgo.toISOString());
+    for (const fs of (finStates ?? []) as { home_team: string; away_team: string }[]) {
+      finishedSet.add(`${fs.home_team.toLowerCase()}|${fs.away_team.toLowerCase()}`);
+    }
+
+    return data
+      .filter((p) => !finishedSet.has(`${p.home_team.toLowerCase()}|${p.away_team.toLowerCase()}`))
+      .map((p) => {
+        const key = `${p.home_team.toLowerCase()}|${p.away_team.toLowerCase()}`;
+        const live = liveMap.get(key);
+        return {
+          id: `pick-${p.id}`,
+          homeTeam: p.home_team,
+          awayTeam: p.away_team,
+          kickoffUtc: p.kickoff_utc,
+          status: "live" as MatchStatus,
+          minute: live?.minute ?? null,
+          homeScore: live?.home_score ?? null,
+          awayScore: live?.away_score ?? null,
+          competition: p.league || "FIFA World Cup",
+          eventsUrl: null,
+        };
+      });
   } catch {
     return [];
   }
