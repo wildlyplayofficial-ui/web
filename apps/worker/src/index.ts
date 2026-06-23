@@ -347,10 +347,14 @@ const glCronTimer = setInterval(async () => {
   if (glCronRunning) return; // skip if previous run still going
   glCronRunning = true;
   try {
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 60_000); // 60s timeout
     const res = await fetch(glCronUrl, {
       method: 'POST',
       headers: { 'x-revalidate-secret': glCronSecret },
+      signal: ac.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) {
       log.warn(`GoalLine cron: HTTP ${res.status}`);
       glCronRunning = false;
