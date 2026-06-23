@@ -116,7 +116,7 @@ export default async function DailyBoard({ searchParams }: Props) {
             <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
               <span className="text-muted">{dict.board.formTitle}</span>
               <div
-                className="flex max-w-[min(100vw-40px,500px)] flex-wrap justify-center gap-1.5 py-1"
+                className="flex flex-wrap justify-center gap-1.5 py-1"
               >
                 {form.map((p) => (
                   <Link
