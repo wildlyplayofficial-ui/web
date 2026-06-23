@@ -357,19 +357,21 @@ const glCronTimer = setInterval(async () => {
     clearTimeout(timeout);
     if (!res.ok) {
       log.warn(`GoalLine cron: HTTP ${res.status}`);
-      glCronRunning = false;
-      return;
-    }
-    const data = await res.json();
-    glLastCronSuccess.ts = Date.now();
-    const hasActivity = data.create?.done || data.locked?.length || data.settle?.settled?.length || data.settle?.voided?.length;
-    if (hasActivity) {
-      log.info(`GoalLine cron: ${JSON.stringify(data)}`);
+    } else {
+      const data = await res.json();
+      glLastCronSuccess.ts = Date.now();
+      const hasActivity = data.create?.done || data.locked?.length || data.settle?.settled?.length || data.settle?.voided?.length;
+      if (hasActivity) {
+        log.info(`GoalLine cron: ${JSON.stringify(data)}`);
+      } else {
+        log.info(`GoalLine cron: ok (no activity) — create: ${data.create?.reason ?? 'n/a'}`);
+      }
     }
   } catch (err) {
     log.warn('GoalLine cron failed:', err);
+  } finally {
+    glCronRunning = false;
   }
-  glCronRunning = false;
 }, GL_CRON_INTERVAL);
 
 log.info('GoalLine cron started (every 15 min)');
