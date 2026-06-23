@@ -33,13 +33,13 @@ function StatusBadge({ status }: { status: DailyCard["status"] }) {
   switch (status) {
     case "open":
       return (
-        <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">
+        <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-400">
           Open
         </span>
       );
     case "locked":
       return (
-        <span className="rounded-full bg-line px-2 py-0.5 text-xs font-semibold text-muted">
+        <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-400">
           Locked
         </span>
       );
@@ -52,7 +52,7 @@ function StatusBadge({ status }: { status: DailyCard["status"] }) {
       );
     case "settled":
       return (
-        <span className="rounded-full bg-over/10 px-2 py-0.5 text-xs font-semibold text-over">
+        <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">
           Settled
         </span>
       );

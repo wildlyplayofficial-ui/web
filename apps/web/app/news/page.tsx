@@ -9,7 +9,7 @@ export const revalidate = 300;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-type FilterTab = "all" | "picks" | "analysis" | "news" | "noplay";
+type FilterTab = "all" | "picks" | "analysis" | "news" | "noplay" | "postmortem";
 
 const TAB_TYPES: Record<FilterTab, PostType[] | null> = {
   all: null,
@@ -17,6 +17,7 @@ const TAB_TYPES: Record<FilterTab, PostType[] | null> = {
   analysis: ["analysis"],
   news: ["news"],
   noplay: ["no-play"],
+  postmortem: ["post-mortem"],
 };
 
 const TAB_LABELS: Record<FilterTab, string> = {
@@ -25,6 +26,7 @@ const TAB_LABELS: Record<FilterTab, string> = {
   analysis: "Analysis",
   news: "News",
   noplay: "No Play",
+  postmortem: "Post-Mortem",
 };
 
 const TYPE_LABELS: Record<PostType, string> = {
