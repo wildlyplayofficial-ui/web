@@ -90,7 +90,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: ["/api/og/home"] },
+    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
   };
 }
 

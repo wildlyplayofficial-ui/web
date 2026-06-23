@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Design tokens — dark-first, matching apps/web */
+@theme {
+  --color-bg: var(--t-bg);
+  --color-card: var(--t-card);
+  --color-card-hover: var(--t-card-hover);
+  --color-ink: var(--t-ink);
+  --color-muted: var(--t-muted);
+  --color-line: var(--t-line);
+  --color-brand: var(--t-brand);
+  --color-brand-dim: var(--t-brand-dim);
+  --color-loss: #f85149;
+  --color-loss-dim: var(--t-loss-dim);
+  --color-line-hover: var(--t-line-hover);
+  --color-over: #00e676;
+  --color-over-dim: rgba(0, 230, 118, 0.15);
+  --color-under: #42a5f5;
+  --color-under-dim: rgba(66, 165, 245, 0.15);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), sans-serif;
+
+  --radius-card: 12px;
+}
+
+/* Dark mode (default — GoalLine is dark-first) */
+:root {
+  --t-bg: #0d1117;
+  --t-card: #161b22;
+  --t-card-hover: #1c2333;
+  --t-ink: #e6edf3;
+  --t-muted: #8b949e;
+  --t-line: #30363d;
+  --t-brand: #00e676;
+  --t-brand-dim: rgba(0, 230, 118, 0.15);
+  --t-loss-dim: rgba(248, 81, 73, 0.15);
+  --t-line-hover: #484f58;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}

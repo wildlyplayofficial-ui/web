@@ -4,6 +4,28 @@
  */
 
 export type Market = 'ah' | 'ou' | '1x2' | 'btts' | 'other';
+export type Confidence = 'low' | 'medium' | 'high';
+const CONFIDENCE_VALUES: readonly string[] = ['low', 'medium', 'high'];
+
+/** T3: Primary Edge — choose exactly one. */
+export type PrimaryEdge =
+  | 'PRICE_VALUE' | 'TACTICAL_MATCHUP' | 'TEAM_NEWS'
+  | 'SCHEDULE_FATIGUE' | 'MOTIVATION' | 'LIVE_STATE' | 'MARKET_MOVEMENT';
+const EDGE_VALUES = new Set<string>([
+  'PRICE_VALUE', 'TACTICAL_MATCHUP', 'TEAM_NEWS',
+  'SCHEDULE_FATIGUE', 'MOTIVATION', 'LIVE_STATE', 'MARKET_MOVEMENT',
+]);
+
+/** T4: Supporting Evidence — up to two. */
+export type SupportingEvidence =
+  | 'RECENT_FORM' | 'HISTORICAL_DATA' | 'EXPECTED_GOALS' | 'CONFIRMED_LINEUP'
+  | 'HOME_AWAY_SPLIT' | 'SET_PIECES' | 'DEFENSIVE_WEAKNESS' | 'PUBLIC_SENTIMENT'
+  | 'SHOT_CHANCE_QUALITY' | 'INJURY_SUSPENSION';
+const EVIDENCE_VALUES = new Set<string>([
+  'RECENT_FORM', 'HISTORICAL_DATA', 'EXPECTED_GOALS', 'CONFIRMED_LINEUP',
+  'HOME_AWAY_SPLIT', 'SET_PIECES', 'DEFENSIVE_WEAKNESS', 'PUBLIC_SENTIMENT',
+  'SHOT_CHANCE_QUALITY', 'INJURY_SUSPENSION',
+]);
 
 export interface ParsedPick {
   homeTeam: string;
@@ -21,6 +43,12 @@ export interface ParsedPick {
   /** Running pick (12/6): score when the bet was placed in-play. Null = pre-match pick. */
   publishScoreHome: number | null;
   publishScoreAway: number | null;
+  /** Trust anchor (20/6): pre-registered confidence level. Null = not provided. */
+  confidence: Confidence | null;
+  /** T3: Primary reason for the pick. Required. */
+  primaryEdge: PrimaryEdge | null;
+  /** T4: Up to 2 supporting evidence tags. */
+  supportingEvidence: SupportingEvidence[];
 }
 
 export type ParseResult =
@@ -30,7 +58,8 @@ export type ParseResult =
 const MARKETS: readonly Market[] = ['ah', 'ou', '1x2', 'btts', 'other'];
 const KNOWN_KEYS = new Set([
   'match', 'league', 'kickoff', 'market', 'selection',
-  'line', 'odds', 'stake', 'thesis', 'event', 'score',
+  'line', 'odds', 'stake', 'thesis', 'event', 'score', 'confidence',
+  'edge', 'evidence',
 ]);
 
 export function parsePick(text: string, now: Date = new Date()): ParseResult {
@@ -164,7 +193,52 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
     else errors.push(`event must be a numeric odds-api event id, got "${eventRaw}"`);
   }
 
+  // confidence (mandatory — Trust Anchor §5, Nick 20/6)
+  let confidence: Confidence | null = null;
+  const confidenceRaw = fields.get('confidence');
+  if (!confidenceRaw) {
+    errors.push('missing field: confidence (LOW / MEDIUM / HIGH)');
+  } else {
+    const val = confidenceRaw.toLowerCase();
+    if (CONFIDENCE_VALUES.includes(val)) {
+      confidence = val as Confidence;
+    } else {
+      errors.push(`confidence must be LOW / MEDIUM / HIGH, got "${confidenceRaw}"`);
+    }
+  }
+
   if (thesis === null || thesis === '') errors.push('missing field: thesis');
+
+  // T3: Primary Edge (required)
+  let primaryEdge: PrimaryEdge | null = null;
+  const edgeRaw = fields.get('edge');
+  if (!edgeRaw) {
+    errors.push('missing field: edge (PRICE_VALUE / TACTICAL_MATCHUP / TEAM_NEWS / SCHEDULE_FATIGUE / MOTIVATION / LIVE_STATE / MARKET_MOVEMENT)');
+  } else {
+    const val = edgeRaw.toUpperCase().replace(/[\s/]+/g, '_');
+    if (EDGE_VALUES.has(val)) {
+      primaryEdge = val as PrimaryEdge;
+    } else {
+      errors.push(`edge must be one of: ${[...EDGE_VALUES].join(', ')} — got "${edgeRaw}"`);
+    }
+  }
+
+  // T4: Supporting Evidence (optional, max 2)
+  const supportingEvidence: SupportingEvidence[] = [];
+  const evidenceRaw = fields.get('evidence');
+  if (evidenceRaw) {
+    const items = evidenceRaw.split(',').map((s) => s.trim().toUpperCase().replace(/[\s/]+/g, '_'));
+    for (const item of items) {
+      if (!EVIDENCE_VALUES.has(item)) {
+        errors.push(`evidence tag "${item}" not recognized — valid: ${[...EVIDENCE_VALUES].join(', ')}`);
+      } else {
+        supportingEvidence.push(item as SupportingEvidence);
+      }
+    }
+    if (supportingEvidence.length > 2) {
+      errors.push('evidence: max 2 tags allowed');
+    }
+  }
 
   if (errors.length > 0) return { ok: false, errors };
   return {
@@ -173,6 +247,7 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
       homeTeam, awayTeam, league, kickoffUtc,
       market: market as Market, selection, line, odds, stake,
       thesis: thesis as string, eventId, publishScoreHome, publishScoreAway,
+      confidence, primaryEdge, supportingEvidence,
     },
   };
 }

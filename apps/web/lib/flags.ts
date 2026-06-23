@@ -1,8 +1,10 @@
 /** Country name → flag emoji for national-team picks.
  *  Unknown names (e.g. club teams) return "" — card renders without a flag. */
 const FLAGS: Record<string, string> = {
+  Algeria: "🇩🇿",
   Argentina: "🇦🇷",
   Australia: "🇦🇺",
+  Austria: "🇦🇹",
   Belgium: "🇧🇪",
   "Bosnia and Herzegovina": "🇧🇦",
   Brazil: "🇧🇷",
@@ -12,6 +14,8 @@ const FLAGS: Record<string, string> = {
   Canada: "🇨🇦",
   Chile: "🇨🇱",
   Colombia: "🇨🇴",
+  "Congo DR": "🇨🇩",
+  "DR Congo": "🇨🇩",
   "Costa Rica": "🇨🇷",
   Croatia: "🇭🇷",
   Czechia: "🇨🇿",
@@ -27,6 +31,7 @@ const FLAGS: Record<string, string> = {
   Haiti: "🇭🇹",
   Honduras: "🇭🇳",
   Iran: "🇮🇷",
+  Iraq: "🇮🇶",
   Italy: "🇮🇹",
   "Ivory Coast": "🇨🇮",
   Japan: "🇯🇵",
@@ -50,6 +55,7 @@ const FLAGS: Record<string, string> = {
   Senegal: "🇸🇳",
   Serbia: "🇷🇸",
   "South Africa": "🇿🇦",
+  "Korea Republic": "🇰🇷",
   "South Korea": "🇰🇷",
   Spain: "🇪🇸",
   Sweden: "🇸🇪",

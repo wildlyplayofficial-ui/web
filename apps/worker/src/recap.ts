@@ -48,26 +48,50 @@ export function computeRecord(picks: PickRow[]): SettledRecord {
 export function buildRecapPrompt(pick: PickRow, record: SettledRecord): string {
   const units = record.units > 0 ? `+${record.units}` : `${record.units}`;
   const pl = Number(pick.units_pl);
-  return [
-    'You write post-match recaps for WildlyPlay, a public Telegram channel covering football picks.',
-    '',
-    'Settled pick:',
-    `- League: ${pick.league}`,
-    `- Final score: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}`,
-    `- Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)`,
-    `- Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl} units)`,
-    `- Curator's pre-match thesis: ${pick.thesis}`,
-    `- Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total`,
-    '',
-    // 4 languages on the channel too (Nick 13/6) — same flag order as the newsroom articles.
-    `Write a short post-match recap with exactly FOUR sections, in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}. Each section must be 60 words or fewer.`,
-    'Rules:',
-    '- Honest transparency: state plainly whether the thesis played out or not — recap misses as openly as hits.',
-    '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose" or any promise of profit.',
-    '- No emoji spam.',
-    '- End each section with the updated record line.',
-    '- Output plain text only — no markdown headers other than the four flag headers.',
-  ].join('\n');
+
+  // 4 languages on the channel too (Nick 13/6) — same flag order as the newsroom articles.
+  return `<role>
+You write post-match recaps for WildlyPlay's public Telegram channel. Short, honest, thesis-driven — every recap evaluates whether the pre-match read was right.
+</role>
+
+<context>
+League: ${pick.league}
+Final score: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}
+Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)
+Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl} units)
+Curator's pre-match thesis: ${pick.thesis}
+Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total
+</context>
+
+<rules>
+- Honest transparency: state plainly whether the thesis played out or not — recap misses as openly as hits.
+- Work ONLY from the data above — do not invent match events, xG, or stats you cannot know.
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
+- BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
+- No emoji spam.
+- End each section with the updated record line.
+- Output plain text only — no markdown headers other than the four flag headers.
+- Lead with what actually happened vs the thesis — never a generic scoreline summary.
+</rules>
+
+<bad_examples>
+BAD: "Team A beat Team B 3-1 in a dominant performance. Great result for the channel."
+WHY: Generic scoreline recap, no thesis evaluation, "great result" is hype not analysis.
+</bad_examples>
+
+<good_examples>
+GOOD: "Five goals in 90 minutes proved the Over thesis right — but the margin was closer than the scoreline suggests. The 3-2 came from a 92nd-minute set piece."
+WHY: Evaluates thesis directly, adds nuance about how the result unfolded, honest about the margin.
+</good_examples>
+
+<output>
+Write exactly FOUR sections in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Each section: 60 words or fewer.
+</output>
+
+<self_critique>
+Before outputting, verify: (1) no banned vocabulary even negated, (2) no facts not in the provided data, (3) each language section is in the correct language, (4) thesis explicitly evaluated, (5) record line present in every section.
+</self_critique>`;
 }
 
 /** Split AI output on the flag headers (any subset/order of \u{1F1EC}\u{1F1E7}/\u{1F1FB}\u{1F1F3}/\u{1F1F9}\u{1F1ED}/\u{1F1EA}\u{1F1F8}).
@@ -142,7 +166,8 @@ export async function callClaude(
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!res.ok) {
-      log.warn(`${context}: Anthropic API returned ${res.status}`);
+      const body = await res.text().catch(() => '');
+      log.warn(`${context}: Anthropic API returned ${res.status} — ${body.slice(0, 200)}`);
       return null;
     }
     const data: any = await res.json();
@@ -172,24 +197,47 @@ export async function generateRecap(
 export function buildRecapArticlePrompt(pick: PickRow, record: SettledRecord): string {
   const units = record.units > 0 ? `+${record.units}` : `${record.units}`;
   const pl = Number(pick.units_pl);
-  return [
-    'You write post-match articles for the WildlyPlay newsroom (wildlyplay.com/news), a football picks site.',
-    '',
-    'Settled pick:',
-    `- League: ${pick.league}`,
-    `- Final score: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}`,
-    `- Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)`,
-    `- Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl} units)`,
-    `- Curator's pre-match thesis: ${pick.thesis}`,
-    `- Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total`,
-    '',
-    `Write a post-match article with exactly FOUR sections, in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}. Each section: 150-250 words, markdown allowed (short paragraphs, no H1).`,
-    'Rules:',
-    '- Work ONLY from the data above — do not invent injuries, quotes, stats or match events you cannot know.',
-    '- Honest transparency: state plainly whether the thesis played out or not — cover misses as openly as hits.',
-    '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose" or any promise of profit.',
-    '- End each section with the updated record line and this disclosure: "Human-picked, AI-written."',
-  ].join('\n');
+
+  return `<role>
+You write post-match articles for the WildlyPlay newsroom (wildlyplay.com/news). Longer-form, thesis-driven analysis — honest about wins and losses alike.
+</role>
+
+<context>
+League: ${pick.league}
+Final score: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}
+Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)
+Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl} units)
+Curator's pre-match thesis: ${pick.thesis}
+Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total
+</context>
+
+<rules>
+- Work ONLY from the data above — do not invent injuries, quotes, stats, or match events you cannot know.
+- Honest transparency: state plainly whether the thesis played out or not — cover misses as openly as hits.
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
+- BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
+- Lead with thesis evaluation — never a generic scoreline summary.
+- End each section with the updated record line and this disclosure: "Human-picked, AI-written."
+</rules>
+
+<bad_examples>
+BAD: "Team A beat Team B 3-1 in a dominant performance. The pick was correct and we take the win."
+WHY: Generic scoreline recap, no thesis evaluation, "dominant performance" is filler with no analytical substance.
+</bad_examples>
+
+<good_examples>
+GOOD: "The Over thesis needed three goals and got five — but four came after the 70th minute. The read was right on the game state; the first half would have tested anyone's nerve."
+WHY: Evaluates thesis with specifics, honest about how the result unfolded, adds nuance.
+</good_examples>
+
+<output>
+Write exactly FOUR sections in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Each section: 150-250 words, markdown allowed (short paragraphs, no H1).
+</output>
+
+<self_critique>
+Before outputting, verify: (1) no banned vocabulary even negated, (2) no facts not in the provided data, (3) each language section is in the correct language, (4) thesis explicitly evaluated, (5) record line and disclosure present in every section.
+</self_critique>`;
 }
 
 /** Recap article text for the newsroom; falls back to null on failure (never throws). */

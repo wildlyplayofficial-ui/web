@@ -12,6 +12,7 @@ selection: Mexico -1.25
 line: -1.25
 odds: 2.05
 stake: 1
+confidence: HIGH
 thesis: Mexico dominant at home, SA missing two starters.`;
 
 function expectErrors(text: string, ...fragments: string[]) {
@@ -42,6 +43,7 @@ describe('parsePick — happy path', () => {
       eventId: null,
       publishScoreHome: null,
       publishScoreAway: null,
+      confidence: 'high',
     });
   });
 
@@ -70,6 +72,7 @@ market: 1x2
 selection: draw
 odds: 3.2
 stake: 0.5
+confidence: LOW
 thesis: t`;
     const r = parsePick(text, NOW);
     expect(r.ok).toBe(true);

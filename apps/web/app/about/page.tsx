@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { resolveLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, resolveLang, type Lang } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -121,7 +121,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: ["/api/og/home"] },
+    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    alternates: buildAlternates("/about", lang),
   };
 }
 
@@ -138,7 +139,7 @@ export default async function AboutPage({ searchParams }: Props) {
 
       <div className="mt-12 grid gap-6 md:grid-cols-3">
         {c.cards.map((card) => (
-          <div key={card.heading} className="rounded-card border border-line bg-card p-6">
+          <div key={card.heading} className="rounded-card border border-line bg-card p-6 shadow-card">
             <h2 className="font-display text-lg font-semibold text-brand">{card.heading}</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted">{card.body}</p>
           </div>

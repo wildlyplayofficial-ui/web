@@ -5,10 +5,12 @@
  */
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { callClaude, computeRecord, POST_FLAGS, slugify, splitLangSections, type SettledRecord } from './recap';
+import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import { log } from './log';
 import { createRevalidator } from './revalidate';
 
-export const ANALYSIS_MODEL = 'claude-sonnet-4-6';
+// Sonnet 4.6 unavailable on current API key — use Haiku until key upgraded
+export const ANALYSIS_MODEL = 'claude-haiku-4-5-20251001';
 const MAX_TOKENS = 4000;
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -141,7 +143,7 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
       : '- This is an ANALYSIS ONLY (no pick) — state clearly this is editorial analysis, NOT a recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
     '- Include a one-line responsible gambling note at the end of each section.',
-    '- End each section with disclosure: "Human-data, AI-written — The Curator @ WildlyPlay"',
+    '- End each section with disclosure as plain text (no bold, no italic, no markdown formatting): Human-data, AI-written — The Curator @ WildlyPlay',
     '- Do NOT copy any external source verbatim.',
   ].join('\n');
 }
@@ -237,6 +239,67 @@ export function buildAnalysisPosts(
   }));
 }
 
+// ── On-demand (pick-triggered) ──────────────────────────────────────────
+
+export interface PublishAnalysisDeps {
+  store: Store;
+  env: AnalysisEnv;
+  revalidateUrl?: string;
+  announceArticle?: AnnounceArticleDeps;
+}
+
+/** Generate + publish an analysis article for a single pick. Fire-and-forget: never throws.
+ *  Skips silently when analysis already exists for this fixture or API key is unset. */
+export async function publishAnalysisForPick(
+  deps: PublishAnalysisDeps,
+  pick: PickRow,
+): Promise<void> {
+  try {
+    if (!deps.env.apiKey) return;
+
+    const slug = buildAnalysisSlug(pick.home_team, pick.away_team, pick.kickoff_utc);
+    const existingSlugs = await deps.store.listPostSlugsByType('analysis');
+    if (existingSlugs.has(slug)) {
+      log.info(`analysis: slug "${slug}" already exists — skipping`);
+      return;
+    }
+
+    const allPicks = await deps.store.listByStatus(['won', 'lost', 'push']);
+    const record = computeRecord(allPicks);
+
+    const topic: AnalysisTopic = {
+      fixture_id: pick.fixture_id,
+      league: pick.league,
+      home_team: pick.home_team,
+      away_team: pick.away_team,
+      kickoff_utc: pick.kickoff_utc,
+      related_pick_ids: [pick.id],
+      has_pick: true,
+      pick,
+    };
+
+    const posts = await generateAnalysis(deps.env, { topic, record, facts: [] });
+    if (!posts || posts.length === 0) return;
+
+    for (const post of posts) {
+      await deps.store.insertPost(post);
+    }
+    log.info(`analysis: published ${posts.length} posts for pick ${pick.id} (on-demand)`);
+    const enPost = posts.find((p) => p.lang === 'en');
+    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
+
+    if (deps.revalidateUrl) {
+      const revalidate = createRevalidator({
+        siteUrl: deps.revalidateUrl,
+        secret: process.env.REVALIDATE_SECRET,
+      });
+      await revalidate(['posts']);
+    }
+  } catch (err) {
+    log.warn(`analysis: on-demand publish failed for pick ${pick.id}:`, err);
+  }
+}
+
 // ── Cron ─────────────────────────────────────────────────────────────────
 
 /** Default 12h interval + cap 1/run + max 2/day. Override via ENV. */
@@ -250,6 +313,7 @@ export interface AnalysisCronDeps {
   revalidateUrl: string;
   intervalH?: number;
   cap?: number;
+  announceArticle?: AnnounceArticleDeps;
 }
 
 /** Start analysis cron loop. Returns stop function (for graceful shutdown). */
@@ -268,7 +332,7 @@ export function startAnalysisCron(deps: AnalysisCronDeps): () => void {
 
   const run = async () => {
     try {
-      const published = await runAnalysisPipeline({ env, store, revalidateUrl, cap });
+      const published = await runAnalysisPipeline({ env, store, revalidateUrl, cap, announceArticle: deps.announceArticle });
       if (published > 0) log.info(`analysis cron: published ${published} posts`);
     } catch (err) {
       log.warn('analysis cron: pipeline error:', err);
@@ -323,6 +387,7 @@ export interface AnalysisPipelineConfig {
   revalidateUrl?: string;
   cap?: number;
   dailyMax?: number;
+  announceArticle?: AnnounceArticleDeps;
 }
 
 /** Full pipeline: select topics → generate → insert → revalidate. Fail-safe per topic. */
@@ -372,6 +437,8 @@ export async function runAnalysisPipeline(config: AnalysisPipelineConfig): Promi
       }
       published += posts.length;
       log.info(`analysis: inserted ${posts.length} posts for ${topic.home_team} vs ${topic.away_team}`);
+      const enPost = posts.find((p) => p.lang === 'en');
+      if (enPost && config.announceArticle) void announceArticle(config.announceArticle, enPost);
     } catch (err) {
       log.warn(`analysis: failed for ${topic.home_team} vs ${topic.away_team}:`, err);
     }

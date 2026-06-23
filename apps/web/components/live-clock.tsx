@@ -30,12 +30,66 @@ function formatMinute(minute: number, period: number): string {
 
 const POLL_INTERVAL = 60_000;
 
+interface MatchApiEntry {
+  homeTeam: string;
+  awayTeam: string;
+  status: string;
+  minute: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+}
+
+/** Fuzzy team name match — handles Czechia/Czech Republic, Turkiye/Turkey, etc. */
+function teamsMatch(a: string, b: string): boolean {
+  const al = a.toLowerCase();
+  const bl = b.toLowerCase();
+  if (al === bl) return true;
+  if (al.includes(bl) || bl.includes(al)) return true;
+  // Match on first word (e.g. "czechia" ~ "czech republic" both start with "czech")
+  const aFirst = al.split(/\s+/)[0];
+  const bFirst = bl.split(/\s+/)[0];
+  return aFirst.length >= 4 && (aFirst.startsWith(bFirst) || bFirst.startsWith(aFirst));
+}
+
+/** Try /api/matches as a fallback data source (livescore-api). */
+async function fetchMatchesFallback(homeTeam: string, awayTeam: string): Promise<ClockData | null> {
+  try {
+    const res = await fetch("/api/matches?live=1");
+    if (!res.ok) return null;
+    const body = (await res.json()) as { matches: MatchApiEntry[] };
+    const match = body.matches.find(
+      (m) =>
+        m.status === "live" &&
+        teamsMatch(m.homeTeam, homeTeam) &&
+        teamsMatch(m.awayTeam, awayTeam),
+    );
+    if (!match) return null;
+    return {
+      clock: match.minute != null ? { minute: match.minute, period: match.minute <= 45 ? 1 : 2, running: true } : null,
+      status: "live",
+      scores: match.homeScore != null && match.awayScore != null ? { home: match.homeScore, away: match.awayScore } : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Live match clock badge. Polls /api/live-clock/[eventId] every 60 seconds.
- * Shows nothing when the match is not live or data is unavailable.
+ * Falls back to /api/matches (livescore-api) when odds-api has no data.
  * When showScore is true, also renders the live score (Nick 14/6).
  */
-export function LiveClock({ eventId, showScore }: { eventId: string; showScore?: boolean }) {
+export function LiveClock({
+  eventId,
+  showScore,
+  homeTeam,
+  awayTeam,
+}: {
+  eventId: string;
+  showScore?: boolean;
+  homeTeam?: string;
+  awayTeam?: string;
+}) {
   const [data, setData] = useState<ClockData | null>(null);
 
   useEffect(() => {
@@ -43,10 +97,22 @@ export function LiveClock({ eventId, showScore }: { eventId: string; showScore?:
 
     async function poll(): Promise<void> {
       try {
-        const res = await fetch(`/api/live-clock/${eventId}`);
-        if (!res.ok) return;
-        const json = (await res.json()) as ClockData;
-        if (!cancelled) setData(json);
+        // Try odds-api first (if valid eventId)
+        if (eventId && eventId !== "0") {
+          const res = await fetch(`/api/live-clock/${eventId}`);
+          if (res.ok) {
+            const json = (await res.json()) as ClockData;
+            if (json.clock?.running) {
+              if (!cancelled) setData(json);
+              return;
+            }
+          }
+        }
+        // Fallback: /api/matches (livescore-api)
+        if (homeTeam && awayTeam) {
+          const fallback = await fetchMatchesFallback(homeTeam, awayTeam);
+          if (!cancelled && fallback) setData(fallback);
+        }
       } catch {
         // Silently degrade — no clock shown.
       }
@@ -58,19 +124,19 @@ export function LiveClock({ eventId, showScore }: { eventId: string; showScore?:
       cancelled = true;
       clearInterval(timer);
     };
-  }, [eventId]);
+  }, [eventId, homeTeam, awayTeam]);
 
-  if (!data?.clock || !data.clock.running) return null;
-
-  const { minute, period, statusDetail } = data.clock;
+  const clock = data?.clock;
+  const running = clock?.running;
+  const { minute, period, statusDetail } = clock ?? {};
   const display =
-    typeof minute === "number" && typeof period === "number"
+    running && typeof minute === "number" && typeof period === "number"
       ? formatMinute(minute, period)
-      : statusDetail ?? null;
+      : running && statusDetail
+        ? statusDetail
+        : null;
 
-  if (!display) return null;
-
-  const score = data.scores;
+  const score = data?.scores;
 
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand-dim px-2.5 py-0.5 font-display text-xs font-semibold text-brand">
@@ -78,9 +144,18 @@ export function LiveClock({ eventId, showScore }: { eventId: string; showScore?:
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
       </span>
-      {display}
+      LIVE
+      {display && (
+        <>
+          <span className="mx-0.5">·</span>
+          {display}
+        </>
+      )}
       {showScore && score && typeof score.home === "number" && typeof score.away === "number" && (
-        <span className="ml-0.5 font-bold">{score.home}-{score.away}</span>
+        <>
+          <span className="mx-0.5">·</span>
+          <span className="font-bold">{score.home}-{score.away}</span>
+        </>
       )}
     </span>
   );

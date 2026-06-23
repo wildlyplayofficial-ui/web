@@ -20,11 +20,34 @@ export function withLang(href: string, lang: Lang): string {
   return href.includes("?") ? `${href}&lang=${lang}` : `${href}?lang=${lang}`;
 }
 
+const BASE = "https://www.wildlyplay.com";
+
+/** Build hreflang alternates + self-canonical for a page path. */
+export function buildAlternates(path: string, currentLang: Lang = "en"): {
+  canonical: string;
+  languages: Record<string, string>;
+} {
+  const clean = path.startsWith("/") ? path : `/${path}`;
+  const selfUrl = currentLang === "en" ? `${BASE}${clean}` : `${BASE}${clean}?lang=${currentLang}`;
+  return {
+    canonical: selfUrl,
+    languages: {
+      "en": `${BASE}${clean}`,
+      "vi": `${BASE}${clean}?lang=vi`,
+      "th": `${BASE}${clean}?lang=th`,
+      "es": `${BASE}${clean}?lang=es`,
+      "x-default": `${BASE}${clean}`,
+    },
+  };
+}
+
 export interface Dict {
   nav: {
     board: string;
+    dailyLine: string;
     archive: string;
     stats: string;
+    matches: string;
     news: string;
     about: string;
     donate: string;
@@ -105,6 +128,15 @@ export interface Dict {
     fade: string;
     skip: string;
   };
+  matches: {
+    title: string;
+    allMatches: string;
+    matchesSubtitle: string;
+    empty: string;
+    kicksOff: string;
+    live: string;
+    finished: string;
+  };
   share: {
     title: string;
     copy: string;
@@ -133,13 +165,37 @@ export interface Dict {
     copy: string;
     copied: string;
   };
+  events: {
+    title: string;
+    goal: string;
+    yellowCard: string;
+    redCard: string;
+    substitution: string;
+  };
+  watching: {
+    title: string;
+    titlePast: string;
+    note: string;
+  };
+  match: {
+    backToMatches: string;
+    curatorWatch: string;
+    curatorPick: string;
+    articles: string;
+    noContent: string;
+    readArticle: string;
+    readReview: string;
+    viewMatch: string;
+  };
 }
 
 const en: Dict = {
   nav: {
     board: "Daily Board",
+    dailyLine: "Daily Line",
     archive: "Archive",
     stats: "Stats",
+    matches: "Matches",
     news: "Newsroom",
     about: "About",
     donate: "Donate",
@@ -222,6 +278,15 @@ const en: Dict = {
     fade: "Fade",
     skip: "Skip",
   },
+  matches: {
+    title: "Today's Matches",
+    allMatches: "All Matches",
+    matchesSubtitle: "Every match we've covered — picks, analysis and watchlists.",
+    empty: "No matches today",
+    kicksOff: "Kicks off in",
+    live: "LIVE",
+    finished: "FT",
+  },
   share: {
     title: "Share this play:",
     copy: "Copy link",
@@ -250,13 +315,37 @@ const en: Dict = {
     copy: "Copy address",
     copied: "Copied!",
   },
+  events: {
+    title: "Match Events",
+    goal: "Goal",
+    yellowCard: "Yellow Card",
+    redCard: "Red Card",
+    substitution: "Sub",
+  },
+  watching: {
+    title: "The Curator is watching",
+    titlePast: "The Curator was watching",
+    note: "Curator note",
+  },
+  match: {
+    backToMatches: "Back",
+    curatorWatch: "Curator's Watch",
+    curatorPick: "Curator's Pick",
+    articles: "Match Articles",
+    noContent: "No content for this match yet.",
+    readArticle: "Read article",
+    readReview: "Read full review",
+    viewMatch: "View match",
+  },
 };
 
 const vi: Dict = {
   nav: {
     board: "Bảng Kèo",
+    dailyLine: "Daily Line",
     archive: "Lưu Trữ",
     stats: "Thống Kê",
+    matches: "Trận Đấu",
     news: "Tin Tức",
     about: "Giới Thiệu",
     donate: "Ủng Hộ",
@@ -339,6 +428,15 @@ const vi: Dict = {
     fade: "Ngược kèo",
     skip: "Bỏ qua",
   },
+  matches: {
+    title: "Trận Đấu Hôm Nay",
+    allMatches: "Tất Cả Trận Đấu",
+    matchesSubtitle: "Mọi trận đấu chúng tôi đã phân tích — kèo, nhận định và theo dõi.",
+    empty: "Hôm nay không có trận",
+    kicksOff: "Còn",
+    live: "ĐANG ĐÁ",
+    finished: "KT",
+  },
   share: {
     title: "Chia sẻ kèo này:",
     copy: "Sao chép link",
@@ -367,13 +465,37 @@ const vi: Dict = {
     copy: "Sao chép địa chỉ",
     copied: "Đã sao chép!",
   },
+  events: {
+    title: "Diễn biến trận",
+    goal: "Bàn thắng",
+    yellowCard: "Thẻ vàng",
+    redCard: "Thẻ đỏ",
+    substitution: "Thay người",
+  },
+  watching: {
+    title: "Curator \u0111ang theo d\u00f5i",
+    titlePast: "Curator \u0111\u00e3 theo d\u00f5i",
+    note: "Ghi ch\u00fa t\u1eeb Curator",
+  },
+  match: {
+    backToMatches: "Quay l\u1ea1i",
+    curatorWatch: "Curator \u0111ang theo d\u00f5i",
+    curatorPick: "K\u00e8o c\u1ee7a Curator",
+    articles: "B\u00e0i vi\u1ebft v\u1ec1 tr\u1eadn",
+    noContent: "Ch\u01b0a c\u00f3 n\u1ed9i dung cho tr\u1eadn n\u00e0y.",
+    readArticle: "\u0110\u1ecdc b\u00e0i",
+    readReview: "\u0110\u1ecdc \u0111\u00e1nh gi\u00e1 \u0111\u1ea7y \u0111\u1ee7",
+    viewMatch: "Xem tr\u1eadn \u0111\u1ea5u",
+  },
 };
 
 const th: Dict = {
   nav: {
     board: "บอร์ดประจำวัน",
+    dailyLine: "Daily Line",
     archive: "คลังทีเด็ด",
     stats: "สถิติ",
+    matches: "แมตช์",
     news: "ข่าวสาร",
     about: "เกี่ยวกับเรา",
     donate: "สนับสนุน",
@@ -456,6 +578,15 @@ const th: Dict = {
     fade: "สวน",
     skip: "ข้าม",
   },
+  matches: {
+    title: "แมตช์วันนี้",
+    allMatches: "แมตช์ทั้งหมด",
+    matchesSubtitle: "ทุกแมตช์ที่เราวิเคราะห์ — ทีเด็ด บทวิเคราะห์ และรายการจับตา",
+    empty: "วันนี้ไม่มีแมตช์",
+    kicksOff: "เริ่มใน",
+    live: "สด",
+    finished: "จบ",
+  },
   share: {
     title: "แชร์ทีเด็ดนี้:",
     copy: "คัดลอกลิงก์",
@@ -484,13 +615,37 @@ const th: Dict = {
     copy: "คัดลอกที่อยู่",
     copied: "คัดลอกแล้ว!",
   },
+  events: {
+    title: "เหตุการณ์",
+    goal: "ประตู",
+    yellowCard: "ใบเหลือง",
+    redCard: "ใบแดง",
+    substitution: "เปลี่ยนตัว",
+  },
+  watching: {
+    title: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
+    titlePast: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e08\u0e31\u0e1a\u0e15\u0e32\u0e41\u0e25\u0e49\u0e27",
+    note: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Curator",
+  },
+  match: {
+    backToMatches: "\u0e01\u0e25\u0e31\u0e1a",
+    curatorWatch: "Curator \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
+    curatorPick: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07 Curator",
+    articles: "\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c",
+    noContent: "\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49",
+    readArticle: "\u0e2d\u0e48\u0e32\u0e19\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21",
+    readReview: "\u0e2d\u0e48\u0e32\u0e19\u0e23\u0e35\u0e27\u0e34\u0e27\u0e09\u0e1a\u0e31\u0e1a\u0e40\u0e15\u0e47\u0e21",
+    viewMatch: "\u0e14\u0e39\u0e41\u0e21\u0e15\u0e0a\u0e4c",
+  },
 };
 
 const es: Dict = {
   nav: {
     board: "Pizarra Diaria",
+    dailyLine: "Daily Line",
     archive: "Archivo",
     stats: "Estadísticas",
+    matches: "Partidos",
     news: "Noticias",
     about: "Acerca de",
     donate: "Apoyar",
@@ -574,6 +729,15 @@ const es: Dict = {
     fade: "Ir en contra",
     skip: "Pasar",
   },
+  matches: {
+    title: "Partidos de Hoy",
+    allMatches: "Todos los Partidos",
+    matchesSubtitle: "Cada partido que hemos cubierto — picks, an\u00e1lisis y seguimiento.",
+    empty: "No hay partidos hoy",
+    kicksOff: "Empieza en",
+    live: "EN VIVO",
+    finished: "FIN",
+  },
   share: {
     title: "Comparte este pick:",
     copy: "Copiar enlace",
@@ -601,6 +765,28 @@ const es: Dict = {
   donate: {
     copy: "Copiar dirección",
     copied: "¡Copiado!",
+  },
+  events: {
+    title: "Eventos",
+    goal: "Gol",
+    yellowCard: "Tarjeta amarilla",
+    redCard: "Tarjeta roja",
+    substitution: "Cambio",
+  },
+  watching: {
+    title: "El Curator est\u00e1 observando",
+    titlePast: "El Curator estuvo observando",
+    note: "Nota del Curator",
+  },
+  match: {
+    backToMatches: "Volver",
+    curatorWatch: "El Curator observa",
+    curatorPick: "Pick del Curator",
+    articles: "Art\u00edculos del partido",
+    noContent: "A\u00fan no hay contenido para este partido.",
+    readArticle: "Leer art\u00edculo",
+    readReview: "Leer rese\u00f1a completa",
+    viewMatch: "Ver partido",
   },
 };
 

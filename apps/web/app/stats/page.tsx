@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getSettledPicks } from "@/lib/data";
 import { formatUnits, locales, marketLabels } from "@/lib/format";
-import { getDict, resolveLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, type Lang } from "@/lib/i18n";
 import { cumulativeUnits, groupStats, summarize, type GroupStats } from "@/lib/stats";
 
 /** Stats page — the full track record sliced by league, market and time.
@@ -17,7 +17,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: dict.stats.title,
     description: dict.stats.subtitle,
-    openGraph: { title: `${dict.stats.title} | WildlyPlay`, description: dict.stats.subtitle, images: ["/api/og/home"] },
+    openGraph: { title: `${dict.stats.title} | WildlyPlay`, description: dict.stats.subtitle, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    alternates: buildAlternates("/stats", lang),
   };
 }
 
@@ -136,7 +137,7 @@ export default async function StatsPage({ searchParams }: Props) {
         <p className="mt-3 text-muted">{dict.stats.subtitle}</p>
       </section>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         <StatBlock
           label={dict.archive.record}
           value={`${summary.wins}-${summary.losses}-${summary.pushes}`}

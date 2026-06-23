@@ -4,27 +4,54 @@
  * A preview failure must NEVER break the pick publication — every path logs and returns.
  */
 import { callClaude, POST_FLAGS, slugify, splitLangSections } from './recap';
+import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PickRow, PostLang, Store } from './store';
 import { log } from './log';
 
 export function buildPreviewPrompt(pick: PickRow): string {
-  return [
-    'You write pre-match articles for the WildlyPlay newsroom (wildlyplay.com/news), a football picks site.',
-    '',
-    'The Curator (human) just published this pick:',
-    `- Match: ${pick.home_team} vs ${pick.away_team}`,
-    `- League: ${pick.league}`,
-    `- Kickoff (UTC): ${pick.kickoff_utc}`,
-    `- Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)${pick.publish_score_home != null ? ` — placed in-play (live @ ${pick.publish_score_home}-${pick.publish_score_away})` : ''}`,
-    `- Curator's thesis: ${pick.thesis}`,
-    '',
-    `Write a pre-match article with exactly FOUR sections, in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}. Each section: 150-250 words, markdown allowed (short paragraphs, no H1).`,
-    'Rules:',
-    "- Work ONLY from the data above. The Curator's thesis is the spine of the article — expand his reasoning, explain what the line and odds mean for readers.",
-    '- Do NOT invent injuries, lineups, stats, quotes or news — you have no live sources.',
-    '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose" or any promise of profit. Frame as analysis, not advice.',
-    '- End each section with this disclosure: "Human-picked, AI-written."',
-  ].join('\n');
+  const inPlayNote = pick.publish_score_home != null
+    ? ` — placed in-play (live @ ${pick.publish_score_home}-${pick.publish_score_away})`
+    : '';
+
+  return `<role>
+You are a senior football analyst writing pre-match articles for the WildlyPlay newsroom (wildlyplay.com/news). You expand the Curator's thesis into compelling, readable analysis — never generic previews.
+</role>
+
+<context>
+Match: ${pick.home_team} vs ${pick.away_team}
+League: ${pick.league}
+Kickoff (UTC): ${pick.kickoff_utc}
+Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)${inPlayNote}
+Curator's thesis: ${pick.thesis}
+</context>
+
+<rules>
+- The Curator's thesis is the spine of the article — expand his reasoning, explain what the line and odds mean for readers.
+- Work ONLY from the data above. Do NOT invent injuries, lineups, stats, quotes, or news — you have no live sources.
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit. Frame as analysis, not advice.
+- BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "the line looks generous" or "the price implies" instead.
+- Lead with a specific tactical or analytical angle — never a template opener.
+- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting): Human-picked, AI-written.
+</rules>
+
+<bad_examples>
+BAD: "Sweden face Netherlands in World Cup Group E. Full preview covering form, key players, tactics and our pick for this clash."
+WHY: Template opener ("X face Y in Group Z"), generic preview summary that could apply to any match, no thesis-driven insight.
+</bad_examples>
+
+<good_examples>
+GOOD: "Sweden gambled on a high line against Netherlands — the tactical mismatch that defined everything. The Curator sees the same vulnerability here, and the market hasn't adjusted."
+WHY: Leads with a specific tactical angle tied to the thesis, immediately tells the reader why this matters.
+</good_examples>
+
+<output>
+Write exactly FOUR sections in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Each section: 150-250 words, markdown allowed (short paragraphs, no H1).
+</output>
+
+<self_critique>
+Before outputting, verify: (1) no banned vocabulary even negated, (2) no facts not in the provided data, (3) each language section is in the correct language, (4) no template opener like "X face Y in Group Z", (5) disclosure present in every section.
+</self_critique>`;
 }
 
 const PREVIEW_TITLES: Record<PostLang, string> = {
@@ -53,16 +80,19 @@ export function buildPreviewPosts(pick: PickRow, text: string): NewPost[] {
 
 /** Generate + publish the preview article for a fresh pick. Never throws. */
 export async function publishPreview(
-  deps: { store: Store; env: { apiKey: string | undefined; model?: string } },
+  deps: { store: Store; env: { apiKey: string | undefined; model?: string }; announceArticle?: AnnounceArticleDeps },
   pick: PickRow,
 ): Promise<void> {
   try {
     const text = await callClaude(deps.env, buildPreviewPrompt(pick), `preview pick ${pick.id}`, 3500);
     if (text === null) return;
-    for (const post of buildPreviewPosts(pick, text)) {
+    const posts = buildPreviewPosts(pick, text);
+    for (const post of posts) {
       await deps.store.insertPost(post);
     }
     log.info(`published preview posts for pick ${pick.id}`);
+    const enPost = posts.find((p) => p.lang === 'en');
+    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
   } catch (err) {
     log.warn(`preview publication failed for pick ${pick.id} — pick already published:`, err);
   }

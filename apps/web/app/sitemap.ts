@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllPickRefs, getAllPostSlugs } from "@/lib/data";
+import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs } from "@/lib/data";
 
 /** SEO foundation: every settled play + every published post is a permanent public page. */
 
@@ -8,12 +8,16 @@ export const revalidate = 3600;
 const BASE = "https://www.wildlyplay.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts] = await Promise.all([getAllPickRefs(), getAllPostSlugs()]);
+  const [picks, posts, matches] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1 },
+    { url: `${BASE}/daily-line`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/daily-line/leaderboard`, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE}/daily-line/archive`, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE}/archive`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE}/stats`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE}/matches`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/news`, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${BASE}/donate`, changeFrequency: "monthly", priority: 0.3 },
@@ -21,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const playRoutes: MetadataRoute.Sitemap = picks.map((p) => ({
-    url: `${BASE}/play/${p.id}`,
+    url: `${BASE}/play/${p.slug}`,
     lastModified: new Date(p.updated),
     changeFrequency: "weekly",
     priority: 0.6,
@@ -34,5 +38,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes];
+  const matchRoutes: MetadataRoute.Sitemap = matches.map((m) => ({
+    url: `${BASE}/match/${m.slug}`,
+    lastModified: new Date(m.updated),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...matchRoutes];
 }

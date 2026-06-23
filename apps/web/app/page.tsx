@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { DailyLineStrip } from "@/components/daily-line-strip";
+import { LiveCommentaryStrip } from "@/components/live-commentary-strip";
+import { MatchesWidget } from "@/components/matches-widget";
 import { PickCard } from "@/components/pick-card";
+import { WatchingTeaser } from "@/components/watching-teaser";
 import {
+  buildMatchSlug,
+  getActiveWatching,
   getSettledPicks,
   getThesisTranslations,
   getTodaysPicks,
@@ -9,7 +16,7 @@ import {
   getVoteCounts,
 } from "@/lib/data";
 import { formatBoardDate, formatUnits } from "@/lib/format";
-import { getDict, resolveLang, withLang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -28,19 +35,21 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const lang = resolveLang((await searchParams).lang);
   const dict = getDict(lang);
   return {
-    title: dict.board.title,
+    title: { absolute: `WildlyPlay — ${dict.tagline}` },
     description: dict.tagline,
-    openGraph: { title: `${dict.board.title} | WildlyPlay`, description: dict.tagline, images: ["/api/og/home"] },
+    alternates: buildAlternates("/", lang),
+    openGraph: { title: `${dict.board.title} | WildlyPlay`, description: dict.tagline, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
   };
 }
 
 export default async function DailyBoard({ searchParams }: Props) {
   const lang = resolveLang((await searchParams).lang);
   const dict = getDict(lang);
-  const [picks, record, settledPicks] = await Promise.all([
+  const [picks, record, settledPicks, watching] = await Promise.all([
     getTodaysPicks(),
     getTrackRecord(),
     getSettledPicks(),
+    getActiveWatching(),
   ]);
   const [votes, translations] = await Promise.all([
     getVoteCounts(picks.map((p) => p.id)), // crowd poll (decision #5)
@@ -61,14 +70,14 @@ export default async function DailyBoard({ searchParams }: Props) {
   };
 
   return (
-    <div className="mx-auto max-w-[1100px] px-5">
+    <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
         <div className="relative">
-          <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-4xl font-bold md:text-5xl">
+          <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
             {dict.tagline}
           </h1>
-          <p className="mt-4 text-lg text-muted">{dict.board.subtitle}</p>
+          <p className="mt-4 text-base text-muted sm:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
             <p className="mt-6 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm">
               <span className="text-muted">{dict.archive.record}</span>
@@ -117,6 +126,21 @@ export default async function DailyBoard({ searchParams }: Props) {
         </div>
       </section>
 
+      {/* DL2: Always-on Daily Line strip — below form, above Daily Board */}
+      <Suspense fallback={null}>
+        <DailyLineStrip lang={lang} />
+      </Suspense>
+
+      {/* Live commentary snippet — only shows when a picked match is live */}
+      <LiveCommentaryStrip
+        pickMatchSlugs={Object.fromEntries(
+          picks.map((p) => [
+            `${p.home_team}|${p.away_team}`,
+            buildMatchSlug(p.home_team, p.away_team, p.kickoff_utc),
+          ]),
+        )}
+      />
+
       <section className="pb-8">
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-display text-2xl font-bold">{dict.board.title}</h2>
@@ -150,6 +174,10 @@ export default async function DailyBoard({ searchParams }: Props) {
           </div>
         )}
       </section>
+
+      <WatchingTeaser items={watching} lang={lang} />
+
+      <MatchesWidget lang={lang} />
     </div>
   );
 }

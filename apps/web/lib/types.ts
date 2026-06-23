@@ -6,7 +6,7 @@
 export type PickMarket = "ah" | "ou" | "1x2" | "btts" | "other";
 export type PickStatus = "published" | "won" | "lost" | "push" | "void";
 export type RawOutcome = "win" | "half_win" | "push" | "half_loss" | "loss" | "void";
-export type PostType = "recap" | "preview" | "news" | "analysis";
+export type PostType = "recap" | "preview" | "news" | "analysis" | "no-play" | "post-mortem";
 
 export interface Pick {
   id: string;
@@ -53,9 +53,49 @@ export interface Post {
   source_refs: Record<string, unknown> | null;
 }
 
+/** Watching teaser: the Curator is watching a match before committing a pick. */
+export type WatchingStatus = "active" | "picked" | "expired";
+
+export type Lang4 = "en" | "vi" | "th" | "es";
+
+export interface BuzzSnapshot {
+  timestamp: string;
+  sentiment_pct: number;
+  lean_label: Record<Lang4, string>;
+  themes: Record<Lang4, string[]>;
+  confidence: string;
+  sources?: string[];
+}
+
+export interface WatchingRow {
+  id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  kickoff_utc: string;
+  note: string | null;
+  note_translations: Record<Lang4, string> | null;
+  status: WatchingStatus;
+  created_at: string;
+  pick_id: string | null;
+  buzz_history: BuzzSnapshot[];
+}
+
 /** Crowd poll (decision #5, 11/6): per-pick Follow / Fade / Skip tallies. */
 export type VoteKind = "follow" | "fade" | "skip";
 export type VoteCounts = Record<VoteKind, number>;
+
+/** Aggregated match hub — all content about a single match. */
+export interface MatchData {
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  kickoffUtc: string;
+  fixtureId: number;
+  watching: WatchingRow | null;
+  picks: Pick[];
+  posts: Post[];
+}
 
 /** Mirrors the `track_record` view. Display rule (decision #2): half-win counts
  *  as WON / half-loss as LOST in W-L-P, while units_pl keeps the real AH math. */

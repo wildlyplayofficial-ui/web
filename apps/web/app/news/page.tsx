@@ -9,13 +9,14 @@ export const revalidate = 300;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-type FilterTab = "all" | "picks" | "analysis" | "news";
+type FilterTab = "all" | "picks" | "analysis" | "news" | "noplay";
 
 const TAB_TYPES: Record<FilterTab, PostType[] | null> = {
   all: null,
   picks: ["preview", "recap"],
   analysis: ["analysis"],
   news: ["news"],
+  noplay: ["no-play"],
 };
 
 const TAB_LABELS: Record<FilterTab, string> = {
@@ -23,6 +24,7 @@ const TAB_LABELS: Record<FilterTab, string> = {
   picks: "Picks & Recaps",
   analysis: "Analysis",
   news: "News",
+  noplay: "No Play",
 };
 
 const TYPE_LABELS: Record<PostType, string> = {
@@ -30,6 +32,8 @@ const TYPE_LABELS: Record<PostType, string> = {
   preview: "Preview",
   news: "News",
   analysis: "Analysis",
+  "no-play": "No Play",
+  "post-mortem": "Post-Mortem",
 };
 
 const TYPE_BADGE_COLORS: Record<PostType, string> = {
@@ -37,6 +41,8 @@ const TYPE_BADGE_COLORS: Record<PostType, string> = {
   recap: "border-emerald-400/40 text-emerald-400",
   analysis: "border-amber-400/40 text-amber-400",
   news: "border-indigo-soft/40 text-indigo-soft",
+  "no-play": "border-muted/40 text-muted",
+  "post-mortem": "border-loss/40 text-loss",
 };
 
 const PICK_TYPES: PostType[] = ["preview", "recap"];
@@ -64,7 +70,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     title: dict.news.title,
     description: dict.news.subtitle,
     alternates: { canonical },
-    openGraph: { title: `${dict.news.title} | WildlyPlay`, description: dict.news.subtitle, images: ["/api/og/home"] },
+    openGraph: { title: `${dict.news.title} | WildlyPlay`, description: dict.news.subtitle, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
   };
 }
 
@@ -87,11 +93,21 @@ function buildTabHref(tab: FilterTab, lang: Lang, page?: number): string {
   return qs ? `/news?${qs}` : "/news";
 }
 
+function extractExcerpt(body: string | null, maxLen = 140): string {
+  if (!body) return "";
+  // Strip markdown formatting, take first paragraph
+  const plain = body.replace(/[#*_`>\[\]()!]/g, "").replace(/\n+/g, " ").trim();
+  if (plain.length <= maxLen) return plain;
+  const cut = plain.lastIndexOf(" ", maxLen);
+  return plain.slice(0, cut > 0 ? cut : maxLen) + "\u2026";
+}
+
 function PostCard({ post, lang }: { post: Post; lang: Lang }) {
+  const excerpt = post.meta_description || extractExcerpt(post.body_md);
   return (
     <Link
       href={withLang(`/news/${post.slug}`, lang)}
-      className="group rounded-card border border-line bg-card p-6 transition-colors hover:border-line-hover hover:bg-card-hover"
+      className="group rounded-card border border-line bg-card p-6 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover"
     >
       <div className="flex items-center gap-3 text-xs text-muted">
         <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${TYPE_BADGE_COLORS[post.type]}`}>
@@ -104,6 +120,9 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
       <h2 className="mt-3 font-display text-xl font-bold transition-colors group-hover:text-brand">
         {post.title}
       </h2>
+      {excerpt && (
+        <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>
+      )}
     </Link>
   );
 }
@@ -117,9 +136,11 @@ export default async function Newsroom({ searchParams }: Props) {
   const allPosts = await getPosts(lang);
 
   // Rail: 5 latest pick-related posts
+  // Nick 16/6: tab "all" = single chronological feed (no rail split).
+  // Only show pinned rail for "picks" tab.
   const railPosts = allPosts.filter((p) => PICK_TYPES.includes(p.type)).slice(0, RAIL_COUNT);
   const railIds = new Set(railPosts.map((p) => p.id));
-  const showRail = (tab === "all" || tab === "picks") && page === 1;
+  const showRail = tab === "picks" && page === 1;
 
   // Feed: filtered by tab, dedupe rail posts when rail is shown
   const allowedTypes = TAB_TYPES[tab];

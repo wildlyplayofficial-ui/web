@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buildPlaySlug } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
@@ -13,6 +14,7 @@ export function PickCard({
   lang,
   votes,
   thesisText,
+  hideLinks = false,
 }: {
   pick: Pick;
   lang: Lang;
@@ -20,6 +22,8 @@ export function PickCard({
   votes?: VoteCounts;
   /** Thesis in the visitor's language (pick_content); falls back to the EN thesis. */
   thesisText?: string;
+  /** Hide "View play →" link when rendered inside match page (redundant). */
+  hideLinks?: boolean;
 }) {
   const dict = getDict(lang);
   const badge = badgeFor(pick);
@@ -29,38 +33,37 @@ export function PickCard({
   const awayFlag = teamFlag(pick.away_team);
 
   return (
-    <article className="rounded-card border border-line bg-card p-6 transition-colors hover:border-line-hover hover:bg-card-hover">
+    <article className="rounded-card border border-line bg-card p-6 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted">
           {pick.league} · {formatKickoff(pick.kickoff_utc, lang)}
         </p>
         <div className="flex items-center gap-2">
-          {badge === "live" && pick.fixture_id > 0 && (
-            <LiveClock eventId={String(pick.fixture_id)} showScore />
+          {badge === "live" ? (
+            <LiveClock eventId={String(pick.fixture_id)} showScore homeTeam={pick.home_team} awayTeam={pick.away_team} />
+          ) : (
+            <StatusBadge kind={badge} dict={dict} />
           )}
-          <StatusBadge kind={badge} dict={dict} />
         </div>
       </div>
 
       <h3 className="mt-3 font-display text-xl font-bold">
         {/* Every pick links to its detail page — full transparency (decisions #1, #3). */}
         <Link
-          href={withLang(`/play/${pick.id}`, lang)}
+          href={withLang(`/play/${buildPlaySlug(pick)}`, lang)}
           className="transition-colors hover:text-brand"
         >
-          {pick.home_id != null && (
+          {pick.home_id != null ? (
             <span className="mr-1.5 inline-flex items-center">
               <TeamLogo participantId={pick.home_id} team={pick.home_team} />
             </span>
-          )}
-          {homeFlag && <span className="mr-1.5">{homeFlag}</span>}
+          ) : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}
           {pick.home_team} <span className="text-muted">vs</span>{" "}
-          {pick.away_id != null && (
+          {pick.away_id != null ? (
             <span className="mr-1.5 inline-flex items-center">
               <TeamLogo participantId={pick.away_id} team={pick.away_team} />
             </span>
-          )}
-          {awayFlag && <span className="mr-1.5">{awayFlag}</span>}
+          ) : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}
           {pick.away_team}
           {pick.home_score !== null && pick.away_score !== null && (
             <span className="ml-3 text-base font-semibold text-muted">
@@ -103,14 +106,16 @@ export function PickCard({
       )}
 
       {/* Explicit detail link — the title link alone wasn't discoverable (Nick, 12/6). */}
-      <Link
-        href={withLang(`/play/${pick.id}`, lang)}
-        className="mt-4 inline-block font-display text-sm font-semibold text-brand transition-colors hover:text-ink"
-      >
-        {dict.pick.viewPlay} →
-      </Link>
+      {!hideLinks && (
+        <Link
+          href={withLang(`/play/${buildPlaySlug(pick)}`, lang)}
+          className="mt-4 inline-block font-display text-sm font-semibold text-brand transition-colors hover:text-ink"
+        >
+          {dict.pick.viewPlay} →
+        </Link>
+      )}
 
-      <p className="mt-4 border-t border-line pt-3 text-xs text-muted">{dict.pick.disclosure}</p>
+      <p className="mt-4 border-t border-line-muted pt-3 text-xs text-muted">{dict.pick.disclosure}</p>
     </article>
   );
 }

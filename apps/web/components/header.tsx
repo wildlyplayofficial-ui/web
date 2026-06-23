@@ -6,10 +6,12 @@ import { useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
 
-const navItems: ReadonlyArray<{ href: string; key: "board" | "archive" | "stats" | "news" | "about" | "donate" }> = [
+const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "archive" | "stats" | "matches" | "news" | "about" | "donate" }> = [
   { href: "/", key: "board" },
+  { href: "/daily-line", key: "dailyLine" },
   { href: "/archive", key: "archive" },
   { href: "/stats", key: "stats" },
+  { href: "/matches", key: "matches" },
   { href: "/news", key: "news" },
   { href: "/about", key: "about" },
   { href: "/donate", key: "donate" },
@@ -54,7 +56,7 @@ export function Header() {
           type="button"
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="flex flex-col gap-[5px] p-1 md:hidden"
+          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
           onClick={() => setOpen((v) => !v)}
         >
           <span className="h-0.5 w-6 rounded bg-ink" />
@@ -72,7 +74,7 @@ export function Header() {
                   href={withLang(item.href, lang)}
                   onClick={() => setOpen(false)}
                   className={`text-sm font-medium transition-colors hover:text-ink ${
-                    pathname === item.href ? "text-ink" : "text-muted"
+                    (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)) ? "text-ink" : "text-muted"
                   }`}
                 >
                   {dict.nav[item.key]}

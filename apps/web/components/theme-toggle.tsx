@@ -11,7 +11,12 @@ export function ThemeToggle({ onToggle }: { onToggle?: () => void } = {}) {
   const [dark, setDark] = useState(true);
 
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
+    // Sync state from DOM on mount AND re-apply theme from localStorage
+    // to prevent FOUC during client-side navigation
+    const stored = localStorage.getItem("wp_theme");
+    const shouldBeDark = stored !== "light";
+    document.documentElement.classList.toggle("dark", shouldBeDark);
+    setDark(shouldBeDark);
   }, []);
 
   function toggle(): void {

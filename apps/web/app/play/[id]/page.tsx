@@ -2,14 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CrowdPoll } from "@/components/crowd-poll";
+import { MatchEvents } from "@/components/match-events";
 import { ShareBar } from "@/components/share-bar";
 import { LiveClock } from "@/components/live-clock";
 import { StatusBadge } from "@/components/status-badge";
 import { TeamLogo } from "@/components/team-logo";
-import { getPick, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
+import { permanentRedirect } from "next/navigation";
+import { buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
 import { getDict, resolveLang, withLang } from "@/lib/i18n";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Resolve pick from either UUID or SEO slug. Redirects UUID → slug with 301. */
+async function resolvePick(id: string, lang: string) {
+  if (UUID_RE.test(id)) {
+    const pick = await getPick(id);
+    if (!pick) return null;
+    const slug = buildPlaySlug(pick);
+    const target = lang === "en" ? `/play/${slug}` : `/play/${slug}?lang=${lang}`;
+    permanentRedirect(target); // 308 permanent — transfers SEO equity to slug URL
+  }
+  return getPickBySlug(id);
+}
 
 /**
  * Play detail page — one pick, everything public (decisions #1, #3: full
@@ -27,15 +43,18 @@ type Props = {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const lang = resolveLang(sp.lang);
-  const pick = await getPick(id);
+  // UUID requests redirect before reaching here; slug requests resolve the pick.
+  const pick = UUID_RE.test(id) ? await getPick(id) : await getPickBySlug(id);
   if (!pick) return { title: "Not found" };
+  const slug = buildPlaySlug(pick);
   const title = `${pick.home_team} vs ${pick.away_team} — ${pick.selection}`;
   const translations = await getThesisTranslations([pick.id]);
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
-  const image = `/api/og/play/${id}`;
+  const image = `/api/og/play/${pick.id}`;
   return {
     title,
     description,
+    alternates: { canonical: `/play/${slug}` },
     openGraph: { title: `${title} | WildlyPlay`, description, images: [image] },
     twitter: {
       card: "summary_large_image",
@@ -50,7 +69,7 @@ export default async function PlayDetail({ params, searchParams }: Props) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const lang = resolveLang(sp.lang);
   const dict = getDict(lang);
-  const pick = await getPick(id);
+  const pick = await resolvePick(id, lang);
   if (!pick) notFound();
 
   // Votes, translations, and recap in parallel (Nick 14/6: optimize TTFB).
@@ -93,19 +112,17 @@ export default async function PlayDetail({ params, searchParams }: Props) {
           </div>
         </div>
         <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-          {pick.home_id != null && (
+          {pick.home_id != null ? (
             <span className="mr-2 inline-flex items-center align-middle">
               <TeamLogo participantId={pick.home_id} team={pick.home_team} size={28} />
             </span>
-          )}
-          {homeFlag && <span className="mr-1.5">{homeFlag}</span>}
+          ) : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}
           {pick.home_team} <span className="text-muted">vs</span>{" "}
-          {pick.away_id != null && (
+          {pick.away_id != null ? (
             <span className="mr-2 inline-flex items-center align-middle">
               <TeamLogo participantId={pick.away_id} team={pick.away_team} size={28} />
             </span>
-          )}
-          {awayFlag && <span className="mr-1.5">{awayFlag}</span>}
+          ) : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}
           {pick.away_team}
         </h1>
       </header>
@@ -156,6 +173,15 @@ export default async function PlayDetail({ params, searchParams }: Props) {
           {thesisText}
         </blockquote>
       </section>
+
+      {pick.fixture_id > 0 && (
+        <MatchEvents
+          matchId={String(pick.fixture_id)}
+          homeTeam={pick.home_team}
+          awayTeam={pick.away_team}
+          lang={lang}
+        />
+      )}
 
       {settled && pick.raw_outcome !== null && pick.units_pl !== null && (
         <section className="mt-8 rounded-card border border-line bg-card p-6">

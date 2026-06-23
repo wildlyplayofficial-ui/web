@@ -32,6 +32,23 @@ export interface PickRow {
   away_id: number | null;
   stake_units: number;
   thesis: string;
+  /** Trust anchor (20/6): pre-registered confidence. Null = legacy picks without confidence. */
+  confidence: 'low' | 'medium' | 'high' | null;
+  /** T3: Primary Edge taxonomy. */
+  primary_edge: string | null;
+  /** T4: Supporting Evidence tags (max 2). */
+  supporting_evidence: string[] | null;
+  /** T8: Loss-type (filled after settlement for losses). */
+  loss_type: string | null;
+  /** T5/T6: Post-mortem review fields. */
+  postmortem_status: 'pending' | 'approved' | 'overdue' | null;
+  postmortem_draft: string | null;
+  postmortem_approved: string | null;
+  postmortem_at: string | null;
+  /** T9: market side (over/under/home/away/draw). Auto-derived at pick time. */
+  market_side: string | null;
+  /** T9: favored/dog/neutral. Auto-derived from odds at pick time. */
+  favored_dog: string | null;
   status: PickStatus;
   published_at: string | null;
   home_score: number | null;
@@ -48,7 +65,7 @@ export type NewPick = Omit<PickRow, 'id'>;
 export type PostLang = 'en' | 'vi' | 'th' | 'es';
 
 export interface NewPost {
-  type: 'recap' | 'preview' | 'analysis' | 'news';
+  type: 'recap' | 'preview' | 'analysis' | 'news' | 'no-play' | 'post-mortem';
   slug: string;
   lang: PostLang;
   title: string;
@@ -80,6 +97,33 @@ export interface ChannelLogEntry {
   detail?: string;
 }
 
+export type WatchingStatus = 'active' | 'picked' | 'expired';
+
+export interface BuzzSnapshot {
+  timestamp: string;
+  sentiment_pct: number;
+  lean_label: Record<string, string>;
+  themes: Record<string, string[]>;
+  confidence: string;
+  sources?: string[];
+}
+
+export interface WatchingRow {
+  id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  kickoff_utc: string;
+  note: string | null;
+  note_translations: Record<string, string> | null;
+  status: WatchingStatus;
+  created_at: string;
+  pick_id: string | null;
+  buzz_history: BuzzSnapshot[];
+}
+
+export type NewWatching = Omit<WatchingRow, 'id' | 'created_at'>;
+
 export interface Store {
   insertPick(pick: NewPick): Promise<PickRow>;
   getPick(id: string): Promise<PickRow | null>;
@@ -94,6 +138,18 @@ export interface Store {
   listPostSlugsByType(type: string): Promise<Set<string>>;
   /** Count posts of a type published today (UTC), lang='en' to count per-article not per-row. */
   countPostsTodayByType(type: string): Promise<number>;
+  /** Insert a new watching row. */
+  insertWatching(watching: NewWatching): Promise<WatchingRow>;
+  /** All active watching rows (status='active'). */
+  getActiveWatching(): Promise<WatchingRow[]>;
+  /** Expire a watching row by setting status='expired'. */
+  expireWatching(id: string): Promise<WatchingRow>;
+  /** Link a watching row to a pick: status='picked' + pick_id. */
+  linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow>;
+  /** Partial update on a watching row (buzz_history, note_translations, etc). */
+  updateWatching(id: string, patch: Partial<WatchingRow>): Promise<WatchingRow>;
+  /** Check if a channel_log entry exists for a pick+channel combo (dedup guard). */
+  hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean>;
 }
 
 export class MemoryStore implements Store {
@@ -101,6 +157,7 @@ export class MemoryStore implements Store {
   readonly logs: ChannelLogEntry[] = [];
   readonly posts: NewPost[] = [];
   readonly pickContent = new Map<string, NewPickContent>(); // key: `${pick_id}:${lang}`
+  readonly watchings = new Map<string, WatchingRow>();
 
   async insertPick(pick: NewPick): Promise<PickRow> {
     const row: PickRow = { id: randomUUID(), ...pick };
@@ -152,6 +209,54 @@ export class MemoryStore implements Store {
     return this.posts.filter((p) =>
       p.type === type && p.lang === 'en' && p.published_at && new Date(p.published_at) >= startOfDay
     ).length;
+  }
+
+  async insertWatching(watching: NewWatching): Promise<WatchingRow> {
+    const row: WatchingRow = {
+      id: randomUUID(),
+      created_at: new Date().toISOString(),
+      buzz_history: [],
+      note_translations: null,
+      ...watching,
+    };
+    this.watchings.set(row.id, row);
+    return row;
+  }
+
+  async getActiveWatching(): Promise<WatchingRow[]> {
+    return [...this.watchings.values()]
+      .filter((w) => w.status === 'active')
+      .sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc));
+  }
+
+  async expireWatching(id: string): Promise<WatchingRow> {
+    const row = this.watchings.get(id);
+    if (!row) throw new Error(`expireWatching: watching ${id} not found`);
+    const next = { ...row, status: 'expired' as const };
+    this.watchings.set(id, next);
+    return next;
+  }
+
+  async linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow> {
+    const row = this.watchings.get(watchingId);
+    if (!row) throw new Error(`linkWatchingToPick: watching ${watchingId} not found`);
+    const next = { ...row, status: 'picked' as const, pick_id: pickId };
+    this.watchings.set(watchingId, next);
+    return next;
+  }
+
+  async updateWatching(id: string, patch: Partial<WatchingRow>): Promise<WatchingRow> {
+    const row = this.watchings.get(id);
+    if (!row) throw new Error(`updateWatching: watching ${id} not found`);
+    const next = { ...row, ...patch, id: row.id };
+    this.watchings.set(id, next);
+    return next;
+  }
+
+  async hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean> {
+    return this.logs.some(
+      (l) => l.pick_id === pickId && l.channel === channel && (!detailPrefix || (l.detail ?? '').startsWith(detailPrefix)),
+    );
   }
 }
 
@@ -227,6 +332,49 @@ class SupabaseStore implements Store {
       .gte('published_at', startOfDay.toISOString());
     if (error) throw new Error(`countPostsTodayByType failed: ${error.message}`);
     return count ?? 0;
+  }
+
+  async insertWatching(watching: NewWatching): Promise<WatchingRow> {
+    const { data, error } = await this.db.from('watching').insert(watching).select().single();
+    if (error) throw new Error(`insertWatching failed: ${error.message}`);
+    return data as WatchingRow;
+  }
+
+  async getActiveWatching(): Promise<WatchingRow[]> {
+    const { data, error } = await this.db
+      .from('watching').select('*').eq('status', 'active')
+      .order('kickoff_utc', { ascending: true });
+    if (error) throw new Error(`getActiveWatching failed: ${error.message}`);
+    return (data ?? []) as WatchingRow[];
+  }
+
+  async expireWatching(id: string): Promise<WatchingRow> {
+    const { data, error } = await this.db
+      .from('watching').update({ status: 'expired' }).eq('id', id).select().single();
+    if (error) throw new Error(`expireWatching failed: ${error.message}`);
+    return data as WatchingRow;
+  }
+
+  async linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow> {
+    const { data, error } = await this.db
+      .from('watching').update({ status: 'picked', pick_id: pickId }).eq('id', watchingId).select().single();
+    if (error) throw new Error(`linkWatchingToPick failed: ${error.message}`);
+    return data as WatchingRow;
+  }
+
+  async updateWatching(id: string, patch: Partial<WatchingRow>): Promise<WatchingRow> {
+    const { data, error } = await this.db
+      .from('watching').update(patch).eq('id', id).select().single();
+    if (error) throw new Error(`updateWatching failed: ${error.message}`);
+    return data as WatchingRow;
+  }
+
+  async hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean> {
+    let query = this.db.from('channel_log').select('id', { count: 'exact', head: true })
+      .eq('pick_id', pickId).eq('channel', channel);
+    if (detailPrefix) query = query.like('detail', `${detailPrefix}%`);
+    const { count } = await query;
+    return (count ?? 0) > 0;
   }
 }
 

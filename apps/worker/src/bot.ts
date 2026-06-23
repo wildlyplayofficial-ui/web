@@ -6,9 +6,17 @@ import { Bot } from 'grammy';
 import { isAllowed } from './allowlist';
 import type { EventMatch, MatchQuery } from './event-lookup';
 import { parsePick, type ParsedPick } from './parse-pick';
+import { parseWatching } from './parse-watching';
+import { parseNoPlay } from './parse-noplay';
+import { publishNoPlayArticle } from './noplay-article';
+import { translateWatchingNote } from './buzz-note';
+import { generateBuzz, type BuzzDeps } from './buzz';
+import { publishWatchingNews } from './watching-news';
 import { settlePick } from './settle';
 import { announceResult } from './announce';
 import { announcePick, announceVoid } from './announce-pick';
+import { generatePostmortemDraft, listOverdue, formatPostmortemCard, LOSS_TYPES, type LossType, type PostmortemDeps } from './postmortem';
+import type { AnnounceArticleDeps } from './announce-article';
 import type { NewPick, PickRow, Store } from './store';
 import { log } from './log';
 
@@ -24,6 +32,8 @@ export interface BotDeps {
   preview?: (pick: PickRow) => Promise<void>;
   /** Thesis translations (vi/th/es) into pick_content for the 4-language web UI. Never throws. */
   translateThesis?: (pick: PickRow) => Promise<void>;
+  /** On-demand analysis article when a pick publishes. Never throws. */
+  publishAnalysis?: (pick: PickRow) => Promise<void>;
   /** Auto-attach odds-api event + participant IDs when `event:` is omitted (Nick 12/6). Null on no/ambiguous match. Never throws. */
   findEvent?: (pick: MatchQuery) => Promise<EventMatch | null>;
   /** 3-point plan (12/6): announce new picks on the TG channel + FB Page. */
@@ -31,6 +41,12 @@ export interface BotDeps {
   facebook?: { pageId: string; pageToken: string };
   /** On-demand web cache busting after pick lifecycle events (Nick 13/6). Never throws. */
   revalidate?: (tags: string[]) => Promise<void>;
+  /** AI env for watching note translations (buzz v2). */
+  aiEnv?: { apiKey: string | undefined; model?: string };
+  /** T5: post-mortem AI draft generation (fire-and-forget after settle). */
+  postmortem?: PostmortemDeps;
+  /** Callback after /approve — enqueue post-mortem article. */
+  onApprove?: (pickId: string) => Promise<void>;
 }
 
 export function createBot(deps: BotDeps): Bot {
@@ -48,6 +64,18 @@ export function createBot(deps: BotDeps): Bot {
         result.errors.map((e) => `\u2022 ${e}`).join('\n'));
       return;
     }
+    // T2: Confidence/stake warning — warn but don't block (spec §3)
+    const warnings: string[] = [];
+    const { confidence, stake, odds } = result.pick;
+    if (confidence === 'high' && stake < 1) {
+      warnings.push('⚠️ HIGH confidence but stake < 1u — unusual. Publish anyway.');
+    } else if (confidence === 'low' && stake >= 2) {
+      warnings.push('⚠️ LOW confidence but stake ≥ 2u — unusual. Publish anyway.');
+    }
+    if (confidence === 'high' && odds > 3.0) {
+      warnings.push('⚠️ HIGH confidence at long odds (> 3.00) — unusual. Publish anyway.');
+    }
+
     // Picks are immutable after publish → look up the event id BEFORE insert.
     // findEvent never throws and returns null on any failure/ambiguity.
     let autoEvent: EventMatch | null = null;
@@ -61,9 +89,14 @@ export function createBot(deps: BotDeps): Bot {
     const row = await deps.store.insertPick(toNewPick(result.pick, autoEvent));
     log.info(`published pick ${row.id}: ${row.selection} @ ${row.odds_publish}`);
     if (deps.revalidate) void deps.revalidate(['picks']);
-    await ctx.reply(confirmationCard(row) + lookupLine);
+    // Auto-link: if there's an active watching entry for the same match, mark it 'picked'.
+    void linkWatchingForPick(deps.store, row, deps.revalidate);
+    const warningLine = warnings.length > 0 ? '\n' + warnings.join('\n') : '';
+    await ctx.reply(confirmationCard(row) + lookupLine + warningLine);
     if (deps.preview) void deps.preview(row); // newsroom preview — must not delay the confirmation
     if (deps.translateThesis) void deps.translateThesis(row); // thesis vi/th/es — same fire-and-forget
+    // Nick 15/6: running picks (in-play, has publish_score) skip analysis — no SEO value for mid-match articles
+    if (deps.publishAnalysis && row.publish_score_home == null) void deps.publishAnalysis(row);
     // 3-point plan (12/6): channel + FB announcement, fire-and-forget like the preview.
     void announcePick({
       api: bot.api,
@@ -119,6 +152,8 @@ export function createBot(deps: BotDeps): Bot {
         `${settled.selection} → ${settled.status?.toUpperCase()} ` +
         `(${settled.raw_outcome}, ${Number(settled.units_pl) > 0 ? '+' : ''}${settled.units_pl}u)`,
       );
+      // T5: fire-and-forget post-mortem draft — settlement never waits for AI
+      if (deps.postmortem) void generatePostmortemDraft(deps.postmortem, settled);
       await announceResult({
         api: bot.api,
         channelChatId: deps.channelChatId,
@@ -127,6 +162,10 @@ export function createBot(deps: BotDeps): Bot {
         facebook: deps.facebook,
         recap: deps.recap,
         recapArticle: deps.recapArticle,
+        announceArticleDeps: {
+          api: bot.api, channelChatId: deps.channelChatId, store: deps.store,
+          siteUrl: deps.siteUrl, facebook: deps.facebook,
+        },
       }, settled);
     } catch (err) {
       log.error(`/score failed for pick ${pick.id}:`, err);
@@ -173,8 +212,209 @@ export function createBot(deps: BotDeps): Bot {
     }, voided);
   });
 
+  bot.command('watching', async (ctx) => {
+    const result = parseWatching(ctx.message?.text ?? '');
+    if (!result.ok) {
+      await ctx.reply(`Watching rejected — ${result.errors.length} problem(s):\n` +
+        result.errors.map((e) => `\u2022 ${e}`).join('\n'));
+      return;
+    }
+    const { watching } = result;
+    const row = await deps.store.insertWatching({
+      home_team: watching.homeTeam,
+      away_team: watching.awayTeam,
+      league: watching.league,
+      kickoff_utc: watching.kickoffUtc,
+      note: watching.note,
+      status: 'active',
+      pick_id: null,
+    });
+    log.info(`watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
+    if (deps.revalidate) void deps.revalidate(['watching']);
+    // Fire-and-forget: translate note into 4 languages if note is not empty
+    log.info(`watching note-translate gate: note=${!!row.note} aiEnv=${!!deps.aiEnv?.apiKey}`);
+    if (row.note && deps.aiEnv?.apiKey) {
+      void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row)
+        .then(() => log.info(`note-translate completed for watching ${row.id}`))
+        .catch((err) => log.warn(`note-translate failed for watching ${row.id}:`, err));
+    }
+    // Nick 16/6: generate buzz immediately on /watching (don't wait for cron)
+    if (deps.aiEnv?.apiKey) {
+      void (async () => {
+        try {
+          const snapshot = await generateBuzz(
+            { store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl },
+            row as unknown as import('./store').WatchingRow,
+          );
+          if (snapshot) {
+            await deps.store.updateWatching(row.id, { buzz_history: [snapshot] });
+            if (deps.revalidate) void deps.revalidate(['watching']);
+            log.info(`buzz generated immediately for watching ${row.id}`);
+          }
+        } catch (err) {
+          log.warn(`immediate buzz failed for watching ${row.id}:`, err);
+        }
+      })();
+    }
+    // News article (SEO pre-match preview) — fire-and-forget, never throws.
+    if (deps.aiEnv?.apiKey) {
+      const articleDeps: AnnounceArticleDeps = {
+        api: bot.api, channelChatId: deps.channelChatId, store: deps.store,
+        siteUrl: deps.siteUrl, facebook: deps.facebook,
+      };
+      void publishWatchingNews(
+        { store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl, announceArticle: articleDeps },
+        row as unknown as import('./store').WatchingRow,
+      );
+    }
+    await ctx.reply(
+      `\uD83D\uDC41 Watching added\n` +
+      `id: ${row.id}\n` +
+      `${row.home_team} vs ${row.away_team}\n` +
+      `${row.league}\n` +
+      `kickoff: ${row.kickoff_utc}` +
+      (row.note ? `\nnote: ${row.note}` : ''),
+    );
+  });
+
+  bot.command('noplay', async (ctx) => {
+    const result = parseNoPlay(ctx.message?.text ?? '');
+    if (!result.ok) {
+      await ctx.reply(`No-play rejected — ${result.errors.length} problem(s):\n` +
+        result.errors.map((e) => `\u2022 ${e}`).join('\n'));
+      return;
+    }
+    const { noplay } = result;
+    log.info(`noplay: ${noplay.homeTeam} vs ${noplay.awayTeam} — ${noplay.reason}`);
+    await ctx.reply(
+      `\u26D4 No Play logged\n` +
+      `${noplay.homeTeam} vs ${noplay.awayTeam}\n` +
+      `${noplay.league}\n` +
+      `reason: ${noplay.reason}` +
+      (noplay.watching ? `\nwatching: ${noplay.watching}` : '') +
+      (noplay.note ? `\nnote: ${noplay.note}` : ''),
+    );
+    // Generate no-play article — fire-and-forget, never throws.
+    if (deps.aiEnv?.apiKey) {
+      const articleDeps: AnnounceArticleDeps = {
+        api: bot.api, channelChatId: deps.channelChatId, store: deps.store,
+        siteUrl: deps.siteUrl, facebook: deps.facebook,
+      };
+      void publishNoPlayArticle(
+        { store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl, announceArticle: articleDeps },
+        noplay,
+      );
+    }
+  });
+
+  // ── T5: Post-mortem review commands ──
+  bot.command('review', async (ctx) => {
+    const id = (ctx.match ?? '').trim();
+    if (!id) {
+      await ctx.reply('Usage: /review <pick_id>');
+      return;
+    }
+    const pick = await deps.store.getPick(id);
+    if (!pick) {
+      await ctx.reply(`No pick found with id ${id}`);
+      return;
+    }
+    if (!['won', 'lost', 'push'].includes(pick.status ?? '')) {
+      await ctx.reply(`Pick ${pick.id} is "${pick.status}" — only settled picks have post-mortems.`);
+      return;
+    }
+    await ctx.reply(formatPostmortemCard(pick));
+  });
+
+  bot.command('approve', async (ctx) => {
+    const args = (ctx.match ?? '').trim().split(/\s+/);
+    const id = args[0];
+    const lossTypeArg = args[1] as LossType | undefined;
+    if (!id) {
+      await ctx.reply('Usage: /approve <pick_id> [loss_type]\nLoss types: variance, thesis-error, price-error, model-error');
+      return;
+    }
+    const pick = await deps.store.getPick(id);
+    if (!pick) {
+      await ctx.reply(`No pick found with id ${id}`);
+      return;
+    }
+    if (!['won', 'lost', 'push'].includes(pick.status ?? '')) {
+      await ctx.reply(`Pick ${pick.id} is "${pick.status}" — only settled picks can be approved.`);
+      return;
+    }
+    if (pick.status === 'lost' && !lossTypeArg) {
+      await ctx.reply('Loss picks require a loss_type: /approve <id> variance|thesis-error|price-error|model-error');
+      return;
+    }
+    if (lossTypeArg && !LOSS_TYPES.includes(lossTypeArg)) {
+      await ctx.reply(`Invalid loss_type "${lossTypeArg}". Valid: ${LOSS_TYPES.join(', ')}`);
+      return;
+    }
+    // Use reply text as edited review if the curator replied to the draft
+    const replyText = ctx.message?.reply_to_message?.text;
+    const finalText = replyText || pick.postmortem_draft || '';
+    const patch: Partial<PickRow> = {
+      postmortem_status: 'approved',
+      postmortem_approved: finalText,
+      postmortem_at: new Date().toISOString(),
+    };
+    if (lossTypeArg) patch.loss_type = lossTypeArg;
+    await deps.store.updatePick(pick.id, patch);
+    log.info(`postmortem approved for pick ${pick.id}${lossTypeArg ? ` (${lossTypeArg})` : ''}`);
+    if (deps.revalidate) void deps.revalidate(['picks']);
+    // Post-mortem article enqueued via onApprove callback
+    if (deps.onApprove) void deps.onApprove(pick.id);
+    await ctx.reply(
+      `\u2705 Post-mortem approved for ${pick.home_team} vs ${pick.away_team}` +
+      (lossTypeArg ? `\nLoss type: ${lossTypeArg}` : ''),
+    );
+  });
+
+  bot.command('overdue', async (ctx) => {
+    const overdue = await listOverdue(deps.store);
+    if (overdue.length === 0) {
+      await ctx.reply('No overdue post-mortems. All clear.');
+      return;
+    }
+    const lines = overdue.map((p) => {
+      const age = p.settled_at
+        ? Math.round((Date.now() - new Date(p.settled_at).getTime()) / 3_600_000)
+        : 0;
+      return `${p.status?.toUpperCase()} ${p.home_team} vs ${p.away_team} (${age}h) — ${p.id.slice(0, 8)}`;
+    });
+    await ctx.reply(`\u23f0 ${overdue.length} overdue post-mortem(s):\n\n${lines.join('\n')}`);
+  });
+
+  bot.command('unwatch', async (ctx) => {
+    const id = (ctx.match ?? '').trim();
+    if (!id) {
+      await ctx.reply('Usage: /unwatch <watching_id>');
+      return;
+    }
+    try {
+      const row = await deps.store.expireWatching(id);
+      log.info(`expired watching ${row.id}`);
+      if (deps.revalidate) void deps.revalidate(['watching']);
+      await ctx.reply(`\u274C Stopped watching ${row.home_team} vs ${row.away_team}`);
+    } catch {
+      await ctx.reply(`Could not expire watching ${id} — not found or already expired.`);
+    }
+  });
+
   bot.catch((err) => log.error('bot error:', err.error));
   return bot;
+}
+
+/** T9: derive market side from selection. */
+function deriveMarketSide(p: ParsedPick): string {
+  const sel = p.selection.toLowerCase();
+  if (sel.includes('over')) return 'over';
+  if (sel.includes('under')) return 'under';
+  if (sel === 'draw' || sel === 'x') return 'draw';
+  if (sel.includes(p.homeTeam.toLowerCase().split(' ')[0])) return 'home';
+  if (sel.includes(p.awayTeam.toLowerCase().split(' ')[0])) return 'away';
+  return 'other';
 }
 
 function toNewPick(p: ParsedPick, autoEvent: EventMatch | null = null): NewPick {
@@ -195,6 +435,18 @@ function toNewPick(p: ParsedPick, autoEvent: EventMatch | null = null): NewPick 
     away_id: autoEvent?.awayId ?? null,
     stake_units: p.stake,
     thesis: p.thesis,
+    confidence: p.confidence, // Trust anchor: pre-registered, immutable
+    primary_edge: p.primaryEdge, // T3: primary reason for the pick
+    supporting_evidence: p.supportingEvidence.length > 0 ? p.supportingEvidence : null, // T4: max 2 tags
+    loss_type: null, // T8: set after settlement for losses
+    // T5/T6: post-mortem fields — null until settlement triggers AI draft
+    postmortem_status: null,
+    postmortem_draft: null,
+    postmortem_approved: null,
+    postmortem_at: null,
+    // T9: sub-dimension calibration tags (auto-derived, no-backfill)
+    market_side: deriveMarketSide(p),
+    favored_dog: p.odds < 2.0 ? 'favored' : p.odds > 2.2 ? 'dog' : 'neutral',
     status: 'published',
     published_at: new Date().toISOString(),
     home_score: null,
@@ -224,4 +476,27 @@ function confirmationCard(row: PickRow): string {
 function boardLine(p: PickRow): string {
   return `${p.home_team} vs ${p.away_team} (${p.kickoff_utc.slice(11, 16)} UTC)\n` +
     `${p.market} ${p.selection} @ ${p.odds_publish} | ${p.stake_units}u\nid: ${p.id}`;
+}
+
+/** Fuzzy-match active watching entries against a freshly published pick.
+ *  Compares lower-cased home+away team names. Fire-and-forget; never throws. */
+async function linkWatchingForPick(
+  store: Store,
+  pick: PickRow,
+  revalidate?: (tags: string[]) => Promise<void>,
+): Promise<void> {
+  try {
+    const active = await store.getActiveWatching();
+    const norm = (s: string) => s.toLowerCase().trim();
+    const match = active.find(
+      (w) => norm(w.home_team) === norm(pick.home_team) && norm(w.away_team) === norm(pick.away_team),
+    );
+    if (match) {
+      await store.linkWatchingToPick(match.id, pick.id);
+      log.info(`linked watching ${match.id} to pick ${pick.id}`);
+      if (revalidate) void revalidate(['watching']);
+    }
+  } catch (err) {
+    log.warn('linkWatchingForPick failed (non-fatal):', err);
+  }
 }

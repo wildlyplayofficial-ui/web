@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
-import { getPost, getPostLangs } from "@/lib/data";
+import { getPost, getPostLangs, getMatchBySlug } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
@@ -39,13 +39,15 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return {
     title,
     description,
+    // Preview posts are not SEO assets — only analysis + recap should be indexed.
+    ...(post.type === "preview" ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical, languages },
     openGraph: {
       title,
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: ["/api/og/home"],
+      images: [{ url: "/og-home.png", width: 1200, height: 630 }],
     },
   };
 }
@@ -66,7 +68,7 @@ function buildArticleSchema(post: {
     dateModified: post.published_at ?? undefined,
     inLanguage: post.lang,
     mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
-    image: `${BASE}/api/og/home`,
+    image: `${BASE}/og-home.png`,
     author: {
       "@type": "Organization",
       name: "The Curator @ WildlyPlay",
@@ -124,25 +126,63 @@ export default async function NewsPost({ params, searchParams }: Props) {
         )}
       </header>
 
+      <hr className="my-6 border-line" />
+
       <div className="prose-md mt-8">
-        <ReactMarkdown>{post.body_md}</ReactMarkdown>
+        <ReactMarkdown>{post.body_md.replace(/^\s*[-*]{3,}\s*\n/gm, "")}</ReactMarkdown>
       </div>
 
-      {post.pick_ids.length > 0 && (
-        <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-          {post.pick_ids.map((id) => (
-            <Link
-              key={id}
-              href={withLang(`/play/${id}`, lang)}
-              className="font-display text-sm font-semibold text-brand transition-colors hover:text-ink"
-            >
-              {dict.pick.viewPlay} →
-            </Link>
-          ))}
-        </p>
-      )}
+      <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+        {post.pick_ids.map((id) => (
+          <Link
+            key={id}
+            href={withLang(`/play/${id}`, lang)}
+            className="font-display text-sm font-semibold text-brand transition-colors hover:text-ink"
+          >
+            {dict.pick.viewPlay} →
+          </Link>
+        ))}
+        <MatchLink slug={slug} lang={lang} />
+      </div>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
     </article>
+  );
+}
+
+/** Try to derive a match page slug from the article slug and link to it if it exists. */
+async function MatchLink({ slug, lang }: { slug: string; lang: Lang }) {
+  // Article slugs: news-{home}-vs-{away}-{date}, preview-{home}-vs-{away}, analysis-{home}-vs-{away}-{date}, recap-{home}-vs-{away}-...
+  // Extract the part after the type prefix that contains "-vs-"
+  // No-play articles don't link to match pages
+  if (slug.startsWith("no-play-")) return null;
+  const vsIdx = slug.indexOf("-vs-");
+  if (vsIdx < 0) return null;
+  // Strip the type prefix (everything before first team name)
+  const prefixes = ["news-", "preview-", "recap-", "analysis-"];
+  let matchPart = slug;
+  for (const p of prefixes) {
+    if (slug.startsWith(p)) {
+      matchPart = slug.slice(p.length);
+      break;
+    }
+  }
+  // Try to find a date suffix (yyyy-mm-dd)
+  const dateMatch = matchPart.match(/(\d{4}-\d{2}-\d{2})$/);
+  if (!dateMatch) return null;
+  const candidateSlug = matchPart; // already in home-vs-away-yyyy-mm-dd format
+  let match;
+  try {
+    match = await getMatchBySlug(candidateSlug);
+  } catch { return null; }
+  if (!match) return null;
+  const dict = getDict(lang);
+  return (
+    <Link
+      href={withLang(`/match/${candidateSlug}`, lang)}
+      className="font-display text-sm font-semibold text-muted transition-colors hover:text-brand"
+    >
+      {dict.match.viewMatch} →
+    </Link>
   );
 }

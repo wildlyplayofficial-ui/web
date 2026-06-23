@@ -1,6 +1,7 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
 import { postToFacebook } from './announce-pick';
+import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import { buildRecapPosts } from './recap';
 import type { PickRow, Store } from './store';
 import { log } from './log';
@@ -19,6 +20,8 @@ export interface AnnounceDeps {
   recap?: (pick: PickRow) => Promise<string | null>;
   /** Decision #19: optional long-form newsroom article generator; falls back to the channel recap text. */
   recapArticle?: (pick: PickRow) => Promise<string | null>;
+  /** Nick 17/6: auto-post recap articles to TG channel + FB with caption + UTM link. */
+  announceArticleDeps?: AnnounceArticleDeps;
 }
 
 const BADGES: Record<string, string> = {
@@ -66,6 +69,13 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     log.warn(`CHANNEL_CHAT_ID unset — skipping channel announcement for pick ${pick.id}`);
     return;
   }
+
+  // Dedup guard: skip if this pick already has a result announcement in channel_log.
+  if (await deps.store.hasChannelLog(pick.id, 'telegram', 'result')) {
+    log.info(`skipping duplicate announce for pick ${pick.id} — already in channel_log`);
+    return;
+  }
+
   const text = formatResultMessage(pick);
   const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
 
@@ -135,10 +145,13 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     // Must never break the announcement.
     try {
       const articleText = (await deps.recapArticle?.(pick)) ?? text;
-      for (const post of buildRecapPosts(pick, articleText)) {
+      const recapPosts = buildRecapPosts(pick, articleText);
+      for (const post of recapPosts) {
         await deps.store.insertPost(post);
       }
       log.info(`published recap posts for pick ${pick.id}`);
+      const enPost = recapPosts.find((p) => p.lang === 'en');
+      if (enPost && deps.announceArticleDeps) void announceArticle(deps.announceArticleDeps, enPost);
     } catch (err) {
       log.warn(`recap post storage failed for pick ${pick.id} — recap already announced:`, err);
     }

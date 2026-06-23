@@ -223,4 +223,175 @@ create policy comments_auth_insert on forum_comments for insert
   with check (auth.uid() = author_id
               and not exists (select 1 from profiles where id = auth.uid() and banned));
 
--- writes to picks/pick_content/posts/channel_log: service-role only (worker), no policies needed
+-- ── Watching (Curator teaser: "watching" a match before committing a pick) ────
+create table watching (
+  id          uuid primary key default gen_random_uuid(),
+  home_team   text not null,
+  away_team   text not null,
+  league      text not null default 'FIFA World Cup 2026',
+  kickoff_utc timestamptz not null,
+  note        text,                                    -- optional curator hint e.g. "Thiếu Yamal"
+  status      text not null default 'active'
+    check (status in ('active', 'picked', 'expired')),
+  created_at  timestamptz not null default now(),
+  pick_id     uuid references picks(id)                -- set when /pick for this match
+);
+
+create index watching_status_idx on watching (status);
+
+alter table watching enable row level security;
+create policy watching_public_read on watching for select using (true);
+
+-- writes to picks/pick_content/posts/channel_log/watching: service-role only (worker), no policies needed
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- GoalLine Daily — schema (gl_ prefix avoids conflicts with WildlyPlay tables)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+create type gl_user_type    as enum ('guest', 'claimed');
+create type gl_card_status  as enum ('draft', 'scheduled', 'open', 'locked', 'live', 'settled', 'voided');
+create type gl_pick_side    as enum ('over', 'under');
+create type gl_pick_status  as enum ('locked', 'won', 'lost', 'void');
+create type gl_match_status as enum ('scheduled', 'live', 'finished', 'postponed', 'abandoned');
+
+-- ── GoalLine Users ──────────────────────────────────────────────────────────
+create table gl_users (
+  id                uuid primary key default gen_random_uuid(),
+  type              gl_user_type not null default 'guest',
+  display_name      text not null,
+  discriminator     text not null default substring(gen_random_uuid()::text from 1 for 4),
+  device_id         text,
+  auth_provider     text check (auth_provider in ('telegram', 'google', 'apple', 'magic_link')),
+  auth_ref          text,
+  created_at        timestamptz not null default now(),
+  current_streak    integer not null default 0,
+  best_streak       integer not null default 0,
+  total_picks       integer not null default 0,
+  total_wins        integer not null default 0
+);
+
+create index gl_users_device_idx on gl_users (device_id);
+
+-- ── GoalLine Daily Cards ────────────────────────────────────────────────────
+create table gl_daily_cards (
+  id                  uuid primary key default gen_random_uuid(),
+  card_number         integer not null unique,
+  utc_date            date not null,
+  goal_line           numeric(4,1) not null,
+  over_odds           numeric(6,3) not null,
+  under_odds          numeric(6,3) not null,
+  cutoff_time_utc     timestamptz not null,
+  status              gl_card_status not null default 'draft',
+  method_note         text,
+  settlement_result   gl_pick_side,
+  void_reason         text,
+  published_at        timestamptz,
+  locked_at           timestamptz,
+  settled_at          timestamptz,
+  created_at          timestamptz not null default now()
+);
+
+create index gl_daily_cards_date_idx   on gl_daily_cards (utc_date);
+create index gl_daily_cards_status_idx on gl_daily_cards (status);
+
+-- ── GoalLine Matches ────────────────────────────────────────────────────────
+create table gl_matches (
+  id                      uuid primary key default gen_random_uuid(),
+  external_match_id       text not null,
+  home_team               text not null,
+  away_team               text not null,
+  kickoff_time_utc        timestamptz not null,
+  status                  gl_match_status not null default 'scheduled',
+  home_score              integer,
+  away_score              integer,
+  valid_goals             integer,
+  is_valid_for_settlement boolean not null default true
+);
+
+create index gl_matches_external_idx on gl_matches (external_match_id);
+
+-- ── Junction: Daily Card ↔ Match (exactly 3 per card) ───────────────────────
+create table gl_daily_card_matches (
+  id              uuid primary key default gen_random_uuid(),
+  daily_card_id   uuid not null references gl_daily_cards(id),
+  match_id        uuid not null references gl_matches(id),
+  sort_order      integer not null default 0,
+  unique (daily_card_id, match_id)
+);
+
+-- ── GoalLine Picks ──────────────────────────────────────────────────────────
+create table gl_picks (
+  id                    uuid primary key default gen_random_uuid(),
+  user_id               uuid not null references gl_users(id),
+  daily_card_id         uuid not null references gl_daily_cards(id),
+  side                  gl_pick_side not null,
+  stake_points          integer not null default 100,
+  odds_locked           numeric(6,3) not null,
+  status                gl_pick_status not null default 'locked',
+  server_received_at    timestamptz not null default now(),
+  settled_at            timestamptz,
+  net_profit            numeric(7,2),
+  participation_bonus   integer not null default 5,
+  points_added          numeric(7,2),
+  unique (user_id, daily_card_id)                    -- 1 pick per user per card
+);
+
+create index gl_picks_card_idx on gl_picks (daily_card_id);
+create index gl_picks_user_idx on gl_picks (user_id);
+
+-- ── Weekly Leaderboard (materialized view or table, reset Mon-Sun) ──────────
+create table gl_weekly_leaderboard (
+  user_id              uuid not null references gl_users(id),
+  week_start_utc       date not null,
+  week_end_utc         date not null,
+  score                numeric(9,2) not null default 0,
+  winning_days         integer not null default 0,
+  participation_days   integer not null default 0,
+  current_streak       integer not null default 0,
+  rank                 integer,
+  primary key (user_id, week_start_utc)
+);
+
+-- ── Admin Audit Log ─────────────────────────────────────────────────────────
+create table gl_admin_audit_log (
+  id              uuid primary key default gen_random_uuid(),
+  admin_user_id   text not null,
+  action          text not null,
+  entity_type     text not null,
+  entity_id       uuid,
+  old_value       jsonb,
+  new_value       jsonb,
+  created_at      timestamptz not null default now()
+);
+
+-- ── GoalLine RLS ────────────────────────────────────────────────────────────
+alter table gl_users               enable row level security;
+alter table gl_daily_cards         enable row level security;
+alter table gl_matches             enable row level security;
+alter table gl_daily_card_matches  enable row level security;
+alter table gl_picks               enable row level security;
+alter table gl_weekly_leaderboard  enable row level security;
+alter table gl_admin_audit_log     enable row level security;
+
+-- Anon read: cards (non-draft), matches, leaderboard
+create policy gl_cards_public_read on gl_daily_cards for select
+  using (status <> 'draft');
+create policy gl_matches_public_read on gl_matches for select
+  using (true);
+create policy gl_card_matches_public_read on gl_daily_card_matches for select
+  using (exists (
+    select 1 from gl_daily_cards c
+    where c.id = daily_card_id and c.status <> 'draft'
+  ));
+create policy gl_leaderboard_public_read on gl_weekly_leaderboard for select
+  using (true);
+
+-- Picks: users can read their own; service-role handles writes
+create policy gl_picks_own_read on gl_picks for select
+  using (true);
+
+-- Users: read own profile
+create policy gl_users_public_read on gl_users for select
+  using (true);
+
+-- Audit log: no public read (admin-only via service role)

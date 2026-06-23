@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PickCard } from "@/components/pick-card";
 import { getArchiveMonths, getSettledPicks, getThesisTranslations, getTrackRecord } from "@/lib/data";
 import { formatMonth, formatUnits } from "@/lib/format";
-import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
 export const revalidate = 600;
 
@@ -15,7 +15,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: dict.archive.title,
     description: dict.archive.subtitle,
-    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle, images: ["/api/og/home"] },
+    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    alternates: buildAlternates("/archive", lang),
   };
 }
 
