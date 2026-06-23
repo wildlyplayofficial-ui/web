@@ -73,6 +73,16 @@ export default async function DailyBoard({ searchParams }: Props) {
     <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
+        {/* Pitch line-art V1 — football field lines behind hero */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13]" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid slice" aria-hidden>
+          <line x1="550" y1="0" x2="550" y2="400" stroke="#0f9e7a" strokeWidth="1.5" />
+          <circle cx="550" cy="200" r="70" fill="none" stroke="#0f9e7a" strokeWidth="1.5" />
+          <circle cx="550" cy="200" r="3" fill="#0f9e7a" />
+          <rect x="0" y="80" width="120" height="240" fill="none" stroke="#0f9e7a" strokeWidth="1.5" rx="2" />
+          <rect x="0" y="130" width="50" height="140" fill="none" stroke="#0f9e7a" strokeWidth="1.5" rx="2" />
+          <rect x="980" y="80" width="120" height="240" fill="none" stroke="#0f9e7a" strokeWidth="1.5" rx="2" />
+          <rect x="1050" y="130" width="50" height="140" fill="none" stroke="#0f9e7a" strokeWidth="1.5" rx="2" />
+        </svg>
         <div className="relative">
           <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
             {dict.tagline}
@@ -94,15 +104,8 @@ export default async function DailyBoard({ searchParams }: Props) {
           {form.length > 0 && (
             <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
               <span className="text-muted">{dict.board.formTitle}</span>
-              {/* Auto-scroll to newest (rightmost) on load — static string, no user input */}
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `requestAnimationFrame(function(){var s=document.querySelector('.form-strip');if(s)s.scrollLeft=s.scrollWidth})`,
-                }}
-              />
               <div
-                className="form-strip flex max-w-[min(100vw-40px,500px)] gap-1.5 overflow-x-auto py-1"
-                style={{ scrollbarWidth: "none" }}
+                className="flex max-w-[min(100vw-40px,500px)] flex-wrap justify-center gap-1.5 py-1"
               >
                 {form.map((p) => (
                   <Link
