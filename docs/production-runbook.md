@@ -125,6 +125,20 @@ After rotation: redeploy worker (`railway up --detach`).
 **Current: manual** (no auto-alert). Check when issues suspected.
 - Future: add uptime ping → alert TG group when web/worker down.
 
+## Database Backup & Restore
+
+Supabase auto-backups daily (Pro plan). Access: Supabase Dashboard → Settings → Database → Backups.
+
+**Restore from backup:**
+1. Supabase Dashboard → Settings → Database → Backups
+2. Select backup point → Restore
+
+**Manual point-in-time restore:**
+- Supabase supports PITR (point-in-time recovery) on Pro plan
+- Contact Supabase support for granular restore
+
+**Critical tables:** picks, watching, posts, pick_content, match_live_state, job_queue, gl_daily_cards, gl_picks, gl_users, teams, fixtures
+
 ## Architecture Note
 
 **Score display: SINGLE SOURCE OF TRUTH = match_live_state table.**
