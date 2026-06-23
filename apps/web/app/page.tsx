@@ -60,7 +60,8 @@ export default async function DailyBoard({ searchParams }: Props) {
   const cutoff30 = Date.now() - 30 * 86_400_000;
   const form = settledPicks
     .filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30)
-    .reverse(); // oldest → newest (scroll right = recent)
+    .reverse() // oldest → newest
+    .slice(-15); // cap display to last 15 — avoids 3+ row overflow on 30-day months
   const units30 = unitsLast30(settledPicks);
   const formLetter: Record<string, string> = { won: "W", lost: "L", push: "P" };
   const formClass: Record<string, string> = {
