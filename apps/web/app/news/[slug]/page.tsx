@@ -159,7 +159,7 @@ async function MatchLink({ slug, lang }: { slug: string; lang: Lang }) {
   const vsIdx = slug.indexOf("-vs-");
   if (vsIdx < 0) return null;
   // Strip the type prefix (everything before first team name)
-  const prefixes = ["news-", "preview-", "recap-", "analysis-"];
+  const prefixes = ["news-", "preview-", "recap-", "analysis-", "post-mortem-", "no-play-"];
   let matchPart = slug;
   for (const p of prefixes) {
     if (slug.startsWith(p)) {
