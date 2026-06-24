@@ -48,6 +48,7 @@ export interface Dict {
     archive: string;
     stats: string;
     matches: string;
+    standings: string;
     news: string;
     about: string;
     donate: string;
@@ -187,6 +188,21 @@ export interface Dict {
     readReview: string;
     viewMatch: string;
   };
+  standings: {
+    title: string;
+    subtitle: string;
+    group: string;
+    team: string;
+    mp: string;
+    w: string;
+    d: string;
+    l: string;
+    gf: string;
+    ga: string;
+    gd: string;
+    pts: string;
+    empty: string;
+  };
 }
 
 const en: Dict = {
@@ -196,6 +212,7 @@ const en: Dict = {
     archive: "Archive",
     stats: "Stats",
     matches: "Matches",
+    standings: "Standings",
     news: "Newsroom",
     about: "About",
     donate: "Donate",
@@ -337,6 +354,21 @@ const en: Dict = {
     readReview: "Read full review",
     viewMatch: "View match",
   },
+  standings: {
+    title: "World Cup 2026 Standings",
+    subtitle: "Live group tables for the 2026 FIFA World Cup.",
+    group: "Group",
+    team: "Team",
+    mp: "MP",
+    w: "W",
+    d: "D",
+    l: "L",
+    gf: "GF",
+    ga: "GA",
+    gd: "GD",
+    pts: "Pts",
+    empty: "Standings data is not available yet. Check back once the group stage begins.",
+  },
 };
 
 const vi: Dict = {
@@ -346,6 +378,7 @@ const vi: Dict = {
     archive: "Lưu Trữ",
     stats: "Thống Kê",
     matches: "Trận Đấu",
+    standings: "BXH",
     news: "Tin Tức",
     about: "Giới Thiệu",
     donate: "Ủng Hộ",
@@ -487,6 +520,21 @@ const vi: Dict = {
     readReview: "\u0110\u1ecdc \u0111\u00e1nh gi\u00e1 \u0111\u1ea7y \u0111\u1ee7",
     viewMatch: "Xem tr\u1eadn \u0111\u1ea5u",
   },
+  standings: {
+    title: "B\u1ea3ng X\u1ebfp H\u1ea1ng World Cup 2026",
+    subtitle: "B\u1ea3ng x\u1ebfp h\u1ea1ng tr\u1ef1c ti\u1ebfp v\u00f2ng b\u1ea3ng FIFA World Cup 2026.",
+    group: "B\u1ea3ng",
+    team: "\u0110\u1ed9i",
+    mp: "TR",
+    w: "T",
+    d: "H",
+    l: "B",
+    gf: "BT",
+    ga: "BB",
+    gd: "HS",
+    pts: "\u0110",
+    empty: "Ch\u01b0a c\u00f3 d\u1eef li\u1ec7u b\u1ea3ng x\u1ebfp h\u1ea1ng. Quay l\u1ea1i khi v\u00f2ng b\u1ea3ng b\u1eaft \u0111\u1ea7u.",
+  },
 };
 
 const th: Dict = {
@@ -496,6 +544,7 @@ const th: Dict = {
     archive: "คลังทีเด็ด",
     stats: "สถิติ",
     matches: "แมตช์",
+    standings: "ตารางคะแนน",
     news: "ข่าวสาร",
     about: "เกี่ยวกับเรา",
     donate: "สนับสนุน",
@@ -637,6 +686,21 @@ const th: Dict = {
     readReview: "\u0e2d\u0e48\u0e32\u0e19\u0e23\u0e35\u0e27\u0e34\u0e27\u0e09\u0e1a\u0e31\u0e1a\u0e40\u0e15\u0e47\u0e21",
     viewMatch: "\u0e14\u0e39\u0e41\u0e21\u0e15\u0e0a\u0e4c",
   },
+  standings: {
+    title: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e42\u0e25\u0e01 2026",
+    subtitle: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19\u0e23\u0e2d\u0e1a\u0e41\u0e1a\u0e48\u0e07\u0e01\u0e25\u0e38\u0e48\u0e21\u0e2a\u0e14 FIFA World Cup 2026",
+    group: "\u0e01\u0e25\u0e38\u0e48\u0e21",
+    team: "\u0e17\u0e35\u0e21",
+    mp: "\u0e40\u0e25\u0e48\u0e19",
+    w: "\u0e0a\u0e19\u0e30",
+    d: "\u0e40\u0e2a\u0e21\u0e2d",
+    l: "\u0e41\u0e1e\u0e49",
+    gf: "\u0e44\u0e14\u0e49",
+    ga: "\u0e40\u0e2a\u0e35\u0e22",
+    gd: "+/-",
+    pts: "\u0e04\u0e30\u0e41\u0e19\u0e19",
+    empty: "\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19 \u0e01\u0e25\u0e31\u0e1a\u0e21\u0e32\u0e14\u0e39\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e23\u0e2d\u0e1a\u0e41\u0e1a\u0e48\u0e07\u0e01\u0e25\u0e38\u0e48\u0e21\u0e40\u0e23\u0e34\u0e48\u0e21",
+  },
 };
 
 const es: Dict = {
@@ -646,6 +710,7 @@ const es: Dict = {
     archive: "Archivo",
     stats: "Estadísticas",
     matches: "Partidos",
+    standings: "Clasificaci\u00f3n",
     news: "Noticias",
     about: "Acerca de",
     donate: "Apoyar",
@@ -787,6 +852,21 @@ const es: Dict = {
     readArticle: "Leer art\u00edculo",
     readReview: "Leer rese\u00f1a completa",
     viewMatch: "Ver partido",
+  },
+  standings: {
+    title: "Clasificaci\u00f3n Mundial 2026",
+    subtitle: "Tablas de grupo en vivo del Mundial FIFA 2026.",
+    group: "Grupo",
+    team: "Equipo",
+    mp: "PJ",
+    w: "G",
+    d: "E",
+    l: "P",
+    gf: "GF",
+    ga: "GC",
+    gd: "DG",
+    pts: "Pts",
+    empty: "Los datos de clasificaci\u00f3n a\u00fan no est\u00e1n disponibles. Vuelve cuando comience la fase de grupos.",
   },
 };
 

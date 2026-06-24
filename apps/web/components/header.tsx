@@ -6,15 +6,15 @@ import { useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
 
-const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "archive" | "stats" | "matches" | "news" | "about" | "donate" }> = [
+const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "archive" | "stats" | "matches" | "standings" | "news" | "about" }> = [
   { href: "/", key: "board" },
   { href: "/daily-line", key: "dailyLine" },
   { href: "/archive", key: "archive" },
   { href: "/stats", key: "stats" },
   { href: "/matches", key: "matches" },
+  { href: "/standings", key: "standings" },
   { href: "/news", key: "news" },
   { href: "/about", key: "about" },
-  { href: "/donate", key: "donate" },
 ];
 
 function LocaleSwitch({ pathname, lang, onNavigate }: { pathname: string; lang: Lang; onNavigate?: () => void }) {
