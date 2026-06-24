@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache";
 import { requireAdmin } from "./admin-auth";
 import { getServiceSupabase } from "./supabase-server";
-import type { PickMarket, RawOutcome } from "./types";
+import type { PickMarket, PostType, RawOutcome } from "./types";
 
 const VALID_MARKETS: readonly PickMarket[] = ["ah", "ou", "1x2", "btts", "other"];
 const VALID_OUTCOMES: readonly RawOutcome[] = [
@@ -277,5 +277,115 @@ export async function unwatchAction(
   if (error) return { error: error.message };
 
   revalidateTag("watching", "max");
+  return {};
+}
+
+// ── Post actions ───────────────────────────────────────────────────────────
+
+const VALID_POST_TYPES: readonly PostType[] = [
+  "recap", "preview", "news", "analysis", "no-play", "post-mortem",
+];
+const VALID_LANGS = ["en", "vi", "th", "es"] as const;
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export async function createPostAction(
+  formData: FormData,
+): Promise<{ error?: string; postId?: string }> {
+  await requireAdmin();
+
+  const title = (formData.get("title") as string)?.trim();
+  const bodyMd = (formData.get("body_md") as string)?.trim();
+  const type = formData.get("type") as PostType;
+  const lang = formData.get("lang") as string;
+
+  if (!title) return { error: "Title required" };
+  if (!bodyMd) return { error: "Body required" };
+  if (!VALID_POST_TYPES.includes(type)) return { error: "Invalid post type" };
+  if (!VALID_LANGS.includes(lang as typeof VALID_LANGS[number]))
+    return { error: "Invalid language" };
+
+  const slug = slugify(title);
+  if (!slug) return { error: "Title must produce a valid slug" };
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { data, error } = await sb
+    .from("posts")
+    .insert({
+      title,
+      body_md: bodyMd,
+      type,
+      lang,
+      slug,
+      status: "published",
+      published_at: new Date().toISOString(),
+      pick_ids: [],
+    })
+    .select("id")
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidateTag("posts", "max");
+  return { postId: data.id };
+}
+
+export async function updatePostAction(
+  formData: FormData,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const postId = formData.get("postId") as string;
+  const title = (formData.get("title") as string)?.trim();
+  const bodyMd = (formData.get("body_md") as string)?.trim();
+  const type = formData.get("type") as PostType;
+  const lang = formData.get("lang") as string;
+
+  if (!postId) return { error: "Post ID required" };
+  if (!title) return { error: "Title required" };
+  if (!bodyMd) return { error: "Body required" };
+  if (!VALID_POST_TYPES.includes(type)) return { error: "Invalid post type" };
+  if (!VALID_LANGS.includes(lang as typeof VALID_LANGS[number]))
+    return { error: "Invalid language" };
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { error } = await sb
+    .from("posts")
+    .update({
+      title,
+      body_md: bodyMd,
+      type,
+      lang,
+    })
+    .eq("id", postId);
+
+  if (error) return { error: error.message };
+
+  revalidateTag("posts", "max");
+  return {};
+}
+
+export async function deletePostAction(
+  postId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { error } = await sb
+    .from("posts")
+    .delete()
+    .eq("id", postId);
+
+  if (error) return { error: error.message };
+
+  revalidateTag("posts", "max");
   return {};
 }

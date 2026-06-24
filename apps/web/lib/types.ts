@@ -41,7 +41,7 @@ export interface Post {
   id: string;
   type: PostType;
   slug: string;
-  lang: "en" | "vi";
+  lang: Lang4;
   title: string;
   body_md: string;
   pick_ids: string[];

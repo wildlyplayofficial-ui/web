@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/picks", label: "Picks" },
   { href: "/admin/watching", label: "Watching" },
+  { href: "/admin/posts", label: "Posts" },
   { href: "/admin/channels", label: "Channels" },
   { href: "/admin/goalline", label: "Daily Line" },
 ] as const;
