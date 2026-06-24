@@ -145,8 +145,67 @@ export default async function NewsPost({ params, searchParams }: Props) {
         <MatchLink slug={slug} lang={lang} />
       </div>
 
+      <RelatedArticles slug={slug} lang={lang} currentType={post.type} pickIds={post.pick_ids} />
+
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
     </article>
+  );
+}
+
+/** Auto internal-linking: show related articles about the same match. */
+async function RelatedArticles({
+  slug,
+  lang,
+  currentType,
+  pickIds,
+}: {
+  slug: string;
+  lang: Lang;
+  currentType: string;
+  pickIds: string[];
+}) {
+  if (pickIds.length === 0) return null;
+
+  // Find other articles sharing the same pick_ids
+  const { getPostsByPickIds } = await import("@/lib/data");
+  let related;
+  try {
+    related = await getPostsByPickIds(pickIds, lang);
+  } catch {
+    return null;
+  }
+
+  // Filter out current article + duplicates
+  const others = related.filter(
+    (p: { slug: string; type: string }) => p.slug !== slug && p.type !== currentType,
+  );
+  if (others.length === 0) return null;
+
+  const dict = getDict(lang);
+  const typeLabels: Record<string, string> = {
+    preview: "Pre-match Preview",
+    recap: "Match Recap",
+    analysis: "Analysis",
+    news: "News",
+    "post-mortem": "Post-Mortem",
+  };
+
+  return (
+    <nav className="mt-8 rounded-lg border border-line bg-card/50 p-4">
+      <h3 className="mb-3 font-display text-sm font-bold text-muted">Related</h3>
+      <ul className="space-y-2">
+        {others.slice(0, 3).map((p: { slug: string; title: string; type: string }) => (
+          <li key={p.slug}>
+            <Link
+              href={withLang(`/news/${p.slug}`, lang)}
+              className="text-sm text-brand transition-colors hover:text-ink"
+            >
+              {typeLabels[p.type] ?? p.type}: {p.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
 

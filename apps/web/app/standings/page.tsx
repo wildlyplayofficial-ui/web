@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
-import { getStandings } from "@/lib/standings";
+import { isFeatureEnabled } from "@/lib/data";
+import { getStandings, getEplStandings } from "@/lib/standings";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
+import { LeagueTable } from "@/components/standings-league";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
 
@@ -25,10 +28,15 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function StandingsPage({ searchParams }: Props) {
   const lang = resolveLang((await searchParams).lang);
   const dict = getDict(lang);
-  const standings = await getStandings();
+  const eplEnabled = await isFeatureEnabled("epl_standings");
+  const [standings, eplStandings] = await Promise.all([
+    getStandings(),
+    eplEnabled ? getEplStandings() : Promise.resolve([]),
+  ]);
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Standings",url:"/standings"}]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
         <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
@@ -68,6 +76,15 @@ export default async function StandingsPage({ searchParams }: Props) {
           </>
         );
       })()}
+
+      {eplStandings.length > 0 && (
+        <section className="mt-12">
+          <h2 className="mb-4 text-center font-display text-2xl font-bold">
+            Premier League
+          </h2>
+          <LeagueTable teams={eplStandings} labels={dict.standings} />
+        </section>
+      )}
     </div>
   );
 }

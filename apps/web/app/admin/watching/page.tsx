@@ -67,7 +67,9 @@ export default async function AdminWatchingPage({ searchParams }: Props) {
                     <StatusBadge status={w.status} />
                   </td>
                   <td className="px-3 py-3 font-medium">
-                    {w.home_team} vs {w.away_team}
+                    <Link href={`/admin/watching/${w.id}`} className="text-brand hover:underline">
+                      {w.home_team} vs {w.away_team}
+                    </Link>
                   </td>
                   <td className="px-3 py-3 text-muted">{w.league}</td>
                   <td className="px-3 py-3 text-muted">

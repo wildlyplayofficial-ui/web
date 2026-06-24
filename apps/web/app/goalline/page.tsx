@@ -15,6 +15,7 @@ import { LiveScoreSync } from "./components/live-score-sync";
 import { StickyTracker } from "./components/sticky-tracker";
 
 import { HowItWorks } from "./components/how-it-works"; // above-fold — eager load
+import { buildFAQPage } from "@/lib/jsonld";
 
 // Lazy-load below-fold client components
 const EngagementBar = lazy(() => import("./components/engagement-bar").then((m) => ({ default: m.EngagementBar })));
@@ -162,6 +163,17 @@ export default async function TodaysCardPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-lg px-5 py-8 overflow-x-hidden">
+      {/* FAQ schema — static hardcoded content only (safe, no user input) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildFAQPage([
+            { question: "What is the Daily Line?", answer: "A daily Over/Under prediction game on aggregate football goals. Pick Over or Under the combined goal line, compete on the leaderboard, and climb the streak counter. Free to play, entertainment only." },
+            { question: "How does it work?", answer: "Each day, 3 World Cup matches are combined with a goal line (e.g. 7.5). You pick Over or Under before the cutoff time. If total goals exceed the line, Over wins. Otherwise, Under wins." },
+            { question: "Is it free?", answer: "Yes, completely free. You stake 100 virtual points per card. No real money, no deposits, no purchases. Entertainment only." },
+          ])),
+        }}
+      />
       {card && <StickyTracker totalGoals={totalGoals} goalLine={card.goal_line} status={card.status} />}
 
       {/* Card header */}

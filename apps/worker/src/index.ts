@@ -27,6 +27,8 @@ import { createStore, type PickRow } from './store';
 import { log } from './log';
 import { createClient } from '@supabase/supabase-js';
 import { persistMatchState, fetchLivescoreForPersist, seedFromGlMatches, detectFinishedMatches } from './persist-state';
+import { startBoothShadow } from './booth-shadow';
+import { createIndexNowPinger } from './indexnow';
 import { checkDailyLineHealth } from './dl-monitor';
 import { generatePostmortemDraft } from './postmortem';
 import { runProviderMatcher } from './provider-matcher';
@@ -89,6 +91,7 @@ const lookupEvent = oddsApiKey
 
 // On-demand web cache busting (Nick 13/6) — Board/Archive lagged up to ~10 min after settle.
 const revalidate = createRevalidator({ siteUrl, secret: process.env.REVALIDATE_SECRET });
+const pingIndexNow = createIndexNowPinger({ siteUrl, secret: process.env.REVALIDATE_SECRET });
 
 // Supabase client for durable job queue + persist-state (must be before onApprove)
 const persistDb = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -112,6 +115,12 @@ if (oddsApiKey) {
     getOdds: (eventId) => fetchOddsPayload(eventId, oddsApiKey),
     onSettled: async (pick) => {
       void revalidate(['picks', 'posts']);
+      // SEO: ping IndexNow for the settled play + recap article pages
+      const slugify = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      void pingIndexNow([
+        `/play/${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.selection.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${pick.kickoff_utc.slice(0, 10)}`,
+        `/news/recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`,
+      ]);
       // T5: durable post-mortem draft — enqueue instead of fire-and-forget
       if (postmortem && persistDb) {
         void enqueueJob(persistDb, 'postmortem', { pickId: pick.id }).catch((e) => log.warn('enqueue postmortem failed:', e));
@@ -171,6 +180,35 @@ if (persistDb && oddsApiKey && process.env.LIVESCORE_API_KEY && process.env.LIVE
 let persistTimer = setInterval(() => void persistTick(), PERSIST_SLOW);
 if (persistDb) log.info('persist-state cron started (every 10 min)');
 else log.warn('SUPABASE_URL unset — persist-state disabled');
+
+// ── Daily Line gradual seed (every 30 min) ──
+const SEED_INTERVAL = 30 * 60_000;
+if (siteUrl && process.env.REVALIDATE_SECRET) {
+  const seedTick = async () => {
+    try {
+      const res = await fetch(`${siteUrl}/api/goalline/seed-tick`, {
+        method: 'POST',
+        headers: { 'x-revalidate-secret': process.env.REVALIDATE_SECRET! },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const results = data.results ?? [];
+        for (const r of results) {
+          if (r.added > 0) log.info(`seed-tick: card #${r.card} +${r.added} (total ${r.total}/${r.target})`);
+        }
+      }
+    } catch { /* silent */ }
+  };
+  setInterval(() => void seedTick(), SEED_INTERVAL);
+  void seedTick(); // immediate first tick
+  log.info('seed-tick: cron started (every 30 min)');
+}
+
+// ── The Booth P1a: shadow commentary gen (admin-only, NOT public) ──
+const stopBooth = persistDb && anthropicApiKey
+  ? startBoothShadow({ supabase: persistDb, apiKey: anthropicApiKey })
+  : () => {};
+if (!persistDb || !anthropicApiKey) log.warn('booth-shadow: disabled (missing SUPABASE_URL or ANTHROPIC_API_KEY)');
 
 // ── Durable job queue: recover stale + process every 60s ──
 const jobHandlers: HandlerMap = {};

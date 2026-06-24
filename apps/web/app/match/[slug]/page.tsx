@@ -25,8 +25,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const match = await getMatchBySlug(slug);
   if (!match) return { title: "Not found" };
 
-  const title = `${match.homeTeam} vs ${match.awayTeam}`;
-  const description = `${match.homeTeam} vs ${match.awayTeam} — ${match.league}. Picks, analysis and match hub on WildlyPlay.`;
+  const title = `${match.homeTeam} vs ${match.awayTeam} — Preview, Pick & Result`;
+  const description = `${match.homeTeam} vs ${match.awayTeam} — ${match.league}. Expert prediction, odds analysis, and match result on WildlyPlay.`;
 
   return {
     title,

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { resolveLang, type Lang } from "@/lib/i18n";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
 
@@ -100,6 +101,7 @@ export default async function ResponsiblePlayPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[720px] px-5 py-12">
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Responsible Play",url:"/responsible-play"}]} />
       <h1 className="gradient-text text-center font-display text-4xl font-bold">{c.title}</h1>
       <p className="mt-6 leading-relaxed text-ink/90">{c.intro}</p>
 

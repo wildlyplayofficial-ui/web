@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 const WC_COMPETITION_ID = 362;
+const EPL_COMPETITION_ID = 2;
 
 export interface StandingTeam {
   rank: number;
@@ -94,5 +95,36 @@ async function fetchStandingsImpl(): Promise<GroupStanding[]> {
 }
 
 export const getStandings = unstable_cache(fetchStandingsImpl, ["wc-standings"], {
+  revalidate: 600,
+});
+
+/** EPL league standings — single table, 20 teams, no groups. */
+async function fetchEplStandingsImpl(): Promise<StandingTeam[]> {
+  const key = process.env.LIVESCORE_API_KEY;
+  const secret = process.env.LIVESCORE_API_SECRET;
+  if (!key || !secret) return [];
+
+  try {
+    const res = await fetch(
+      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${EPL_COMPETITION_ID}&key=${key}&secret=${secret}&include_form=1`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return [];
+
+    const data = (await res.json()) as {
+      success: boolean;
+      data?: { table?: LivescoreTableEntry[] };
+    };
+    if (!data.success || !data.data?.table) return [];
+
+    return data.data.table
+      .map(parseEntry)
+      .sort((a, b) => a.rank - b.rank);
+  } catch {
+    return [];
+  }
+}
+
+export const getEplStandings = unstable_cache(fetchEplStandingsImpl, ["epl-standings"], {
   revalidate: 600,
 });

@@ -89,13 +89,19 @@ export default async function RootLayout({
                   name: "WildlyPlay",
                   url: "https://www.wildlyplay.com",
                   description: "Curator-led football picks, AI-operated. Every pick public forever.",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: { "@type": "EntryPoint", urlTemplate: "https://www.wildlyplay.com/matches?q={search_term_string}" },
+                    "query-input": "required name=search_term_string",
+                  },
                 },
                 {
                   "@context": "https://schema.org",
                   "@type": "Organization",
                   name: "WildlyPlay",
                   url: "https://www.wildlyplay.com",
-                  logo: "https://www.wildlyplay.com/icons/icon-512x512.png",
+                  logo: { "@type": "ImageObject", url: "https://www.wildlyplay.com/icons/icon-512x512.png" },
+                  description: "Handpicked plays for the global crowd. Transparent sports picks with full public track record, CLV tracking, and AI-powered multilingual content.",
                   sameAs: [
                     "https://t.me/wildlyplay",
                     "https://facebook.com/wildlyplay",

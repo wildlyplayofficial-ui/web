@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/admin/watching", label: "Watching" },
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/channels", label: "Channels" },
+  { href: "/admin/booth", label: "The Booth" },
   { href: "/admin/goalline", label: "Daily Line" },
 ] as const;
 

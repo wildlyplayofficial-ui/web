@@ -9,9 +9,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { TeamLogo } from "@/components/team-logo";
 import { permanentRedirect } from "next/navigation";
 import { buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
+import { getBoothForPick, getBoothLines } from "@/lib/booth-data";
+import { BoothCommentary } from "@/components/booth-commentary";
 import { teamFlag } from "@/lib/flags";
 import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
-import { getDict, resolveLang, withLang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -47,14 +49,17 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const pick = UUID_RE.test(id) ? await getPick(id) : await getPickBySlug(id);
   if (!pick) return { title: "Not found" };
   const slug = buildPlaySlug(pick);
-  const title = `${pick.home_team} vs ${pick.away_team} — ${pick.selection}`;
+  const settled = pick.status !== "published";
+  const title = settled
+    ? `${pick.home_team} vs ${pick.away_team} — Result & Analysis`
+    : `${pick.home_team} vs ${pick.away_team} — Prediction, Odds & Analysis`;
   const translations = await getThesisTranslations([pick.id]);
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
   const image = `/api/og/play/${pick.id}`;
   return {
     title,
     description,
-    alternates: { canonical: `/play/${slug}` },
+    alternates: buildAlternates(`/play/${slug}`, lang),
     openGraph: { title: `${title} | WildlyPlay`, description, images: [image] },
     twitter: {
       card: "summary_large_image",
@@ -78,10 +83,11 @@ export default async function PlayDetail({ params, searchParams }: Props) {
   const recapSlug = settled
     ? `recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`
     : null;
-  const [voteCounts, translations, recap] = await Promise.all([
+  const [voteCounts, translations, recap, boothEntries] = await Promise.all([
     getVoteCounts([pick.id]),
     getThesisTranslations([pick.id]),
     recapSlug ? getPost(recapSlug, lang) : Promise.resolve(null),
+    getBoothForPick(pick.id),
   ]);
   // Fallback: old picks used recap-{uuid} slugs
   const recapFinal = recap ?? (settled ? await getPost(`recap-${pick.id}`, lang) : null);
@@ -181,6 +187,36 @@ export default async function PlayDetail({ params, searchParams }: Props) {
           awayTeam={pick.away_team}
           lang={lang}
         />
+      )}
+
+      {boothEntries.length > 0 && (
+        <section className="mt-8 space-y-3">
+          <h3 className="font-display text-lg font-bold">
+            <span className="mr-2 inline-flex items-center gap-1">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-400" />
+            </span>
+            The Booth
+          </h3>
+          <p className="text-xs text-muted">
+            {lang === "vi"
+              ? "Phân tích trực tiếp bởi Sonny & Cole — bình luận AI, không phải tư vấn cá cược."
+              : lang === "th"
+                ? "วิเคราะห์สดโดย Sonny & Cole — คอมเมนต์ AI ไม่ใช่คำแนะนำการเดิมพัน"
+                : lang === "es"
+                  ? "Análisis en vivo por Sonny & Cole — comentario IA, no consejo de apuestas."
+                  : "Live analysis by Sonny & Cole — AI commentary, not betting advice."}
+          </p>
+          {boothEntries.map((entry, i) => (
+            <BoothCommentary
+              key={i}
+              lines={getBoothLines(entry, lang)}
+              eventType={entry.eventType}
+              eventMinute={entry.eventMinute}
+              lang={lang}
+            />
+          ))}
+        </section>
       )}
 
       {settled && pick.raw_outcome !== null && pick.units_pl !== null && (

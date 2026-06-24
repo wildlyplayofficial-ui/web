@@ -3,6 +3,7 @@ import { getSettledPicks } from "@/lib/data";
 import { formatUnits, locales, marketLabels } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, type Lang } from "@/lib/i18n";
 import { cumulativeUnits, groupStats, summarize, type GroupStats } from "@/lib/stats";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 /** Stats page — the full track record sliced by league, market and time.
  *  Everything aggregates from one getSettledPicks() call (lib/stats.ts). */
@@ -132,6 +133,7 @@ export default async function StatsPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Stats",url:"/stats"}]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.stats.title}</h1>
         <p className="mt-3 text-muted">{dict.stats.subtitle}</p>

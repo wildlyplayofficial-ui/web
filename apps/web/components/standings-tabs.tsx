@@ -13,14 +13,15 @@ const formBadge: Record<string, { bg: string; text: string }> = {
 };
 
 function FormBadges({ form }: { form: string }) {
+  if (!form) return <span className="text-muted">—</span>;
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center justify-end gap-1">
       {form.split("").map((ch, i) => {
         const style = formBadge[ch.toUpperCase()] ?? formBadge.D;
         return (
           <span
             key={i}
-            className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${style.bg} ${style.text}`}
+            className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${style.bg} ${style.text}`}
           >
             {ch.toUpperCase()}
           </span>
@@ -28,6 +29,19 @@ function FormBadges({ form }: { form: string }) {
       })}
     </div>
   );
+}
+
+/** Derive form from W/D/L counts when API doesn't provide match-level sequence.
+ *  Renders individual circles (W W D) — same style as real form badges.
+ *  Order is W then D then L (not chronological, but visually consistent). */
+function FormTally({ won, drawn, lost }: { won: number; drawn: number; lost: number }) {
+  if (won + drawn + lost === 0) return <span className="text-muted">—</span>;
+  const badges: string[] = [
+    ...Array(won).fill("W"),
+    ...Array(drawn).fill("D"),
+    ...Array(lost).fill("L"),
+  ];
+  return <FormBadges form={badges.join("")} />;
 }
 
 export function GroupTableWithTabs({
@@ -40,7 +54,6 @@ export function GroupTableWithTabs({
   labels: { group: string; team: string; mp: string; w: string; d: string; l: string; gf: string; ga: string; gd: string; pts: string; form: string };
 }) {
   const [tab, setTab] = useState<Tab>("all");
-  const hasForm = teams.some((t) => t.form.length > 0);
 
   return (
     <section>
@@ -48,28 +61,26 @@ export function GroupTableWithTabs({
         <h2 className="font-display text-lg font-bold">
           {labels.group} {group}
         </h2>
-        {hasForm && (
-          <div className="flex gap-1 rounded-lg bg-card p-1">
-            <button
-              type="button"
-              onClick={() => setTab("all")}
-              className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
-                tab === "all" ? "bg-brand text-bg" : "text-muted hover:text-ink"
-              }`}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("form")}
-              className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
-                tab === "form" ? "bg-brand text-bg" : "text-muted hover:text-ink"
-              }`}
-            >
-              {labels.form}
-            </button>
-          </div>
-        )}
+        <div className="flex gap-1 rounded-lg bg-card p-1">
+          <button
+            type="button"
+            onClick={() => setTab("all")}
+            className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
+              tab === "all" ? "bg-brand text-bg" : "text-muted hover:text-ink"
+            }`}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("form")}
+            className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
+              tab === "form" ? "bg-brand text-bg" : "text-muted hover:text-ink"
+            }`}
+          >
+            {labels.form}
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto rounded-card border border-line bg-card shadow-card">
         <table className="w-full text-xs sm:text-sm">
@@ -127,7 +138,11 @@ export function GroupTableWithTabs({
                     </>
                   ) : (
                     <td className="px-2 py-2 text-right">
-                      <FormBadges form={team.form} />
+                      {team.form ? (
+                        <FormBadges form={team.form} />
+                      ) : (
+                        <FormTally won={team.won} drawn={team.drawn} lost={team.lost} />
+                      )}
                     </td>
                   )}
                 </tr>

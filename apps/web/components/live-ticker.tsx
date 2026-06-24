@@ -85,20 +85,26 @@ function TickerItem({ match }: { match: TickerMatch }) {
   );
 }
 
-/** Shorten long country names for the compact ticker. */
+/** Shorten ALL WC team names to 3-letter codes for compact mobile ticker. */
 function shortName(name: string): string {
   const map: Record<string, string> = {
-    "United States": "USA",
-    "South Korea": "KOR",
-    "Saudi Arabia": "KSA",
-    "New Zealand": "NZL",
-    "Costa Rica": "CRC",
-    "Bosnia and Herzegovina": "BIH",
-    "Ivory Coast": "CIV",
-    "South Africa": "RSA",
-    "North Macedonia": "MKD",
-    "Republic of Ireland": "IRL",
-    "Cape Verde": "CPV",
+    "Argentina": "ARG", "Algeria": "ALG", "Australia": "AUS", "Austria": "AUT",
+    "Belgium": "BEL", "Bolivia": "BOL", "Bosnia and Herzegovina": "BIH", "Brazil": "BRA",
+    "Cameroon": "CMR", "Canada": "CAN", "Cape Verde": "CPV", "Chile": "CHI",
+    "Colombia": "COL", "Congo DR": "COD", "DR Congo": "COD", "Costa Rica": "CRC",
+    "Croatia": "CRO", "Curacao": "CUW", "Czech Republic": "CZE", "Czechia": "CZE",
+    "Denmark": "DEN", "Ecuador": "ECU", "Egypt": "EGY", "England": "ENG",
+    "France": "FRA", "Germany": "GER", "Ghana": "GHA", "Haiti": "HAI",
+    "Iran": "IRN", "Iraq": "IRQ", "Israel": "ISR", "Italy": "ITA",
+    "Ivory Coast": "CIV", "Japan": "JPN", "Jordan": "JOR", "Mexico": "MEX",
+    "Morocco": "MAR", "Netherlands": "NED", "New Zealand": "NZL", "Nigeria": "NGA",
+    "North Macedonia": "MKD", "Norway": "NOR", "Panama": "PAN", "Paraguay": "PAR",
+    "Peru": "PER", "Poland": "POL", "Portugal": "POR", "Qatar": "QAT",
+    "Republic of Ireland": "IRL", "Saudi Arabia": "KSA", "Scotland": "SCO",
+    "Senegal": "SEN", "Serbia": "SRB", "South Africa": "RSA", "South Korea": "KOR",
+    "Spain": "ESP", "Sweden": "SWE", "Switzerland": "SUI", "Tunisia": "TUN",
+    "Turkey": "TUR", "Turkiye": "TUR", "United States": "USA", "Uruguay": "URU",
+    "Uzbekistan": "UZB",
   };
   return map[name] ?? name;
 }

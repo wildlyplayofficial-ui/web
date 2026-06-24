@@ -3,7 +3,8 @@
 import { useState, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { updatePostAction, deletePostAction } from "@/lib/admin-actions";
-import type { Post, PostType } from "@/lib/types";
+import { RegenPanel } from "./regen-panel";
+import type { AdminPost, PostType, PostSibling } from "@/lib/types";
 
 const POST_TYPES: { value: PostType; label: string }[] = [
   { value: "recap", label: "Recap" },
@@ -25,7 +26,13 @@ const inputCls =
   "w-full rounded-lg border border-line bg-bg px-3 py-2 text-ink placeholder:text-muted focus:border-brand focus:outline-none";
 const labelCls = "mb-1 block text-sm text-muted";
 
-export function EditPostForm({ post }: { post: Post }) {
+export function EditPostForm({
+  post,
+  siblings,
+}: {
+  post: AdminPost;
+  siblings: PostSibling[];
+}) {
   const router = useRouter();
   const [showPreview, setShowPreview] = useState(false);
   const [bodyMd, setBodyMd] = useState(post.body_md);
@@ -144,8 +151,14 @@ export function EditPostForm({ post }: { post: Post }) {
         <p className="text-xs text-muted">
           Slug: <span className="font-mono text-ink">{post.slug}</span>
           {" | "}
+          Status: <span className="font-mono text-ink">{post.status}</span>
+          {" | "}
           Published: {post.published_at ? new Date(post.published_at).toLocaleString() : "Draft"}
         </p>
+      </div>
+
+      <div className="mt-6">
+        <RegenPanel post={post} siblings={siblings} />
       </div>
     </>
   );

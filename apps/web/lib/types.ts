@@ -53,6 +53,32 @@ export interface Post {
   source_refs: Record<string, unknown> | null;
 }
 
+/** Admin-only post type with draft/stale fields for AI regen workflow (Phase 2). */
+export interface AdminPost {
+  id: string;
+  type: PostType;
+  slug: string;
+  lang: Lang4;
+  title: string;
+  body_md: string;
+  body_md_draft: string | null;
+  stale: boolean;
+  pick_ids: string[];
+  status: "published" | "draft";
+  published_at: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  target_keyword: string | null;
+  source_refs: Record<string, unknown> | null;
+}
+
+export interface PostSibling {
+  id: string;
+  lang: Lang4;
+  stale: boolean;
+  has_draft: boolean;
+}
+
 /** Watching teaser: the Curator is watching a match before committing a pick. */
 export type WatchingStatus = "active" | "picked" | "expired";
 

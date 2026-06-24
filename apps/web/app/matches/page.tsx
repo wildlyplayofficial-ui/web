@@ -5,6 +5,7 @@ import { teamFlag } from "@/lib/flags";
 import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { MatchStatus } from "./match-status";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
 
@@ -127,6 +128,7 @@ export default async function MatchesIndex({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Matches",url:"/matches"}]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">
           {dict.matches.allMatches}

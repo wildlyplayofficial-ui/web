@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CopyButton } from "@/components/copy-button";
 import { getDict, resolveLang, type Lang } from "@/lib/i18n";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
 
@@ -79,6 +80,7 @@ export default async function DonatePage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[640px] px-5 py-12 text-center">
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Donate",url:"/donate"}]} />
       <h1 className="gradient-text font-display text-4xl font-bold">{c.title}</h1>
       <p className="mt-6 leading-relaxed text-ink/90">{c.intro}</p>
       <p className="mt-4 text-sm text-muted">{c.freeForever}</p>

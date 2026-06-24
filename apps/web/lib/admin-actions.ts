@@ -389,3 +389,128 @@ export async function deletePostAction(
   revalidateTag("posts", "max");
   return {};
 }
+
+// ── Draft actions (Phase 2: AI Regen) ────────────────────────────────────────
+
+/** Publish draft: copy body_md_draft → body_md, clear draft, mark not stale.
+ *  Preserves original published_at for already-published posts (SEO freshness). */
+export async function publishDraftAction(
+  postId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { data: post } = await sb
+    .from("posts")
+    .select("body_md_draft, published_at")
+    .eq("id", postId)
+    .single();
+
+  if (!post?.body_md_draft) return { error: "No draft to publish" };
+
+  const { error } = await sb
+    .from("posts")
+    .update({
+      body_md: post.body_md_draft,
+      body_md_draft: null,
+      stale: false,
+      status: "published",
+      // Only set published_at on first publish; preserve original date for re-gens
+      published_at: post.published_at ?? new Date().toISOString(),
+    })
+    .eq("id", postId);
+
+  if (error) return { error: error.message };
+
+  revalidateTag("posts", "max");
+  return {};
+}
+
+/** Discard draft: clear body_md_draft without affecting live content. */
+export async function discardDraftAction(
+  postId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { error } = await sb
+    .from("posts")
+    .update({ body_md_draft: null })
+    .eq("id", postId);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
+/** Clear stale badge manually — admin acknowledges content is still valid. */
+export async function clearStaleAction(
+  postId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { error } = await sb
+    .from("posts")
+    .update({ stale: false })
+    .eq("id", postId);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
+// ── Watching translation actions ─────────────────────────────────────────────
+
+/** Publish watching translation draft → note_translations, clear draft. */
+export async function publishWatchingTranslationAction(
+  watchingId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { data: w } = await sb
+    .from("watching")
+    .select("note_translations, note_translations_draft")
+    .eq("id", watchingId)
+    .single();
+
+  if (!w?.note_translations_draft) return { error: "No draft to publish" };
+
+  // Merge draft into existing translations (keep any existing, overwrite with draft)
+  const merged = { ...(w.note_translations ?? {}), ...w.note_translations_draft };
+
+  const { error } = await sb
+    .from("watching")
+    .update({ note_translations: merged, note_translations_draft: null })
+    .eq("id", watchingId);
+
+  if (error) return { error: error.message };
+
+  revalidateTag("watching", "max");
+  return {};
+}
+
+/** Discard watching translation draft without affecting live translations. */
+export async function discardWatchingTranslationAction(
+  watchingId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const sb = getServiceSupabase();
+  if (!sb) return { error: "Database not configured" };
+
+  const { error } = await sb
+    .from("watching")
+    .update({ note_translations_draft: null })
+    .eq("id", watchingId);
+
+  if (error) return { error: error.message };
+  return {};
+}

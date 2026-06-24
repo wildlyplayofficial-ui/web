@@ -239,8 +239,8 @@ export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
   tags: ["posts"],
 });
 
-/** All published post slugs for sitemap (M4). */
-async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string }[]> {
+/** All published post slugs for sitemap + news-sitemap. */
+async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; title: string }[]> {
   const supabase = getSupabase();
   if (!supabase) {
     const seen = new Set<string>();
@@ -248,16 +248,16 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string }[
       if (seen.has(p.slug)) return false;
       seen.add(p.slug);
       return true;
-    }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString() }));
+    }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title }));
   }
   const { data, error } = await supabase
     .from("posts")
-    .select("slug, published_at")
+    .select("slug, published_at, title")
     .eq("status", "published")
     .eq("lang", "en")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllPostSlugs: ${error.message}`);
-  return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString() }));
+  return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
 }
 
 export const getAllPostSlugs = unstable_cache(getAllPostSlugsImpl, ["post-slugs"], {
@@ -330,6 +330,22 @@ export const getThesisTranslations = unstable_cache(
   ["thesis-translations"],
   { revalidate: 300, tags: ["picks"] },
 );
+
+/** Related articles sharing the same pick_ids — for auto internal-linking. */
+export async function getPostsByPickIds(pickIds: string[], lang: string): Promise<Post[]> {
+  const supabase = getSupabase();
+  if (!supabase || pickIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("status", "published")
+    .eq("lang", lang)
+    .overlaps("pick_ids", pickIds)
+    .order("published_at", { ascending: false })
+    .limit(5);
+  if (error) throw new Error(`getPostsByPickIds: ${error.message}`);
+  return (data ?? []) as Post[];
+}
 
 /** All non-draft picks with slug + last activity date — sitemap + slug generation. */
 export async function getAllPickRefs(): Promise<{ id: string; slug: string; updated: string }[]> {

@@ -4,6 +4,7 @@ import { getPosts } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { Post, PostType } from "@/lib/types";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
 
@@ -159,6 +160,7 @@ export default async function Newsroom({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Newsroom",url:"/news"}]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.news.title}</h1>
         <p className="mt-3 text-muted">{dict.news.subtitle}</p>

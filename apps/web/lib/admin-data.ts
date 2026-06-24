@@ -1,5 +1,5 @@
 import { getServiceSupabase } from "./supabase-server";
-import type { Pick, Post, TrackRecord, WatchingRow } from "./types";
+import type { AdminPost, Lang4, Pick, Post, PostSibling, TrackRecord, WatchingRow } from "./types";
 
 interface AdminStats {
   totalPicks: number;
@@ -122,13 +122,102 @@ export async function getAdminPosts(
   return { items: (data ?? []) as Post[], total, page, perPage, totalPages: Math.ceil(total / perPage) };
 }
 
-/** Single post by ID for admin edit page. */
-export async function getAdminPost(id: string): Promise<Post | null> {
+/** Single post by ID for admin edit page (includes draft/stale fields). */
+export async function getAdminPost(id: string): Promise<AdminPost | null> {
   const sb = getServiceSupabase();
   if (!sb) return null;
   const { data, error } = await sb.from("posts").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(`getAdminPost: ${error.message}`);
-  return (data as Post) ?? null;
+  if (!data) return null;
+  return {
+    ...(data as Record<string, unknown>),
+    body_md_draft: (data as Record<string, unknown>).body_md_draft as string | null ?? null,
+    stale: (data as Record<string, unknown>).stale as boolean ?? false,
+  } as AdminPost;
+}
+
+/** Sibling posts (same slug, different lang) for language coverage display. */
+export async function getPostSiblings(
+  slug: string,
+  excludeLang: Lang4,
+): Promise<PostSibling[]> {
+  const sb = getServiceSupabase();
+  if (!sb) return [];
+  const { data } = await sb
+    .from("posts")
+    .select("id, lang, stale, body_md_draft")
+    .eq("slug", slug)
+    .neq("lang", excludeLang);
+  return (data ?? []).map((d: Record<string, unknown>) => ({
+    id: d.id as string,
+    lang: d.lang as Lang4,
+    stale: (d.stale as boolean) ?? false,
+    has_draft: d.body_md_draft != null,
+  }));
+}
+
+/** Fetch picks by IDs (for AI regen context display). */
+export async function getPicksByIds(ids: string[]): Promise<Pick[]> {
+  if (ids.length === 0) return [];
+  const sb = getServiceSupabase();
+  if (!sb) return [];
+  const { data } = await sb.from("picks").select("*").in("id", ids);
+  return (data ?? []) as Pick[];
+}
+
+/** Single watching entry by ID for admin detail page. */
+export async function getAdminWatching(id: string): Promise<(WatchingRow & { note_translations_draft: Record<string, string> | null }) | null> {
+  const sb = getServiceSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb.from("watching").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`getAdminWatching: ${error.message}`);
+  if (!data) return null;
+  return {
+    ...(data as WatchingRow),
+    note_translations_draft: (data as Record<string, unknown>).note_translations_draft as Record<string, string> | null ?? null,
+  };
+}
+
+/** Booth shadow rows for admin review. */
+export interface BoothShadowRow {
+  id: string;
+  pick_id: string;
+  match_id: string;
+  event_type: string;
+  event_minute: string | null;
+  event_detail: Record<string, unknown>;
+  lead_voice: "sonny" | "cole";
+  lines_en: Array<{ who: string; text: string }>;
+  lines_vi: Array<{ who: string; text: string }> | null;
+  lines_th: Array<{ who: string; text: string }> | null;
+  lines_es: Array<{ who: string; text: string }> | null;
+  lint_passed: boolean;
+  lint_flags: string[] | null;
+  model: string | null;
+  created_at: string;
+}
+
+export async function getBoothShadow(
+  pickId?: string,
+  page = 1,
+  perPage = 20,
+): Promise<Paginated<BoothShadowRow>> {
+  const sb = getServiceSupabase();
+  if (!sb) return { items: [], total: 0, page, perPage, totalPages: 0 };
+  const from = (page - 1) * perPage;
+
+  let countQuery = sb.from("booth_shadow").select("id", { count: "exact", head: true });
+  let dataQuery = sb.from("booth_shadow").select("*").order("created_at", { ascending: false }).range(from, from + perPage - 1);
+
+  if (pickId) {
+    countQuery = countQuery.eq("pick_id", pickId);
+    dataQuery = dataQuery.eq("pick_id", pickId);
+  }
+
+  const [{ count }, { data, error }] = await Promise.all([countQuery, dataQuery]);
+  if (error) throw new Error(`getBoothShadow: ${error.message}`);
+  const total = count ?? 0;
+  return { items: (data ?? []) as BoothShadowRow[], total, page, perPage, totalPages: Math.ceil(total / perPage) };
 }
 
 export interface ChannelLogRow {
