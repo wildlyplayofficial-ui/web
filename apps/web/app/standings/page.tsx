@@ -102,13 +102,26 @@ export default async function StandingsPage({ searchParams }: Props) {
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
           {dict.standings.empty}
         </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2">
-          {standings.map((g) => (
-            <GroupTable key={g.group} standing={g} dict={dict} />
-          ))}
-        </div>
-      )}
+      ) : (() => {
+        const thirdTeams = standings.filter((g) => g.group.toLowerCase().includes("3rd"));
+        const groups = standings.filter((g) => !g.group.toLowerCase().includes("3rd"));
+        return (
+          <>
+            <div className="grid gap-6 md:grid-cols-2">
+              {groups.map((g) => (
+                <GroupTable key={g.group} standing={g} dict={dict} />
+              ))}
+            </div>
+            {thirdTeams.length > 0 && (
+              <div className="mt-8">
+                {thirdTeams.map((g) => (
+                  <GroupTable key={g.group} standing={g} dict={dict} />
+                ))}
+              </div>
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 }
