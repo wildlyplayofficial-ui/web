@@ -14,6 +14,7 @@ export interface StandingTeam {
   goals_against: number;
   goal_diff: number;
   points: number;
+  form: string; // e.g. "WWDL"
 }
 
 export interface GroupStanding {
@@ -34,6 +35,7 @@ interface LivescoreTableEntry {
   points?: string;
   group_id?: string;
   group_name?: string;
+  form?: string; // e.g. "WWDL" — recent match results
 }
 
 function parseEntry(e: LivescoreTableEntry): StandingTeam {
@@ -48,6 +50,7 @@ function parseEntry(e: LivescoreTableEntry): StandingTeam {
     goals_against: parseInt(e.goals_conceded ?? "0", 10),
     goal_diff: parseInt(e.goal_diff ?? "0", 10),
     points: parseInt(e.points ?? "0", 10),
+    form: e.form ?? "",
   };
 }
 
@@ -58,7 +61,7 @@ async function fetchStandingsImpl(): Promise<GroupStanding[]> {
 
   try {
     const res = await fetch(
-      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${WC_COMPETITION_ID}&key=${key}&secret=${secret}`,
+      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${WC_COMPETITION_ID}&key=${key}&secret=${secret}&include_form=1`,
       { cache: "no-store" },
     );
     if (!res.ok) return [];
