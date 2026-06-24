@@ -38,7 +38,8 @@ export default async function AdminPostsPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = Math.max(1, parseInt(String(sp.page ?? "1"), 10) || 1);
   const typeFilter = String(sp.type ?? "all");
-  const { items: posts, totalPages, total } = await getAdminPosts(page, 20, typeFilter);
+  const search = String(sp.q ?? "");
+  const { items: posts, totalPages, total } = await getAdminPosts(page, 20, typeFilter, search || undefined);
 
   return (
     <div>
@@ -54,10 +55,22 @@ export default async function AdminPostsPage({ searchParams }: Props) {
         </Link>
       </div>
 
+      {/* Search */}
+      <form className="mb-4">
+        <input
+          type="text"
+          name="q"
+          defaultValue={search}
+          placeholder="Search by title..."
+          className="w-full rounded-lg border border-line bg-card px-4 py-2 text-sm text-ink placeholder:text-muted focus:border-brand focus:outline-none sm:w-72"
+        />
+        {typeFilter !== "all" && <input type="hidden" name="type" value={typeFilter} />}
+      </form>
+
       {/* Type filter */}
       <div className="mb-4 flex flex-wrap gap-2">
         <Link
-          href="/admin/posts"
+          href={`/admin/posts${search ? `?q=${encodeURIComponent(search)}` : ""}`}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
             typeFilter === "all" ? "bg-brand text-bg" : "bg-card-hover text-muted hover:text-ink"
           }`}
@@ -67,7 +80,7 @@ export default async function AdminPostsPage({ searchParams }: Props) {
         {POST_TYPES.map((t) => (
           <Link
             key={t}
-            href={`/admin/posts?type=${t}`}
+            href={`/admin/posts?type=${t}${search ? `&q=${encodeURIComponent(search)}` : ""}`}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               typeFilter === t ? "bg-brand text-bg" : "bg-card-hover text-muted hover:text-ink"
             }`}

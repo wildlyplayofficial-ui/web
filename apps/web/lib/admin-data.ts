@@ -97,6 +97,7 @@ export async function getAdminPosts(
   page = 1,
   perPage = ADMIN_PER_PAGE,
   typeFilter?: string,
+  search?: string,
 ): Promise<Paginated<Post>> {
   const sb = getServiceSupabase();
   if (!sb) return { items: [], total: 0, page, perPage, totalPages: 0 };
@@ -108,6 +109,11 @@ export async function getAdminPosts(
   if (typeFilter && typeFilter !== "all") {
     countQuery = countQuery.eq("type", typeFilter);
     dataQuery = dataQuery.eq("type", typeFilter);
+  }
+
+  if (search && search.trim()) {
+    countQuery = countQuery.ilike("title", `%${search.trim()}%`);
+    dataQuery = dataQuery.ilike("title", `%${search.trim()}%`);
   }
 
   const [{ count }, { data, error }] = await Promise.all([countQuery, dataQuery]);
