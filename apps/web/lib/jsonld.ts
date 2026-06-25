@@ -48,7 +48,7 @@ export function buildNewsArticle(post: {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: post.title,
-    url: `${BASE}/news/${post.slug}${post.lang !== "en" ? `?lang=${post.lang}` : ""}`,
+    url: `${BASE}${post.lang !== "en" ? `/${post.lang}` : ""}/news/${post.slug}`,
     datePublished: post.published_at,
     dateModified: post.published_at,
     author: { "@type": "Organization", name: "The Curator @ WildlyPlay", url: BASE },

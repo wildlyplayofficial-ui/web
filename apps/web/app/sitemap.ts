@@ -9,11 +9,11 @@ export const revalidate = 3600;
 const BASE = "https://www.wildlyplay.com";
 const LANGS = ["en", "vi", "th", "es"] as const;
 
-/** Build alternates map for hreflang in sitemap. */
+/** Build alternates map for hreflang in sitemap — path-based URLs. */
 function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
   return {
     languages: Object.fromEntries(
-      LANGS.map((l) => [l, l === "en" ? `${BASE}${path}` : `${BASE}${path}?lang=${l}`]),
+      LANGS.map((l) => [l, l === "en" ? `${BASE}${path}` : `${BASE}/${l}${path}`]),
     ),
   };
 }

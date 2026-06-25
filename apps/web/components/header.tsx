@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
+
+const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
 
 const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "archive" | "stats" | "matches" | "standings" | "news" | "about" }> = [
   { href: "/", key: "board" },
@@ -17,14 +19,20 @@ const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "arch
   { href: "/about", key: "about" },
 ];
 
-function LocaleSwitch({ pathname, lang, onNavigate }: { pathname: string; lang: Lang; onNavigate?: () => void }) {
-  const base = (l: Lang) => (l === "en" ? pathname : withLang(pathname, l));
+/** Strip any existing lang prefix from a pathname. */
+function stripLangPrefix(pathname: string): string {
+  return pathname.replace(LANG_PREFIX_RE, "/");
+}
+
+function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => void }) {
+  const pathname = usePathname();
+  const bare = stripLangPrefix(pathname);
   return (
     <div className="flex gap-1 rounded-lg bg-card p-1">
       {LANGS.map((l) => (
         <Link
           key={l}
-          href={base(l)}
+          href={withLang(bare, l)}
           onClick={onNavigate}
           className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
             l === lang ? "bg-brand text-bg" : "text-muted hover:text-ink"
@@ -39,10 +47,13 @@ function LocaleSwitch({ pathname, lang, onNavigate }: { pathname: string; lang: 
 
 export function Header() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const lang = resolveLang(searchParams.get("lang") ?? undefined);
+  const params = useParams<{ lang: string }>();
+  const lang = resolveLang(params.lang);
   const dict = getDict(lang);
   const [open, setOpen] = useState(false);
+
+  // Strip lang prefix for route matching
+  const barePath = stripLangPrefix(pathname);
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
@@ -74,7 +85,7 @@ export function Header() {
                   href={withLang(item.href, lang)}
                   onClick={() => setOpen(false)}
                   className={`text-sm font-medium transition-colors hover:text-ink ${
-                    (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)) ? "text-ink" : "text-muted"
+                    (item.href === "/" ? barePath === "/" : barePath.startsWith(item.href)) ? "text-ink" : "text-muted"
                   }`}
                 >
                   {dict.nav[item.key]}
@@ -83,7 +94,7 @@ export function Header() {
             ))}
           </ul>
           <div className="flex items-center gap-2">
-            <LocaleSwitch pathname={pathname} lang={lang} onNavigate={() => setOpen(false)} />
+            <LocaleSwitch lang={lang} onNavigate={() => setOpen(false)} />
             <ThemeToggle onToggle={() => setOpen(false)} />
           </div>
         </nav>

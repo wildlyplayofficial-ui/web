@@ -1,7 +1,7 @@
 /**
  * Lightweight i18n — EN, VI, TH and ES.
  * Shared UI strings live here; long-form page copy stays local to each page.
- * Language is carried via the `?lang=xx` query param (EN is the default).
+ * Language is carried via path prefix: /vi/, /th/, /es/. EN = default (no prefix).
  */
 
 export type Lang = "en" | "vi" | "th" | "es";
@@ -14,10 +14,11 @@ export function resolveLang(value: string | string[] | undefined): Lang {
     : "en";
 }
 
-/** Append `?lang=xx` to an internal href when needed. */
+/** Prefix an internal href with `/${lang}/` when needed. EN = no prefix. */
 export function withLang(href: string, lang: Lang): string {
   if (lang === "en") return href;
-  return href.includes("?") ? `${href}&lang=${lang}` : `${href}?lang=${lang}`;
+  const clean = href.startsWith("/") ? href : `/${href}`;
+  return `/${lang}${clean}`;
 }
 
 const BASE = "https://www.wildlyplay.com";
@@ -28,14 +29,14 @@ export function buildAlternates(path: string, currentLang: Lang = "en"): {
   languages: Record<string, string>;
 } {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  const selfUrl = currentLang === "en" ? `${BASE}${clean}` : `${BASE}${clean}?lang=${currentLang}`;
+  const selfUrl = currentLang === "en" ? `${BASE}${clean}` : `${BASE}/${currentLang}${clean}`;
   return {
     canonical: selfUrl,
     languages: {
       "en": `${BASE}${clean}`,
-      "vi": `${BASE}${clean}?lang=vi`,
-      "th": `${BASE}${clean}?lang=th`,
-      "es": `${BASE}${clean}?lang=es`,
+      "vi": `${BASE}/vi${clean}`,
+      "th": `${BASE}/th${clean}`,
+      "es": `${BASE}/es${clean}`,
       "x-default": `${BASE}${clean}`,
     },
   };

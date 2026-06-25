@@ -1,18 +1,14 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { resolveLang } from "@/lib/i18n";
+import type { Lang } from "@/lib/i18n";
 
 /**
- * Keeps `<html lang>` in sync with the `?lang=xx` query param.
- * Layouts can't read searchParams, so the attribute defaults to "en"
- * server-side and is corrected on the client for vi/th/es.
+ * Keeps `<html lang>` in sync with the path-based lang param.
+ * The root layout sets lang from x-lang header server-side;
+ * this component corrects it on client navigation.
  */
-export function HtmlLang() {
-  const searchParams = useSearchParams();
-  const lang = resolveLang(searchParams.get("lang") ?? undefined);
-
+export function HtmlLang({ lang }: { lang: Lang }) {
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);

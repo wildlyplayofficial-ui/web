@@ -1,0 +1,234 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { CrowdPoll } from "@/components/crowd-poll";
+import { MatchEvents } from "@/components/match-events";
+import { ShareBar } from "@/components/share-bar";
+import { LiveClock } from "@/components/live-clock";
+import { StatusBadge } from "@/components/status-badge";
+import { TeamLogo } from "@/components/team-logo";
+import { permanentRedirect } from "next/navigation";
+import { buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
+import { getBoothForPick, getBoothLines } from "@/lib/booth-data";
+import { BoothCommentary } from "@/components/booth-commentary";
+import { teamFlag } from "@/lib/flags";
+import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Resolve pick from either UUID or SEO slug. Redirects UUID -> slug with 308. */
+async function resolvePickFromId(id: string, lang: string) {
+  if (UUID_RE.test(id)) {
+    const pick = await getPick(id);
+    if (!pick) return null;
+    const slug = buildPlaySlug(pick);
+    const target = withLang(`/play/${slug}`, lang as "en" | "vi" | "th" | "es");
+    permanentRedirect(target);
+  }
+  return getPickBySlug(id);
+}
+
+export const revalidate = 300;
+
+type Props = {
+  params: Promise<{ lang: string; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
+  const pick = UUID_RE.test(id) ? await getPick(id) : await getPickBySlug(id);
+  if (!pick) return { title: "Not found" };
+  const slug = buildPlaySlug(pick);
+  const settled = pick.status !== "published";
+  const title = settled
+    ? `${pick.home_team} vs ${pick.away_team} \u2014 Result & Analysis`
+    : `${pick.home_team} vs ${pick.away_team} \u2014 Prediction, Odds & Analysis`;
+  const translations = await getThesisTranslations([pick.id]);
+  const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
+  const image = `/api/og/play/${pick.id}`;
+  return {
+    title,
+    description,
+    alternates: buildAlternates(`/play/${slug}`, lang),
+    openGraph: { title: `${title} | WildlyPlay`, description, images: [image] },
+    twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [image] },
+  };
+}
+
+export default async function PlayDetail({ params }: Props) {
+  const { id, lang: rawLang } = await params;
+  const lang = resolveLang(rawLang);
+  const dict = getDict(lang);
+  const pick = await resolvePickFromId(id, lang);
+  if (!pick) notFound();
+
+  const settled = pick.units_pl !== null;
+  const slugify = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const recapSlug = settled
+    ? `recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`
+    : null;
+  const [voteCounts, translations, recap, boothEntries] = await Promise.all([
+    getVoteCounts([pick.id]),
+    getThesisTranslations([pick.id]),
+    recapSlug ? getPost(recapSlug, lang) : Promise.resolve(null),
+    getBoothForPick(pick.id),
+  ]);
+  const recapFinal = recap ?? (settled ? await getPost(`recap-${pick.id}`, lang) : null);
+  const votes = voteCounts[pick.id];
+  const thesisText = translations[pick.id]?.[lang] ?? pick.thesis;
+  const totalVotes = votes.follow + votes.fade + votes.skip;
+  const homeFlag = teamFlag(pick.home_team);
+  const awayFlag = teamFlag(pick.away_team);
+  const clv = pick.odds_close !== null ? (pick.odds_publish / pick.odds_close - 1) * 100 : null;
+
+  return (
+    <article className="mx-auto max-w-[720px] px-5 py-12">
+      <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">
+        &larr; {dict.play.backToBoard}
+      </Link>
+
+      <header className="mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-muted">
+            {pick.league} &middot; {formatKickoff(pick.kickoff_utc, lang)}
+          </p>
+          <div className="flex items-center gap-2">
+            <StatusBadge kind={badgeFor(pick)} dict={dict} />
+            {badgeFor(pick) === "live" && pick.fixture_id > 0 && (
+              <LiveClock eventId={String(pick.fixture_id)} showScore />
+            )}
+          </div>
+        </div>
+        <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
+          {pick.home_id != null ? (
+            <span className="mr-2 inline-flex items-center align-middle">
+              <TeamLogo participantId={pick.home_id} team={pick.home_team} size={28} />
+            </span>
+          ) : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}
+          {pick.home_team} <span className="text-muted">vs</span>{" "}
+          {pick.away_id != null ? (
+            <span className="mr-2 inline-flex items-center align-middle">
+              <TeamLogo participantId={pick.away_id} team={pick.away_team} size={28} />
+            </span>
+          ) : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}
+          {pick.away_team}
+        </h1>
+      </header>
+
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <span className="rounded-md border border-brand/30 bg-brand-dim px-2.5 py-1 font-display font-semibold text-brand">
+          {pick.selection}
+        </span>
+        <span className="text-muted">
+          {dict.play.market} <strong className="text-ink">{marketLabels[pick.market]}</strong>
+          {pick.line !== null && (<>{" \u00b7 "}{dict.play.line} <strong className="text-ink">{pick.line}</strong></>)}
+          {" \u00b7 "}
+          {dict.pick.odds} <strong className="text-ink">{formatOdds(pick.odds_publish)}</strong>
+          {" \u00b7 "}
+          {dict.pick.stake} <strong className="text-ink">{pick.stake_units}u</strong>
+          {pick.odds_close !== null && clv !== null && (
+            <>{" \u00b7 "}{dict.play.closing} <strong className="text-ink">{formatOdds(pick.odds_close)}</strong>{" "}
+              <strong className={clv > 0 ? "text-brand" : clv < 0 ? "text-loss" : "text-muted"}>
+                CLV {clv > 0 ? "+" : clv < 0 ? "\u2212" : ""}{Math.abs(clv).toFixed(1)}%
+              </strong>
+            </>
+          )}
+        </span>
+        {pick.publish_score_home !== null && pick.publish_score_away !== null && (
+          <span className="rounded-md border border-line bg-card px-2.5 py-1 text-muted">
+            {dict.play.pickedAt}{" "}
+            <strong className="text-ink">{pick.publish_score_home}&ndash;{pick.publish_score_away}</strong>
+          </span>
+        )}
+      </div>
+
+      <section className="mt-8">
+        <h2 className="font-display text-lg font-bold text-indigo-soft">
+          {dict.play.thesis} &mdash; {dict.pick.curator}
+        </h2>
+        <blockquote className="mt-3 border-l-2 border-indigo-soft/60 pl-4 leading-relaxed text-ink/90">
+          {thesisText}
+        </blockquote>
+      </section>
+
+      {pick.fixture_id > 0 && (
+        <MatchEvents matchId={String(pick.fixture_id)} homeTeam={pick.home_team} awayTeam={pick.away_team} lang={lang} />
+      )}
+
+      {boothEntries.length > 0 && (
+        <section className="mt-8 space-y-3">
+          <h3 className="font-display text-lg font-bold">
+            <span className="mr-2 inline-flex items-center gap-1">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-400" />
+            </span>
+            The Booth
+          </h3>
+          <p className="text-xs text-muted">
+            {lang === "vi" ? "Ph\u00e2n t\u00edch tr\u1ef1c ti\u1ebfp b\u1edfi Sonny & Cole \u2014 b\u00ecnh lu\u1eadn AI, kh\u00f4ng ph\u1ea3i t\u01b0 v\u1ea5n c\u00e1 c\u01b0\u1ee3c."
+              : lang === "th" ? "\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e2a\u0e14\u0e42\u0e14\u0e22 Sonny & Cole \u2014 \u0e04\u0e2d\u0e21\u0e40\u0e21\u0e19\u0e15\u0e4c AI \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19"
+                : lang === "es" ? "An\u00e1lisis en vivo por Sonny & Cole \u2014 comentario IA, no consejo de apuestas."
+                  : "Live analysis by Sonny & Cole \u2014 AI commentary, not betting advice."}
+          </p>
+          {boothEntries.map((entry, i) => (
+            <BoothCommentary key={i} lines={getBoothLines(entry, lang)} eventType={entry.eventType} eventMinute={entry.eventMinute} lang={lang} />
+          ))}
+        </section>
+      )}
+
+      {settled && pick.raw_outcome !== null && pick.units_pl !== null && (
+        <section className="mt-8 rounded-card border border-line bg-card p-6">
+          <h2 className="font-display text-lg font-bold">{dict.play.result}</h2>
+          <div className="mt-3 flex flex-wrap items-center gap-x-8 gap-y-2">
+            <p className="font-display text-2xl font-bold">{dict.pick.finalScore} {pick.home_score}&ndash;{pick.away_score}</p>
+            <p className="text-sm text-muted">{dict.play.rawOutcome}: <strong className="text-ink">{dict.outcome[pick.raw_outcome]}</strong></p>
+            <p className={`font-display text-xl font-bold ${pick.units_pl > 0 ? "text-brand" : pick.units_pl < 0 ? "text-loss" : "text-muted"}`}>{formatUnits(pick.units_pl)}</p>
+          </div>
+          <p className="mt-4 text-xs text-muted">{dict.archive.unitsNote}</p>
+          {pick.odds_close !== null && <p className="mt-1 text-xs text-muted">{dict.play.clvNote}</p>}
+        </section>
+      )}
+
+      {recapFinal && (
+        <p className="mt-6">
+          <Link href={withLang(`/news/${recapFinal.slug}`, lang)} className="font-display text-sm font-semibold text-brand transition-colors hover:text-ink">
+            {dict.play.readRecap} &rarr;
+          </Link>
+        </p>
+      )}
+
+      {pick.status === "published" ? (
+        <CrowdPoll pickId={pick.id} lang={lang} initial={votes} />
+      ) : (
+        totalVotes > 0 && (
+          <section className="mt-8 rounded-card border border-line bg-card p-6">
+            <h2 className="font-display text-lg font-bold">{dict.crowd.title}</h2>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              {(["follow", "fade", "skip"] as const).map((kind) => (
+                <span key={kind} className="text-muted">
+                  {dict.poll[kind]}{" "}
+                  <strong className="text-ink">{Math.round((votes[kind] / totalVotes) * 100)}%</strong>
+                </span>
+              ))}
+            </div>
+            {pick.status === "won" && pick.units_pl !== null && pick.stake_units > 0 && (
+              <p className="mt-3 text-sm font-semibold text-brand">
+                {dict.crowd.followersWon.replace("{units}", formatUnits(pick.units_pl / pick.stake_units))}
+              </p>
+            )}
+            {pick.status === "lost" && (
+              <p className="mt-3 text-sm font-semibold text-loss">{dict.crowd.followersLost}</p>
+            )}
+          </section>
+        )
+      )}
+
+      <ShareBar lang={lang} text={`${pick.home_team} vs ${pick.away_team} \u2014 ${pick.selection} | WildlyPlay`} />
+
+      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
+    </article>
+  );
+}

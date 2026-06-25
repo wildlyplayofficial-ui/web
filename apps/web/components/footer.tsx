@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { getDict, resolveLang, withLang } from "@/lib/i18n";
 
 export function Footer() {
-  const searchParams = useSearchParams();
-  const lang = resolveLang(searchParams.get("lang") ?? undefined);
+  const params = useParams<{ lang: string }>();
+  const lang = resolveLang(params.lang);
   const dict = getDict(lang);
 
   const links: ReadonlyArray<{ href: string; label: string }> = [
