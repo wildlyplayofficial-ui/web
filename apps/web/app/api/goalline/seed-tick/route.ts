@@ -131,7 +131,6 @@ export async function POST(request: Request): Promise<Response> {
           stake_points: 100,
           odds_locked: odds,
           status: "locked",
-          created_at: pickTime,
         });
 
       if (!error) added++;
