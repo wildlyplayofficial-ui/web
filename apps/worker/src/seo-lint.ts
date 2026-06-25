@@ -111,14 +111,16 @@ export function lintSeoArticle(body: string, slug?: string): SeoLintResult {
     }
   }
 
-  // Unique data anchor check — at least 1 must be present
-  const hasDataAnchor = DATA_ANCHORS.some((re) => re.test(body));
-  if (!hasDataAnchor) {
-    flags.push('NO-DATA: Article has no unique data anchor (odds/score/units/matchup)');
-  }
+  // GEO readiness checks — scoped to post-match content with real data
+  const isGeoScoped = slug ? GEO_SCOPED_SLUGS.some((p) => slug.startsWith(p)) : false;
 
-  // GEO readiness checks (WARN mode — scoped to pick-related articles only)
-  const isGeoScoped = !slug || GEO_SCOPED_SLUGS.some((p) => slug.startsWith(p));
+  // Unique data anchor check — only for post-match content (recap/analysis/post-mortem)
+  if (isGeoScoped) {
+    const hasDataAnchor = DATA_ANCHORS.some((re) => re.test(body));
+    if (!hasDataAnchor) {
+      flags.push('NO-DATA: Article has no unique data anchor (odds/score/units/matchup)');
+    }
+  }
   if (isGeoScoped) {
     if (!GEO_CHECKS.REQUIRE_ATOMIC_ANSWER(body)) {
       flags.push('GEO-ATOMIC: First 300 chars missing direct factual answer (score/odds/result/thesis)');
