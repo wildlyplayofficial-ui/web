@@ -45,7 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: "/og-home.png", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -66,7 +72,7 @@ function buildArticleSchema(post: {
     dateModified: post.published_at ?? undefined,
     inLanguage: post.lang,
     mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
-    image: `${BASE}/og-home.png`,
+    image: `${BASE}/api/og/news/${slug}`,
     author: {
       "@type": "Organization",
       name: "The Curator @ WildlyPlay",
