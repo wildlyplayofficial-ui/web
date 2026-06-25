@@ -82,6 +82,7 @@ function buildArticleSchema(post: {
       "@type": "Organization",
       name: "WildlyPlay",
       url: BASE,
+      logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
   };
 }
