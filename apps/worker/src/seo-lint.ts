@@ -90,12 +90,12 @@ const GEO_CHECKS = {
 /** Article types that should pass GEO checks — only post-match content with real data. */
 const GEO_SCOPED_SLUGS = ['recap-', 'analysis-', 'post-mortem-'];
 
-export function lintSeoArticle(body: string, slug?: string): SeoLintResult {
+export function lintSeoArticle(body: string, slug?: string, lang?: string): SeoLintResult {
   const flags: string[] = [];
   const wordCount = body.split(/\s+/).filter(Boolean).length;
 
   // Word count check — lower threshold for non-EN (Thai/Vietnamese are more compact)
-  const isNonEn = slug ? /\/(vi|th|es)$/.test(slug) : false;
+  const isNonEn = lang ? lang !== 'en' : false;
   const minWords = isNonEn ? 40 : 100;
   if (wordCount < minWords) {
     flags.push(`THIN: under ${minWords} words`);
