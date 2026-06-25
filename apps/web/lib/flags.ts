@@ -11,6 +11,7 @@ const FLAGS: Record<string, string> = {
   Cameroon: "🇨🇲",
   "Cape Verde": "🇨🇻",
   Curacao: "🇨🇼",
+  "Curaçao": "🇨🇼",
   Canada: "🇨🇦",
   Chile: "🇨🇱",
   Colombia: "🇨🇴",
@@ -76,5 +77,7 @@ const FLAGS: Record<string, string> = {
 
 export function teamFlag(team: string): string {
   // Data sources vary between "&" and "and" (e.g. "Bosnia & Herzegovina").
-  return FLAGS[team] ?? FLAGS[team.replace(/\s*&\s*/g, " and ")] ?? "";
+  // Also strip diacritics for lookup (e.g. "Türkiye" → "Turkiye", "Curaçao" → "Curacao").
+  const stripped = team.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return FLAGS[team] ?? FLAGS[stripped] ?? FLAGS[team.replace(/\s*&\s*/g, " and ")] ?? "";
 }
