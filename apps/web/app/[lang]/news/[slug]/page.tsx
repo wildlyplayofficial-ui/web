@@ -65,7 +65,7 @@ function buildArticleSchema(post: {
 }, slug: string, lang: Lang) {
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "NewsArticle",
     headline: post.meta_title ?? post.title,
     description: post.meta_description ?? undefined,
     datePublished: post.published_at ?? undefined,

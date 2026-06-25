@@ -11,9 +11,10 @@ const LANGS = ["en", "vi", "th", "es"] as const;
 
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
 function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
+  const clean = path === "/" ? "" : path;
   return {
     languages: Object.fromEntries(
-      LANGS.map((l) => [l, l === "en" ? `${BASE}${path}` : `${BASE}/${l}${path}`]),
+      LANGS.map((l) => [l, l === "en" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
     ),
   };
 }

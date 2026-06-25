@@ -28,16 +28,16 @@ export function buildAlternates(path: string, currentLang: Lang = "en"): {
   canonical: string;
   languages: Record<string, string>;
 } {
-  const clean = path.startsWith("/") ? path : `/${path}`;
-  const selfUrl = currentLang === "en" ? `${BASE}${clean}` : `${BASE}/${currentLang}${clean}`;
+  const clean = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
+  const selfUrl = currentLang === "en" ? `${BASE}${clean || "/"}` : `${BASE}/${currentLang}${clean}`;
   return {
     canonical: selfUrl,
     languages: {
-      "en": `${BASE}${clean}`,
+      "en": `${BASE}${clean || "/"}`,
       "vi": `${BASE}/vi${clean}`,
       "th": `${BASE}/th${clean}`,
       "es": `${BASE}/es${clean}`,
-      "x-default": `${BASE}${clean}`,
+      "x-default": `${BASE}${clean || "/"}`,
     },
   };
 }
