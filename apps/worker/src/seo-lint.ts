@@ -87,8 +87,8 @@ const GEO_CHECKS = {
   },
 };
 
-/** Article types that should pass GEO checks (not no-play/newsroom). */
-const GEO_SCOPED_SLUGS = ['preview-', 'recap-', 'analysis-', 'post-mortem-', 'news-'];
+/** Article types that should pass GEO checks — only post-match content with real data. */
+const GEO_SCOPED_SLUGS = ['recap-', 'analysis-', 'post-mortem-'];
 
 export function lintSeoArticle(body: string, slug?: string): SeoLintResult {
   const flags: string[] = [];
