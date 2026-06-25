@@ -4,9 +4,9 @@
  */
 import type { NewPost, PickRow, PostLang } from './store';
 
-/** Team name → URL-safe slug: "Bosnia and Herzegovina" → "bosnia-and-herzegovina". */
+/** Team name → URL-safe slug: "Türkiye" → "turkiye", "Bosnia and Herzegovina" → "bosnia-and-herzegovina". */
 export function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 import { log } from './log';
 
