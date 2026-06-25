@@ -64,6 +64,7 @@ const FLAGS: Record<string, string> = {
   Tunisia: "🇹🇳",
   Turkey: "🇹🇷",
   Turkiye: "🇹🇷",
+  "Türkiye": "🇹🇷",
   Ukraine: "🇺🇦",
   "United States": "🇺🇸",
   USA: "🇺🇸",
