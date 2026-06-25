@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { TrackPageView } from "@/components/track-event";
 import { getSupabase } from "@/lib/goalline/supabase";
 import { getDailyLineDict } from "@/lib/goalline/strings";
 import { resolveLang } from "@/lib/i18n";
@@ -166,6 +167,7 @@ export default async function TodaysCardPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-lg px-5 py-8 overflow-x-hidden">
+      <TrackPageView event="daily_line_view" />
       {/* FAQ schema — static hardcoded content only (safe, no user input) */}
       <script
         type="application/ld+json"

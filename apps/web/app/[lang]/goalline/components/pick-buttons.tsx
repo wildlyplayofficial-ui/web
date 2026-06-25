@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import type { PickSide } from "@/lib/goalline/types";
 import { getDailyLineDict } from "@/lib/goalline/strings";
+import { trackDailyLinePick } from "@/lib/analytics";
 import type { Lang } from "@/lib/i18n";
 
 interface PickButtonsProps {
@@ -108,6 +109,7 @@ export function PickButtons({
         return;
       }
       setExistingPick(data.pick);
+      trackDailyLinePick(`Card #${cardId}`, pendingSide ?? "unknown");
       setPhase("done");
     } catch {
       setErrorMsg("Network error. Try again.");

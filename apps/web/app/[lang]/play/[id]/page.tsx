@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CrowdPoll } from "@/components/crowd-poll";
+import { TrackPageView } from "@/components/track-event";
 import { MatchEvents } from "@/components/match-events";
 import { ShareBar } from "@/components/share-bar";
 import { LiveClock } from "@/components/live-clock";
@@ -86,6 +87,7 @@ export default async function PlayDetail({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
+      <TrackPageView event="pick_view" params={{ pick_id: pick.id, matchup: `${pick.home_team} vs ${pick.away_team}` }} />
       <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">
         &larr; {dict.play.backToBoard}
       </Link>

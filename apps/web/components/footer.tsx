@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDict, resolveLang, withLang } from "@/lib/i18n";
+import { trackTgFollowClick } from "@/lib/analytics";
 
 export function Footer() {
   const params = useParams<{ lang: string }>();
@@ -43,6 +44,7 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted transition-colors hover:text-brand"
+            onClick={trackTgFollowClick}
           >
             Telegram
           </a>
