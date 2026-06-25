@@ -94,9 +94,11 @@ export function lintSeoArticle(body: string, slug?: string): SeoLintResult {
   const flags: string[] = [];
   const wordCount = body.split(/\s+/).filter(Boolean).length;
 
-  // Word count check
-  if (wordCount < 100) {
-    flags.push('THIN: under 100 words');
+  // Word count check — lower threshold for non-EN (Thai/Vietnamese are more compact)
+  const isNonEn = slug ? /\/(vi|th|es)$/.test(slug) : false;
+  const minWords = isNonEn ? 40 : 100;
+  if (wordCount < minWords) {
+    flags.push(`THIN: under ${minWords} words`);
   }
 
   // Rule checks
