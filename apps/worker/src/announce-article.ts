@@ -10,12 +10,22 @@ import type { NewPost, Store } from './store';
 import { log } from './log';
 
 export interface AnnounceArticleDeps {
-  api: Pick<Api, 'sendMessage'>;
+  api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
   channelChatId: string | undefined;
   store: Store;
   siteUrl: string;
   facebook?: { pageId: string; pageToken: string };
 }
+
+/** Map article type prefix → brand image filename (in /public/images/). */
+const TYPE_IMAGE: Record<string, string> = {
+  preview: 'wildlyplay_watching.png',   // watching/preview = same visual
+  news: 'wildlyplay_watching.png',      // watching articles
+  analysis: 'wildlyplay_pick.png',      // pick/analysis
+  'no-play': 'wildlyplay_noplay.png',
+  recap: 'wildlyplay_recap.png',
+  'post-mortem': 'wildlyplay_postmortem.png',
+};
 
 const TYPE_EMOJI: Record<string, string> = {
   preview: '\u{1F4CB}',   // clipboard
@@ -86,7 +96,20 @@ export async function announceArticle(
   if (deps.channelChatId) {
     try {
       const caption = buildArticleCaption(post, deps.siteUrl, 'telegram');
-      const sent = await deps.api.sendMessage(deps.channelChatId, caption);
+      const imageFile = TYPE_IMAGE[post.type];
+      const imageUrl = imageFile ? `${deps.siteUrl}/images/${imageFile}` : null;
+
+      let sent;
+      if (imageUrl) {
+        try {
+          sent = await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption });
+        } catch {
+          // Fallback to text if photo fails
+          sent = await deps.api.sendMessage(deps.channelChatId, caption);
+        }
+      } else {
+        sent = await deps.api.sendMessage(deps.channelChatId, caption);
+      }
       if (post.pick_ids[0]) {
         try {
           await deps.store.insertChannelLog({
@@ -110,7 +133,19 @@ export async function announceArticle(
     try {
       const caption = buildArticleCaption(post, deps.siteUrl, 'facebook', false);
       const link = buildArticleLink(deps.siteUrl, post.slug, 'facebook');
-      const fbId = await postToFacebook(deps.facebook, caption, link);
+      const imageFile = TYPE_IMAGE[post.type];
+      const imageUrl = imageFile ? `${deps.siteUrl}/images/${imageFile}` : null;
+      let fbId: string;
+      if (imageUrl) {
+        try {
+          const { postPhotoToFacebook } = await import('./announce');
+          fbId = await postPhotoToFacebook(deps.facebook, imageUrl, `${caption}\n\n${link}`);
+        } catch {
+          fbId = await postToFacebook(deps.facebook, caption, link);
+        }
+      } else {
+        fbId = await postToFacebook(deps.facebook, caption, link);
+      }
       if (post.pick_ids[0]) {
         try {
           await deps.store.insertChannelLog({
