@@ -58,7 +58,39 @@ const DATA_ANCHORS = [
   /\b[A-Z][a-z]+\s+(vs|v)\s+[A-Z][a-z]+/i, // team matchup
 ];
 
-export function lintSeoArticle(body: string): SeoLintResult {
+/**
+ * GEO readiness checks — ensure articles are AI-citation-ready.
+ * §4 of SEO Master Guide: atomic answer at top, analysis section present.
+ *
+ * Scoped to pick/recap/analysis/preview articles only (not no-play/newsroom).
+ * Runs on EN body only (VI/TH/ES translations won't have EN markers).
+ * WARN mode only — do NOT elevate to BLOCK until false-rate measured on real content.
+ */
+const GEO_CHECKS = {
+  /** First 300 chars must contain a direct factual statement (score, outcome, or thesis). */
+  REQUIRE_ATOMIC_ANSWER: (body: string): boolean => {
+    const first300 = body.slice(0, 300);
+    return /\d+-\d+/.test(first300) ||
+      /\d+\.\d{2}/.test(first300) ||
+      /\b(won|lost|push|result|beat|defeated|drew)\b/i.test(first300) ||
+      /\b(prediction|analysis|preview|recap)\b/i.test(first300);
+  },
+  /** Body must contain an analysis/opinion section, not just bare facts. */
+  REQUIRE_ANALYSIS: (body: string): boolean => {
+    const analysisMarkers = [
+      /\b(analysis|phân tích|nhận định|đánh giá)\b/i,
+      /\b(thesis|read|lean|expect|outlook)\b/i,
+      /\b(why|because|factor|reason|key)\b/i,
+      /\b(post-mortem|review|takeaway|วิเคราะห์|análisis)\b/i,
+    ];
+    return analysisMarkers.some((re) => re.test(body));
+  },
+};
+
+/** Article types that should pass GEO checks (not no-play/newsroom). */
+const GEO_SCOPED_SLUGS = ['preview-', 'recap-', 'analysis-', 'post-mortem-', 'news-'];
+
+export function lintSeoArticle(body: string, slug?: string): SeoLintResult {
   const flags: string[] = [];
   const wordCount = body.split(/\s+/).filter(Boolean).length;
 
@@ -83,6 +115,17 @@ export function lintSeoArticle(body: string): SeoLintResult {
   const hasDataAnchor = DATA_ANCHORS.some((re) => re.test(body));
   if (!hasDataAnchor) {
     flags.push('NO-DATA: Article has no unique data anchor (odds/score/units/matchup)');
+  }
+
+  // GEO readiness checks (WARN mode — scoped to pick-related articles only)
+  const isGeoScoped = !slug || GEO_SCOPED_SLUGS.some((p) => slug.startsWith(p));
+  if (isGeoScoped) {
+    if (!GEO_CHECKS.REQUIRE_ATOMIC_ANSWER(body)) {
+      flags.push('GEO-ATOMIC: First 300 chars missing direct factual answer (score/odds/result/thesis)');
+    }
+    if (!GEO_CHECKS.REQUIRE_ANALYSIS(body)) {
+      flags.push('GEO-ANALYSIS: Article missing analysis/opinion section (no analysis markers found)');
+    }
   }
 
   return {
