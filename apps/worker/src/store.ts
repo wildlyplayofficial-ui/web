@@ -297,7 +297,7 @@ class SupabaseStore implements Store {
   async insertPost(post: NewPost): Promise<void> {
     // SEO uniqueness gate — lint before publish (deterministic, code not prompt)
     const { lintSeoArticle } = await import('./seo-lint');
-    const lint = lintSeoArticle(post.body_md);
+    const lint = lintSeoArticle(post.body_md, post.slug);
     if (!lint.passed) {
       throw new Error(`seo-lint BLOCK for ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
     }
