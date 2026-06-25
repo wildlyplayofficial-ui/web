@@ -8,7 +8,7 @@ import type { PickRow, Store } from './store';
 import { log } from './log';
 
 export interface AnnouncePickDeps {
-  api: Pick<Api, 'sendMessage'>;
+  api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
   channelChatId: string | undefined;
   store: Store;
   siteUrl: string;
@@ -76,9 +76,16 @@ async function broadcast(
   msg: string,
   detail: 'pick announce' | 'void announce',
 ): Promise<void> {
+  const boothImageUrl = `${deps.siteUrl}/images/wildlyplay_booth.png`;
+
   if (deps.channelChatId) {
     try {
-      const sent = await deps.api.sendMessage(deps.channelChatId, msg);
+      let sent;
+      try {
+        sent = await deps.api.sendPhoto(deps.channelChatId, boothImageUrl, { caption: msg });
+      } catch {
+        sent = await deps.api.sendMessage(deps.channelChatId, msg);
+      }
       await deps.store.insertChannelLog({
         pick_id: pick.id,
         channel: 'telegram',
@@ -96,7 +103,13 @@ async function broadcast(
 
   if (deps.facebook) {
     try {
-      const fbId = await postToFacebook(deps.facebook, msg, `${deps.siteUrl}/play/${pick.id}`);
+      let fbId: string;
+      try {
+        const { postPhotoToFacebook } = await import('./announce');
+        fbId = await postPhotoToFacebook(deps.facebook, boothImageUrl, `${msg}\n\n${deps.siteUrl}/play/${pick.id}`);
+      } catch {
+        fbId = await postToFacebook(deps.facebook, msg, `${deps.siteUrl}/play/${pick.id}`);
+      }
       await deps.store.insertChannelLog({
         pick_id: pick.id,
         channel: 'facebook',
