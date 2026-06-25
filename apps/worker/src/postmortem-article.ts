@@ -31,6 +31,7 @@ Thesis: ${pick.thesis}
 </context>
 
 <rules>
+- ATOMIC ANSWER FIRST: The very first sentence of each article body (after META lines) MUST be a self-contained factual statement with score + outcome — e.g. "${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}; ${pick.selection} @ ${pick.odds_publish} ${pick.status === 'won' ? 'landed' : 'missed'} (${Number(pick.units_pl) > 0 ? '+' : ''}${pick.units_pl}u)." This sentence should be liftable by an AI search engine as a standalone answer.
 - Write an honest post-mortem: what happened, did the thesis play out, what we learned.
 - For losses: explain the loss-type honestly (variance vs bad read).
 - For wins: apply honest calibration — acknowledge variance on coinflip/LOW-confidence picks, state confounds, do NOT claim skill on thin margins. WIN reviews must be as critical as LOSS reviews.

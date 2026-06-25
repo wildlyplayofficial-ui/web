@@ -30,7 +30,8 @@ Curator's thesis: ${pick.thesis}
 - Work ONLY from the data above. Do NOT invent injuries, lineups, stats, quotes, or news — you have no live sources.
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit. Frame as analysis, not advice.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "the line looks generous" or "the price implies" instead.
-- Lead with a specific tactical or analytical angle — never a template opener.
+- ATOMIC ANSWER FIRST: The very first sentence of each section MUST be a self-contained factual statement with the pick and odds — e.g. "The Curator picks ${pick.selection} @ ${pick.odds_publish} for ${pick.home_team} vs ${pick.away_team}." This sentence should be liftable by an AI as a standalone answer.
+- Then expand with a specific tactical or analytical angle — never a template opener.
 - End each section with this disclosure as plain text (no bold, no italic, no markdown formatting): Human-picked, AI-written.
 </rules>
 

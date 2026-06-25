@@ -71,7 +71,8 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 - No emoji spam.
 - End each section with the updated record line.
 - Output plain text only — no markdown headers other than the four flag headers.
-- Lead with what actually happened vs the thesis — never a generic scoreline summary.
+- ATOMIC ANSWER FIRST: The very first sentence of each section MUST be a self-contained factual statement with the score and outcome — e.g. "${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}; ${pick.selection} @ ${pick.odds_publish} ${pick.status === 'won' ? 'landed' : 'missed'} (${pl > 0 ? '+' : ''}${pl}u)." This sentence should be liftable by an AI as a standalone answer.
+- Then evaluate the thesis — never a generic scoreline summary.
 </rules>
 
 <bad_examples>

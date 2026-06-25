@@ -42,6 +42,8 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     '[KEYWORD] <primary target keyword>',
     'Then a blank line, then the article body (400-600 words, markdown, no H1).',
     '',
+    'ATOMIC ANSWER: The very first sentence of the article body (after the META lines) MUST be a self-contained factual statement — e.g. "' + w.home_team + ' face ' + w.away_team + ' in ' + w.league + ' on Matchday X, with both teams needing a result to advance." This sentence should be liftable by an AI search engine as a standalone answer.',
+    '',
     'Cover: team form, key players to watch, tactical outlook, and what to watch for in this match.',
     '',
     'Rules:',
