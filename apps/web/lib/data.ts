@@ -447,8 +447,21 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
     );
   } else {
     // Query watching: match home_team/away_team on that date (case-insensitive via ilike)
-    const homeLike = `%${home.replace(/-/g, "%")}%`;
-    const awayLike = `%${away.replace(/-/g, "%")}%`;
+    // Reverse-lookup slug aliases so e.g. "turkey" also queries "türkiye"
+    const REVERSE_SLUG: Record<string, string[]> = {
+      turkey: ["turkey", "türkiye", "turkiye"],
+      usa: ["usa", "united%states"],
+      "south-korea": ["south%korea", "korea%republic"],
+      czechia: ["czechia", "czech%republic"],
+    };
+    const homeVariants = REVERSE_SLUG[home] ?? [home.replace(/-/g, "%")];
+    const awayVariants = REVERSE_SLUG[away] ?? [away.replace(/-/g, "%")];
+    const homeLike = homeVariants.map(v => `%${v}%`);
+    const awayLike = awayVariants.map(v => `%${v}%`);
+
+    // Build OR filters for variant matching (e.g. turkey / türkiye)
+    const homeOr = homeLike.map(h => `home_team.ilike.${h}`).join(",");
+    const awayOr = awayLike.map(a => `away_team.ilike.${a}`).join(",");
 
     const [watchRes, pickRes, postRes] = await Promise.all([
       // Include ALL watching statuses (active, expired, picked) — match page should
@@ -456,8 +469,8 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       supabase
         .from("watching")
         .select("*")
-        .ilike("home_team", homeLike)
-        .ilike("away_team", awayLike)
+        .or(homeOr)
+        .or(awayOr)
         .gte("kickoff_utc", start)
         .lt("kickoff_utc", end)
         .order("created_at", { ascending: false })
@@ -466,8 +479,8 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       supabase
         .from("picks")
         .select("*")
-        .ilike("home_team", homeLike)
-        .ilike("away_team", awayLike)
+        .or(homeOr)
+        .or(awayOr)
         .gte("kickoff_utc", start)
         .lt("kickoff_utc", end)
         .neq("status", "draft")
