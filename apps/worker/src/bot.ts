@@ -402,6 +402,49 @@ export function createBot(deps: BotDeps): Bot {
     }
   });
 
+  // ── Daily Line TMA: group lifecycle ──
+  bot.on('my_chat_member', async (ctx) => {
+    const chat = ctx.myChatMember.chat;
+    if (chat.type !== 'group' && chat.type !== 'supergroup') return;
+
+    const newStatus = ctx.myChatMember.new_chat_member.status;
+    const fromId = ctx.myChatMember.from.id;
+    const tgGroupId = chat.id;
+    const title = chat.title ?? `Group ${tgGroupId}`;
+
+    if (newStatus === 'member' || newStatus === 'administrator') {
+      // Bot was added to a group — register it
+      try {
+        await deps.store.upsertGroup(tgGroupId, title, fromId);
+        log.info(`joined group ${tgGroupId} "${title}" (added by ${fromId})`);
+      } catch (err) {
+        log.warn(`upsertGroup failed for ${tgGroupId}:`, err);
+      }
+
+      const siteUrl = deps.siteUrl;
+      const webAppUrl = `${siteUrl}/tma/daily-line?startapp=grp_${tgGroupId}`;
+      await ctx.reply(
+        'Daily Line is active in this group! Tap below to make your pick.',
+        {
+          reply_markup: {
+            inline_keyboard: [[{
+              text: '\u26BD Play Daily Line',
+              web_app: { url: webAppUrl },
+            }]],
+          },
+        },
+      );
+    } else if (newStatus === 'left' || newStatus === 'kicked') {
+      // Bot was removed from a group — mark inactive
+      try {
+        await deps.store.markGroupInactive(tgGroupId);
+        log.info(`left group ${tgGroupId} "${title}"`);
+      } catch (err) {
+        log.warn(`markGroupInactive failed for ${tgGroupId}:`, err);
+      }
+    }
+  });
+
   bot.catch((err) => log.error('bot error:', err.error));
   return bot;
 }

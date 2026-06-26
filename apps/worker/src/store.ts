@@ -150,6 +150,10 @@ export interface Store {
   updateWatching(id: string, patch: Partial<WatchingRow>): Promise<WatchingRow>;
   /** Check if a channel_log entry exists for a pick+channel combo (dedup guard). */
   hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean>;
+  /** Upsert a Telegram group into gl_groups (Daily Line TMA). */
+  upsertGroup(tgGroupId: number, title: string, createdByTg: number): Promise<{ id: string }>;
+  /** Mark a gl_group as inactive (bot removed from group). */
+  markGroupInactive(tgGroupId: number): Promise<void>;
 }
 
 export class MemoryStore implements Store {
@@ -257,6 +261,24 @@ export class MemoryStore implements Store {
     return this.logs.some(
       (l) => l.pick_id === pickId && l.channel === channel && (!detailPrefix || (l.detail ?? '').startsWith(detailPrefix)),
     );
+  }
+
+  readonly groups = new Map<number, { id: string; tgGroupId: number; active: boolean }>();
+
+  async upsertGroup(tgGroupId: number, title: string, createdByTg: number): Promise<{ id: string }> {
+    const existing = this.groups.get(tgGroupId);
+    if (existing) {
+      existing.active = true;
+      return { id: existing.id };
+    }
+    const id = randomUUID();
+    this.groups.set(tgGroupId, { id, tgGroupId, active: true });
+    return { id };
+  }
+
+  async markGroupInactive(tgGroupId: number): Promise<void> {
+    const group = this.groups.get(tgGroupId);
+    if (group) group.active = false;
   }
 }
 
@@ -381,6 +403,27 @@ class SupabaseStore implements Store {
     if (detailPrefix) query = query.like('detail', `${detailPrefix}%`);
     const { count } = await query;
     return (count ?? 0) > 0;
+  }
+
+  async upsertGroup(tgGroupId: number, title: string, createdByTg: number): Promise<{ id: string }> {
+    const { data, error } = await this.db
+      .from('gl_groups')
+      .upsert(
+        { tg_group_id: tgGroupId, title, active: true, created_by_tg: createdByTg },
+        { onConflict: 'tg_group_id' },
+      )
+      .select('id')
+      .single();
+    if (error) throw new Error(`upsertGroup failed: ${error.message}`);
+    return { id: data.id };
+  }
+
+  async markGroupInactive(tgGroupId: number): Promise<void> {
+    const { error } = await this.db
+      .from('gl_groups')
+      .update({ active: false })
+      .eq('tg_group_id', tgGroupId);
+    if (error) throw new Error(`markGroupInactive failed: ${error.message}`);
   }
 }
 
