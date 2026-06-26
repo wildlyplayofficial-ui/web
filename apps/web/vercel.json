@@ -5,5 +5,9 @@
       "path": "/api/goalline/cron",
       "schedule": "0 18 * * *"
     }
+  ],
+  "rewrites": [
+    { "source": "/tma/daily-line", "destination": "/tma/daily-line" },
+    { "source": "/tma/daily-line/group", "destination": "/tma/daily-line/group" }
   ]
 }
