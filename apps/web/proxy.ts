@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const VALID_LANGS = new Set(["vi", "th", "es"]);
-const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
+const VALID_LANGS = new Set(["en", "vi", "th", "es"]);
+const LANG_PREFIX_RE = /^\/(en|vi|th|es)(\/|$)/;
 
 /**
  * Next.js 16 Proxy — path-based i18n routing.
