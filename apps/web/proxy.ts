@@ -27,6 +27,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
+  // ── TMA routes: pass through unchanged (no lang rewrite) ──
+  if (pathname.startsWith("/tma")) {
+    const response = NextResponse.next();
+    response.headers.set("x-pathname", pathname);
+    return response;
+  }
+
   // ── Admin auth check (before lang rewrite) ──
   if (pathname.startsWith("/admin")) {
     const response = NextResponse.next();
