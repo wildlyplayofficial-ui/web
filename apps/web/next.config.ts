@@ -2,11 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [
-      // Serve /daily-line/* from /goalline/* code — with lang prefix support
-      { source: "/:lang(en|vi|th|es)/daily-line", destination: "/:lang/goalline" },
-      { source: "/:lang(en|vi|th|es)/daily-line/:path*", destination: "/:lang/goalline/:path*" },
-    ];
+    return {
+      // beforeFiles rewrites run BEFORE filesystem routing
+      beforeFiles: [
+        // TMA routes — explicitly map to prevent [lang] from catching them
+        { source: "/tma/:path*", destination: "/tma/:path*" },
+      ],
+      afterFiles: [
+        // Serve /daily-line/* from /goalline/* code — with lang prefix support
+        { source: "/:lang(en|vi|th|es)/daily-line", destination: "/:lang/goalline" },
+        { source: "/:lang(en|vi|th|es)/daily-line/:path*", destination: "/:lang/goalline/:path*" },
+      ],
+      fallback: [],
+    };
   },
   async redirects() {
     return [
