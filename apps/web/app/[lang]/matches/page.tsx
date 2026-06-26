@@ -56,6 +56,11 @@ const SLUG_OVERRIDES: Record<string, string> = {
   "czech-republic": "Czech Republic",
   "new-zealand": "New Zealand",
   "saudi-arabia": "Saudi Arabia",
+  "ivory-coast": "Ivory Coast",
+  "cote-d-ivoire": "Ivory Coast",
+  // Legacy slugs from pre-diacritic-fix URLs
+  "cura-ao": "Curacao",
+  "c-te-d-ivoire": "Ivory Coast",
 };
 
 function deslugify(s: string): string {

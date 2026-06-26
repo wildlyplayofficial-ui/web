@@ -53,8 +53,18 @@ export function MatchStatus({ kickoffUtc, liveStatus, minute }: Props) {
     );
   }
 
-  // Scheduled
+  // Scheduled — but if kickoff was >3h ago, the match is almost certainly finished
+  // and liveStatus just wasn't set (e.g. match_live_state slug mismatch).
   const diff = kickoff - now;
+  if (diff < -3 * 3_600_000) {
+    return (
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-semibold text-muted">FT</span>
+        <span className="text-muted">{timeStr}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted">Kicks off in {formatCountdown(diff)}</span>

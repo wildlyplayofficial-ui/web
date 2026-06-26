@@ -390,7 +390,12 @@ export const getActiveWatching = unstable_cache(getActiveWatchingImpl, ["active-
 });
 
 function slugify(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 /** Build a match page slug from team names and kickoff. */
@@ -405,6 +410,8 @@ export const SLUG_ALIASES: Record<string, string> = {
   "turkiye": "turkey",
   "korea-republic": "south-korea",
   "dr-congo": "congo-dr",
+  "cura-ao": "curacao",
+  "c-te-d-ivoire": "cote-d-ivoire",
 };
 
 /** Parse a match slug (home-vs-away-yyyy-mm-dd) into team names and date. */
@@ -534,6 +541,10 @@ const TEAM_CANONICAL: Record<string, string> = {
   "Czech Republic": "Czechia",
   "Korea Republic": "South Korea",
   "IR Iran": "Iran",
+  "Curaçao": "Curacao",
+  "Côte d'Ivoire": "Ivory Coast",
+  "Cote d'Ivoire": "Ivory Coast",
+  "DR Congo": "Congo DR",
 };
 
 function cleanTeamName(name: string): string {
