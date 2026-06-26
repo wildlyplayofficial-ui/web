@@ -489,7 +489,10 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
         .from("posts")
         .select("*")
         .eq("status", "published")
-        .or(`slug.ilike.%${home}%${away}%,slug.ilike.%${away}%${home}%`)
+        .or([
+          ...homeVariants.flatMap(h => awayVariants.map(a => `slug.ilike.%${h}%${a}%`)),
+          ...awayVariants.flatMap(a => homeVariants.map(h => `slug.ilike.%${a}%${h}%`)),
+        ].join(","))
         .order("published_at", { ascending: false }),
     ]);
 
