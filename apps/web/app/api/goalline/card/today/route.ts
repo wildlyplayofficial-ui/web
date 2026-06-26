@@ -21,14 +21,16 @@ export async function GET(request: NextRequest) {
   const tomorrow = new Date(now.getTime() + 86400000).toISOString().slice(0, 10);
 
   // Fetch today's or tomorrow's card (show card up to 24h early per Nick 19/6)
-  const { data: card } = await supabase
+  // Prefer active cards (open/live) over finished ones (locked/settled/voided)
+  const { data: cards } = await supabase
     .from("gl_daily_cards")
     .select("id, card_number, utc_date, goal_line, over_odds, under_odds, cutoff_time_utc, status, method_note, settlement_result, void_reason")
     .in("utc_date", [today, tomorrow])
     .in("status", ["open", "locked", "live", "settled", "voided"])
-    .order("utc_date", { ascending: true })
-    .limit(1)
-    .single();
+    .order("utc_date", { ascending: true });
+
+  const activeStatuses = new Set(["open", "live"]);
+  const card = cards?.find((c) => activeStatuses.has(c.status)) ?? cards?.[0] ?? null;
 
   if (!card) {
     return NextResponse.json({ card: null });

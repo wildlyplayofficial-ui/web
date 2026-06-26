@@ -294,6 +294,24 @@ function TmaHome() {
           </div>
         )}
 
+      {/* Locked but no pick — show matches read-only */}
+      {viewState === "locked" && card && !pick && (
+        <div className="space-y-6">
+          <div className="rounded-card border border-line bg-card p-4 shadow-card text-center">
+            <p className="text-xs font-medium tracking-wider text-muted uppercase">
+              Picks Closed
+            </p>
+            <p className="font-display text-5xl font-bold text-ink mt-2">
+              {card.goal_line}
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              You didn&apos;t pick this round. Watch the matches below.
+            </p>
+          </div>
+          <TmaMatchList matches={matches} />
+        </div>
+      )}
+
       {/* Live */}
       {viewState === "live" && card && (
         <div className="space-y-6">
