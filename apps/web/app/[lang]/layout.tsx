@@ -11,6 +11,9 @@ export async function generateStaticParams() {
   return LANGS.map((lang) => ({ lang }));
 }
 
+// Only match known languages — reject unknown params like /tma, /api, etc.
+export const dynamicParams = false;
+
 export default async function LangLayout({
   children,
   params,
