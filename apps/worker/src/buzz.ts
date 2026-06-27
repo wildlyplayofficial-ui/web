@@ -242,7 +242,7 @@ export async function expireFinishedWatching(deps: BuzzDeps): Promise<number> {
   try {
     const active = await deps.store.getActiveWatching();
     const now = Date.now();
-    const EXPIRE_AFTER_MS = 3 * 60 * 60_000; // 3 hours after kickoff
+    const EXPIRE_AFTER_MS = 2 * 60 * 60_000; // 2 hours after kickoff
 
     for (const watching of active) {
       const kickoff = new Date(watching.kickoff_utc).getTime();
