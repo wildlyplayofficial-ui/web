@@ -113,8 +113,11 @@ export function lintSeoArticle(body: string, slug?: string, lang?: string): SeoL
     }
   }
 
-  // GEO readiness checks — scoped to post-match content with real data
-  const isGeoScoped = slug ? GEO_SCOPED_SLUGS.some((p) => slug.startsWith(p)) : false;
+  // GEO readiness checks — scoped to post-match content with real data.
+  // Only run on EN body — VI/TH/ES translations won't have EN markers (per design doc line 66).
+  const isGeoScoped = slug && (!lang || lang === "en")
+    ? GEO_SCOPED_SLUGS.some((p) => slug.startsWith(p))
+    : false;
 
   // Unique data anchor check — only for post-match content (recap/analysis/post-mortem)
   if (isGeoScoped) {
