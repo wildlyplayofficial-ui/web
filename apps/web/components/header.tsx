@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
+import { usePathname, useParams, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
@@ -26,13 +26,16 @@ function stripLangPrefix(pathname: string): string {
 
 function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const bare = stripLangPrefix(pathname);
+  const qs = searchParams.toString();
+  const bareFull = qs ? `${bare}?${qs}` : bare;
   return (
     <div className="flex gap-1 rounded-lg bg-card p-1">
       {LANGS.map((l) => (
         <Link
           key={l}
-          href={withLang(bare, l)}
+          href={withLang(bareFull, l)}
           onClick={onNavigate}
           className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
             l === lang ? "bg-brand text-bg" : "text-muted hover:text-ink"
