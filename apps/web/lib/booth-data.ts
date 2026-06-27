@@ -38,7 +38,14 @@ async function getBoothForPickImpl(pickId: string): Promise<BoothEntry[]> {
 
   if (error || !data) return [];
 
-  return (data as Record<string, unknown>[]).map((row) => ({
+  // Deduplicate: same event_type + event_minute → keep latest entry only
+  const seen = new Map<string, Record<string, unknown>>();
+  for (const row of data as Record<string, unknown>[]) {
+    const key = `${row.event_type}:${row.event_minute ?? ""}`;
+    seen.set(key, row); // later entry overwrites earlier (data is asc by created_at)
+  }
+
+  return [...seen.values()].map((row) => ({
     eventType: row.event_type as string,
     eventMinute: row.event_minute as string | null,
     linesEn: row.lines_en as BoothEntry["linesEn"],
