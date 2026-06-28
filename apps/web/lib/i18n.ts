@@ -55,6 +55,7 @@ export interface Dict {
     donate: string;
     responsiblePlay: string;
     forum: string;
+    guides: string;
   };
   tagline: string;
   footerDisclaimer: string;
@@ -93,6 +94,12 @@ export interface Dict {
     subtitle: string;
     empty: string;
     backToNews: string;
+  };
+  guides: {
+    title: string;
+    subtitle: string;
+    empty: string;
+    backToGuides: string;
   };
   pick: {
     disclosure: string;
@@ -220,6 +227,7 @@ const en: Dict = {
     donate: "Donate",
     responsiblePlay: "Responsible Play",
     forum: "Forum",
+    guides: "Guides",
   },
   tagline: "Handpicked plays for the global crowd",
   footerDisclaimer: "Entertainment only. Play responsibly.",
@@ -260,6 +268,12 @@ const en: Dict = {
     subtitle: "Recaps and match notes, published automatically after every play.",
     empty: "No posts yet.",
     backToNews: "Back to Newsroom",
+  },
+  guides: {
+    title: "Guides",
+    subtitle: "Evergreen guides on how we think about betting — calibration, discipline, and honest analysis.",
+    empty: "No guides yet.",
+    backToGuides: "Back to Guides",
   },
   pick: {
     disclosure: "Human-picked, AI-operated. A human chose this play; AI wrote, published and settles it.",
@@ -387,6 +401,7 @@ const vi: Dict = {
     donate: "Ủng Hộ",
     responsiblePlay: "Chơi Có Trách Nhiệm",
     forum: "Diễn Đàn",
+    guides: "Hướng Dẫn",
   },
   tagline: "Kèo tuyển chọn cho cộng đồng toàn cầu",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
@@ -427,6 +442,12 @@ const vi: Dict = {
     subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi kèo.",
     empty: "Chưa có bài viết.",
     backToNews: "Quay lại Tin Tức",
+  },
+  guides: {
+    title: "Hướng Dẫn",
+    subtitle: "Các bài hướng dẫn chuyên sâu về tư duy cá cược — hiệu chuẩn, kỷ luật và phân tích trung thực.",
+    empty: "Chưa có bài hướng dẫn.",
+    backToGuides: "Quay lại Hướng Dẫn",
   },
   pick: {
     disclosure: "Người chọn kèo, AI vận hành. Con người chọn kèo này; AI viết, đăng và kết sổ.",
@@ -554,6 +575,7 @@ const th: Dict = {
     donate: "สนับสนุน",
     responsiblePlay: "เล่นอย่างมีความรับผิดชอบ",
     forum: "ฟอรั่ม",
+    guides: "คู่มือ",
   },
   tagline: "ทีเด็ดคัดมากับมือ เพื่อคอบอลทั่วโลก",
   footerDisclaimer: "เพื่อความบันเทิงเท่านั้น โปรดเล่นอย่างมีความรับผิดชอบ",
@@ -594,6 +616,12 @@ const th: Dict = {
     subtitle: "สรุปผลและบันทึกแมตช์ เผยแพร่อัตโนมัติหลังจบทุกทีเด็ด",
     empty: "ยังไม่มีบทความ",
     backToNews: "กลับไปหน้าข่าวสาร",
+  },
+  guides: {
+    title: "คู่มือ",
+    subtitle: "คู่มือเชิงลึกเกี่ยวกับแนวคิดการเดิมพัน — การสอบเทียบ วินัย และการวิเคราะห์ตรงไปตรงมา",
+    empty: "ยังไม่มีคู่มือ",
+    backToGuides: "กลับไปหน้าคู่มือ",
   },
   pick: {
     disclosure: "คนเลือก AI ดำเนินการ — มนุษย์เป็นผู้เลือกทีเด็ดนี้ ส่วน AI เขียน เผยแพร่ และตัดสินผล",
@@ -721,6 +749,7 @@ const es: Dict = {
     donate: "Apoyar",
     responsiblePlay: "Juego Responsable",
     forum: "Foro",
+    guides: "Guías",
   },
   tagline: "Jugadas seleccionadas a mano para la afición global",
   footerDisclaimer: "Solo entretenimiento. Juega con responsabilidad.",
@@ -761,6 +790,12 @@ const es: Dict = {
     subtitle: "Resúmenes y notas de partido, publicados automáticamente después de cada jugada.",
     empty: "Aún no hay publicaciones.",
     backToNews: "Volver a Noticias",
+  },
+  guides: {
+    title: "Guías",
+    subtitle: "Guías atemporales sobre cómo pensamos las apuestas — calibración, disciplina y análisis honesto.",
+    empty: "Aún no hay guías.",
+    backToGuides: "Volver a Guías",
   },
   pick: {
     disclosure:

@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
       { source: "/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
       { source: "/:lang(en|vi|th|es)/goalline", destination: "/:lang/daily-line", permanent: true },
       { source: "/:lang(en|vi|th|es)/goalline/:path*", destination: "/:lang/daily-line/:path*", permanent: true },
+      // 301 redirect evergreen guides from /news/ to /guides/ (moved 28/6/2026)
+      { source: "/news/what-is-asian-handicap", destination: "/guides/what-is-asian-handicap", permanent: true },
+      { source: "/news/what-is-devigging", destination: "/guides/what-is-devigging", permanent: true },
+      { source: "/news/no-play-discipline", destination: "/guides/no-play-discipline", permanent: true },
+      { source: "/news/what-makes-a-good-tipster", destination: "/guides/what-makes-a-good-tipster", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/what-is-asian-handicap", destination: "/:lang/guides/what-is-asian-handicap", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/what-is-devigging", destination: "/:lang/guides/what-is-devigging", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/no-play-discipline", destination: "/:lang/guides/no-play-discipline", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/what-makes-a-good-tipster", destination: "/:lang/guides/what-makes-a-good-tipster", permanent: true },
     ];
   },
 };

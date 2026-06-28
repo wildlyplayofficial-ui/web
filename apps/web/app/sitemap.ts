@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs } from "@/lib/data";
+import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs } from "@/lib/data";
 
 /** SEO: every settled play + published post + all 4 language variants. */
 
@@ -20,7 +20,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs()]);
+  const [picks, posts, matches, guides] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -31,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/stats`, changeFrequency: "daily", priority: 0.8, alternates: alternates("/stats") },
     { url: `${BASE}/matches`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/matches") },
     { url: `${BASE}/news`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/news") },
+    { url: `${BASE}/guides`, changeFrequency: "weekly", priority: 0.7, alternates: alternates("/guides") },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/about") },
     { url: `${BASE}/donate`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/donate") },
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
@@ -60,5 +61,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/match/${m.slug}`),
   }));
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...matchRoutes];
+  const guideRoutes: MetadataRoute.Sitemap = guides.map((g) => ({
+    url: `${BASE}/guides/${g.slug}`,
+    lastModified: new Date(g.updated),
+    changeFrequency: "monthly",
+    priority: 0.7,
+    alternates: alternates(`/guides/${g.slug}`),
+  }));
+
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...matchRoutes];
 }

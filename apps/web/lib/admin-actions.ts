@@ -283,7 +283,7 @@ export async function unwatchAction(
 // ── Post actions ───────────────────────────────────────────────────────────
 
 const VALID_POST_TYPES: readonly PostType[] = [
-  "recap", "preview", "news", "analysis", "no-play", "post-mortem",
+  "recap", "preview", "news", "analysis", "no-play", "post-mortem", "guide",
 ];
 const VALID_LANGS = ["en", "vi", "th", "es"] as const;
 

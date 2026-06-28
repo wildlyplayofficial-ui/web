@@ -24,6 +24,7 @@ const TYPE_DESC: Record<PostType, string> = {
   news: "newsroom article about the match",
   "post-mortem": "honest post-mortem review of the result",
   "no-play": "explanation of why the Curator passed on this match",
+  guide: "evergreen educational guide on betting concepts and methodology",
 };
 
 function buildPickContext(picks: Record<string, unknown>[]): string {

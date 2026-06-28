@@ -180,7 +180,7 @@ async function getPostsImpl(lang: Lang): Promise<Post[]> {
   }
   // Nick 15/6: hide preview posts from /news listing — previews live on /play + social only
   const bySlug = new Map<string, Post>();
-  for (const post of all.filter((p) => p.status === "published" && p.type !== "preview")) {
+  for (const post of all.filter((p) => p.status === "published" && p.type !== "preview" && p.type !== "guide")) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
@@ -236,6 +236,67 @@ async function getPostLangsImpl(slug: string): Promise<Lang[]> {
 
 export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
   revalidate: 300,
+  tags: ["posts"],
+});
+
+/** Published guides for a language, newest first. Same fallback logic as getPosts. */
+async function getGuidesImpl(lang: Lang): Promise<Post[]> {
+  const supabase = getSupabase();
+  let all: Post[];
+  if (!supabase) {
+    all = mockPosts;
+  } else {
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("status", "published")
+      .eq("type", "guide")
+      .in("lang", ["en", lang])
+      .order("published_at", { ascending: false });
+    if (error) throw new Error(`getGuides: ${error.message}`);
+    all = (data ?? []) as Post[];
+  }
+  const bySlug = new Map<string, Post>();
+  for (const post of all.filter((p) => p.status === "published" && p.type === "guide")) {
+    const existing = bySlug.get(post.slug);
+    if (!existing || (post.lang === lang && existing.lang !== lang)) {
+      if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
+    }
+  }
+  return [...bySlug.values()].sort((a, b) =>
+    (b.published_at ?? "").localeCompare(a.published_at ?? ""),
+  );
+}
+
+export const getGuides = unstable_cache(getGuidesImpl, ["guides"], {
+  revalidate: 300,
+  tags: ["posts"],
+});
+
+/** All published guide slugs for sitemap. */
+async function getAllGuideSlugsImpl(): Promise<{ slug: string; updated: string; title: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    const seen = new Set<string>();
+    return mockPosts.filter((p) => {
+      if (p.type !== "guide" || seen.has(p.slug)) return false;
+      seen.add(p.slug);
+      return true;
+    }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title }));
+  }
+  const { data, error } = await supabase
+    .from("posts")
+    .select("slug, published_at, title")
+    .eq("status", "published")
+    .eq("type", "guide")
+    .eq("lang", "en")
+    .order("published_at", { ascending: false });
+  if (error) throw new Error(`getAllGuideSlugs: ${error.message}`);
+  return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
+}
+
+export const getAllGuideSlugs = unstable_cache(getAllGuideSlugsImpl, ["guide-slugs"], {
+  revalidate: 3600,
   tags: ["posts"],
 });
 
