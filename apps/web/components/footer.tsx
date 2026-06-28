@@ -16,7 +16,6 @@ export function Footer() {
     { href: "/news", label: dict.nav.news },
     { href: "/guides", label: dict.nav.guides },
     { href: "/responsible-play", label: dict.nav.responsiblePlay },
-    { href: "/forum", label: dict.nav.forum },
   ];
 
   return (
