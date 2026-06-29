@@ -44,6 +44,9 @@ export function CardOpenUnpicked({ card, matches, lang = "en" }: CardOpenUnpicke
 
       {/* Countdown to cut-off */}
       <Countdown targetUtc={card.cutoff_time_utc} label={S.CUTOFF_LABEL} />
+
+      {/* Share to Telegram */}
+      <ShareToTelegram cardNumber={card.card_number} lang={lang} />
     </div>
   );
 }

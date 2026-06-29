@@ -74,6 +74,9 @@ export function CardLive({ card, matches, pick, lang = "en" }: CardLiveProps) {
       {/* Match scores */}
       <MatchList matches={matches} showScores={true} />
       <GoalDots matches={matches} />
+
+      {/* Share to Telegram */}
+      <ShareToTelegram cardNumber={card.card_number} lang={lang} />
     </div>
   );
 }
