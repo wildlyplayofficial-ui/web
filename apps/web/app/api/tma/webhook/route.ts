@@ -26,17 +26,21 @@ const PLAY_BUTTON = {
 
 async function tgApi(method: string, body: Record<string, unknown>): Promise<void> {
   const token = process.env.TMA_BOT_TOKEN;
-  if (!token) return;
+  if (!token) { console.warn(`tgApi: TMA_BOT_TOKEN missing, skipping ${method}`); return; }
 
   const url = `https://api.telegram.org/bot${token}/${method}`;
   try {
-    await fetch(url, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-  } catch {
-    // Swallow — we must return 200 to Telegram regardless.
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`tgApi ${method} failed:`, text);
+    }
+  } catch (err) {
+    console.error(`tgApi ${method} error:`, err);
   }
 }
 
@@ -199,7 +203,7 @@ function pickToArticle(pick: PickRow): Record<string, unknown> {
     reply_markup: {
       inline_keyboard: [[
         { text: "View on WildlyPlay", url },
-        { text: "🎯 Play Daily Line", web_app: { url: TMA_URL } },
+        { text: "🎯 Play Daily Line", url: TMA_URL },
       ]],
     },
   };
@@ -223,7 +227,7 @@ async function handleInlineQuery(query: { id: string; query: string }): Promise<
       parse_mode: "HTML",
     },
     reply_markup: {
-      inline_keyboard: [[{ text: "🎯 Play Daily Line", web_app: { url: TMA_URL } }]],
+      inline_keyboard: [[{ text: "🎯 Play Daily Line", url: TMA_URL }]],
     },
   });
 
