@@ -130,7 +130,8 @@ function TmaHome() {
       ? `\u{1F525} Daily Line #${card.card_number} \u2014 I picked ${pick.side === "over" ? "Over" : "Under"} ${card.goal_line}. Challenge me!`
       : `\u{1F525} Daily Line #${card.card_number} \u2014 predict Over/Under tonight's matches!`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(caption)}`;
-    window.open(shareUrl, "_blank");
+    // Use location.href — window.open blocked in some TG webviews
+    window.location.href = shareUrl;
   }, [card, pick]);
 
   const viewState = deriveViewState(card, pick);
