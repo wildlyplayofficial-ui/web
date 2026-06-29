@@ -241,7 +241,7 @@ function TmaHome() {
       {viewState === "voided" && card && <CardVoided card={card} S={S} />}
 
       {/* Bottom nav */}
-      {card && <TmaBottomNav groupId={groupId} displayName={displayName} onShare={shareResult} isGameMode={!!inlineMessageId} />}
+      {card && <TmaBottomNav groupId={groupId} displayName={displayName} onShare={shareResult} />}
     </div>
   );
 }
