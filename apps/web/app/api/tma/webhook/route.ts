@@ -88,6 +88,18 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
       callback_query_id: cq.id,
       url: gameUrl,
     });
+    // Debug: test setGameScore directly from webhook with raw imid
+    if (imid) {
+      const token = process.env.TMA_BOT_TOKEN;
+      if (token) {
+        const testRes = await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: from.id, score: 1, inline_message_id: imid, force: true }),
+        }).then(r => r.json()).catch(() => null);
+        console.log("[game-callback-score-test]", JSON.stringify(testRes));
+      }
+    }
     return;
   }
 
