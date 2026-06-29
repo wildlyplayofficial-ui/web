@@ -61,17 +61,32 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Fetch user's pick by device_id
+  // Fetch user's pick — try by UUID (TMA) first, then by device_id (web guest)
   let pick = null;
   let displayName: string | null = null;
   if (userId) {
-    // userId param is actually device_id from localStorage
-    const { data: user } = await supabase
+    let user: { id: string; display_name: string | null } | null = null;
+
+    // Try as UUID (TMA/Games API flow)
+    const { data: byId } = await supabase
       .from("gl_users")
       .select("id, display_name")
-      .eq("device_id", userId)
+      .eq("id", userId)
       .limit(1)
       .single();
+
+    if (byId) {
+      user = byId;
+    } else {
+      // Fallback: device_id (web guest flow)
+      const { data: byDevice } = await supabase
+        .from("gl_users")
+        .select("id, display_name")
+        .eq("device_id", userId)
+        .limit(1)
+        .single();
+      if (byDevice) user = byDevice;
+    }
 
     if (user) {
       displayName = user.display_name ?? null;
