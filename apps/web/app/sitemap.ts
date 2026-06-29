@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs } from "@/lib/data";
+import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs } from "@/lib/data";
 
 /** SEO: every settled play + published post + all 4 language variants. */
 
@@ -20,7 +20,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches, guides] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs()]);
+  const [picks, posts, matches, guides, reports] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -32,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/matches`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/matches") },
     { url: `${BASE}/news`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/news") },
     { url: `${BASE}/guides`, changeFrequency: "weekly", priority: 0.7, alternates: alternates("/guides") },
+    { url: `${BASE}/transparency`, changeFrequency: "monthly", priority: 0.7, alternates: alternates("/transparency") },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/about") },
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
   ];
@@ -68,5 +69,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/guides/${g.slug}`),
   }));
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...matchRoutes];
+  const reportRoutes: MetadataRoute.Sitemap = reports.map((r) => ({
+    url: `${BASE}/transparency/${r.slug}`,
+    lastModified: new Date(r.updated),
+    changeFrequency: "monthly",
+    priority: 0.7,
+    alternates: alternates(`/transparency/${r.slug}`),
+  }));
+
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes];
 }

@@ -325,10 +325,30 @@ async function getAllGuideSlugsImpl(): Promise<{ slug: string; updated: string; 
     .eq("lang", "en")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllGuideSlugs: ${error.message}`);
-  return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
+  return (data ?? []).filter((r) => !REPORT_SLUG_RE.test(r.slug)).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
 }
 
 export const getAllGuideSlugs = unstable_cache(getAllGuideSlugsImpl, ["guide-slugs"], {
+  revalidate: 3600,
+  tags: ["posts"],
+});
+
+/** All published transparency report slugs for sitemap. */
+async function getAllReportSlugsImpl(): Promise<{ slug: string; updated: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("slug, published_at")
+    .eq("status", "published")
+    .eq("type", "guide")
+    .eq("lang", "en")
+    .order("published_at", { ascending: false });
+  if (error) throw new Error(`getAllReportSlugs: ${error.message}`);
+  return (data ?? []).filter((r) => REPORT_SLUG_RE.test(r.slug)).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString() }));
+}
+
+export const getAllReportSlugs = unstable_cache(getAllReportSlugsImpl, ["report-slugs"], {
   revalidate: 3600,
   tags: ["posts"],
 });

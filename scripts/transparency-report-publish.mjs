@@ -197,7 +197,7 @@ async function main() {
   const { from, to, publish } = parseArgs();
   const period = periodLabel(from);
   const pSlug = periodSlug(from);
-  const slug = `transparency-report-${pSlug}`;
+  const slug = pSlug;
 
   console.error(`Report: ${period} (${from} → ${to})`);
   console.error(`Slug: ${slug}`);
@@ -250,10 +250,10 @@ async function main() {
 
   console.error(`\nDone. Published ${slug} in 4 languages.`);
   console.error(`URLs:`);
-  console.error(`  https://www.wildlyplay.com/guides/${slug}`);
-  console.error(`  https://www.wildlyplay.com/vi/guides/${slug}`);
-  console.error(`  https://www.wildlyplay.com/th/guides/${slug}`);
-  console.error(`  https://www.wildlyplay.com/es/guides/${slug}`);
+  console.error(`  https://www.wildlyplay.com/transparency/${slug}`);
+  console.error(`  https://www.wildlyplay.com/vi/transparency/${slug}`);
+  console.error(`  https://www.wildlyplay.com/th/transparency/${slug}`);
+  console.error(`  https://www.wildlyplay.com/es/transparency/${slug}`);
 }
 
 main().catch(e => { console.error("FATAL:", e.message); process.exit(1); });
