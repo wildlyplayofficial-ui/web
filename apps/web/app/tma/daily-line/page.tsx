@@ -62,7 +62,7 @@ function deriveViewState(
 /* ── Main component ────────────────────────────────────────────────────── */
 
 function TmaHome() {
-  const { userId, groupId, displayName, error: authError } = useTma();
+  const { userId, groupId, displayName, inlineMessageId, error: authError } = useTma();
   const [card, setCard] = useState<DailyCard | null>(null);
   const [matches, setMatches] = useState<CardMatch[]>([]);
   const [pick, setPick] = useState<UserPick | null>(null);
@@ -99,7 +99,7 @@ function TmaHome() {
         const res = await fetch("/api/goalline/pick", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, cardId: card.id, side }),
+          body: JSON.stringify({ userId, cardId: card.id, side, inlineMessageId }),
         });
         const data = await res.json();
         if (!res.ok) {
@@ -120,7 +120,7 @@ function TmaHome() {
         setPickLoading(false);
       }
     },
-    [userId, card],
+    [userId, card, inlineMessageId],
   );
 
   const shareResult = useCallback(() => {

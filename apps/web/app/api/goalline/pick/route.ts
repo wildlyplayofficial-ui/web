@@ -17,20 +17,21 @@ function generateFunName(): string {
  * POST /api/goalline/pick — Submit a pick for a GoalLine Daily card.
  *
  * Body: { deviceId: string, displayName?: string, cardId: string, side: "over" | "under" }
- *   OR: { userId: string, cardId: string, side: "over" | "under" }  (TMA flow)
+ *   OR: { userId: string, cardId: string, side: "over" | "under", inlineMessageId?: string }  (TMA flow)
  *
  * Creates guest user if needed (by device_id), then submits pick.
  * TMA flow: userId provided directly, skips device_id lookup.
+ * If inlineMessageId is provided, updates Telegram native game leaderboard.
  */
 export async function POST(request: NextRequest) {
-  let body: { deviceId?: string; userId?: string; displayName?: string; cardId?: string; side?: string };
+  let body: { deviceId?: string; userId?: string; displayName?: string; cardId?: string; side?: string; inlineMessageId?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { deviceId, userId: tmaUserId, displayName, cardId, side } = body;
+  const { deviceId, userId: tmaUserId, displayName, cardId, side, inlineMessageId } = body;
 
   if (!cardId || !side) {
     return NextResponse.json({ error: "cardId and side are required" }, { status: 400 });
@@ -143,5 +144,54 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status });
   }
 
+  // Update Telegram native game leaderboard (fire-and-forget)
+  if (inlineMessageId && tmaUserId) {
+    setTelegramGameScore(userId, inlineMessageId, sb).catch(() => {});
+  }
+
   return NextResponse.json({ pick: result.pick }, { status: 201 });
+}
+
+/**
+ * Set Telegram game score for native per-group leaderboard.
+ * Score = total number of picks by this user (monotonically increasing).
+ */
+async function setTelegramGameScore(
+  glUserId: string,
+  inlineMessageId: string,
+  sb: NonNullable<ReturnType<typeof getServiceSupabase>>,
+) {
+  const token = process.env.TMA_BOT_TOKEN;
+  if (!token) return;
+
+  // Look up Telegram numeric ID from gl_users.auth_ref
+  const { data: user } = await sb
+    .from("gl_users")
+    .select("auth_ref")
+    .eq("id", glUserId)
+    .eq("auth_provider", "telegram")
+    .single();
+
+  if (!user?.auth_ref) return;
+  const tgUserId = Number(user.auth_ref);
+  if (!tgUserId) return;
+
+  // Count total picks as score (always increases)
+  const { count } = await sb
+    .from("gl_picks")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", glUserId);
+
+  const score = Math.max(count ?? 1, 1);
+
+  await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: tgUserId,
+      score,
+      inline_message_id: inlineMessageId,
+      force: true,
+    }),
+  }).catch(() => {});
 }

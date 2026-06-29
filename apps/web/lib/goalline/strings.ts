@@ -84,6 +84,8 @@ export interface DailyLineDict {
   LOCK: string;
   SETTLE: string;
   VOID: string;
+  SHARE_TG_CTA: string;
+  SHARE_TG_CAPTION: (cardNum: number) => string;
 }
 
 const en: DailyLineDict = {
@@ -165,6 +167,8 @@ const en: DailyLineDict = {
   LOCK: "Lock",
   SETTLE: "Settle",
   VOID: "Void",
+  SHARE_TG_CTA: "Challenge your crew",
+  SHARE_TG_CAPTION: (cardNum: number) => `\u{1F525} Daily Line #${cardNum} — predict Over/Under tonight's matches. Who tops the group board? \u{1F447}`,
 };
 
 const vi: DailyLineDict = {
@@ -229,6 +233,8 @@ const vi: DailyLineDict = {
   NO_SETTLED_PICKS: "Ch\u01B0a c\u00F3 l\u01B0\u1EE3t ch\u1ECDn n\u00E0o.",
   DISCLAIMER: "Ch\u1EC9 mang t\u00EDnh gi\u1EA3i tr\u00ED. Kh\u00F4ng ph\u1EA3i t\u01B0 v\u1EA5n t\u00E0i ch\u00EDnh.",
   NOT_SPORTSBOOK: "Kh\u00F4ng ph\u1EA3i nh\u00E0 c\u00E1i.",
+  SHARE_TG_CTA: "R\u1EE7 h\u1ED9i b\u1EA1n v\u00E0o k\u00E8o",
+  SHARE_TG_CAPTION: (cardNum: number) => `\u{1F525} L\u1EADp k\u00E8o nh\u00F3m m\u00ECnh! Daily Line #${cardNum} \u2014 \u0110o\u00E1n Over/Under c\u00E1c tr\u1EADn hot t\u1ED1i nay \u2014 ai l\u00EAn TOP b\u1EA3ng nh\u00F3m? \u{1F447}`,
 };
 
 const th: DailyLineDict = {
@@ -293,6 +299,8 @@ const th: DailyLineDict = {
   NO_SETTLED_PICKS: "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E15\u0E31\u0E27\u0E40\u0E25\u0E37\u0E2D\u0E01.",
   DISCLAIMER: "\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E1A\u0E31\u0E19\u0E40\u0E17\u0E34\u0E07\u0E40\u0E17\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19.",
   NOT_SPORTSBOOK: "\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E40\u0E27\u0E47\u0E1A\u0E1E\u0E19\u0E31\u0E19.",
+  SHARE_TG_CTA: "\u0E0A\u0E27\u0E19\u0E41\u0E01\u0E4A\u0E07\u0E21\u0E32\u0E17\u0E32\u0E22\u0E1A\u0E2D\u0E25",
+  SHARE_TG_CAPTION: (cardNum: number) => `\u{1F525} Daily Line #${cardNum} \u2014 \u0E17\u0E32\u0E22\u0E2A\u0E39\u0E07\u0E2B\u0E23\u0E37\u0E2D\u0E15\u0E48\u0E33\u0E41\u0E21\u0E15\u0E0A\u0E4C\u0E04\u0E37\u0E19\u0E19\u0E35\u0E49 \u2014 \u0E43\u0E04\u0E23\u0E02\u0E36\u0E49\u0E19 TOP \u0E01\u0E25\u0E38\u0E48\u0E21? \u{1F447}`,
 };
 
 const es: DailyLineDict = {
@@ -357,6 +365,8 @@ const es: DailyLineDict = {
   NO_SETTLED_PICKS: "Sin picks resueltos a\u00FAn.",
   DISCLAIMER: "Solo entretenimiento. No es asesor\u00EDa financiera.",
   NOT_SPORTSBOOK: "No es una casa de apuestas.",
+  SHARE_TG_CTA: "Reta a tu grupo",
+  SHARE_TG_CAPTION: (cardNum: number) => `\u{1F525} Daily Line #${cardNum} \u2014 \u00BFM\u00E1s o Menos goles en los partidos de hoy? \u00BFQui\u00E9n lidera el grupo? \u{1F447}`,
 };
 
 const dicts: Record<Lang, DailyLineDict> = { en, vi, th, es };
