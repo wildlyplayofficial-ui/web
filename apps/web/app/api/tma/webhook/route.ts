@@ -13,7 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const TMA_URL = "https://www.wildlyplay.com/tma/daily-line";
 const SITE_URL = "https://www.wildlyplay.com";
-const PLAY_URL_BUTTON = { text: "🎯 Play Daily Line", url: TMA_URL };
+const PLAY_URL_BUTTON = { text: "🎯 Play Daily Line", url: `${SITE_URL}/en/daily-line` };
 
 const PLAY_BUTTON = {
   inline_keyboard: [
