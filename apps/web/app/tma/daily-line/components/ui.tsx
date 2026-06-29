@@ -88,10 +88,12 @@ export function TmaBottomNav({
   groupId,
   displayName,
   onShare,
+  isGameMode,
 }: {
   groupId: string | null;
   displayName: string | null;
   onShare?: () => void;
+  isGameMode?: boolean;
 }) {
   const openWebLeaderboard = () => {
     const webapp = window.Telegram?.WebApp;
@@ -125,6 +127,10 @@ export function TmaBottomNav({
             >
               Group Board
             </a>
+          ) : isGameMode ? (
+            <span className="text-[10px] text-muted">
+              Scores on game card
+            </span>
           ) : (
             <button
               onClick={openWebLeaderboard}
