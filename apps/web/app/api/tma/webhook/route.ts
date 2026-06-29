@@ -78,6 +78,15 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 async function handleUpdate(update: TgUpdate): Promise<void> {
+  // --- Game callback (user taps "Play" on game card) ---
+  if (update.callback_query?.game_short_name) {
+    await tgApi("answerCallbackQuery", {
+      callback_query_id: update.callback_query.id,
+      url: TMA_URL,
+    });
+    return;
+  }
+
   // --- Inline queries ---
   if (update.inline_query) {
     await handleInlineQuery(update.inline_query);
@@ -151,25 +160,13 @@ function getSupabase() {
 async function handleInlineQuery(query: { id: string; query: string }): Promise<void> {
   const results: Record<string, unknown>[] = [
     {
-      type: "article",
+      type: "game",
       id: "daily-line",
-      title: "🎯 Play Daily Line",
-      description: "Predict match outcomes and compete on the leaderboard!",
-      thumbnail_url: `${SITE_URL}/icons/icon-192x192.png`,
-      input_message_content: {
-        message_text:
-          "⚽ <b>Daily Line — WildlyPlay</b>\n\n" +
-          "Predict match outcomes and compete on the leaderboard!\n\n" +
-          "🎯 Tap below to play →",
-        parse_mode: "HTML",
-      },
-      reply_markup: {
-        inline_keyboard: [[PLAY_URL_BUTTON]],
-      },
+      game_short_name: "dailyline",
     },
   ];
 
-  // Build leaderboard inline result
+  // Leaderboard as article (Games API only supports 1 game result)
   const leaderboardText = await buildLeaderboardText();
   results.push({
     type: "article",
@@ -189,7 +186,7 @@ async function handleInlineQuery(query: { id: string; query: string }): Promise<
   await tgApi("answerInlineQuery", {
     inline_query_id: query.id,
     results,
-    cache_time: 60,
+    cache_time: 10,
     is_personal: false,
   });
 }
