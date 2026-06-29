@@ -122,7 +122,7 @@ export function TmaBottomNav({
           )}
           {groupId ? (
             <a
-              href="/tma/daily-line/group"
+              href={`/tma/daily-line/group${typeof window !== "undefined" ? window.location.search : ""}`}
               className="rounded-md bg-card-hover px-3 py-2 text-xs font-medium text-ink transition hover:bg-line"
             >
               Group Board

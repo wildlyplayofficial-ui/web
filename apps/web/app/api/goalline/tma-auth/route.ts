@@ -171,6 +171,38 @@ async function handleGameMode(tgId: string, name: string, chatId: string | null,
     displayName = newUser.display_name;
   }
 
+  // Look up or create gl_groups entry, add user as member
+  let groupId: string | null = null;
+  if (chatId) {
+    const tgGroupId = Number(chatId);
+    if (!isNaN(tgGroupId) && tgGroupId !== 0) {
+      const { data: group } = await sb
+        .from("gl_groups")
+        .select("id")
+        .eq("tg_group_id", tgGroupId)
+        .limit(1)
+        .single();
+
+      if (group) {
+        groupId = group.id;
+      } else {
+        // Auto-create group (title updated later via webhook if needed)
+        const { data: newGroup } = await sb
+          .from("gl_groups")
+          .insert({ tg_group_id: tgGroupId, title: `Group ${tgGroupId}`, created_by_tg: Number(tgId) })
+          .select("id")
+          .single();
+        if (newGroup) groupId = newGroup.id;
+      }
+
+      if (groupId) {
+        await sb
+          .from("gl_group_members")
+          .upsert({ group_id: groupId, user_id: userId }, { onConflict: "group_id,user_id" });
+      }
+    }
+  }
+
   const tokenSecret = botToken;
   const payload = JSON.stringify({
     sub: userId,
@@ -180,5 +212,5 @@ async function handleGameMode(tgId: string, name: string, chatId: string | null,
   const sig = createHmac("sha256", tokenSecret).update(payload).digest("hex");
   const token = Buffer.from(payload).toString("base64url") + "." + sig;
 
-  return NextResponse.json({ token, userId, displayName, ...(chatId ? { groupId: chatId } : {}) });
+  return NextResponse.json({ token, userId, displayName, ...(groupId ? { groupId } : {}) });
 }

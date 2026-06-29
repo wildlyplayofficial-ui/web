@@ -168,7 +168,7 @@ function GroupLeaderboard() {
       {/* Bottom links */}
       <div className="mt-8 space-y-3 text-center">
         <a
-          href="/tma/daily-line"
+          href={`/tma/daily-line${typeof window !== "undefined" ? window.location.search : ""}`}
           className="inline-block rounded-md bg-brand px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-brand-hover active:bg-brand-pressed"
           style={{ minHeight: 44 }}
         >
