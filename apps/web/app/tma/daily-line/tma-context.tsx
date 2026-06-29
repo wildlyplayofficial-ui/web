@@ -13,6 +13,7 @@ interface TmaState {
   userId: string | null;
   displayName: string | null;
   groupId: string | null;
+  inlineMessageId: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -22,6 +23,7 @@ const TmaContext = createContext<TmaState>({
   userId: null,
   displayName: null,
   groupId: null,
+  inlineMessageId: null,
   loading: true,
   error: null,
 });
@@ -36,6 +38,7 @@ export function TmaProvider({ children }: { children: ReactNode }) {
     userId: null,
     displayName: null,
     groupId: null,
+    inlineMessageId: null,
     loading: true,
     error: null,
   });
@@ -47,6 +50,7 @@ export function TmaProvider({ children }: { children: ReactNode }) {
     if (!webapp?.initData) {
       const params = new URLSearchParams(window.location.search);
       if (params.get("game") === "1" && params.get("uid")) {
+        const imid = params.get("imid") || null;
         fetch("/api/goalline/tma-auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -68,6 +72,7 @@ export function TmaProvider({ children }: { children: ReactNode }) {
               userId: data.userId,
               displayName: data.displayName,
               groupId: data.groupId ?? null,
+              inlineMessageId: imid,
               loading: false,
               error: null,
             });
@@ -98,6 +103,7 @@ export function TmaProvider({ children }: { children: ReactNode }) {
           userId: data.userId,
           displayName: data.displayName,
           groupId: data.groupId ?? null,
+          inlineMessageId: null,
           loading: false,
           error: null,
         });

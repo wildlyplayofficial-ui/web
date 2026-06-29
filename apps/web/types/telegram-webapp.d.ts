@@ -51,11 +51,18 @@ interface TelegramWebApp {
   switchInlineQuery(query: string, chatTypes?: string[]): void;
 }
 
+/** Telegram Games API proxy — available in Games webview (not Mini App). */
+interface TelegramGameProxy {
+  shareScore(): void;
+  postEvent(eventType: string, eventData?: unknown): void;
+}
+
 declare global {
   interface Window {
     Telegram?: {
       WebApp: TelegramWebApp;
     };
+    TelegramGameProxy?: TelegramGameProxy;
   }
 }
 

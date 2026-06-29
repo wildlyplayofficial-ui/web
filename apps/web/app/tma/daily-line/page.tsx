@@ -125,6 +125,12 @@ function TmaHome() {
 
   const shareResult = useCallback(() => {
     if (!card || !pick) return;
+    // Games API webview: use native share
+    if (window.TelegramGameProxy) {
+      window.TelegramGameProxy.shareScore();
+      return;
+    }
+    // Mini App SDK: use inline query share
     const side = pick.side === "over" ? "Over" : "Under";
     const outcome =
       pick.status === "won" ? "Won" : pick.status === "lost" ? "Lost" : "";

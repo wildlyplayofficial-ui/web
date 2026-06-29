@@ -96,9 +96,13 @@ export function TmaBottomNav({
     : "https://www.wildlyplay.com/en/goalline/leaderboard";
 
   const openWebLeaderboard = () => {
-    window.Telegram?.WebApp?.openLink(
-      "https://www.wildlyplay.com/en/goalline/leaderboard",
-    );
+    const webapp = window.Telegram?.WebApp;
+    const url = "https://www.wildlyplay.com/en/goalline/leaderboard";
+    if (webapp?.openLink) {
+      webapp.openLink(url);
+    } else {
+      window.open(url, "_blank");
+    }
   };
 
   return (
