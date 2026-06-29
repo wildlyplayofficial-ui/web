@@ -78,12 +78,14 @@ export async function POST(request: Request): Promise<Response> {
 async function handleUpdate(update: TgUpdate): Promise<void> {
   // --- Game callback (user taps "Play" on game card) ---
   if (update.callback_query?.game_short_name) {
-    const from = update.callback_query.from;
-    const chatId = update.callback_query.message?.chat?.id ?? "";
-    const imid = update.callback_query.inline_message_id ?? "";
+    const cq = update.callback_query;
+    const from = cq.from;
+    const chatId = cq.message?.chat?.id ?? "";
+    const imid = cq.inline_message_id ?? "";
+    console.log("[game-callback]", JSON.stringify({ from_id: from.id, chatId, imid, has_message: !!cq.message, chat_instance: cq.chat_instance }));
     const gameUrl = `${TMA_URL}?game=1&uid=${from.id}&name=${encodeURIComponent(from.first_name || "Player")}&chat=${chatId}${imid ? `&imid=${encodeURIComponent(imid)}` : ""}`;
     await tgApi("answerCallbackQuery", {
-      callback_query_id: update.callback_query.id,
+      callback_query_id: cq.id,
       url: gameUrl,
     });
     return;

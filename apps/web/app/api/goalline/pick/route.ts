@@ -145,8 +145,9 @@ export async function POST(request: NextRequest) {
   }
 
   // Update Telegram native game leaderboard (fire-and-forget)
+  console.log("[pick] inlineMessageId:", inlineMessageId, "tmaUserId:", tmaUserId);
   if (inlineMessageId && tmaUserId) {
-    setTelegramGameScore(userId, inlineMessageId, sb).catch(() => {});
+    setTelegramGameScore(userId, inlineMessageId, sb).catch((err) => console.error("[pick] setGameScore error:", err));
   }
 
   return NextResponse.json({ pick: result.pick }, { status: 201 });
@@ -184,7 +185,7 @@ async function setTelegramGameScore(
 
   const score = Math.max(count ?? 1, 1);
 
-  await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
+  const res = await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -193,5 +194,10 @@ async function setTelegramGameScore(
       inline_message_id: inlineMessageId,
       force: true,
     }),
-  }).catch(() => {});
+  }).catch((err) => { console.error("setGameScore fetch error:", err); return null; });
+
+  if (res) {
+    const json = await res.json().catch(() => null);
+    console.log("setGameScore response:", JSON.stringify(json));
+  }
 }
