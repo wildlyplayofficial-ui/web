@@ -145,73 +145,59 @@ function getSupabase() {
 }
 
 // ---------------------------------------------------------------------------
-// Inline query — single Daily Line card
+// Inline query — Daily Line card + Leaderboard
 // ---------------------------------------------------------------------------
 
 async function handleInlineQuery(query: { id: string; query: string }): Promise<void> {
+  const results: Record<string, unknown>[] = [
+    {
+      type: "article",
+      id: "daily-line",
+      title: "🎯 Play Daily Line",
+      description: "Predict match outcomes and compete on the leaderboard!",
+      thumbnail_url: `${SITE_URL}/icons/icon-192x192.png`,
+      input_message_content: {
+        message_text:
+          "⚽ <b>Daily Line — WildlyPlay</b>\n\n" +
+          "Predict match outcomes and compete on the leaderboard!\n\n" +
+          "🎯 Tap below to play →",
+        parse_mode: "HTML",
+      },
+      reply_markup: {
+        inline_keyboard: [[PLAY_URL_BUTTON]],
+      },
+    },
+  ];
+
+  // Build leaderboard inline result
+  const leaderboardText = await buildLeaderboardText();
+  results.push({
+    type: "article",
+    id: "leaderboard",
+    title: "🏆 Weekly Leaderboard",
+    description: "Top players this week",
+    thumbnail_url: `${SITE_URL}/icons/icon-192x192.png`,
+    input_message_content: {
+      message_text: leaderboardText,
+      parse_mode: "HTML",
+    },
+    reply_markup: {
+      inline_keyboard: [[PLAY_URL_BUTTON]],
+    },
+  });
+
   await tgApi("answerInlineQuery", {
     inline_query_id: query.id,
-    results: [
-      {
-        type: "article",
-        id: "daily-line",
-        title: "🎯 Daily Line",
-        description: "Predict match outcomes and compete on the leaderboard!",
-        thumbnail_url: `${SITE_URL}/icons/icon-192x192.png`,
-        input_message_content: {
-          message_text:
-            "⚽ <b>Daily Line — WildlyPlay</b>\n\n" +
-            "Predict match outcomes and compete on the leaderboard!\n\n" +
-            "🎯 Tap below to play →",
-          parse_mode: "HTML",
-        },
-        reply_markup: {
-          inline_keyboard: [[PLAY_URL_BUTTON]],
-        },
-      },
-    ],
-    cache_time: 300,
+    results,
+    cache_time: 60,
     is_personal: false,
   });
 }
 
-// ---------------------------------------------------------------------------
-// /leaderboard — group leaderboard (weekly)
-// ---------------------------------------------------------------------------
-
-async function handleLeaderboard(chatId: number): Promise<void> {
+async function buildLeaderboardText(): Promise<string> {
   const supabase = getSupabase();
-  if (!supabase) {
-    await sendPlayMessage(chatId, "⚽ Leaderboard is temporarily unavailable. Play Daily Line below!");
-    return;
-  }
+  if (!supabase) return "🏆 <b>Weekly Leaderboard</b>\n\nComing soon! Play Daily Line to compete.";
 
-  // Find group by tg_group_id
-  const { data: group } = await supabase
-    .from("gl_groups")
-    .select("id")
-    .eq("tg_group_id", chatId)
-    .single();
-
-  if (!group) {
-    await sendPlayMessage(chatId, "No players yet! Be the first — tap below to play Daily Line.");
-    return;
-  }
-
-  // Get member user_ids
-  const { data: members } = await supabase
-    .from("gl_group_members")
-    .select("user_id")
-    .eq("group_id", group.id);
-
-  if (!members?.length) {
-    await sendPlayMessage(chatId, "No players yet! Be the first — tap below to play Daily Line.");
-    return;
-  }
-
-  const userIds = members.map((m: { user_id: string }) => m.user_id);
-
-  // Current week boundaries (Mon-Sun UTC)
   const now = new Date();
   const dayOfWeek = now.getUTCDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -222,27 +208,34 @@ async function handleLeaderboard(chatId: number): Promise<void> {
 
   const { data: entries } = await supabase
     .from("gl_weekly_leaderboard")
-    .select("user_id, score, winning_days, rank, gl_users!inner(display_name)")
+    .select("score, winning_days, rank, gl_users!inner(display_name)")
     .eq("week_start_utc", weekStartStr)
-    .in("user_id", userIds)
     .order("rank", { ascending: true })
     .limit(20);
 
   if (!entries?.length) {
-    await sendPlayMessage(chatId, "No scores this week yet! Tap below to play Daily Line.");
-    return;
+    return "🏆 <b>Weekly Leaderboard</b>\n\nNo scores yet this week. Be the first — play Daily Line!";
   }
 
   const medals = ["🥇", "🥈", "🥉"];
   let text = "🏆 <b>Weekly Leaderboard</b>\n\n";
   for (let i = 0; i < entries.length; i++) {
-    const e = entries[i] as { score: number; winning_days: number; gl_users: { display_name: string } | { display_name: string }[] };
+    const e = entries[i] as { score: number; gl_users: { display_name: string } | { display_name: string }[] };
     const user = Array.isArray(e.gl_users) ? e.gl_users[0] : e.gl_users;
     const prefix = i < 3 ? medals[i] : `${i + 1}.`;
     const score = Math.round(e.score * 100) / 100;
     text += `${prefix} ${user.display_name} — <b>${score}</b> pts\n`;
   }
 
+  return text;
+}
+
+// ---------------------------------------------------------------------------
+// /leaderboard — fallback for groups where bot is a member
+// ---------------------------------------------------------------------------
+
+async function handleLeaderboard(chatId: number): Promise<void> {
+  const text = await buildLeaderboardText();
   await tgApi("sendMessage", {
     chat_id: chatId,
     text,
