@@ -81,25 +81,47 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
     const cq = update.callback_query;
     const from = cq.from;
     const chatId = cq.message?.chat?.id ?? "";
+    const msgId = cq.message?.message_id ?? "";
     const imid = cq.inline_message_id ?? "";
-    console.log("[game-callback]", JSON.stringify({ from_id: from.id, chatId, imid, has_message: !!cq.message, chat_instance: cq.chat_instance }));
+    console.log("[game-callback]", JSON.stringify({ from_id: from.id, chatId, msgId, imid, has_message: !!cq.message, game: cq.game_short_name }));
+
+    const token = process.env.TMA_BOT_TOKEN;
+
+    // Try setGameScore BEFORE answerCallbackQuery
+    if (token) {
+      const scoreBody = imid
+        ? { user_id: from.id, score: 1, inline_message_id: imid, force: true, disable_edit_message: true }
+        : chatId && msgId
+          ? { user_id: from.id, score: 1, chat_id: chatId, message_id: msgId, force: true, disable_edit_message: true }
+          : null;
+
+      if (scoreBody) {
+        console.log("[game-score-req]", JSON.stringify(scoreBody));
+        const scoreRes = await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(scoreBody),
+        }).then(r => r.json()).catch(e => ({ error: String(e) }));
+        console.log("[game-score-res]", JSON.stringify(scoreRes));
+
+        // Also try getGameHighScores to check if the message ID is valid at all
+        const hsBody = imid
+          ? { user_id: from.id, inline_message_id: imid }
+          : { user_id: from.id, chat_id: chatId, message_id: msgId };
+        const hsRes = await fetch(`https://api.telegram.org/bot${token}/getGameHighScores`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(hsBody),
+        }).then(r => r.json()).catch(e => ({ error: String(e) }));
+        console.log("[game-highscores-res]", JSON.stringify(hsRes));
+      }
+    }
+
     const gameUrl = `${TMA_URL}?game=1&uid=${from.id}&name=${encodeURIComponent(from.first_name || "Player")}&chat=${chatId}${imid ? `&imid=${encodeURIComponent(imid)}` : ""}`;
     await tgApi("answerCallbackQuery", {
       callback_query_id: cq.id,
       url: gameUrl,
     });
-    // Debug: test setGameScore directly from webhook with raw imid
-    if (imid) {
-      const token = process.env.TMA_BOT_TOKEN;
-      if (token) {
-        const testRes = await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: from.id, score: 1, inline_message_id: imid, force: true }),
-        }).then(r => r.json()).catch(() => null);
-        console.log("[game-callback-score-test]", JSON.stringify(testRes));
-      }
-    }
     return;
   }
 
