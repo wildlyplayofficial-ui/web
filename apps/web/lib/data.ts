@@ -239,7 +239,10 @@ export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
   tags: ["posts"],
 });
 
-/** Published guides for a language, newest first. Same fallback logic as getPosts. */
+/** Transparency report slugs follow the pattern "month-year" (e.g., "june-2026"). */
+const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/;
+
+/** Published guides for a language, newest first. Excludes transparency reports. */
 async function getGuidesImpl(lang: Lang): Promise<Post[]> {
   const supabase = getSupabase();
   let all: Post[];
@@ -257,7 +260,7 @@ async function getGuidesImpl(lang: Lang): Promise<Post[]> {
     all = (data ?? []) as Post[];
   }
   const bySlug = new Map<string, Post>();
-  for (const post of all.filter((p) => p.status === "published" && p.type === "guide")) {
+  for (const post of all.filter((p) => p.status === "published" && p.type === "guide" && !REPORT_SLUG_RE.test(p.slug))) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
@@ -269,6 +272,36 @@ async function getGuidesImpl(lang: Lang): Promise<Post[]> {
 }
 
 export const getGuides = unstable_cache(getGuidesImpl, ["guides"], {
+  revalidate: 300,
+  tags: ["posts"],
+});
+
+/** Published transparency reports for a language, newest first. */
+async function getReportsImpl(lang: Lang): Promise<Post[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("status", "published")
+    .eq("type", "guide")
+    .in("lang", ["en", lang])
+    .order("published_at", { ascending: false });
+  if (error) throw new Error(`getReports: ${error.message}`);
+  const all = (data ?? []) as Post[];
+  const bySlug = new Map<string, Post>();
+  for (const post of all.filter((p) => REPORT_SLUG_RE.test(p.slug))) {
+    const existing = bySlug.get(post.slug);
+    if (!existing || (post.lang === lang && existing.lang !== lang)) {
+      if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
+    }
+  }
+  return [...bySlug.values()].sort((a, b) =>
+    (b.published_at ?? "").localeCompare(a.published_at ?? ""),
+  );
+}
+
+export const getReports = unstable_cache(getReportsImpl, ["reports"], {
   revalidate: 300,
   tags: ["posts"],
 });

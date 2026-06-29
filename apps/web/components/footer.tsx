@@ -15,6 +15,7 @@ export function Footer() {
     { href: "/archive", label: dict.nav.archive },
     { href: "/news", label: dict.nav.news },
     { href: "/guides", label: dict.nav.guides },
+    { href: "/transparency", label: dict.nav.transparency },
     { href: "/responsible-play", label: dict.nav.responsiblePlay },
   ];
 

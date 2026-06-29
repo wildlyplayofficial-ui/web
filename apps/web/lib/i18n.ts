@@ -56,6 +56,7 @@ export interface Dict {
     responsiblePlay: string;
     forum: string;
     guides: string;
+    transparency: string;
   };
   tagline: string;
   footerDisclaimer: string;
@@ -100,6 +101,12 @@ export interface Dict {
     subtitle: string;
     empty: string;
     backToGuides: string;
+  };
+  transparency: {
+    title: string;
+    subtitle: string;
+    empty: string;
+    backToReports: string;
   };
   pick: {
     disclosure: string;
@@ -228,6 +235,7 @@ const en: Dict = {
     responsiblePlay: "Responsible Play",
     forum: "Forum",
     guides: "Guides",
+    transparency: "Transparency",
   },
   tagline: "Handpicked plays for the global crowd",
   footerDisclaimer: "Entertainment only. Play responsibly.",
@@ -274,6 +282,12 @@ const en: Dict = {
     subtitle: "Evergreen guides on how we think about betting — calibration, discipline, and honest analysis.",
     empty: "No guides yet.",
     backToGuides: "Back to Guides",
+  },
+  transparency: {
+    title: "Transparency",
+    subtitle: "Our full track record — every pick, every month, wins and losses. No cherry-picked screenshots.",
+    empty: "No reports yet.",
+    backToReports: "Back to Transparency",
   },
   pick: {
     disclosure: "Human-picked, AI-operated. A human chose this play; AI wrote, published and settles it.",
@@ -402,6 +416,7 @@ const vi: Dict = {
     responsiblePlay: "Chơi Có Trách Nhiệm",
     forum: "Diễn Đàn",
     guides: "Hướng Dẫn",
+    transparency: "Minh Bạch",
   },
   tagline: "Kèo tuyển chọn cho cộng đồng toàn cầu",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
@@ -448,6 +463,12 @@ const vi: Dict = {
     subtitle: "Các bài hướng dẫn chuyên sâu về tư duy cá cược — hiệu chuẩn, kỷ luật và phân tích trung thực.",
     empty: "Chưa có bài hướng dẫn.",
     backToGuides: "Quay lại Hướng Dẫn",
+  },
+  transparency: {
+    title: "Minh Bạch",
+    subtitle: "Toàn bộ lịch sử kèo — mọi pick, mọi tháng, thắng lẫn thua. Không chọn lọc ảnh chụp màn hình.",
+    empty: "Chưa có báo cáo.",
+    backToReports: "Quay lại Minh Bạch",
   },
   pick: {
     disclosure: "Người chọn kèo, AI vận hành. Con người chọn kèo này; AI viết, đăng và kết sổ.",
@@ -576,6 +597,7 @@ const th: Dict = {
     responsiblePlay: "เล่นอย่างมีความรับผิดชอบ",
     forum: "ฟอรั่ม",
     guides: "คู่มือ",
+    transparency: "ความโปร่งใส",
   },
   tagline: "ทีเด็ดคัดมากับมือ เพื่อคอบอลทั่วโลก",
   footerDisclaimer: "เพื่อความบันเทิงเท่านั้น โปรดเล่นอย่างมีความรับผิดชอบ",
@@ -622,6 +644,12 @@ const th: Dict = {
     subtitle: "คู่มือเชิงลึกเกี่ยวกับแนวคิดการเดิมพัน — การสอบเทียบ วินัย และการวิเคราะห์ตรงไปตรงมา",
     empty: "ยังไม่มีคู่มือ",
     backToGuides: "กลับไปหน้าคู่มือ",
+  },
+  transparency: {
+    title: "ความโปร่งใส",
+    subtitle: "ประวัติผลงานทั้งหมด — ทุกทีเด็ด ทุกเดือน ทั้งชนะและแพ้ ไม่มีการเลือกเฉพาะภาพหน้าจอที่ดูดี",
+    empty: "ยังไม่มีรายงาน",
+    backToReports: "กลับไปหน้าความโปร่งใส",
   },
   pick: {
     disclosure: "คนเลือก AI ดำเนินการ — มนุษย์เป็นผู้เลือกทีเด็ดนี้ ส่วน AI เขียน เผยแพร่ และตัดสินผล",
@@ -750,6 +778,7 @@ const es: Dict = {
     responsiblePlay: "Juego Responsable",
     forum: "Foro",
     guides: "Guías",
+    transparency: "Transparencia",
   },
   tagline: "Jugadas seleccionadas a mano para la afición global",
   footerDisclaimer: "Solo entretenimiento. Juega con responsabilidad.",
@@ -796,6 +825,12 @@ const es: Dict = {
     subtitle: "Guías atemporales sobre cómo pensamos las apuestas — calibración, disciplina y análisis honesto.",
     empty: "Aún no hay guías.",
     backToGuides: "Volver a Guías",
+  },
+  transparency: {
+    title: "Transparencia",
+    subtitle: "Nuestro historial completo — cada pronóstico, cada mes, aciertos y fallos. Sin capturas escogidas.",
+    empty: "Aún no hay informes.",
+    backToReports: "Volver a Transparencia",
   },
   pick: {
     disclosure:

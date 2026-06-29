@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/news/what-is-devigging", destination: "/:lang/guides/what-is-devigging", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/no-play-discipline", destination: "/:lang/guides/no-play-discipline", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/what-makes-a-good-tipster", destination: "/:lang/guides/what-makes-a-good-tipster", permanent: true },
+      // 301 redirect old /guides/transparency-report-* to /transparency/*
+      { source: "/guides/transparency-report-:slug", destination: "/transparency/:slug", permanent: true },
+      { source: "/:lang(en|vi|th|es)/guides/transparency-report-:slug", destination: "/:lang/transparency/:slug", permanent: true },
     ];
   },
 };
