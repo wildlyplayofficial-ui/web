@@ -13,6 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const TMA_URL = "https://www.wildlyplay.com/tma/daily-line";
 const SITE_URL = "https://www.wildlyplay.com";
+const PLAY_URL_BUTTON = { text: "🎯 Play Daily Line", url: TMA_URL };
 
 const PLAY_BUTTON = {
   inline_keyboard: [
@@ -107,6 +108,12 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
       );
       return;
     }
+
+    // /leaderboard command (groups only)
+    if (/^\/leaderboard(@\w+)?$/i.test(text) && isGroup) {
+      await handleLeaderboard(chatId);
+      return;
+    }
   }
 
   // --- Bot added to a group ---
@@ -127,7 +134,7 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Inline query handler
+// Supabase helper
 // ---------------------------------------------------------------------------
 
 function getSupabase() {
@@ -137,128 +144,109 @@ function getSupabase() {
   return createClient(url, key);
 }
 
-function slugify(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-interface PickRow {
-  id: string;
-  home_team: string;
-  away_team: string;
-  league: string;
-  kickoff_utc: string;
-  market: string;
-  selection: string;
-  line: number | null;
-  odds_publish: number;
-  stake_units: number;
-  status: string;
-  confidence: string | null;
-  thesis: string | null;
-  units_pl: number | null;
-}
-
-function pickToArticle(pick: PickRow): Record<string, unknown> {
-  const date = pick.kickoff_utc.slice(0, 10);
-  const time = pick.kickoff_utc.slice(11, 16);
-  const homeSl = slugify(pick.home_team);
-  const awaySl = slugify(pick.away_team);
-  let selSl = slugify(pick.selection);
-  if (selSl === homeSl) selSl = "home";
-  else if (selSl === awaySl) selSl = "away";
-  const slug = `${homeSl}-vs-${awaySl}-${selSl}-${date}`;
-  const url = `${SITE_URL}/play/${slug}`;
-
-  const statusEmoji: Record<string, string> = {
-    published: "📌", won: "✅", lost: "❌", push: "↩️", void: "⛔",
-  };
-  const emoji = statusEmoji[pick.status] ?? "📌";
-  const lineStr = pick.line != null ? ` ${pick.line}` : "";
-  const title = `${emoji} ${pick.home_team} vs ${pick.away_team}`;
-  const desc = `${pick.market.toUpperCase()}${lineStr} → ${pick.selection} @ ${pick.odds_publish}\n${pick.league} · ${date} ${time} UTC`;
-
-  let msg = `${emoji} <b>${pick.home_team} vs ${pick.away_team}</b>\n`;
-  msg += `${pick.league} · ${date} ${time} UTC\n\n`;
-  msg += `Market: ${pick.market.toUpperCase()}${lineStr}\n`;
-  msg += `Selection: <b>${pick.selection}</b> @ ${pick.odds_publish}\n`;
-  msg += `Stake: ${pick.stake_units}u · Confidence: ${pick.confidence ?? "—"}\n`;
-  if (pick.thesis) msg += `\n💡 ${pick.thesis}\n`;
-  if (pick.status !== "published") {
-    const pl = pick.units_pl != null ? (pick.units_pl > 0 ? `+${pick.units_pl}` : `${pick.units_pl}`) : "";
-    msg += `\nResult: ${pick.status.toUpperCase()} ${pl}u`;
-  }
-  msg += `\n\n🔗 ${url}`;
-
-  return {
-    type: "article",
-    id: pick.id.slice(0, 32),
-    title,
-    description: desc,
-    input_message_content: { message_text: msg, parse_mode: "HTML" },
-    reply_markup: {
-      inline_keyboard: [[
-        { text: "View on WildlyPlay", url },
-        { text: "🎯 Play Daily Line", url: TMA_URL },
-      ]],
-    },
-  };
-}
+// ---------------------------------------------------------------------------
+// Inline query — single Daily Line card
+// ---------------------------------------------------------------------------
 
 async function handleInlineQuery(query: { id: string; query: string }): Promise<void> {
-  const q = (query.query ?? "").trim().toLowerCase();
-  const supabase = getSupabase();
-
-  const results: Record<string, unknown>[] = [];
-
-  // Always show Daily Line as first result
-  results.push({
-    type: "article",
-    id: "daily-line",
-    title: "🎯 Play Daily Line",
-    description: "Predict match outcomes and compete on the leaderboard!",
-    thumbnail_url: `${SITE_URL}/icons/icon-192x192.png`,
-    input_message_content: {
-      message_text: "⚽ <b>Daily Line — WildlyPlay</b>\n\nPredict match outcomes and compete on the leaderboard!\n\n🎯 Tap below to play →",
-      parse_mode: "HTML",
-    },
-    reply_markup: {
-      inline_keyboard: [[{ text: "🎯 Play Daily Line", url: TMA_URL }]],
-    },
-  });
-
-  if (supabase) {
-    // Fetch recent picks (published + settled)
-    const { data: picks } = await supabase
-      .from("picks")
-      .select("id, home_team, away_team, league, kickoff_utc, market, selection, line, odds_publish, stake_units, status, confidence, thesis, units_pl")
-      .neq("status", "draft")
-      .order("published_at", { ascending: false })
-      .limit(20);
-
-    if (picks) {
-      const filtered = q
-        ? picks.filter((p: PickRow) =>
-            p.home_team.toLowerCase().includes(q) ||
-            p.away_team.toLowerCase().includes(q) ||
-            p.league.toLowerCase().includes(q) ||
-            p.selection.toLowerCase().includes(q))
-        : picks;
-
-      for (const pick of filtered.slice(0, 10)) {
-        results.push(pickToArticle(pick));
-      }
-    }
-  }
-
   await tgApi("answerInlineQuery", {
     inline_query_id: query.id,
-    results,
-    cache_time: 60,
+    results: [
+      {
+        type: "article",
+        id: "daily-line",
+        title: "🎯 Daily Line",
+        description: "Predict match outcomes and compete on the leaderboard!",
+        thumbnail_url: `${SITE_URL}/icons/icon-192x192.png`,
+        input_message_content: {
+          message_text:
+            "⚽ <b>Daily Line — WildlyPlay</b>\n\n" +
+            "Predict match outcomes and compete on the leaderboard!\n\n" +
+            "🎯 Tap below to play →",
+          parse_mode: "HTML",
+        },
+        reply_markup: {
+          inline_keyboard: [[PLAY_URL_BUTTON]],
+        },
+      },
+    ],
+    cache_time: 300,
     is_personal: false,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// /leaderboard — group leaderboard (weekly)
+// ---------------------------------------------------------------------------
+
+async function handleLeaderboard(chatId: number): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    await sendPlayMessage(chatId, "⚽ Leaderboard is temporarily unavailable. Play Daily Line below!");
+    return;
+  }
+
+  // Find group by tg_group_id
+  const { data: group } = await supabase
+    .from("gl_groups")
+    .select("id")
+    .eq("tg_group_id", chatId)
+    .single();
+
+  if (!group) {
+    await sendPlayMessage(chatId, "No players yet! Be the first — tap below to play Daily Line.");
+    return;
+  }
+
+  // Get member user_ids
+  const { data: members } = await supabase
+    .from("gl_group_members")
+    .select("user_id")
+    .eq("group_id", group.id);
+
+  if (!members?.length) {
+    await sendPlayMessage(chatId, "No players yet! Be the first — tap below to play Daily Line.");
+    return;
+  }
+
+  const userIds = members.map((m: { user_id: string }) => m.user_id);
+
+  // Current week boundaries (Mon-Sun UTC)
+  const now = new Date();
+  const dayOfWeek = now.getUTCDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(now);
+  weekStart.setUTCDate(now.getUTCDate() + mondayOffset);
+  weekStart.setUTCHours(0, 0, 0, 0);
+  const weekStartStr = weekStart.toISOString().slice(0, 10);
+
+  const { data: entries } = await supabase
+    .from("gl_weekly_leaderboard")
+    .select("user_id, score, winning_days, rank, gl_users!inner(display_name)")
+    .eq("week_start_utc", weekStartStr)
+    .in("user_id", userIds)
+    .order("rank", { ascending: true })
+    .limit(20);
+
+  if (!entries?.length) {
+    await sendPlayMessage(chatId, "No scores this week yet! Tap below to play Daily Line.");
+    return;
+  }
+
+  const medals = ["🥇", "🥈", "🥉"];
+  let text = "🏆 <b>Weekly Leaderboard</b>\n\n";
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i] as { score: number; winning_days: number; gl_users: { display_name: string } | { display_name: string }[] };
+    const user = Array.isArray(e.gl_users) ? e.gl_users[0] : e.gl_users;
+    const prefix = i < 3 ? medals[i] : `${i + 1}.`;
+    const score = Math.round(e.score * 100) / 100;
+    text += `${prefix} ${user.display_name} — <b>${score}</b> pts\n`;
+  }
+
+  await tgApi("sendMessage", {
+    chat_id: chatId,
+    text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: [[PLAY_URL_BUTTON]] },
   });
 }
