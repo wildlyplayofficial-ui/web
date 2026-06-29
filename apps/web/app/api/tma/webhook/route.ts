@@ -13,8 +13,6 @@ import { createClient } from "@supabase/supabase-js";
 
 const TMA_URL = "https://www.wildlyplay.com/tma/daily-line";
 const SITE_URL = "https://www.wildlyplay.com";
-const PLAY_URL_BUTTON = { text: "🎯 Play Daily Line", url: "https://t.me/WPTmaBot?game=dailyline" };
-
 const PLAY_BUTTON = {
   inline_keyboard: [
     [{ text: "🎯 Play Daily Line", web_app: { url: TMA_URL } }],
@@ -171,6 +169,8 @@ async function handleInlineQuery(query: { id: string; query: string }): Promise<
   ];
 
   // Leaderboard as article (Games API only supports 1 game result)
+  // No Play button — URL buttons can't open games natively (triggers share picker).
+  // Users play via the game card above.
   const leaderboardText = await buildLeaderboardText();
   results.push({
     type: "article",
@@ -181,9 +181,6 @@ async function handleInlineQuery(query: { id: string; query: string }): Promise<
     input_message_content: {
       message_text: leaderboardText,
       parse_mode: "HTML",
-    },
-    reply_markup: {
-      inline_keyboard: [[PLAY_URL_BUTTON]],
     },
   });
 
@@ -241,6 +238,5 @@ async function handleLeaderboard(chatId: number): Promise<void> {
     chat_id: chatId,
     text,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: [[PLAY_URL_BUTTON]] },
   });
 }
