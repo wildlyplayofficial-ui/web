@@ -85,9 +85,17 @@ function TmaHome() {
         setPick(data.pick ?? null);
         setCommunitySplit(data.communitySplit ?? null);
         setLoading(false);
+        // Retroactive game score sync for inline cards
+        if (data.pick && inlineMessageId) {
+          fetch("/api/goalline/sync-game-score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, inlineMessageId }),
+          }).catch(() => {});
+        }
       })
       .catch(() => setLoading(false));
-  }, [userId]);
+  }, [userId, inlineMessageId]);
 
   // Submit pick
   const submitPick = useCallback(
