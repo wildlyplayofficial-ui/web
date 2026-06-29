@@ -104,10 +104,12 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
 
     // /play or /dailyline command
     if (/^\/(play|dailyline)(@\w+)?$/i.test(text)) {
-      const caption = isGroup
-        ? "⚽ Think you know football? Tap below to play Daily Line!"
-        : "⚽ Welcome to WildlyPlay! Tap below to play Daily Line.";
-      await sendPlayMessage(chatId, caption);
+      if (isGroup) {
+        // sendGame creates a native game card — callback includes chat_id for group leaderboard
+        await tgApi("sendGame", { chat_id: chatId, game_short_name: "dailyline" });
+      } else {
+        await sendPlayMessage(chatId, "⚽ Welcome to WildlyPlay! Tap below to play Daily Line.");
+      }
       return;
     }
 
@@ -136,10 +138,11 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
     const botWasAdded = newMembers.some((m) => m.id === botId);
 
     if (botWasAdded && message?.chat?.id) {
-      await sendPlayMessage(
-        message.chat.id,
-        "👋 Hey! I'm the WildlyPlay bot.\n\nType /play anytime to open Daily Line — predict matches and climb the leaderboard!",
-      );
+      await tgApi("sendMessage", {
+        chat_id: message.chat.id,
+        text: "👋 Hey! I'm the WildlyPlay bot.\n\nType /play anytime to open Daily Line — predict matches and climb the leaderboard!",
+      });
+      await tgApi("sendGame", { chat_id: message.chat.id, game_short_name: "dailyline" });
     }
   }
 }
