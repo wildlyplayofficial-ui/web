@@ -80,9 +80,12 @@ export async function POST(request: Request): Promise<Response> {
 async function handleUpdate(update: TgUpdate): Promise<void> {
   // --- Game callback (user taps "Play" on game card) ---
   if (update.callback_query?.game_short_name) {
+    const from = update.callback_query.from;
+    const chatId = update.callback_query.message?.chat?.id ?? "";
+    const gameUrl = `${TMA_URL}?game=1&uid=${from.id}&name=${encodeURIComponent(from.first_name || "Player")}&chat=${chatId}`;
     await tgApi("answerCallbackQuery", {
       callback_query_id: update.callback_query.id,
-      url: TMA_URL,
+      url: gameUrl,
     });
     return;
   }

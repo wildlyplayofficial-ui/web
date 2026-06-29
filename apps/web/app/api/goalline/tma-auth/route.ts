@@ -13,21 +13,26 @@ import { verifyTmaInitData } from "@/lib/goalline/tma-verify";
  * and returns a signed token.
  */
 export async function POST(request: NextRequest) {
-  let body: { initData?: string };
+  let body: { initData?: string; gameMode?: boolean; userId?: string; displayName?: string; chatId?: string | null };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { initData } = body;
-  if (!initData) {
-    return NextResponse.json({ error: "initData is required" }, { status: 400 });
-  }
-
   const botToken = process.env.TMA_BOT_TOKEN ?? process.env.CURATOR_BOT_TOKEN;
   if (!botToken) {
     return NextResponse.json({ error: "Bot token not configured" }, { status: 503 });
+  }
+
+  // Games API mode: user info passed directly from webhook callback (no initData)
+  if (body.gameMode && body.userId) {
+    return handleGameMode(body.userId, body.displayName ?? "Player", body.chatId ?? null, botToken);
+  }
+
+  const { initData } = body;
+  if (!initData) {
+    return NextResponse.json({ error: "initData is required" }, { status: 400 });
   }
 
   const verified = verifyTmaInitData(initData, botToken);
@@ -126,4 +131,54 @@ export async function POST(request: NextRequest) {
     displayName,
     ...(groupId ? { groupId } : {}),
   });
+}
+
+// Games API auth: find-or-create user by Telegram ID (no initData verification)
+async function handleGameMode(tgId: string, name: string, chatId: string | null, botToken: string) {
+  const sb = getServiceSupabase();
+  if (!sb) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+
+  let userId: string;
+  let displayName: string;
+
+  const { data: existing } = await sb
+    .from("gl_users")
+    .select("id, display_name")
+    .eq("auth_provider", "telegram")
+    .eq("auth_ref", tgId)
+    .limit(1)
+    .single();
+
+  if (existing) {
+    userId = existing.id;
+    displayName = existing.display_name;
+  } else {
+    const { data: newUser, error: createErr } = await sb
+      .from("gl_users")
+      .insert({
+        type: "claimed",
+        display_name: name,
+        auth_provider: "telegram",
+        auth_ref: tgId,
+      })
+      .select("id, display_name")
+      .single();
+
+    if (createErr || !newUser) {
+      return NextResponse.json({ error: createErr?.message ?? "Failed to create user" }, { status: 500 });
+    }
+    userId = newUser.id;
+    displayName = newUser.display_name;
+  }
+
+  const tokenSecret = botToken;
+  const payload = JSON.stringify({
+    sub: userId,
+    tg: Number(tgId),
+    exp: Math.floor(Date.now() / 1000) + 86400,
+  });
+  const sig = createHmac("sha256", tokenSecret).update(payload).digest("hex");
+  const token = Buffer.from(payload).toString("base64url") + "." + sig;
+
+  return NextResponse.json({ token, userId, displayName, ...(chatId ? { groupId: chatId } : {}) });
 }

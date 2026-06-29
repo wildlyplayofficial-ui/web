@@ -42,7 +42,42 @@ export function TmaProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const webapp = window.Telegram?.WebApp;
+
+    // Games API fallback: no WebApp SDK, but URL has ?game=1&uid=...
     if (!webapp?.initData) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("game") === "1" && params.get("uid")) {
+        fetch("/api/goalline/tma-auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            gameMode: true,
+            userId: params.get("uid"),
+            displayName: params.get("name") || "Player",
+            chatId: params.get("chat") || null,
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.error) {
+              setState((s) => ({ ...s, loading: false, error: data.error }));
+              return;
+            }
+            setState({
+              token: data.token,
+              userId: data.userId,
+              displayName: data.displayName,
+              groupId: data.groupId ?? null,
+              loading: false,
+              error: null,
+            });
+          })
+          .catch(() => {
+            setState((s) => ({ ...s, loading: false, error: "Auth failed" }));
+          });
+        return;
+      }
+
       setState((s) => ({ ...s, loading: false, error: "Not running inside Telegram" }));
       return;
     }
