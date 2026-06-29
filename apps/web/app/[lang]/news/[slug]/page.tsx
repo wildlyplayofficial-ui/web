@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getPost, getPostLangs, getMatchBySlug } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
@@ -132,7 +133,16 @@ export default async function NewsPost({ params }: Props) {
       <hr className="my-6 border-line" />
 
       <div className="prose-md mt-8">
-        <ReactMarkdown>{post.body_md.replace(/^\s*[-*]{3,}\s*\n/gm, "")}</ReactMarkdown>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            table: ({ children }) => (
+              <div className="table-wrap"><table>{children}</table></div>
+            ),
+          }}
+        >
+          {post.body_md.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
+        </ReactMarkdown>
       </div>
 
       <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
