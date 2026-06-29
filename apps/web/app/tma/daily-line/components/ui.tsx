@@ -87,14 +87,12 @@ export function ShareButton({
 export function TmaBottomNav({
   groupId,
   displayName,
+  onShare,
 }: {
   groupId: string | null;
   displayName: string | null;
+  onShare?: () => void;
 }) {
-  const leaderboardHref = groupId
-    ? "/tma/daily-line/group"
-    : "https://www.wildlyplay.com/en/goalline/leaderboard";
-
   const openWebLeaderboard = () => {
     const webapp = window.Telegram?.WebApp;
     const url = "https://www.wildlyplay.com/en/goalline/leaderboard";
@@ -112,20 +110,29 @@ export function TmaBottomNav({
           {displayName && <span>{displayName}</span>}
         </div>
         <div className="flex items-center gap-3">
+          {onShare && (
+            <button
+              onClick={onShare}
+              className="rounded-md bg-[#2AABEE]/10 px-3 py-2 text-xs font-medium text-[#2AABEE] transition hover:bg-[#2AABEE]/20"
+            >
+              Share
+            </button>
+          )}
           {groupId ? (
             <a
-              href={leaderboardHref}
+              href="/tma/daily-line/group"
               className="rounded-md bg-card-hover px-3 py-2 text-xs font-medium text-ink transition hover:bg-line"
             >
               Group Board
             </a>
-          ) : null}
-          <button
-            onClick={openWebLeaderboard}
-            className="rounded-md bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition hover:bg-brand/20"
-          >
-            Leaderboard
-          </button>
+          ) : (
+            <button
+              onClick={openWebLeaderboard}
+              className="rounded-md bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition hover:bg-brand/20"
+            >
+              Leaderboard
+            </button>
+          )}
         </div>
       </div>
     </div>

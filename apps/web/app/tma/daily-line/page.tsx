@@ -124,23 +124,13 @@ function TmaHome() {
   );
 
   const shareResult = useCallback(() => {
-    if (!card || !pick) return;
-    // Games API webview: use native share
-    if (window.TelegramGameProxy) {
-      window.TelegramGameProxy.shareScore();
-      return;
-    }
-    // Mini App SDK: use inline query share
-    const side = pick.side === "over" ? "Over" : "Under";
-    const outcome =
-      pick.status === "won" ? "Won" : pick.status === "lost" ? "Lost" : "";
-    const text = outcome
-      ? `Daily Line #${card.card_number}: I picked ${side} ${card.goal_line} and ${outcome}!`
-      : `Daily Line #${card.card_number}: I picked ${side} ${card.goal_line}`;
-    const webapp = window.Telegram?.WebApp;
-    if (webapp?.switchInlineQuery) {
-      webapp.switchInlineQuery(text, ["users", "groups"]);
-    }
+    if (!card) return;
+    const botUrl = "https://t.me/WPTmaBot?game=dailyline";
+    const caption = pick
+      ? `\u{1F525} Daily Line #${card.card_number} \u2014 I picked ${pick.side === "over" ? "Over" : "Under"} ${card.goal_line}. Challenge me!`
+      : `\u{1F525} Daily Line #${card.card_number} \u2014 predict Over/Under tonight's matches!`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(caption)}`;
+    window.open(shareUrl, "_blank");
   }, [card, pick]);
 
   const viewState = deriveViewState(card, pick);
@@ -250,7 +240,7 @@ function TmaHome() {
       {viewState === "voided" && card && <CardVoided card={card} S={S} />}
 
       {/* Bottom nav */}
-      {card && <TmaBottomNav groupId={groupId} displayName={displayName} />}
+      {card && <TmaBottomNav groupId={groupId} displayName={displayName} onShare={shareResult} />}
     </div>
   );
 }
