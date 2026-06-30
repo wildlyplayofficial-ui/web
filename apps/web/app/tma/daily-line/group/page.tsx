@@ -31,11 +31,10 @@ function GroupLeaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!groupId) {
-      setLoading(false);
-      return;
-    }
-    fetch(`/api/goalline/group-leaderboard?groupId=${groupId}&type=weekly`)
+    const url = groupId
+      ? `/api/goalline/group-leaderboard?groupId=${groupId}&type=weekly`
+      : `/api/goalline/leaderboard?type=weekly&limit=50`;
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         setEntries(data.entries ?? []);
@@ -66,30 +65,10 @@ function GroupLeaderboard() {
     );
   }
 
-  if (!groupId) {
-    return (
-      <div className="mx-auto max-w-lg px-5 py-8 text-center">
-        <h1 className="font-display text-2xl font-bold text-ink">
-          No Group Found
-        </h1>
-        <p className="mt-3 text-sm text-muted">
-          Open this Mini App from a group chat to see the group leaderboard.
-        </p>
-        <button
-          onClick={openWebLeaderboard}
-          className="mt-6 inline-block rounded-md bg-brand px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-brand-hover active:bg-brand-pressed"
-          style={{ minHeight: 44 }}
-        >
-          View Full Leaderboard
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-lg px-5 py-8 pb-24">
       <h1 className="font-display text-2xl font-bold text-ink">
-        Group Leaderboard
+        {groupId ? "Group Leaderboard" : "Leaderboard"}
       </h1>
       <p className="mt-1 text-sm text-muted">This week</p>
 

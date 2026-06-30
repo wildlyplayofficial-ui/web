@@ -93,15 +93,7 @@ export function TmaBottomNav({
   displayName: string | null;
   onShare?: () => void;
 }) {
-  const openWebLeaderboard = () => {
-    const webapp = window.Telegram?.WebApp;
-    const url = "https://www.wildlyplay.com/en/goalline/leaderboard";
-    if (webapp?.openLink) {
-      webapp.openLink(url);
-    } else {
-      window.open(url, "_blank");
-    }
-  };
+  const leaderboardHref = `/tma/daily-line/group${typeof window !== "undefined" ? window.location.search : ""}`;
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 border-t border-line bg-card/95 backdrop-blur-md">
@@ -118,21 +110,12 @@ export function TmaBottomNav({
               Share
             </button>
           )}
-          {groupId ? (
-            <a
-              href={`/tma/daily-line/group${typeof window !== "undefined" ? window.location.search : ""}`}
-              className="rounded-md bg-card-hover px-3 py-2 text-xs font-medium text-ink transition hover:bg-line"
-            >
-              Group Board
-            </a>
-          ) : (
-            <button
-              onClick={openWebLeaderboard}
-              className="rounded-md bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition hover:bg-brand/20"
-            >
-              Leaderboard
-            </button>
-          )}
+          <a
+            href={leaderboardHref}
+            className="rounded-md bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition hover:bg-brand/20"
+          >
+            Leaderboard
+          </a>
         </div>
       </div>
     </div>
