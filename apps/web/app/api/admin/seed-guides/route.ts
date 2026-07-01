@@ -1,19 +1,17 @@
 /**
  * POST /api/admin/seed-guides
  * One-off endpoint to seed calculator guide articles.
- * Auth: REVALIDATE_SECRET header.
- * DELETE THIS AFTER USE.
+ * Auth: SEED_GUIDES_TOKEN env var (set + remove after use).
+ * DELETE THIS FILE AFTER USE.
  */
 import { NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase-server";
-import { readFileSync } from "fs";
-import path from "path";
 
 export async function POST(req: Request) {
-  const secret = req.headers.get("x-revalidate-secret");
-  if (secret !== process.env.REVALIDATE_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const token = process.env.SEED_GUIDES_TOKEN;
+  if (!token) return NextResponse.json({ error: "Endpoint disabled" }, { status: 403 });
+  const given = req.headers.get("x-seed-token");
+  if (given !== token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const sb = getServiceSupabase();
   if (!sb) return NextResponse.json({ error: "DB not configured" }, { status: 500 });
