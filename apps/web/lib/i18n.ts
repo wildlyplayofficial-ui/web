@@ -118,6 +118,9 @@ export interface Dict {
     oddsConverterDesc: string;
     kelly: string;
     kellyDesc: string;
+    deVigCta: string;
+    oddsConverterCta: string;
+    kellyCta: string;
   };
   pick: {
     disclosure: string;
@@ -311,6 +314,9 @@ const en: Dict = {
     oddsConverterDesc: "Convert between Decimal, Fractional, American, Malay, Hong Kong, Indonesian, and Implied Probability.",
     kelly: "Kelly Criterion",
     kellyDesc: "Calculate optimal stake size based on your edge. Fractional Kelly default for safer bankroll management.",
+    deVigCta: "Learn the theory behind de-vigging",
+    oddsConverterCta: "Learn all 7 odds formats in depth",
+    kellyCta: "Learn the theory behind Kelly Criterion",
   },
   pick: {
     disclosure: "Human-picked, AI-operated. A human chose this play; AI wrote, published and settles it.",
@@ -504,6 +510,9 @@ const vi: Dict = {
     oddsConverterDesc: "Chuyển đổi giữa Thập phân, Phân số, Mỹ, Malay, Hồng Kông, Indonesia và Xác suất ngầm định.",
     kelly: "Tiêu Chí Kelly",
     kellyDesc: "Tính mức đặt tối ưu dựa trên lợi thế. Mặc định Kelly phân số cho quản lý vốn an toàn.",
+    deVigCta: "Tìm hiểu lý thuyết đằng sau de-vigging",
+    oddsConverterCta: "Tìm hiểu chi tiết 7 định dạng cược",
+    kellyCta: "Tìm hiểu lý thuyết đằng sau Kelly Criterion",
   },
   pick: {
     disclosure: "Người chọn kèo, AI vận hành. Con người chọn kèo này; AI viết, đăng và kết sổ.",
@@ -697,6 +706,9 @@ const th: Dict = {
     oddsConverterDesc: "แปลงระหว่าง ทศนิยม เศษส่วน อเมริกัน มาเลย์ ฮ่องกง อินโดนีเซีย และความน่าจะเป็นโดยนัย",
     kelly: "เกณฑ์ Kelly",
     kellyDesc: "คำนวณขนาดเดิมพันที่เหมาะสมตามความได้เปรียบ ค่าเริ่มต้น Kelly เศษส่วนเพื่อจัดการเงินทุนอย่างปลอดภัย",
+    deVigCta: "เรียนรู้ทฤษฎี de-vigging เชิงลึก",
+    oddsConverterCta: "เรียนรู้รูปแบบอัตราต่อรองทั้ง 7 แบบ",
+    kellyCta: "เรียนรู้ทฤษฎี Kelly Criterion เชิงลึก",
   },
   pick: {
     disclosure: "คนเลือก AI ดำเนินการ — มนุษย์เป็นผู้เลือกทีเด็ดนี้ ส่วน AI เขียน เผยแพร่ และตัดสินผล",
@@ -890,6 +902,9 @@ const es: Dict = {
     oddsConverterDesc: "Convierte entre Decimal, Fraccionario, Americano, Malayo, Hong Kong, Indonesio y Probabilidad Implícita.",
     kelly: "Criterio Kelly",
     kellyDesc: "Calcula el tamaño óptimo de apuesta según tu ventaja. Kelly fraccionario por defecto para gestión segura de bankroll.",
+    deVigCta: "Aprende la teoría detrás del de-vigging",
+    oddsConverterCta: "Aprende los 7 formatos de cuotas en detalle",
+    kellyCta: "Aprende la teoría detrás del Kelly Criterion",
   },
   pick: {
     disclosure:

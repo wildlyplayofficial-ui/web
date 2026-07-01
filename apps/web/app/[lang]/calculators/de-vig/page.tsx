@@ -45,7 +45,7 @@ export default async function DeVigPage({ params }: Props) {
           href={withLang("/guides/how-de-vigging-works", lang)}
           className="text-sm font-medium text-brand hover:underline"
         >
-          Learn the theory behind de-vigging &rarr;
+          {dict.calculators.deVigCta} &rarr;
         </Link>
       </div>
     </div>

@@ -45,7 +45,7 @@ export default async function KellyPage({ params }: Props) {
           href={withLang("/guides/kelly-criterion-betting", lang)}
           className="text-sm font-medium text-brand hover:underline"
         >
-          Learn the theory behind Kelly Criterion &rarr;
+          {dict.calculators.kellyCta} &rarr;
         </Link>
       </div>
     </div>

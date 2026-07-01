@@ -45,7 +45,7 @@ export default async function OddsConverterPage({ params }: Props) {
           href={withLang("/guides/odds-formats-explained", lang)}
           className="text-sm font-medium text-brand hover:underline"
         >
-          Learn all 7 odds formats in depth &rarr;
+          {dict.calculators.oddsConverterCta} &rarr;
         </Link>
       </div>
     </div>
