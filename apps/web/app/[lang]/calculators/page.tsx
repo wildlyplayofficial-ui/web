@@ -1,0 +1,69 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+
+export const revalidate = 86400;
+
+type Props = {
+  params: Promise<{ lang: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const lang = resolveLang((await params).lang);
+  const dict = getDict(lang);
+  return {
+    title: dict.calculators.title,
+    description: dict.calculators.subtitle,
+    alternates: buildAlternates("/calculators", lang),
+    openGraph: {
+      title: `${dict.calculators.title} | WildlyPlay`,
+      description: dict.calculators.subtitle,
+    },
+  };
+}
+
+const tools = [
+  { slug: "de-vig", key: "deVig" as const, descKey: "deVigDesc" as const },
+  { slug: "odds-converter", key: "oddsConverter" as const, descKey: "oddsConverterDesc" as const },
+  { slug: "kelly", key: "kelly" as const, descKey: "kellyDesc" as const },
+] as const;
+
+export default async function CalculatorsPage({ params }: Props) {
+  const lang = resolveLang((await params).lang);
+  const dict = getDict(lang);
+
+  return (
+    <div className="mx-auto max-w-[800px] px-5">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: dict.calculators.title, url: "/calculators" },
+        ]}
+      />
+      <section className="py-12 text-center">
+        <h1 className="gradient-text font-display text-4xl font-bold">
+          {dict.calculators.title}
+        </h1>
+        <p className="mt-3 text-muted">{dict.calculators.subtitle}</p>
+      </section>
+
+      <div className="flex flex-col gap-4 pb-8">
+        {tools.map((tool) => (
+          <Link
+            key={tool.slug}
+            href={withLang(`/calculators/${tool.slug}`, lang)}
+            className="group rounded-card border border-line bg-card p-6 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover"
+          >
+            <h2 className="font-display text-xl font-bold transition-colors group-hover:text-brand">
+              {dict.calculators[tool.key]}
+            </h2>
+            <p className="mt-2 text-sm text-muted">
+              {dict.calculators[tool.descKey]}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

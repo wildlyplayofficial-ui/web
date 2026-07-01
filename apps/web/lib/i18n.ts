@@ -57,6 +57,7 @@ export interface Dict {
     forum: string;
     guides: string;
     transparency: string;
+    calculators: string;
   };
   tagline: string;
   footerDisclaimer: string;
@@ -107,6 +108,16 @@ export interface Dict {
     subtitle: string;
     empty: string;
     backToReports: string;
+  };
+  calculators: {
+    title: string;
+    subtitle: string;
+    deVig: string;
+    deVigDesc: string;
+    oddsConverter: string;
+    oddsConverterDesc: string;
+    kelly: string;
+    kellyDesc: string;
   };
   pick: {
     disclosure: string;
@@ -237,6 +248,7 @@ const en: Dict = {
     forum: "Forum",
     guides: "Guides",
     transparency: "Transparency",
+    calculators: "Calculators",
   },
   tagline: "Handpicked plays for the global crowd",
   footerDisclaimer: "Entertainment only. Play responsibly.",
@@ -289,6 +301,16 @@ const en: Dict = {
     subtitle: "Our full track record — every pick, every month, wins and losses. No cherry-picked screenshots.",
     empty: "No reports yet.",
     backToReports: "Back to Transparency",
+  },
+  calculators: {
+    title: "Calculators",
+    subtitle: "Free betting math tools — de-vig lines, convert odds formats, and size your stakes with Kelly.",
+    deVig: "De-Vig Calculator",
+    deVigDesc: "Remove the bookmaker margin to find true odds. Supports multiplicative, additive, Shin, and power methods.",
+    oddsConverter: "Odds Converter",
+    oddsConverterDesc: "Convert between Decimal, Fractional, American, Malay, Hong Kong, Indonesian, and Implied Probability.",
+    kelly: "Kelly Criterion",
+    kellyDesc: "Calculate optimal stake size based on your edge. Fractional Kelly default for safer bankroll management.",
   },
   pick: {
     disclosure: "Human-picked, AI-operated. A human chose this play; AI wrote, published and settles it.",
@@ -419,6 +441,7 @@ const vi: Dict = {
     forum: "Diễn Đàn",
     guides: "Hướng Dẫn",
     transparency: "Minh Bạch",
+    calculators: "Công Cụ",
   },
   tagline: "Kèo tuyển chọn cho cộng đồng toàn cầu",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
@@ -471,6 +494,16 @@ const vi: Dict = {
     subtitle: "Toàn bộ lịch sử kèo — mọi pick, mọi tháng, thắng lẫn thua. Không chọn lọc ảnh chụp màn hình.",
     empty: "Chưa có báo cáo.",
     backToReports: "Quay lại Minh Bạch",
+  },
+  calculators: {
+    title: "Công Cụ Tính",
+    subtitle: "Công cụ toán cá cược miễn phí — loại margin nhà cái, chuyển đổi tỷ lệ cược, và tính mức đặt Kelly.",
+    deVig: "Loại Margin (De-Vig)",
+    deVigDesc: "Loại bỏ margin nhà cái để tìm tỷ lệ thực. Hỗ trợ phương pháp nhân, cộng, Shin, và lũy thừa.",
+    oddsConverter: "Chuyển Đổi Cược",
+    oddsConverterDesc: "Chuyển đổi giữa Thập phân, Phân số, Mỹ, Malay, Hồng Kông, Indonesia và Xác suất ngầm định.",
+    kelly: "Tiêu Chí Kelly",
+    kellyDesc: "Tính mức đặt tối ưu dựa trên lợi thế. Mặc định Kelly phân số cho quản lý vốn an toàn.",
   },
   pick: {
     disclosure: "Người chọn kèo, AI vận hành. Con người chọn kèo này; AI viết, đăng và kết sổ.",
@@ -601,6 +634,7 @@ const th: Dict = {
     forum: "ฟอรั่ม",
     guides: "คู่มือ",
     transparency: "ความโปร่งใส",
+    calculators: "เครื่องคิดเลข",
   },
   tagline: "ทีเด็ดคัดมากับมือ เพื่อคอบอลทั่วโลก",
   footerDisclaimer: "เพื่อความบันเทิงเท่านั้น โปรดเล่นอย่างมีความรับผิดชอบ",
@@ -653,6 +687,16 @@ const th: Dict = {
     subtitle: "ประวัติผลงานทั้งหมด — ทุกทีเด็ด ทุกเดือน ทั้งชนะและแพ้ ไม่มีการเลือกเฉพาะภาพหน้าจอที่ดูดี",
     empty: "ยังไม่มีรายงาน",
     backToReports: "กลับไปหน้าความโปร่งใส",
+  },
+  calculators: {
+    title: "เครื่องคิดเลข",
+    subtitle: "เครื่องมือคำนวณเดิมพันฟรี — ลบมาร์จิ้น แปลงรูปแบบอัตราต่อรอง และกำหนดขนาดเดิมพันด้วย Kelly",
+    deVig: "คำนวณลบมาร์จิ้น",
+    deVigDesc: "ลบมาร์จิ้นของเจ้ามือเพื่อหาอัตราต่อรองจริง รองรับวิธีคูณ บวก Shin และกำลัง",
+    oddsConverter: "แปลงอัตราต่อรอง",
+    oddsConverterDesc: "แปลงระหว่าง ทศนิยม เศษส่วน อเมริกัน มาเลย์ ฮ่องกง อินโดนีเซีย และความน่าจะเป็นโดยนัย",
+    kelly: "เกณฑ์ Kelly",
+    kellyDesc: "คำนวณขนาดเดิมพันที่เหมาะสมตามความได้เปรียบ ค่าเริ่มต้น Kelly เศษส่วนเพื่อจัดการเงินทุนอย่างปลอดภัย",
   },
   pick: {
     disclosure: "คนเลือก AI ดำเนินการ — มนุษย์เป็นผู้เลือกทีเด็ดนี้ ส่วน AI เขียน เผยแพร่ และตัดสินผล",
@@ -783,6 +827,7 @@ const es: Dict = {
     forum: "Foro",
     guides: "Guías",
     transparency: "Transparencia",
+    calculators: "Calculadoras",
   },
   tagline: "Jugadas seleccionadas a mano para la afición global",
   footerDisclaimer: "Solo entretenimiento. Juega con responsabilidad.",
@@ -835,6 +880,16 @@ const es: Dict = {
     subtitle: "Nuestro historial completo — cada pronóstico, cada mes, aciertos y fallos. Sin capturas escogidas.",
     empty: "Aún no hay informes.",
     backToReports: "Volver a Transparencia",
+  },
+  calculators: {
+    title: "Calculadoras",
+    subtitle: "Herramientas matemáticas de apuestas gratis — elimina el margen, convierte formatos de cuotas y dimensiona con Kelly.",
+    deVig: "Calculadora De-Vig",
+    deVigDesc: "Elimina el margen de la casa de apuestas para encontrar las cuotas reales. Soporta métodos multiplicativo, aditivo, Shin y potencia.",
+    oddsConverter: "Conversor de Cuotas",
+    oddsConverterDesc: "Convierte entre Decimal, Fraccionario, Americano, Malayo, Hong Kong, Indonesio y Probabilidad Implícita.",
+    kelly: "Criterio Kelly",
+    kellyDesc: "Calcula el tamaño óptimo de apuesta según tu ventaja. Kelly fraccionario por defecto para gestión segura de bankroll.",
   },
   pick: {
     disclosure:
