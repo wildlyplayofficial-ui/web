@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
+import Link from "next/link";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { KellyCalculator } from "./calculator";
 
@@ -39,6 +40,14 @@ export default async function KellyPage({ params }: Props) {
       </h1>
       <p className="mt-2 text-muted">{dict.calculators.kellyDesc}</p>
       <KellyCalculator />
+      <div className="mt-8 rounded-card border border-line bg-card p-5 text-center shadow-card">
+        <Link
+          href={withLang("/guides/kelly-criterion-betting", lang)}
+          className="text-sm font-medium text-brand hover:underline"
+        >
+          Learn the theory behind Kelly Criterion &rarr;
+        </Link>
+      </div>
     </div>
   );
 }

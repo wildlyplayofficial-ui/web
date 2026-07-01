@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
+import Link from "next/link";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DeVigCalculator } from "./calculator";
 
@@ -39,6 +40,14 @@ export default async function DeVigPage({ params }: Props) {
       </h1>
       <p className="mt-2 text-muted">{dict.calculators.deVigDesc}</p>
       <DeVigCalculator />
+      <div className="mt-8 rounded-card border border-line bg-card p-5 text-center shadow-card">
+        <Link
+          href={withLang("/guides/how-de-vigging-works", lang)}
+          className="text-sm font-medium text-brand hover:underline"
+        >
+          Learn the theory behind de-vigging &rarr;
+        </Link>
+      </div>
     </div>
   );
 }
