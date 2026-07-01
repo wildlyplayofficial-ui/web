@@ -156,6 +156,12 @@ export default async function PlayDetail({ params }: Props) {
         </blockquote>
       </section>
 
+      {pick.sources && pick.sources.length > 0 && (
+        <p className="mt-3 text-xs text-muted/60">
+          {dict.play.sources}: {pick.sources.join(", ")}
+        </p>
+      )}
+
       {pick.fixture_id > 0 && (
         <MatchEvents matchId={String(pick.fixture_id)} homeTeam={pick.home_team} awayTeam={pick.away_team} lang={lang} />
       )}

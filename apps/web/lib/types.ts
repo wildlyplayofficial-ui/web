@@ -35,6 +35,8 @@ export interface Pick {
   /** odds-api participant ids for team logos (13/6). Null for older/manual picks. */
   home_id: number | null;
   away_id: number | null;
+  /** Source domains informing the thesis (1/7). Null for older picks. */
+  sources: string[] | null;
 }
 
 export interface Post {

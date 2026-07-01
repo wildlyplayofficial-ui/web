@@ -129,6 +129,7 @@ export interface Dict {
     closing: string;
     clvNote: string;
     readRecap: string;
+    sources: string;
   };
   outcome: {
     win: string;
@@ -310,6 +311,7 @@ const en: Dict = {
     closing: "Closing",
     clvNote: "CLV = closing line value — positive means the pick beat the market.",
     readRecap: "Read the match recap",
+    sources: "Sources",
   },
   outcome: {
     win: "Win",
@@ -491,6 +493,7 @@ const vi: Dict = {
     closing: "Odds đóng kèo",
     clvNote: "CLV = giá trị so với odds đóng kèo — dương nghĩa là kèo thắng được thị trường.",
     readRecap: "Đọc bài nhìn lại trận đấu",
+    sources: "Nguồn tham khảo",
   },
   outcome: {
     win: "Thắng",
@@ -672,6 +675,7 @@ const th: Dict = {
     closing: "ราคาปิด",
     clvNote: "CLV = มูลค่าเทียบราคาปิด — ค่าบวกหมายถึงทีเด็ดชนะตลาด",
     readRecap: "อ่านสรุปผลการแข่งขัน",
+    sources: "แหล่งข้อมูล",
   },
   outcome: {
     win: "ชนะ",
@@ -854,6 +858,7 @@ const es: Dict = {
     closing: "Cuota al cierre",
     clvNote: "CLV = valor de la línea de cierre — positivo significa que el pick le ganó al mercado.",
     readRecap: "Leer el resumen del partido",
+    sources: "Fuentes",
   },
   outcome: {
     win: "Ganada",

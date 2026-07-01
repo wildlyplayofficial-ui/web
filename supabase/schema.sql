@@ -40,6 +40,7 @@ create table picks (
   -- odds-api participant ids for team logos (13/6); null for older picks / manual picks.
   home_id       integer,
   away_id       integer,
+  sources       text[],                          -- domains that informed the thesis (1/7)
   -- settlement fields (the only writable fields after publish)
   home_score    int,
   away_score    int,
@@ -58,6 +59,9 @@ create table picks (
 -- alter table picks
 --   add column home_id integer,
 --   add column away_id integer;
+
+-- migration 1/7 (source citations) — run on the live DB:
+-- alter table picks add column sources text[];
 
 create index picks_kickoff_idx   on picks (kickoff_utc desc);
 create index picks_status_idx    on picks (status);

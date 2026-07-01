@@ -43,6 +43,7 @@ export const mockPicks: Pick[] = [
     publish_score_away: null,
     home_id: null,
     away_id: null,
+    sources: null,
   },
   {
     id: "00000000-0000-4000-8000-000000000003",
@@ -70,6 +71,7 @@ export const mockPicks: Pick[] = [
     publish_score_away: null,
     home_id: null,
     away_id: null,
+    sources: null,
   },
   {
     id: "00000000-0000-4000-8000-000000000002",
@@ -97,6 +99,7 @@ export const mockPicks: Pick[] = [
     publish_score_away: null,
     home_id: null,
     away_id: null,
+    sources: null,
   },
   {
     id: "00000000-0000-4000-8000-000000000001",
@@ -124,6 +127,7 @@ export const mockPicks: Pick[] = [
     publish_score_away: null,
     home_id: null,
     away_id: null,
+    sources: null,
   },
 ];
 
