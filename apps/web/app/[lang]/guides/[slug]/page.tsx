@@ -132,6 +132,12 @@ export default async function GuidePage({ params }: Props) {
             table: ({ children }) => (
               <div className="table-wrap"><table>{children}</table></div>
             ),
+            a: ({ href, children, ...rest }) => {
+              if (href?.startsWith("/")) {
+                return <Link href={withLang(href, lang)} {...rest}>{children}</Link>;
+              }
+              return <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>{children}</a>;
+            },
           }}
         >
           {post.body_md.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
