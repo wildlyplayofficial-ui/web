@@ -8,7 +8,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
 
-const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "archive" | "stats" | "matches" | "standings" | "news" | "calculators" | "about" }> = [
+const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "archive" | "stats" | "matches" | "standings" | "news" | "about" }> = [
   { href: "/", key: "board" },
   { href: "/daily-line", key: "dailyLine" },
   { href: "/archive", key: "archive" },
@@ -16,7 +16,6 @@ const navItems: ReadonlyArray<{ href: string; key: "board" | "dailyLine" | "arch
   { href: "/matches", key: "matches" },
   { href: "/standings", key: "standings" },
   { href: "/news", key: "news" },
-  { href: "/calculators", key: "calculators" },
   { href: "/about", key: "about" },
 ];
 
