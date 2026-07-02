@@ -110,11 +110,17 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
           const round = (m.round ?? "").toUpperCase();
           if (!isKnockoutRound(round)) continue;
           const score = parseScore(m.scores?.ft_score ?? "");
-          const id = String(m.fixture_id ?? m.id ?? "");
+          // Only fixture_id matches fixtures/matches.json ids. A history match id
+          // (m.id) lives in a different id-space and could collide with an
+          // unrelated fixture — skip records without fixture_id instead.
+          if (m.fixture_id == null) continue;
+          const id = String(m.fixture_id);
           matchMap.set(id, {
             id,
             round,
             date: m.date ?? "",
+            // history uses `scheduled` (fixtures use `time`); may be empty on
+            // some records — acceptable, finished matches show scores instead
             time: (m.scheduled ?? "").slice(0, 5),
             homeName: m.home?.name ?? "",
             awayName: m.away?.name ?? "",
@@ -142,6 +148,10 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
   }
 }
 
+// Note: unstable_cache includes fn args in the cache key
+// (invocationKey = `${fixedKey}-${JSON.stringify(args)}`, next@16.2.9
+// dist/server/web/spec-extension/unstable-cache.js:82), so distinct
+// livescoreIds never collide.
 export const getKnockoutRounds = unstable_cache(
   fetchKnockoutRoundsImpl,
   ["knockout-rounds"],
@@ -160,7 +170,7 @@ async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]>
   if (error) return [];
 
   return (data ?? []).map((r) => ({
-    id: r.id as number,
+    id: r.id as string,
     name: r.name as string,
     shortName: (r.short_name ?? "") as string,
     season: (r.season ?? "") as string,

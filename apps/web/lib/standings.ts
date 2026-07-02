@@ -44,7 +44,8 @@ export interface KnockoutRound {
 }
 
 export interface StandingsCompetition {
-  id: number;
+  /** DB primary key, a string like "wc-2026" (NOT numeric). */
+  id: string;
   name: string;
   shortName: string;
   season: string;

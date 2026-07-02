@@ -235,6 +235,7 @@ export interface Dict {
     empty: string;
     knockout: string;
     seasonNote: string;
+    titleFor: string;
   };
 }
 
@@ -433,6 +434,7 @@ const en: Dict = {
     empty: "Standings data is not available yet. Check back once the group stage begins.",
     knockout: "Knockout Stage",
     seasonNote: "{season} season",
+    titleFor: "{name} Standings",
   },
 };
 
@@ -631,6 +633,7 @@ const vi: Dict = {
     empty: "Ch\u01b0a c\u00f3 d\u1eef li\u1ec7u b\u1ea3ng x\u1ebfp h\u1ea1ng. Quay l\u1ea1i khi v\u00f2ng b\u1ea3ng b\u1eaft \u0111\u1ea7u.",
     knockout: "V\u00f2ng Lo\u1ea1i Tr\u1ef1c Ti\u1ebfp",
     seasonNote: "M\u00f9a {season}",
+    titleFor: "B\u1ea3ng x\u1ebfp h\u1ea1ng {name}",
   },
 };
 
@@ -829,6 +832,7 @@ const th: Dict = {
     empty: "\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19 \u0e01\u0e25\u0e31\u0e1a\u0e21\u0e32\u0e14\u0e39\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e23\u0e2d\u0e1a\u0e41\u0e1a\u0e48\u0e07\u0e01\u0e25\u0e38\u0e48\u0e21\u0e40\u0e23\u0e34\u0e48\u0e21",
     knockout: "\u0e23\u0e2d\u0e1a\u0e19\u0e47\u0e2d\u0e04\u0e2d\u0e32\u0e2d\u0e15",
     seasonNote: "\u0e24\u0e14\u0e39\u0e01\u0e32\u0e25 {season}",
+    titleFor: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19 {name}",
   },
 };
 
@@ -1028,6 +1032,7 @@ const es: Dict = {
     empty: "Los datos de clasificaci\u00f3n a\u00fan no est\u00e1n disponibles. Vuelve cuando comience la fase de grupos.",
     knockout: "Fase Eliminatoria",
     seasonNote: "Temporada {season}",
+    titleFor: "Clasificaci\u00f3n de {name}",
   },
 };
 

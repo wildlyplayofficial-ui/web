@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const comp = await resolveCompetition(slug);
   if (!comp) return { title: dict.standings.title };
 
-  const title = `${comp.name} ${dict.standings.title}`;
+  const title = dict.standings.titleFor.replace("{name}", comp.name);
   return {
     title,
     alternates: buildAlternates(`/standings/${slug}`, lang),
@@ -47,7 +47,9 @@ export default async function StandingSlugPage({ params }: Props) {
   const flagEnabled = await isFeatureEnabled(flagKey);
   if (comp.status !== "active" && !flagEnabled) notFound();
 
-  // P1: knockout bracket is WC-only. P3 will generalize for playoff leagues (MLS/Liga MX).
+  // P1: knockout bracket is WC-only. TODO(P3): replace this magic-number check
+  // with a `format` column on competitions ("groups_knockout" | "league" |
+  // "league_playoff") when MLS/Liga MX playoff brackets land.
   const isWorldCup = comp.livescoreId === 362;
 
   const [rows, knockoutRounds] = await Promise.all([
