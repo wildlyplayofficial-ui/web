@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createHmac } from "crypto";
+import { createHash, createHmac } from "crypto";
 import { getServiceSupabase } from "@/lib/goalline/supabase";
 import { verifyTmaInitData } from "@/lib/goalline/tma-verify";
 
@@ -13,7 +13,7 @@ import { verifyTmaInitData } from "@/lib/goalline/tma-verify";
  * and returns a signed token.
  */
 export async function POST(request: NextRequest) {
-  let body: { initData?: string; gameMode?: boolean; userId?: string; displayName?: string; chatId?: string | null };
+  let body: { initData?: string; gameMode?: boolean; userId?: string; displayName?: string; chatId?: string | null; inlineMessageId?: string | null };
   try {
     body = await request.json();
   } catch {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   // Games API mode: user info passed directly from webhook callback (no initData)
   if (body.gameMode && body.userId) {
-    return handleGameMode(body.userId, body.displayName ?? "Player", body.chatId ?? null, botToken);
+    return handleGameMode(body.userId, body.displayName ?? "Player", body.chatId ?? null, body.inlineMessageId ?? null, botToken);
   }
 
   const { initData } = body;
@@ -133,8 +133,20 @@ export async function POST(request: NextRequest) {
   });
 }
 
+/**
+ * Map an inline_message_id to a stable synthetic tg_group_id.
+ * Inline cards have no chat context (Telegram limitation), so everyone who taps
+ * Play on the SAME shared card lands in the same synthetic "group".
+ * Range ≈ -4.0e15 .. -4.3e15 — far below real Telegram chat ids (≈ -1e13),
+ * and within Number.MAX_SAFE_INTEGER.
+ */
+function imidToGroupKey(imid: string): number {
+  const n = createHash("sha256").update(imid).digest().readUIntBE(0, 6); // 0..2^48
+  return -(4_000_000_000_000_000 + n);
+}
+
 // Games API auth: find-or-create user by Telegram ID (no initData verification)
-async function handleGameMode(tgId: string, name: string, chatId: string | null, botToken: string) {
+async function handleGameMode(tgId: string, name: string, chatId: string | null, inlineMessageId: string | null, botToken: string) {
   const sb = getServiceSupabase();
   if (!sb) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
 
@@ -171,35 +183,45 @@ async function handleGameMode(tgId: string, name: string, chatId: string | null,
     displayName = newUser.display_name;
   }
 
-  // Look up or create gl_groups entry, add user as member
+  // Look up or create gl_groups entry, add user as member.
+  // Group key: real chat id (group sendGame cards) or synthetic id derived
+  // from inline_message_id (inline cards — shared card = shared board).
   let groupId: string | null = null;
-  if (chatId) {
-    const tgGroupId = Number(chatId);
-    if (!isNaN(tgGroupId) && tgGroupId !== 0) {
-      const { data: group } = await sb
+  let tgGroupId: number | null = null;
+  let title = "";
+  const numericChatId = Number(chatId);
+  if (chatId && !isNaN(numericChatId) && numericChatId !== 0) {
+    tgGroupId = numericChatId;
+    title = `Group ${tgGroupId}`;
+  } else if (inlineMessageId) {
+    tgGroupId = imidToGroupKey(inlineMessageId);
+    title = `Card ${inlineMessageId.slice(0, 12)}`;
+  }
+
+  if (tgGroupId !== null) {
+    const { data: group } = await sb
+      .from("gl_groups")
+      .select("id")
+      .eq("tg_group_id", tgGroupId)
+      .limit(1)
+      .single();
+
+    if (group) {
+      groupId = group.id;
+    } else {
+      // Auto-create group (title updated later via webhook if needed)
+      const { data: newGroup } = await sb
         .from("gl_groups")
+        .insert({ tg_group_id: tgGroupId, title, created_by_tg: Number(tgId) })
         .select("id")
-        .eq("tg_group_id", tgGroupId)
-        .limit(1)
         .single();
+      if (newGroup) groupId = newGroup.id;
+    }
 
-      if (group) {
-        groupId = group.id;
-      } else {
-        // Auto-create group (title updated later via webhook if needed)
-        const { data: newGroup } = await sb
-          .from("gl_groups")
-          .insert({ tg_group_id: tgGroupId, title: `Group ${tgGroupId}`, created_by_tg: Number(tgId) })
-          .select("id")
-          .single();
-        if (newGroup) groupId = newGroup.id;
-      }
-
-      if (groupId) {
-        await sb
-          .from("gl_group_members")
-          .upsert({ group_id: groupId, user_id: userId }, { onConflict: "group_id,user_id" });
-      }
+    if (groupId) {
+      await sb
+        .from("gl_group_members")
+        .upsert({ group_id: groupId, user_id: userId }, { onConflict: "group_id,user_id" });
     }
   }
 
