@@ -48,7 +48,9 @@ export function KnockoutBracket({ rounds, knockoutLabel }: KnockoutBracketProps)
   if (rounds.length === 0) return null;
 
   return (
-    <section className="mt-12">
+    // No top margin: renders directly under the hero (which has pb-12);
+    // the group grid below adds its own mt-12.
+    <section>
       <h2 className="mb-6 text-center font-display text-2xl font-bold">{knockoutLabel}</h2>
 
       {/* Mobile: stacked vertical sections */}

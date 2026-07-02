@@ -95,6 +95,9 @@ export default async function StandingSlugPage({ params }: Props) {
         </div>
       ) : isWorldCup && hasGroups ? (
         <>
+          {/* Knockout bracket first (Nick's request 2/7): during knockout phase
+              it's the content users come for; group tables are reference. */}
+          <KnockoutBracket rounds={knockoutRounds} knockoutLabel={dict.standings.knockout} />
           {/* WC groups layout: filter out 3rd teams aggregate */}
           {(() => {
             const thirdTeams = [...groupMap.entries()].filter(([g]) =>
@@ -105,7 +108,8 @@ export default async function StandingSlugPage({ params }: Props) {
             );
             return (
               <>
-                <div className="grid gap-6 md:grid-cols-2">
+                {/* mt-12 only when the bracket rendered above (it has no bottom margin) */}
+                <div className={`grid gap-6 md:grid-cols-2${knockoutRounds.length > 0 ? " mt-12" : ""}`}>
                   {groups
                     .sort(([a], [b]) => a.localeCompare(b))
                     .map(([group, teams]) => (
@@ -132,7 +136,6 @@ export default async function StandingSlugPage({ params }: Props) {
               </>
             );
           })()}
-          <KnockoutBracket rounds={knockoutRounds} knockoutLabel={dict.standings.knockout} />
         </>
       ) : hasGroups ? (
         /* Multi-group non-WC (e.g. MLS conferences) */
