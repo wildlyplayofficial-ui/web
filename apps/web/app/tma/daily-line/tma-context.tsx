@@ -68,6 +68,7 @@ export function TmaProvider({ children }: { children: ReactNode }) {
             userId: params.get("uid"),
             displayName: params.get("name") || "Player",
             chatId: params.get("chat") || null,
+            inlineMessageId: imid,
           }),
         })
           .then((r) => r.json())
