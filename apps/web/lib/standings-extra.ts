@@ -142,13 +142,11 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
   }
 }
 
-export function getKnockoutRounds(livescoreId: number): Promise<KnockoutRound[]> {
-  return unstable_cache(
-    () => fetchKnockoutRoundsImpl(livescoreId),
-    [`knockout-rounds-${livescoreId}`],
-    { revalidate: 600 },
-  )();
-}
+export const getKnockoutRounds = unstable_cache(
+  fetchKnockoutRoundsImpl,
+  ["knockout-rounds"],
+  { revalidate: 600 },
+);
 
 async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]> {
   const supabase = getSupabase();
