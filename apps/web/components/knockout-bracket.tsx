@@ -30,7 +30,9 @@ function MatchCard({ match }: { match: KnockoutMatch }) {
           </span>
         )}
       </div>
-      {!hasScore && match.date && (
+      {/* Always show kickoff date/time (even for finished matches) so cards
+          in a column stay equal height — Nick's request 2/7. */}
+      {match.date && (
         <p className="mt-2 text-[10px] text-muted">
           {match.date}{match.time ? ` · ${match.time}` : ""}
         </p>
@@ -69,10 +71,11 @@ export function KnockoutBracket({ rounds, knockoutLabel }: KnockoutBracketProps)
         ))}
       </div>
 
-      {/* Desktop: horizontal columns per round */}
-      <div className="hidden md:flex md:gap-4 md:overflow-x-auto">
+      {/* Desktop: horizontal columns per round. Columns share width equally
+          (min-w-0 + flex-1) so all rounds fit without horizontal scroll. */}
+      <div className="hidden md:flex md:gap-3">
         {rounds.map((r) => (
-          <div key={r.round} className="min-w-[180px] flex-1">
+          <div key={r.round} className="min-w-0 flex-1">
             <h3 className="mb-3 text-center font-display text-xs font-semibold uppercase tracking-wide text-muted">
               {r.label}
             </h3>
