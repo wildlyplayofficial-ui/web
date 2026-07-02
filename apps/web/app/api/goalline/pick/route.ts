@@ -17,21 +17,22 @@ function generateFunName(): string {
  * POST /api/goalline/pick — Submit a pick for a GoalLine Daily card.
  *
  * Body: { deviceId: string, displayName?: string, cardId: string, side: "over" | "under" }
- *   OR: { userId: string, cardId: string, side: "over" | "under", inlineMessageId?: string }  (TMA flow)
+ *   OR: { userId: string, cardId: string, side: "over" | "under", inlineMessageId?: string, tgChatId?: string, tgMessageId?: string }  (TMA flow)
  *
  * Creates guest user if needed (by device_id), then submits pick.
  * TMA flow: userId provided directly, skips device_id lookup.
- * If inlineMessageId is provided, updates Telegram native game leaderboard.
+ * If inlineMessageId (inline card) or tgChatId+tgMessageId (group sendGame card)
+ * is provided, updates the Telegram native game leaderboard for that card.
  */
 export async function POST(request: NextRequest) {
-  let body: { deviceId?: string; userId?: string; displayName?: string; cardId?: string; side?: string; inlineMessageId?: string };
+  let body: { deviceId?: string; userId?: string; displayName?: string; cardId?: string; side?: string; inlineMessageId?: string; tgChatId?: string; tgMessageId?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { deviceId, userId: tmaUserId, displayName, cardId, side, inlineMessageId } = body;
+  const { deviceId, userId: tmaUserId, displayName, cardId, side, inlineMessageId, tgChatId, tgMessageId } = body;
 
   if (!cardId || !side) {
     return NextResponse.json({ error: "cardId and side are required" }, { status: 400 });
@@ -145,9 +146,10 @@ export async function POST(request: NextRequest) {
   }
 
   // Update Telegram native game leaderboard (fire-and-forget)
-  console.log("[pick] inlineMessageId:", inlineMessageId, "tmaUserId:", tmaUserId);
-  if (inlineMessageId && tmaUserId) {
-    setTelegramGameScore(userId, inlineMessageId, sb).catch((err) => console.error("[pick] setGameScore error:", err));
+  if (tmaUserId && (inlineMessageId || (tgChatId && tgMessageId))) {
+    setTelegramGameScore(userId, { inlineMessageId, tgChatId, tgMessageId }, sb).catch((err) =>
+      console.error("[pick] setGameScore error:", err),
+    );
   }
 
   return NextResponse.json({ pick: result.pick }, { status: 201 });
@@ -159,7 +161,7 @@ export async function POST(request: NextRequest) {
  */
 async function setTelegramGameScore(
   glUserId: string,
-  inlineMessageId: string,
+  msgRef: { inlineMessageId?: string; tgChatId?: string; tgMessageId?: string },
   sb: NonNullable<ReturnType<typeof getServiceSupabase>>,
 ) {
   const token = process.env.TMA_BOT_TOKEN;
@@ -185,19 +187,25 @@ async function setTelegramGameScore(
 
   const score = Math.max(count ?? 1, 1);
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
+  // Inline cards use inline_message_id; group sendGame cards use chat_id + message_id.
+  let target: Record<string, unknown>;
+  if (msgRef.inlineMessageId) {
+    target = { inline_message_id: msgRef.inlineMessageId };
+  } else {
+    const chatId = Number(msgRef.tgChatId);
+    const messageId = Number(msgRef.tgMessageId);
+    if (!Number.isInteger(chatId) || !Number.isInteger(messageId)) return;
+    target = { chat_id: chatId, message_id: messageId };
+  }
+
+  await fetch(`https://api.telegram.org/bot${token}/setGameScore`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       user_id: tgUserId,
       score,
-      inline_message_id: inlineMessageId,
       force: true,
+      ...target,
     }),
-  }).catch((err) => { console.error("setGameScore fetch error:", err); return null; });
-
-  if (res) {
-    const json = await res.json().catch(() => null);
-    console.log("setGameScore response:", JSON.stringify(json));
-  }
+  }).catch((err) => { console.error("setGameScore fetch error:", err); });
 }

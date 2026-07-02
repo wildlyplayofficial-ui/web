@@ -14,6 +14,9 @@ interface TmaState {
   displayName: string | null;
   groupId: string | null;
   inlineMessageId: string | null;
+  /** Telegram chat id + message id of the game card this session was launched from (group sendGame cards). */
+  tgChatId: string | null;
+  tgMessageId: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -24,6 +27,8 @@ const TmaContext = createContext<TmaState>({
   displayName: null,
   groupId: null,
   inlineMessageId: null,
+  tgChatId: null,
+  tgMessageId: null,
   loading: true,
   error: null,
 });
@@ -39,6 +44,8 @@ export function TmaProvider({ children }: { children: ReactNode }) {
     displayName: null,
     groupId: null,
     inlineMessageId: null,
+    tgChatId: null,
+    tgMessageId: null,
     loading: true,
     error: null,
   });
@@ -51,6 +58,8 @@ export function TmaProvider({ children }: { children: ReactNode }) {
       const params = new URLSearchParams(window.location.search);
       if (params.get("game") === "1" && params.get("uid")) {
         const imid = params.get("imid") || null;
+        const tgChatId = params.get("chat") || null;
+        const tgMessageId = params.get("msg") || null;
         fetch("/api/goalline/tma-auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -73,6 +82,8 @@ export function TmaProvider({ children }: { children: ReactNode }) {
               displayName: data.displayName,
               groupId: data.groupId ?? null,
               inlineMessageId: imid,
+              tgChatId,
+              tgMessageId,
               loading: false,
               error: null,
             });
@@ -104,6 +115,8 @@ export function TmaProvider({ children }: { children: ReactNode }) {
           displayName: data.displayName,
           groupId: data.groupId ?? null,
           inlineMessageId: null,
+          tgChatId: null,
+          tgMessageId: null,
           loading: false,
           error: null,
         });

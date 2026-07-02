@@ -62,7 +62,7 @@ function deriveViewState(
 /* ── Main component ────────────────────────────────────────────────────── */
 
 function TmaHome() {
-  const { userId, groupId, displayName, inlineMessageId, error: authError } = useTma();
+  const { userId, groupId, displayName, inlineMessageId, tgChatId, tgMessageId, error: authError } = useTma();
   const [card, setCard] = useState<DailyCard | null>(null);
   const [matches, setMatches] = useState<CardMatch[]>([]);
   const [pick, setPick] = useState<UserPick | null>(null);
@@ -85,17 +85,17 @@ function TmaHome() {
         setPick(data.pick ?? null);
         setCommunitySplit(data.communitySplit ?? null);
         setLoading(false);
-        // Retroactive game score sync for inline cards
-        if (data.pick && inlineMessageId) {
+        // Retroactive game score sync for game cards (inline or group sendGame)
+        if (data.pick && (inlineMessageId || (tgChatId && tgMessageId))) {
           fetch("/api/goalline/sync-game-score", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, inlineMessageId }),
+            body: JSON.stringify({ userId, inlineMessageId, tgChatId, tgMessageId }),
           }).catch(() => {});
         }
       })
       .catch(() => setLoading(false));
-  }, [userId, inlineMessageId]);
+  }, [userId, inlineMessageId, tgChatId, tgMessageId]);
 
   // Submit pick
   const submitPick = useCallback(
@@ -107,7 +107,7 @@ function TmaHome() {
         const res = await fetch("/api/goalline/pick", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, cardId: card.id, side, inlineMessageId }),
+          body: JSON.stringify({ userId, cardId: card.id, side, inlineMessageId, tgChatId, tgMessageId }),
         });
         const data = await res.json();
         if (!res.ok) {
@@ -128,7 +128,7 @@ function TmaHome() {
         setPickLoading(false);
       }
     },
-    [userId, card, inlineMessageId],
+    [userId, card, inlineMessageId, tgChatId, tgMessageId],
   );
 
   const shareResult = useCallback(() => {
