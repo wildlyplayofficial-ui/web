@@ -215,7 +215,18 @@ async function handleGameMode(tgId: string, name: string, chatId: string | null,
         .insert({ tg_group_id: tgGroupId, title, created_by_tg: Number(tgId) })
         .select("id")
         .single();
-      if (newGroup) groupId = newGroup.id;
+      if (newGroup) {
+        groupId = newGroup.id;
+      } else {
+        // Lost a concurrent-create race (unique tg_group_id) — re-select
+        const { data: retry } = await sb
+          .from("gl_groups")
+          .select("id")
+          .eq("tg_group_id", tgGroupId)
+          .limit(1)
+          .single();
+        if (retry) groupId = retry.id;
+      }
     }
 
     if (groupId) {
