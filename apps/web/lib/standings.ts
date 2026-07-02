@@ -15,12 +15,42 @@ export interface StandingTeam {
   goals_against: number;
   goal_diff: number;
   points: number;
-  form: string; // e.g. "WWDL"
+  form: string;
+  groupName: string;
+  stageName: string;
 }
 
 export interface GroupStanding {
   group: string;
   teams: StandingTeam[];
+}
+
+export interface KnockoutMatch {
+  id: string;
+  round: string;
+  date: string;
+  time: string;
+  homeName: string;
+  awayName: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  finished: boolean;
+}
+
+export interface KnockoutRound {
+  round: string;
+  label: string;
+  matches: KnockoutMatch[];
+}
+
+export interface StandingsCompetition {
+  id: number;
+  name: string;
+  shortName: string;
+  season: string;
+  livescoreId: number;
+  slug: string;
+  status: string;
 }
 
 interface LivescoreTableEntry {
@@ -36,7 +66,8 @@ interface LivescoreTableEntry {
   points?: string;
   group_id?: string;
   group_name?: string;
-  form?: string; // e.g. "WWDL" — recent match results
+  stage_name?: string;
+  form?: string;
 }
 
 function parseEntry(e: LivescoreTableEntry): StandingTeam {
@@ -52,17 +83,19 @@ function parseEntry(e: LivescoreTableEntry): StandingTeam {
     goal_diff: parseInt(e.goal_diff ?? "0", 10),
     points: parseInt(e.points ?? "0", 10),
     form: e.form ?? "",
+    groupName: e.group_name ?? e.group_id ?? "",
+    stageName: e.stage_name ?? "",
   };
 }
 
-async function fetchStandingsImpl(): Promise<GroupStanding[]> {
+async function fetchCompetitionTableImpl(livescoreId: number): Promise<StandingTeam[]> {
   const key = process.env.LIVESCORE_API_KEY;
   const secret = process.env.LIVESCORE_API_SECRET;
   if (!key || !secret) return [];
 
   try {
     const res = await fetch(
-      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${WC_COMPETITION_ID}&key=${key}&secret=${secret}&include_form=1`,
+      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&include_form=1`,
       { cache: "no-store" },
     );
     if (!res.ok) return [];
@@ -73,56 +106,49 @@ async function fetchStandingsImpl(): Promise<GroupStanding[]> {
     };
     if (!data.success || !data.data?.table) return [];
 
-    const groupMap = new Map<string, StandingTeam[]>();
-    for (const entry of data.data.table) {
-      const groupName = entry.group_name ?? entry.group_id ?? "?";
-      const team = parseEntry(entry);
-      const list = groupMap.get(groupName) ?? [];
-      list.push(team);
-      groupMap.set(groupName, list);
-    }
-
-    // Sort groups alphabetically, teams by rank within each group
-    return Array.from(groupMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([group, teams]) => ({
-        group,
-        teams: teams.sort((a, b) => a.rank - b.rank),
-      }));
+    return data.data.table.map(parseEntry);
   } catch {
     return [];
   }
+}
+
+/** Generic table fetch for any competition. Cached 600s per livescoreId. */
+export function fetchCompetitionTable(livescoreId: number): Promise<StandingTeam[]> {
+  return unstable_cache(
+    () => fetchCompetitionTableImpl(livescoreId),
+    [`competition-table-${livescoreId}`],
+    { revalidate: 600 },
+  )();
+}
+
+function groupsFromTable(rows: StandingTeam[]): GroupStanding[] {
+  const groupMap = new Map<string, StandingTeam[]>();
+  for (const entry of rows) {
+    const groupName = entry.groupName || "?";
+    const list = groupMap.get(groupName) ?? [];
+    list.push(entry);
+    groupMap.set(groupName, list);
+  }
+  return Array.from(groupMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([group, teams]) => ({
+      group,
+      teams: teams.sort((a, b) => a.rank - b.rank),
+    }));
+}
+
+async function fetchStandingsImpl(): Promise<GroupStanding[]> {
+  const rows = await fetchCompetitionTableImpl(WC_COMPETITION_ID);
+  return groupsFromTable(rows);
 }
 
 export const getStandings = unstable_cache(fetchStandingsImpl, ["wc-standings"], {
   revalidate: 600,
 });
 
-/** EPL league standings — single table, 20 teams, no groups. */
 async function fetchEplStandingsImpl(): Promise<StandingTeam[]> {
-  const key = process.env.LIVESCORE_API_KEY;
-  const secret = process.env.LIVESCORE_API_SECRET;
-  if (!key || !secret) return [];
-
-  try {
-    const res = await fetch(
-      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${EPL_COMPETITION_ID}&key=${key}&secret=${secret}&include_form=1`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return [];
-
-    const data = (await res.json()) as {
-      success: boolean;
-      data?: { table?: LivescoreTableEntry[] };
-    };
-    if (!data.success || !data.data?.table) return [];
-
-    return data.data.table
-      .map(parseEntry)
-      .sort((a, b) => a.rank - b.rank);
-  } catch {
-    return [];
-  }
+  const rows = await fetchCompetitionTableImpl(EPL_COMPETITION_ID);
+  return rows.sort((a, b) => a.rank - b.rank);
 }
 
 export const getEplStandings = unstable_cache(fetchEplStandingsImpl, ["epl-standings"], {
