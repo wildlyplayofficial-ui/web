@@ -44,9 +44,10 @@ export default async function StandingSlugPage({ params }: Props) {
 
   // Visibility: active OR feature flag standings_<slug_underscored>
   const flagKey = `standings_${slug.replace(/-/g, "_")}`;
-  const [flagEnabled] = await Promise.all([isFeatureEnabled(flagKey)]);
+  const flagEnabled = await isFeatureEnabled(flagKey);
   if (comp.status !== "active" && !flagEnabled) notFound();
 
+  // P1: knockout bracket is WC-only. P3 will generalize for playoff leagues (MLS/Liga MX).
   const isWorldCup = comp.livescoreId === 362;
 
   const [rows, knockoutRounds] = await Promise.all([

@@ -112,14 +112,12 @@ async function fetchCompetitionTableImpl(livescoreId: number): Promise<StandingT
   }
 }
 
-/** Generic table fetch for any competition. Cached 600s per livescoreId. */
-export function fetchCompetitionTable(livescoreId: number): Promise<StandingTeam[]> {
-  return unstable_cache(
-    () => fetchCompetitionTableImpl(livescoreId),
-    [`competition-table-${livescoreId}`],
-    { revalidate: 600 },
-  )();
-}
+/** Generic table fetch for any competition. Cached 600s; livescoreId is part of the cache key (fn arg). */
+export const fetchCompetitionTable = unstable_cache(
+  fetchCompetitionTableImpl,
+  ["competition-table"],
+  { revalidate: 600 },
+);
 
 function groupsFromTable(rows: StandingTeam[]): GroupStanding[] {
   const groupMap = new Map<string, StandingTeam[]>();

@@ -31,7 +31,13 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
   const secret = process.env.LIVESCORE_API_SECRET;
   if (!key || !secret) return [];
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Rolling window: knockout stages of an ongoing tournament fall within the
+  // last ~45 days; non-knockout rounds in the response are filtered out below.
+  // "to" is padded +1 day so UTC date boundaries never exclude matches that
+  // finished after local (UTC+7) midnight.
+  const now = Date.now();
+  const from = new Date(now - 45 * 86_400_000).toISOString().slice(0, 10);
+  const to = new Date(now + 86_400_000).toISOString().slice(0, 10);
 
   try {
     const [fixturesRes, historyRes] = await Promise.all([
@@ -40,7 +46,7 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
         { cache: "no-store" },
       ),
       fetch(
-        `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=2026-06-28&to=${today}`,
+        `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
         { cache: "no-store" },
       ),
     ]);
