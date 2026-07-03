@@ -61,7 +61,7 @@ export default async function StandingsPage({ params }: Props) {
   // Same split as /standings/[slug]: bracket first with rounds still in
   // play/upcoming; fully finished rounds drop below the group tables.
   const isRoundFinished = (r: (typeof knockoutRounds)[number]) =>
-    r.round === "R32"; // TEMP preview-only: simulate finished R32
+    r.matches.every((m) => m.finished);
   const hasActiveRound = knockoutRounds.some((r) => !isRoundFinished(r));
   const archivedRounds = hasActiveRound ? knockoutRounds.filter(isRoundFinished) : [];
   const activeRounds = hasActiveRound
