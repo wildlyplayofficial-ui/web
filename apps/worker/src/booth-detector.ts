@@ -88,9 +88,14 @@ export async function detectNewEvents(
     for (const ev of rawEvents) {
       const type = EVENT_MAP[ev.event];
       if (!type) continue;
-      const id = String(ev.id);
-      if (seenEventIds.has(id)) continue;
       const isGoal = goalTypes.has(ev.event);
+      const scoreAtEvent = isGoal ? scoreAfterEvent(ev) : currentScore;
+      // Livescore event ids are NOT stable across polls (they rotate), so we
+      // derive our own stable key: goals by resulting score, others by player.
+      const id = isGoal
+        ? `${type}:${scoreAtEvent.home}-${scoreAtEvent.away}`
+        : `${type}:${ev.player ?? ev.time ?? ''}`;
+      if (seenEventIds.has(id)) continue;
       events.push({
         id,
         type,
@@ -98,7 +103,7 @@ export async function detectNewEvents(
         player: ev.player ?? null,
         assist: ev.info ?? null,
         homeAway: ev.home_away === 'h' || ev.home_away === 'a' ? ev.home_away : null,
-        scoreAtEvent: isGoal ? scoreAfterEvent(ev) : currentScore,
+        scoreAtEvent,
         homeTeam,
         awayTeam,
       });

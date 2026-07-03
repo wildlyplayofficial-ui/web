@@ -83,20 +83,22 @@ function normalize(name: string): string {
   return name.toLowerCase().replace(/[^a-z]/g, '');
 }
 
-/** Process ONE new event: gen → lint → write shadow. */
+/** Process ONE new event: gen → lint → write shadow.
+ *  Returns true when the event is consumed (generated or permanently failed);
+ *  false when debounced, so the caller retries it on a later tick. */
 async function processEvent(
   deps: BoothShadowDeps,
   event: BoothEvent,
   pick: PickRow,
   matchId: string,
-): Promise<void> {
+): Promise<boolean> {
   const state = getState(matchId);
 
-  // Debounce: skip if too recent
+  // Debounce: skip if too recent — NOT consumed, retried next tick
   const now = Date.now();
   if (now - state.lastGenAt < DEBOUNCE_MS) {
     log.info(`booth: debounce skip ${event.type} ${event.minute}' (${matchId})`);
-    return;
+    return false;
   }
 
   const pickCtx = {
@@ -128,7 +130,7 @@ async function processEvent(
   );
   if (!output) {
     log.warn(`booth: gen failed for ${event.type} ${event.minute}' (${matchId})`);
-    return;
+    return true; // consume — do not retry-loop a failing generation
   }
 
   // Lint EN output
@@ -163,6 +165,7 @@ async function processEvent(
     const status = lint.passed ? 'OK' : `LINT_FAIL(${lint.flags.length})`;
     log.info(`booth: ${event.type} ${event.minute}' → ${output.lead_voice} leads [${status}]`);
   }
+  return true;
 }
 
 /** Single tick: check all live pick-matches for new events. */
@@ -176,8 +179,8 @@ export async function boothTick(deps: BoothShadowDeps): Promise<void> {
       const newEvents = await detectNewEvents(eventsUrl, state.seenEventIds);
 
       for (const ev of newEvents) {
-        state.seenEventIds.add(ev.id);
-        await processEvent(deps, ev, pick, matchId);
+        const consumed = await processEvent(deps, ev, pick, matchId);
+        if (consumed) state.seenEventIds.add(ev.id);
       }
     }
   } catch (err) {
