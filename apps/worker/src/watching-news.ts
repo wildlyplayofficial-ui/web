@@ -3,9 +3,10 @@
  * auto-generate a neutral pre-match preview article for SEO and publish to /news.
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
+import type { Api } from 'grammy';
 import { callClaude, DEFAULT_MODEL, POST_FLAGS, slugify, validate4Lang } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
+import { buildArticleLink } from './announce-article';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
@@ -101,11 +102,45 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
 
 // ── Publish ─────────────────────────────────────────────────────────────────
 
+export interface WatchingCardDeps {
+  api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
+  channelChatId: string | undefined;
+  siteUrl: string;
+}
+
 export interface WatchingNewsDeps {
   store: Store;
   env: { apiKey: string | undefined; model?: string };
   revalidateUrl?: string;
-  announceArticle?: AnnounceArticleDeps;
+  /** Post Restructure v1 §2.4: 3-line WATCHING card (TG only, replaces the article announce). */
+  card?: WatchingCardDeps;
+}
+
+/** 3-line 👀 WATCHING card (Post Restructure Spec v1 §2.4, Nick DUYỆT 3/7 — TG only). */
+export function formatWatchingMessage(w: WatchingRow, siteUrl: string, slug: string): string {
+  const ko = new Date(w.kickoff_utc).toISOString().slice(11, 16);
+  return [
+    `\u{1F440} Watching \u2014 ${w.home_team} vs ${w.away_team} \u00b7 KO ${ko} UTC`,
+    ...(w.note ? [w.note] : []),
+    `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
+  ].join('\n');
+}
+
+/** Send the WATCHING card to the TG channel. Fire-and-forget — never throws. */
+async function sendWatchingCard(deps: WatchingCardDeps, w: WatchingRow, slug: string): Promise<void> {
+  if (!deps.channelChatId) return;
+  try {
+    const msg = formatWatchingMessage(w, deps.siteUrl, slug);
+    const imageUrl = `${deps.siteUrl}/images/wildlyplay_watching.png`;
+    try {
+      await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
+    } catch {
+      await deps.api.sendMessage(deps.channelChatId, msg);
+    }
+    log.info(`watching card sent for ${w.home_team} vs ${w.away_team}`);
+  } catch (err) {
+    log.warn(`watching card failed for ${w.home_team} vs ${w.away_team} — article already published:`, err);
+  }
 }
 
 /** Generate + publish a news article for a /watching entry. Fire-and-forget: never throws. */
@@ -141,8 +176,7 @@ export async function publishWatchingNews(
       await deps.store.insertPost(post);
     }
     log.info(`watching-news: published ${posts.length} posts for ${watching.home_team} vs ${watching.away_team}`);
-    const enPost = posts.find((p) => p.lang === 'en');
-    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
+    if (deps.card) await sendWatchingCard(deps.card, watching, slug);
 
     if (deps.revalidateUrl) {
       const revalidate = createRevalidator({

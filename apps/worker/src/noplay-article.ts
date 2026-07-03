@@ -3,9 +3,10 @@
  * auto-generate a discipline-framed article (4 languages) and distribute.
  * A failure must NEVER break the /noplay reply — every path logs and returns.
  */
+import type { Api } from 'grammy';
 import { callClaude, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL } from './recap';
 import { parseAnalysisSection } from './news';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
+import { buildArticleLink } from './announce-article';
 import type { NewPost, PostLang, Store } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
@@ -143,11 +144,45 @@ export function buildNoPlayPosts(np: ParsedNoPlay, text: string): NewPost[] {
 
 // ── Publish ────────────────────────────────────────────────────────────────
 
+export interface NoPlayCardDeps {
+  api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
+  channelChatId: string | undefined;
+  siteUrl: string;
+}
+
 export interface NoPlayArticleDeps {
   store: Store;
   env: { apiKey: string | undefined; model?: string };
   revalidateUrl?: string;
-  announceArticle?: AnnounceArticleDeps;
+  /** Post Restructure v1 §2.2: 3-line NO-PLAY card, verdict first (TG only — FB gets no-play singles only inside the weekly recap). */
+  card?: NoPlayCardDeps;
+}
+
+/** 3-line ⛔ NO-PLAY card (Post Restructure Spec v1 §2.2, Nick DUYỆT 3/7). Verdict = hand-written note, reason label as fallback — never auto-truncated article text (R5). */
+export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: string): string {
+  const verdict = np.note ?? REASON_LABELS[np.reason];
+  return [
+    `\u26D4 NO-PLAY \u2014 ${np.homeTeam} vs ${np.awayTeam} \u00b7 ${np.league}`,
+    `${verdict} \u2014 why the Curator passes:`,
+    `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
+  ].join('\n');
+}
+
+/** Send the NO-PLAY card to the TG channel. Fire-and-forget — never throws. */
+async function sendNoPlayCard(deps: NoPlayCardDeps, np: ParsedNoPlay, slug: string): Promise<void> {
+  if (!deps.channelChatId) return;
+  try {
+    const msg = formatNoPlayMessage(np, deps.siteUrl, slug);
+    const imageUrl = `${deps.siteUrl}/images/wildlyplay_noplay.png`;
+    try {
+      await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
+    } catch {
+      await deps.api.sendMessage(deps.channelChatId, msg);
+    }
+    log.info(`no-play card sent for ${np.homeTeam} vs ${np.awayTeam}`);
+  } catch (err) {
+    log.warn(`no-play card failed for ${np.homeTeam} vs ${np.awayTeam} — article already published:`, err);
+  }
 }
 
 /** Generate + publish a no-play article. Fire-and-forget: never throws. */
@@ -178,8 +213,7 @@ export async function publishNoPlayArticle(
       await deps.store.insertPost(post);
     }
     log.info(`noplay-article: published ${posts.length} posts for ${noplay.homeTeam} vs ${noplay.awayTeam}`);
-    const enPost = posts.find((p) => p.lang === 'en');
-    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
+    if (deps.card) await sendNoPlayCard(deps.card, noplay, slug);
 
     if (deps.revalidateUrl) {
       const revalidate = createRevalidator({

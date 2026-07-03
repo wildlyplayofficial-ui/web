@@ -49,6 +49,10 @@ export interface ParsedPick {
   primaryEdge: PrimaryEdge | null;
   /** T4: Up to 2 supporting evidence tags. */
   supportingEvidence: SupportingEvidence[];
+  /** Post Restructure v1 (R5): hand-written one-line hook for the card. Never auto-truncated. */
+  hook: string | null;
+  /** Post Restructure v1 (R3): pick goes against the market → ⚠️ cue on the card. */
+  againstMarket: boolean;
 }
 
 export type ParseResult =
@@ -59,7 +63,7 @@ const MARKETS: readonly Market[] = ['ah', 'ou', '1x2', 'btts', 'other'];
 const KNOWN_KEYS = new Set([
   'match', 'league', 'kickoff', 'market', 'selection',
   'line', 'odds', 'stake', 'thesis', 'event', 'score', 'confidence',
-  'edge', 'evidence',
+  'edge', 'evidence', 'hook', 'against_market',
 ]);
 
 export function parsePick(text: string, now: Date = new Date()): ParseResult {
@@ -209,6 +213,19 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
 
   if (thesis === null || thesis === '') errors.push('missing field: thesis');
 
+  // hook (optional) — hand-written one-liner for the announcement card (R5: never auto-truncated)
+  const hook = fields.get('hook')?.trim() || null;
+
+  // against_market (optional) — yes/true → ⚠️ against-the-market cue on the card (R3)
+  let againstMarket = false;
+  const againstRaw = fields.get('against_market');
+  if (againstRaw !== undefined && againstRaw !== '') {
+    const val = againstRaw.toLowerCase();
+    if (val === 'yes' || val === 'true') againstMarket = true;
+    else if (val === 'no' || val === 'false') againstMarket = false;
+    else errors.push(`against_market must be yes/no, got "${againstRaw}"`);
+  }
+
   // T3: Primary Edge (required)
   let primaryEdge: PrimaryEdge | null = null;
   const edgeRaw = fields.get('edge');
@@ -247,7 +264,7 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
       homeTeam, awayTeam, league, kickoffUtc,
       market: market as Market, selection, line, odds, stake,
       thesis: thesis as string, eventId, publishScoreHome, publishScoreAway,
-      confidence, primaryEdge, supportingEvidence,
+      confidence, primaryEdge, supportingEvidence, hook, againstMarket,
     },
   };
 }

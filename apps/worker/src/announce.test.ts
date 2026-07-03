@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { announceResult, formatResultMessage, type AnnounceDeps } from './announce';
-import { MemoryStore, type NewPick } from './store';
+import {
+  announceResult,
+  formatResultMessage,
+  formatUnits,
+  summarizeRecord,
+  type AnnounceDeps,
+} from './announce';
+import { MemoryStore, type NewPick, type PickRow } from './store';
 
 function settledPick(overrides: Partial<NewPick> = {}): NewPick {
   return {
@@ -20,6 +26,16 @@ function settledPick(overrides: Partial<NewPick> = {}): NewPick {
     away_id: null,
     stake_units: 1,
     thesis: 'test thesis',
+    confidence: null,
+    primary_edge: null,
+    supporting_evidence: null,
+    loss_type: null,
+    postmortem_status: null,
+    postmortem_draft: null,
+    postmortem_approved: null,
+    postmortem_at: null,
+    market_side: null,
+    favored_dog: null,
     status: 'won',
     published_at: '2026-06-11T08:00:00.000Z',
     home_score: 3,
@@ -29,6 +45,11 @@ function settledPick(overrides: Partial<NewPick> = {}): NewPick {
     settled_at: '2026-06-11T21:00:00.000Z',
     ...overrides,
   };
+}
+
+/** Card text as announceResult builds it: record computed over the store's settled picks. */
+function expectedText(pick: PickRow): string {
+  return formatResultMessage(pick, summarizeRecord([pick]));
 }
 
 function fakeApi() {
@@ -41,8 +62,35 @@ function fakeApi() {
 
 const CHANNEL = '-100123';
 
-describe('announceResult — result + AI recap', () => {
-  it('posts the result and the recap, and logs both in channel_log', async () => {
+describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () => {
+  it('leads with the badge, pick block, FT score and units', () => {
+    const pick = { ...settledPick(), id: 'p1' } as PickRow;
+    const text = formatResultMessage(pick);
+    expect(text).toContain('\u2705 WIN | Mexico -1.25 -1.25 @ 2.05 \u2192 FT 3-0 \u00b7 +1.05u');
+    expect(text).toContain('Not financial advice');
+    expect(text).not.toContain('Record:');
+  });
+
+  it('adds the record line when a summary is provided', () => {
+    const pick = { ...settledPick(), id: 'p1' } as PickRow;
+    const text = formatResultMessage(pick, { wins: 3, losses: 1, pushes: 1, units: 2.35 });
+    expect(text).toContain('\u{1F4CA} Record: 3-1-1 \u00b7 +2.35u');
+  });
+
+  it('marks half wins and losses next to the badge', () => {
+    const pick = { ...settledPick({ raw_outcome: 'half_win', units_pl: 0.53 }), id: 'p1' } as PickRow;
+    expect(formatResultMessage(pick)).toContain('\u2705 WIN (half win) |');
+  });
+
+  it('formats units with sign', () => {
+    expect(formatUnits(1.049999)).toBe('+1.05u');
+    expect(formatUnits(-1)).toBe('-1u');
+    expect(formatUnits(0)).toBe('0u');
+  });
+});
+
+describe('announceResult — R6: recap is web-only, one TG notification', () => {
+  it('sends exactly one channel message and publishes the recap as posts only', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(settledPick());
     const api = fakeApi();
@@ -53,13 +101,12 @@ describe('announceResult — result + AI recap', () => {
       pick,
     );
 
-    expect(api.sendMessage).toHaveBeenCalledTimes(2);
-    expect(api.sendMessage).toHaveBeenNthCalledWith(1, CHANNEL, formatResultMessage(pick));
-    expect(api.sendMessage).toHaveBeenNthCalledWith(2, CHANNEL, 'recap text EN + VI');
+    expect(api.sendMessage).toHaveBeenCalledTimes(1);
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick));
     expect(recap).toHaveBeenCalledWith(pick);
-    expect(store.logs).toHaveLength(2);
+    expect(store.logs).toHaveLength(1);
     expect(store.logs[0]).toMatchObject({ pick_id: pick.id, channel: 'telegram', external_id: '100', ok: true });
-    expect(store.logs[1]).toMatchObject({ pick_id: pick.id, channel: 'telegram', external_id: '101', ok: true, detail: 'recap' });
+    expect(store.posts).toHaveLength(1); // recap published web-only
   });
 
   it('posts only the result when the recap returns null', async () => {
@@ -75,6 +122,7 @@ describe('announceResult — result + AI recap', () => {
     expect(api.sendMessage).toHaveBeenCalledTimes(1);
     expect(store.logs).toHaveLength(1);
     expect(store.logs[0].detail).toBe(`result won 1.05u`);
+    expect(store.posts).toHaveLength(0);
   });
 
   it('posts only the result when no recap fn is provided', async () => {
@@ -109,7 +157,7 @@ describe('announceResult — result + AI recap', () => {
     expect(store.posts[1]).toMatchObject({ lang: 'vi', status: 'published', body_md: 'Chủ nhà thắng dễ.' });
   });
 
-  it('uses the long-form article for posts when recapArticle delivers, channel still gets the short recap', async () => {
+  it('uses the long-form article for posts when recapArticle delivers — no extra channel message', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(settledPick());
     const api = fakeApi();
@@ -122,7 +170,7 @@ describe('announceResult — result + AI recap', () => {
       pick,
     );
 
-    expect(api.sendMessage).toHaveBeenNthCalledWith(2, CHANNEL, 'short channel recap');
+    expect(api.sendMessage).toHaveBeenCalledTimes(1); // the result card only
     expect(recapArticle).toHaveBeenCalledWith(pick);
     expect(store.posts).toHaveLength(2);
     expect(store.posts[0]).toMatchObject({ lang: 'en', body_md: 'Long article EN.', status: 'published' });
@@ -145,7 +193,7 @@ describe('announceResult — result + AI recap', () => {
     expect(store.posts[0]).toMatchObject({ lang: 'en', body_md: 'short channel recap', status: 'published' });
   });
 
-  it('still announces result + recap when insertPost throws — storage must never break it', async () => {
+  it('still announces the result when insertPost throws — storage must never break it', async () => {
     const store = new MemoryStore();
     store.insertPost = vi.fn(async () => { throw new Error('posts table down'); });
     const pick = await store.insertPick(settledPick());
@@ -157,8 +205,8 @@ describe('announceResult — result + AI recap', () => {
       pick,
     )).resolves.toBeUndefined();
 
-    expect(api.sendMessage).toHaveBeenCalledTimes(2); // result + recap both sent
-    expect(store.logs).toHaveLength(2);
+    expect(api.sendMessage).toHaveBeenCalledTimes(1);
+    expect(store.logs).toHaveLength(1);
     expect(store.posts).toHaveLength(0);
   });
 
@@ -178,13 +226,13 @@ describe('announceResult — result + AI recap', () => {
   });
 });
 
-describe('announceResult — result card + Facebook (enhancement batch 12/6)', () => {
+describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)', () => {
   const SITE = 'https://www.wildlyplay.com';
   const FB = { pageId: '120', pageToken: 'tok' };
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it('sends the result card photo with the text as caption when siteUrl is set', async () => {
+  it('sends the OG settled card with the text as caption when siteUrl is set', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(settledPick());
     const api = fakeApi();
@@ -195,12 +243,12 @@ describe('announceResult — result card + Facebook (enhancement batch 12/6)', (
     );
 
     expect(api.sendPhoto).toHaveBeenCalledWith(
-      CHANNEL, `${SITE}/api/result-card/${pick.id}`, { caption: formatResultMessage(pick) });
+      CHANNEL, `${SITE}/api/og/play/${pick.id}`, { caption: expectedText(pick) });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (card)');
   });
 
-  it('falls back to a plain text message when the photo send fails', async () => {
+  it('falls back to the branded W/L/P banner when the OG card fails', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(settledPick());
     const api = fakeApi();
@@ -211,11 +259,28 @@ describe('announceResult — result card + Facebook (enhancement batch 12/6)', (
       pick,
     );
 
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, formatResultMessage(pick));
-    expect(store.logs[0].detail).toBe('result won 1.05u'); // no (card) suffix
+    expect(api.sendPhoto).toHaveBeenNthCalledWith(
+      2, CHANNEL, `${SITE}/images/wildlyplay_settled_win.png`, { caption: expectedText(pick) });
+    expect(api.sendMessage).not.toHaveBeenCalled();
+    expect(store.logs[0].detail).toBe('result won 1.05u (banner)');
   });
 
-  it('posts the card photo to Facebook and logs it', async () => {
+  it('falls back to plain text when both images fail — never text-less', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(settledPick());
+    const api = fakeApi();
+    api.sendPhoto.mockRejectedValue(new Error('images down'));
+
+    await announceResult(
+      { api: api as unknown as AnnounceDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE },
+      pick,
+    );
+
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick));
+    expect(store.logs[0].detail).toBe('result won 1.05u'); // no suffix
+  });
+
+  it('posts the branded banner to Facebook and logs it', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(settledPick());
     const api = fakeApi();

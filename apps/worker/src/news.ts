@@ -5,7 +5,6 @@
  */
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { callClaude, computeRecord, POST_FLAGS, slugify, splitLangSections, type SettledRecord } from './recap';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import { log } from './log';
 import { createRevalidator } from './revalidate';
 
@@ -245,7 +244,6 @@ export interface PublishAnalysisDeps {
   store: Store;
   env: AnalysisEnv;
   revalidateUrl?: string;
-  announceArticle?: AnnounceArticleDeps;
 }
 
 /** Generate + publish an analysis article for a single pick. Fire-and-forget: never throws.
@@ -284,9 +282,8 @@ export async function publishAnalysisForPick(
     for (const post of posts) {
       await deps.store.insertPost(post);
     }
+    // Post Restructure v1 (R6): analysis articles are web/SEO-only — no TG/FB notification.
     log.info(`analysis: published ${posts.length} posts for pick ${pick.id} (on-demand)`);
-    const enPost = posts.find((p) => p.lang === 'en');
-    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
 
     if (deps.revalidateUrl) {
       const revalidate = createRevalidator({
@@ -313,7 +310,6 @@ export interface AnalysisCronDeps {
   revalidateUrl: string;
   intervalH?: number;
   cap?: number;
-  announceArticle?: AnnounceArticleDeps;
 }
 
 /** Start analysis cron loop. Returns stop function (for graceful shutdown). */
@@ -332,7 +328,7 @@ export function startAnalysisCron(deps: AnalysisCronDeps): () => void {
 
   const run = async () => {
     try {
-      const published = await runAnalysisPipeline({ env, store, revalidateUrl, cap, announceArticle: deps.announceArticle });
+      const published = await runAnalysisPipeline({ env, store, revalidateUrl, cap });
       if (published > 0) log.info(`analysis cron: published ${published} posts`);
     } catch (err) {
       log.warn('analysis cron: pipeline error:', err);
@@ -387,7 +383,6 @@ export interface AnalysisPipelineConfig {
   revalidateUrl?: string;
   cap?: number;
   dailyMax?: number;
-  announceArticle?: AnnounceArticleDeps;
 }
 
 /** Full pipeline: select topics → generate → insert → revalidate. Fail-safe per topic. */
@@ -437,8 +432,6 @@ export async function runAnalysisPipeline(config: AnalysisPipelineConfig): Promi
       }
       published += posts.length;
       log.info(`analysis: inserted ${posts.length} posts for ${topic.home_team} vs ${topic.away_team}`);
-      const enPost = posts.find((p) => p.lang === 'en');
-      if (enPost && config.announceArticle) void announceArticle(config.announceArticle, enPost);
     } catch (err) {
       log.warn(`analysis: failed for ${topic.home_team} vs ${topic.away_team}:`, err);
     }

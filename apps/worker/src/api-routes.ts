@@ -124,7 +124,7 @@ export async function handleApiRoute(
       if (deps.preview) void deps.preview(row);
       if (deps.translateThesis) void deps.translateThesis(row);
       if (deps.publishAnalysis && row.publish_score_home == null) void deps.publishAnalysis(row);
-      void announcePick(deps.announceDeps, row);
+      void announcePick(deps.announceDeps, row, { hook: result.pick.hook, againstMarket: result.pick.againstMarket });
       json(res, 200, { ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}`, selection: row.selection });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -152,7 +152,10 @@ export async function handleApiRoute(
       void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id }).catch(e => log.warn('enqueue watching-news:', e));
     } else if (row.note && deps.aiEnv?.apiKey) {
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row);
-      void publishWatchingNews({ store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl, announceArticle: deps.announceDeps }, row as unknown as import('./store').WatchingRow);
+      void publishWatchingNews({
+        store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
+        card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
+      }, row as unknown as import('./store').WatchingRow);
     }
     if (deps.aiEnv?.apiKey) {
       void (async () => {
@@ -174,7 +177,10 @@ export async function handleApiRoute(
     const { noplay } = result;
     log.info(`api: noplay ${noplay.homeTeam} vs ${noplay.awayTeam} — ${noplay.reason}`);
     if (deps.aiEnv?.apiKey) {
-      void publishNoPlayArticle({ store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl, announceArticle: deps.announceDeps }, noplay);
+      void publishNoPlayArticle({
+        store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
+        card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
+      }, noplay);
     }
     json(res, 200, { ok: true, match: `${noplay.homeTeam} vs ${noplay.awayTeam}`, reason: noplay.reason });
     return true;
@@ -198,7 +204,6 @@ export async function handleApiRoute(
       if (deps.postmortem) void generatePostmortemDraft(deps.postmortem, settled);
       void announceResult({
         ...deps.announceDeps, recap: deps.recap, recapArticle: deps.recapArticle,
-        announceArticleDeps: deps.announceDeps,
       }, settled);
       json(res, 200, { ok: true, id: settled.id, status: settled.status, units_pl: settled.units_pl });
     } catch (err) {

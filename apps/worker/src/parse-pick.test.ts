@@ -13,6 +13,7 @@ line: -1.25
 odds: 2.05
 stake: 1
 confidence: HIGH
+edge: PRICE_VALUE
 thesis: Mexico dominant at home, SA missing two starters.`;
 
 function expectErrors(text: string, ...fragments: string[]) {
@@ -44,6 +45,10 @@ describe('parsePick — happy path', () => {
       publishScoreHome: null,
       publishScoreAway: null,
       confidence: 'high',
+      primaryEdge: 'PRICE_VALUE',
+      supportingEvidence: [],
+      hook: null,
+      againstMarket: false,
     });
   });
 
@@ -73,6 +78,7 @@ selection: draw
 odds: 3.2
 stake: 0.5
 confidence: LOW
+edge: MOTIVATION
 thesis: t`;
     const r = parsePick(text, NOW);
     expect(r.ok).toBe(true);
@@ -80,6 +86,27 @@ thesis: t`;
     expect(r.pick.line).toBeNull();
     expect(r.pick.market).toBe('1x2');
   });
+});
+
+describe('parsePick — card extras (Post Restructure v1)', () => {
+  const withField = (line: string) => VALID.replace('thesis:', `${line}\nthesis:`);
+
+  it('captures the hand-written hook verbatim (R5)', () => {
+    const r = parsePick(withField('hook: Swiss press suffocates deep blocks.'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.pick.hook).toBe('Swiss press suffocates deep blocks.');
+  });
+
+  it('parses against_market yes/no (R3)', () => {
+    const yes = parsePick(withField('against_market: yes'), NOW);
+    expect(yes.ok && yes.pick.againstMarket).toBe(true);
+    const no = parsePick(withField('against_market: no'), NOW);
+    expect(no.ok && no.pick.againstMarket).toBe(false);
+  });
+
+  it('rejects a non-boolean against_market', () =>
+    expectErrors(withField('against_market: maybe'), 'against_market must be yes/no'));
 });
 
 describe('parsePick — missing fields', () => {
