@@ -26,6 +26,24 @@ function parseScore(scoreStr: string): { home: number; away: number } | null {
   return { home: parseInt(m[1], 10), away: parseInt(m[2], 10) };
 }
 
+// The live feed has no `round` field. For a match not seen in any other feed,
+// infer its round from the date ranges of matches already collected per round.
+function inferRound(
+  matchMap: Map<string, KnockoutMatch>,
+  date: string,
+): KnockoutRoundCode | null {
+  if (!date) return null;
+  for (const code of KNOCKOUT_ROUNDS) {
+    const dates = [...matchMap.values()]
+      .filter((m) => m.round === code && m.date)
+      .map((m) => m.date)
+      .sort();
+    if (dates.length === 0) continue;
+    if (date >= dates[0] && date <= dates[dates.length - 1]) return code;
+  }
+  return null;
+}
+
 async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRound[]> {
   const key = process.env.LIVESCORE_API_KEY;
   const secret = process.env.LIVESCORE_API_SECRET;
@@ -42,7 +60,7 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
   const yesterday = new Date(now - 86_400_000).toISOString().slice(0, 10);
 
   try {
-    const [fixturesRes, historyRes, todayRes, yesterdayRes] = await Promise.all([
+    const [fixturesRes, historyRes, todayRes, yesterdayRes, liveRes] = await Promise.all([
       fetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&size=100`,
         { cache: "no-store" },
@@ -60,6 +78,12 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
       ),
       fetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&date=${yesterday}`,
+        { cache: "no-store" },
+      ),
+      // In-play + just-finished matches: fixtures purge past days and history
+      // lags ~1h+ behind full time — this feed bridges that gap.
+      fetch(
+        `${LIVESCORE_BASE}/scores/live.json?competition_id=${livescoreId}&key=${key}&secret=${secret}`,
         { cache: "no-store" },
       ),
     ]);
@@ -178,6 +202,59 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
             homeScore: score?.home ?? null,
             awayScore: score?.away ?? null,
             finished: (m.status ?? "").toUpperCase() === "FINISHED",
+          });
+        }
+      }
+    }
+
+    // Live feed last: updates known matches with live/just-finished scores,
+    // and re-adds matches that fell through the gap (purged from fixtures,
+    // not yet in history). Flat shape: home_name/away_name/score/status;
+    // fixture_id joins the fixtures id-space; no `round` field.
+    if (liveRes.ok) {
+      const ld = (await liveRes.json()) as {
+        success: boolean;
+        data?: {
+          match?: Array<{
+            fixture_id?: string | number;
+            id?: string | number;
+            added?: string;
+            scheduled?: string;
+            home_name?: string;
+            away_name?: string;
+            score?: string;
+            status?: string;
+          }>;
+        };
+      };
+      if (ld.success && ld.data?.match) {
+        for (const m of ld.data.match) {
+          if (m.fixture_id == null) continue;
+          const id = String(m.fixture_id);
+          const score = parseScore(m.score ?? "");
+          const finished = (m.status ?? "").toUpperCase() === "FINISHED";
+          const existing = matchMap.get(id);
+          if (existing) {
+            if (score) {
+              existing.homeScore = score.home;
+              existing.awayScore = score.away;
+            }
+            existing.finished = finished;
+            continue;
+          }
+          const date = (m.added ?? "").slice(0, 10);
+          const round = inferRound(matchMap, date);
+          if (!round) continue;
+          matchMap.set(id, {
+            id,
+            round,
+            date,
+            time: (m.scheduled ?? "").slice(0, 5),
+            homeName: m.home_name ?? "",
+            awayName: m.away_name ?? "",
+            homeScore: score?.home ?? null,
+            awayScore: score?.away ?? null,
+            finished,
           });
         }
       }
