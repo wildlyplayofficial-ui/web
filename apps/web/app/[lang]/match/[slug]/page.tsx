@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
+import { BoothSection } from "@/components/booth-section";
 import { MatchCommentary } from "@/components/match-commentary";
 import { PickCard } from "@/components/pick-card";
 import { WatchingTeaser } from "@/components/watching-teaser";
+import { getBoothForPick } from "@/lib/booth-data";
 import { getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { formatKickoff } from "@/lib/format";
@@ -90,7 +92,12 @@ export default async function MatchPage({ params }: Props) {
   }
 
   const pickIds = match.picks.map((p) => p.id);
-  const [votes, translations] = await Promise.all([getVoteCounts(pickIds), getThesisTranslations(pickIds)]);
+  const [votes, translations, boothEntries] = await Promise.all([
+    getVoteCounts(pickIds),
+    getThesisTranslations(pickIds),
+    // Same Booth as /play so both URLs carry the same match content (Nick 3/7)
+    match.picks.length > 0 ? getBoothForPick(match.picks[0].id) : Promise.resolve([]),
+  ]);
   const homeFlag = teamFlag(match.homeTeam); const awayFlag = teamFlag(match.awayTeam);
   const schema = JSON.stringify(buildSportsEventSchema(match)).replace(/</g, "\\u003c");
 
@@ -128,6 +135,8 @@ export default async function MatchPage({ params }: Props) {
       {match.picks.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
 
       {match.picks.length > 0 && match.picks[0].fixture_id > 0 && (<MatchCommentary fixtureId={match.picks[0].fixture_id} homeTeam={match.homeTeam} awayTeam={match.awayTeam} pick={match.picks[0]} lang={lang} />)}
+
+      <BoothSection entries={boothEntries} lang={lang} />
 
       {match.picks.length > 0 && ["won", "lost", "push"].includes(match.picks[0].status) && (
         <section className="mt-6 rounded-card border border-line bg-card p-4 shadow-card">

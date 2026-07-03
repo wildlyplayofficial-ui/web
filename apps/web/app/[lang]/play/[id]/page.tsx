@@ -9,9 +9,9 @@ import { LiveClock } from "@/components/live-clock";
 import { StatusBadge } from "@/components/status-badge";
 import { TeamLogo } from "@/components/team-logo";
 import { permanentRedirect } from "next/navigation";
-import { buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
-import { getBoothForPick, getBoothLines } from "@/lib/booth-data";
-import { BoothCommentary } from "@/components/booth-commentary";
+import { buildMatchSlug, buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
+import { getBoothForPick } from "@/lib/booth-data";
+import { BoothSection } from "@/components/booth-section";
 import { teamFlag } from "@/lib/flags";
 import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
@@ -50,10 +50,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const translations = await getThesisTranslations([pick.id]);
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
   const image = `/api/og/play/${pick.id}`;
+  // Canonical points at the /match hub: both URLs now carry the same content
+  // (Booth shared), so consolidate ranking there (Nick + Jane 3/7).
+  const alternates = buildAlternates(`/play/${slug}`, lang);
+  alternates.canonical = buildAlternates(`/match/${buildMatchSlug(pick.home_team, pick.away_team, pick.kickoff_utc)}`, lang).canonical;
   return {
     title,
     description,
-    alternates: buildAlternates(`/play/${slug}`, lang),
+    alternates,
     openGraph: { title: `${title} | WildlyPlay`, description, images: [image] },
     twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [image] },
   };
@@ -166,26 +170,7 @@ export default async function PlayDetail({ params }: Props) {
         <MatchEvents matchId={String(pick.fixture_id)} homeTeam={pick.home_team} awayTeam={pick.away_team} lang={lang} />
       )}
 
-      {boothEntries.length > 0 && (
-        <section className="mt-8 space-y-3">
-          <h3 className="font-display text-lg font-bold">
-            <span className="mr-2 inline-flex items-center gap-1">
-              <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
-              <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-400" />
-            </span>
-            The Booth
-          </h3>
-          <p className="text-xs text-muted">
-            {lang === "vi" ? "Ph\u00e2n t\u00edch tr\u1ef1c ti\u1ebfp b\u1edfi Sonny & Cole \u2014 b\u00ecnh lu\u1eadn AI, kh\u00f4ng ph\u1ea3i t\u01b0 v\u1ea5n c\u00e1 c\u01b0\u1ee3c."
-              : lang === "th" ? "\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e2a\u0e14\u0e42\u0e14\u0e22 Sonny & Cole \u2014 \u0e04\u0e2d\u0e21\u0e40\u0e21\u0e19\u0e15\u0e4c AI \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19"
-                : lang === "es" ? "An\u00e1lisis en vivo por Sonny & Cole \u2014 comentario IA, no consejo de apuestas."
-                  : "Live analysis by Sonny & Cole \u2014 AI commentary, not betting advice."}
-          </p>
-          {boothEntries.map((entry, i) => (
-            <BoothCommentary key={i} lines={getBoothLines(entry, lang)} eventType={entry.eventType} eventMinute={entry.eventMinute} lang={lang} />
-          ))}
-        </section>
-      )}
+      <BoothSection entries={boothEntries} lang={lang} />
 
       {settled && pick.raw_outcome !== null && pick.units_pl !== null && (
         <section className="mt-8 rounded-card border border-line bg-card p-6">
