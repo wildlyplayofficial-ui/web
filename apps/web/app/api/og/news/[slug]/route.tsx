@@ -12,6 +12,7 @@ const C = {
   muted: "#8b949e",
   line: "#30363d",
   brand: "#00e676",
+  scout: "#5f9c99",
 } as const;
 
 const TYPE_LABELS: Record<string, string> = {
@@ -34,6 +35,7 @@ export async function GET(
   const typeLabel = TYPE_LABELS[post.type] ?? post.type.toUpperCase();
   const title = post.meta_title ?? post.title;
   const titleSize = title.length > 60 ? 42 : title.length > 40 ? 48 : 56;
+  const accent = post.author === "scout" ? C.scout : C.brand;
 
   return new ImageResponse(
     (
@@ -68,8 +70,8 @@ export async function GET(
               fontSize: 20,
               fontWeight: 700,
               letterSpacing: 3,
-              color: C.brand,
-              border: `2px solid ${C.brand}`,
+              color: accent,
+              border: `2px solid ${accent}`,
               borderRadius: 10,
               padding: "6px 20px",
             }}

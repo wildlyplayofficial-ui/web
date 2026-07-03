@@ -125,7 +125,7 @@ export default async function PlayDetail({ params }: Props) {
       </header>
 
       <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-        <span className="rounded-md border border-brand/30 bg-brand-dim px-2.5 py-1 font-display font-semibold text-brand">
+        <span className={pick.author === "scout" ? "rounded-md border border-scout/30 bg-scout-dim px-2.5 py-1 font-display font-semibold text-scout" : "rounded-md border border-brand/30 bg-brand-dim px-2.5 py-1 font-display font-semibold text-brand"}>
           {pick.selection}
         </span>
         <span className="text-muted">
@@ -187,7 +187,7 @@ export default async function PlayDetail({ params }: Props) {
 
       {recapFinal && (
         <p className="mt-6">
-          <Link href={withLang(`/news/${recapFinal.slug}`, lang)} className="font-display text-sm font-semibold text-brand transition-colors hover:text-ink">
+          <Link href={withLang(`/news/${recapFinal.slug}`, lang)} className={pick.author === "scout" ? "font-display text-sm font-semibold text-scout transition-colors hover:text-ink" : "font-display text-sm font-semibold text-brand transition-colors hover:text-ink"}>
             {dict.play.readRecap} &rarr;
           </Link>
         </p>

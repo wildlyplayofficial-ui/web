@@ -63,17 +63,19 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
   const buzz = history.length > 0 ? history[history.length - 1] : null;
   const prevBuzz = history.length > 1 ? history[history.length - 2] : null;
 
+  const isScout = item.author === "scout";
+
   return (
-    <div className="rounded-card border border-brand/20 bg-brand-dim/30 p-4 shadow-card">
+    <div className={isScout ? "rounded-card border border-scout/20 bg-scout-dim/30 p-4 shadow-card" : "rounded-card border border-brand/20 bg-brand-dim/30 p-4 shadow-card"}>
       <div className="mb-2 flex items-center gap-2">
         {!isPast && (
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+            <span className={isScout ? "absolute inline-flex h-full w-full animate-ping rounded-full bg-scout opacity-75" : "absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75"} />
+            <span className={isScout ? "relative inline-flex h-2 w-2 rounded-full bg-scout" : "relative inline-flex h-2 w-2 rounded-full bg-brand"} />
           </span>
         )}
-        <span className="font-display text-sm font-semibold text-brand">
-          {item.author === "scout"
+        <span className={isScout ? "font-display text-sm font-semibold text-scout" : "font-display text-sm font-semibold text-brand"}>
+          {isScout
             ? isPast ? dict.watching.titlePastScout : dict.watching.titleScout
             : isPast ? dict.watching.titlePast : dict.watching.title}
         </span>
@@ -129,7 +131,7 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
         <div className="mt-3">
           <Link
             href={withLang(`/match/${buildMatchSlug(item.home_team, item.away_team, item.kickoff_utc)}`, lang)}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-brand transition-colors hover:text-brand/80"
+            className={isScout ? "inline-flex items-center gap-1 text-sm font-semibold text-scout transition-colors hover:text-scout/80" : "inline-flex items-center gap-1 text-sm font-semibold text-brand transition-colors hover:text-brand/80"}
           >
             {dict.match.viewMatch} →
           </Link>

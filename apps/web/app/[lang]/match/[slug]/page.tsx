@@ -132,7 +132,7 @@ export default async function MatchPage({ params }: Props) {
         })()}
       </header>
 
-      {match.picks.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{match.picks[0].author === "scout" ? dict.match.scoutPick : dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
+      {match.picks.length > 0 && (<section className="mt-8"><h2 className={match.picks[0].author === "scout" ? "mb-3 font-display text-lg font-bold text-scout" : "mb-3 font-display text-lg font-bold"}>{match.picks[0].author === "scout" ? dict.match.scoutPick : dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
 
       {match.picks.length > 0 && match.picks[0].fixture_id > 0 && (<MatchCommentary fixtureId={match.picks[0].fixture_id} homeTeam={match.homeTeam} awayTeam={match.awayTeam} pick={match.picks[0]} lang={lang} />)}
 
@@ -147,7 +147,7 @@ export default async function MatchPage({ params }: Props) {
         </section>
       )}
 
-      {match.watching && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{match.watching.author === "scout" ? dict.match.scoutWatch : dict.match.curatorWatch}</h2><WatchingTeaser items={[match.watching]} lang={lang} hideLinks /></section>)}
+      {match.watching && (<section className="mt-8"><h2 className={match.watching.author === "scout" ? "mb-3 font-display text-lg font-bold text-scout" : "mb-3 font-display text-lg font-bold"}>{match.watching.author === "scout" ? dict.match.scoutWatch : dict.match.curatorWatch}</h2><WatchingTeaser items={[match.watching]} lang={lang} hideLinks /></section>)}
 
       {uniquePosts.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{dict.match.articles}</h2><ul className="flex flex-col gap-3">{uniquePosts.map((post) => (<li key={post.id} className="rounded-card border border-line bg-card p-4 shadow-card"><span className="mb-1 inline-block rounded-md bg-card px-2 py-0.5 text-xs font-semibold uppercase text-muted">{post.type}</span><p className="font-display font-bold"><Link href={withLang(`/news/${post.slug}`, lang)} className="transition-colors hover:text-brand">{post.title}</Link></p><Link href={withLang(`/news/${post.slug}`, lang)} className="mt-1 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">{dict.match.readArticle} &rarr;</Link></li>))}</ul></section>)}
 

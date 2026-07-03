@@ -14,6 +14,10 @@
   --color-brand-dim: var(--t-brand-dim);
   --color-brand-hover: var(--t-brand-hover);
   --color-brand-pressed: var(--t-brand-pressed);
+  --color-scout: var(--t-scout);
+  --color-scout-dim: var(--t-scout-dim);
+  --color-scout-hover: var(--t-scout-hover);
+  --color-scout-pressed: var(--t-scout-pressed);
   --color-indigo-soft: var(--t-indigo);
   --color-violet-soft: #c084fc;
   --color-loss: #f85149;
@@ -54,6 +58,10 @@
   --t-brand-dim: rgba(5, 150, 82, 0.1);
   --t-brand-hover: #048a4a;
   --t-brand-pressed: #037a40;
+  --t-scout: #3f716e;
+  --t-scout-dim: rgba(63, 113, 110, 0.1);
+  --t-scout-hover: #386462;
+  --t-scout-pressed: #305654;
   --t-loss-dim: rgba(248, 81, 73, 0.1);
   --t-warning: #9a6700;
   --t-warning-dim: rgba(154, 103, 0, 0.1);
@@ -80,6 +88,10 @@
   --t-brand-dim: rgba(0, 230, 118, 0.15);
   --t-brand-hover: #00d294;
   --t-brand-pressed: #059652;
+  --t-scout: #5f9c99;
+  --t-scout-dim: rgba(95, 156, 153, 0.15);
+  --t-scout-hover: #74aba8;
+  --t-scout-pressed: #3f716e;
   --t-loss-dim: rgba(248, 81, 73, 0.15);
   --t-warning: #fcbb00;
   --t-warning-dim: rgba(252, 187, 0, 0.15);

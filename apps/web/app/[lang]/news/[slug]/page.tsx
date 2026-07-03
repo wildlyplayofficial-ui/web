@@ -125,7 +125,7 @@ export default async function NewsPost({ params }: Props) {
         {published && (
           <p className="mt-3 text-sm text-muted">
             <time dateTime={post.published_at ?? undefined}>{published}</time>
-            {" \u00b7 The Curator @ WildlyPlay"}
+            {post.author === "scout" ? " \u00b7 The Scout @ WildlyPlay" : " \u00b7 The Curator @ WildlyPlay"}
           </p>
         )}
       </header>
@@ -150,7 +150,7 @@ export default async function NewsPost({ params }: Props) {
           <Link
             key={id}
             href={withLang(`/play/${id}`, lang)}
-            className="font-display text-sm font-semibold text-brand transition-colors hover:text-ink"
+            className={post.author === "scout" ? "font-display text-sm font-semibold text-scout transition-colors hover:text-ink" : "font-display text-sm font-semibold text-brand transition-colors hover:text-ink"}
           >
             {dict.pick.viewPlay} &rarr;
           </Link>

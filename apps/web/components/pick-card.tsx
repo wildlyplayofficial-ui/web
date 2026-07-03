@@ -28,6 +28,7 @@ export function PickCard({
   const dict = getDict(lang);
   const badge = badgeFor(pick);
   const settled = pick.units_pl !== null;
+  const isScout = pick.author === "scout";
   const isHalf = pick.raw_outcome === "half_win" || pick.raw_outcome === "half_loss";
   const homeFlag = teamFlag(pick.home_team);
   const awayFlag = teamFlag(pick.away_team);
@@ -51,7 +52,7 @@ export function PickCard({
         {/* Every pick links to its detail page — full transparency (decisions #1, #3). */}
         <Link
           href={withLang(`/play/${buildPlaySlug(pick)}`, lang)}
-          className="transition-colors hover:text-brand"
+          className={isScout ? "transition-colors hover:text-scout" : "transition-colors hover:text-brand"}
         >
           {pick.home_id != null ? (
             <span className="mr-1.5 inline-flex items-center">
@@ -74,7 +75,7 @@ export function PickCard({
       </h3>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-        <span className="rounded-md border border-brand/30 bg-brand-dim px-2.5 py-1 font-display font-semibold text-brand">
+        <span className={isScout ? "rounded-md border border-scout/30 bg-scout-dim px-2.5 py-1 font-display font-semibold text-scout" : "rounded-md border border-brand/30 bg-brand-dim px-2.5 py-1 font-display font-semibold text-brand"}>
           {pick.selection}
         </span>
         <span className="text-muted">
@@ -111,7 +112,7 @@ export function PickCard({
       {!hideLinks && (
         <Link
           href={withLang(`/play/${buildPlaySlug(pick)}`, lang)}
-          className="mt-4 inline-block font-display text-sm font-semibold text-brand transition-colors hover:text-ink"
+          className={isScout ? "mt-4 inline-block font-display text-sm font-semibold text-scout transition-colors hover:text-ink" : "mt-4 inline-block font-display text-sm font-semibold text-brand transition-colors hover:text-ink"}
         >
           {dict.pick.viewPlay} →
         </Link>
