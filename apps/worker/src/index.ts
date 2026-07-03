@@ -301,7 +301,7 @@ const server = createServer(async (req, res) => {
         // Buzz still runs inline (fast, not AI-heavy)
         void (async () => {
           try {
-            const snapshot = await generateBuzz({ store, env: aiEnv, revalidateUrl: siteUrl }, watching);
+            const snapshot = await generateBuzz({ store, env: aiEnv }, watching);
             if (snapshot) {
               await store.updateWatching(watching.id, { buzz_history: [snapshot] });
               void revalidate(['watching']);

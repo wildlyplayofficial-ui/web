@@ -100,8 +100,8 @@ export async function handleApiRoute(
         line: result.pick.line ?? null,
         odds_publish: result.pick.odds,
         odds_close: null,
-        publish_score_home: result.pick.publishScore?.home ?? null,
-        publish_score_away: result.pick.publishScore?.away ?? null,
+        publish_score_home: result.pick.publishScoreHome,
+        publish_score_away: result.pick.publishScoreAway,
         home_id: autoEvent?.homeId ?? null,
         away_id: autoEvent?.awayId ?? null,
         stake_units: result.pick.stake,
@@ -174,7 +174,7 @@ export async function handleApiRoute(
     if (deps.aiEnv?.apiKey) {
       void (async () => {
         try {
-          const snapshot = await generateBuzz({ store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl }, row as unknown as import('./store').WatchingRow);
+          const snapshot = await generateBuzz({ store: deps.store, env: deps.aiEnv }, row as unknown as import('./store').WatchingRow);
           if (snapshot) { await deps.store.updateWatching(row.id, { buzz_history: [snapshot] }); void deps.revalidate(['watching']); }
         } catch (err) { log.warn(`api buzz failed:`, err); }
       })();

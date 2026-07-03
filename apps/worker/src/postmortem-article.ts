@@ -2,16 +2,17 @@
  * Post-mortem newsroom article: when Curator /approve a pick,
  * generate a public post-mortem article (4 languages) + distribute.
  */
-import { callClaude, DEFAULT_MODEL, POST_FLAGS, slugify, splitLangSections } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, splitLangSections } from './recap';
 import { parseAnalysisSection } from './news';
 import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PostLang, PickRow, Store } from './store';
+import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
 
 const MAX_TOKENS = 6000;
 
-function buildPostmortemArticlePrompt(pick: PickRow): string {
+export function buildPostmortemArticlePrompt(pick: PickRow): string {
   const score = `${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}`;
   const won = pick.status === 'won';
   const lossType = pick.loss_type ? ` Loss type: ${pick.loss_type}.` : '';
@@ -40,6 +41,8 @@ Thesis: ${pick.thesis}
   - Win-hype: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
   - Loss-excuse: unlucky, deserved to win, deserved better, hard luck, bad break, wrong call, robbed, harsh result.
 - Do NOT invent stats or events not in the data above.
+- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section's own language exactly:
+${disclosureBlock(authorTypeOf(pick.author))}
 </rules>
 
 <output>
@@ -54,7 +57,7 @@ Then a blank line, then article body (200-400 words, markdown, no H1).
 </output>
 
 <self_critique>
-Before outputting, check ALL FOUR sections individually (Thai and Spanish are not exempt): (1) no win-hype vocabulary, (2) no loss-excuse vocabulary, (3) honest about result, (4) each section in correct language.
+Before outputting, check ALL FOUR sections individually (Thai and Spanish are not exempt): (1) no win-hype vocabulary, (2) no loss-excuse vocabulary, (3) honest about result, (4) each section in correct language, (5) disclosure line present and matching its own language exactly.
 </self_critique>`;
 }
 

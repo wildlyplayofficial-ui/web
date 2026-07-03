@@ -2,7 +2,8 @@
  * Milestone 4: AI-written post-match recap via the Anthropic Messages API (plain fetch, no SDK).
  * A recap failure must NEVER break the result announcement — every path returns null instead of throwing.
  */
-import type { NewPost, PickRow, PostLang } from './store';
+import type { AuthorType, NewPost, PickRow, PostLang } from './store';
+import { authorTypeOf } from './store';
 
 /** Team name → URL-safe slug: "Türkiye" → "turkiye", "Bosnia and Herzegovina" → "bosnia-and-herzegovina". */
 export function slugify(name: string): string {
@@ -24,6 +25,39 @@ export const POST_FLAGS: Record<PostLang, string> = {
   th: '\u{1F1F9}\u{1F1ED}',
   es: '\u{1F1EA}\u{1F1F8}',
 };
+
+/** T7 disclosure text (Tiered Picks §12 firewall, launch blocker (a), Jane review 3/7) —
+ *  keyed by server-derived AuthorType, NEVER the raw client `author` string, so a Scout
+ *  pick can never render the Curator's "real_human" disclosure. Shared by every
+ *  article-generation prompt (preview, recap article, post-mortem, analysis, no-play,
+ *  watching-news) across all 4 newsroom languages. */
+const DISCLOSURE: Record<AuthorType, Record<PostLang, string>> = {
+  real_human: {
+    en: 'Human-picked, AI-written.',
+    vi: 'Con người chọn kèo, AI viết bài.',
+    th: 'มนุษย์เลือกเดิมพัน เขียนโดย AI',
+    es: 'Elegido por un humano, escrito por IA.',
+  },
+  fictional_ai: {
+    en: 'AI-picked, AI-written — Scout is an experimental AI persona, not a real person.',
+    vi: 'AI chọn kèo, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.',
+    th: 'AI เลือกเดิมพัน เขียนโดย AI — Scout เป็นตัวละคร AI ทดลอง ไม่ใช่บุคคลจริง',
+    es: 'Elegido por IA, escrito por IA — Scout es un personaje de IA experimental, no una persona real.',
+  },
+};
+
+/** Disclosure text for a single language + author type. */
+export function disclosureFor(authorType: AuthorType, lang: PostLang): string {
+  return DISCLOSURE[authorType][lang];
+}
+
+/** Multi-line instruction block, one line per language, for insertion into a prompt's
+ *  <rules> section — the model must match each section's own language to the line below. */
+export function disclosureBlock(authorType: AuthorType): string {
+  return (Object.keys(POST_FLAGS) as PostLang[])
+    .map((lang) => `  ${lang.toUpperCase()}: "${disclosureFor(authorType, lang)}"`)
+    .join('\n');
+}
 
 export interface SettledRecord {
   won: number;
@@ -226,7 +260,8 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
 - Lead with thesis evaluation — never a generic scoreline summary.
-- End each section with the updated record line and this disclosure: "Human-picked, AI-written."
+- End each section with the updated record line, followed by this disclosure as plain text, matching that section's own language exactly:
+${disclosureBlock(authorTypeOf(pick.author))}
 </rules>
 
 <bad_examples>

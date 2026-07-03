@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildPreviewPosts, buildPreviewPrompt, publishPreview } from './preview';
+import { disclosureFor } from './recap';
 import { MemoryStore, type PickRow } from './store';
 
 function publishedPick(overrides: Partial<PickRow> = {}): PickRow {
@@ -28,6 +29,18 @@ function publishedPick(overrides: Partial<PickRow> = {}): PickRow {
     raw_outcome: null,
     units_pl: null,
     settled_at: null,
+    confidence: null,
+    primary_edge: null,
+    consensus_edge_pct: null,
+    supporting_evidence: null,
+    loss_type: null,
+    postmortem_status: null,
+    postmortem_draft: null,
+    postmortem_approved: null,
+    postmortem_at: null,
+    market_side: null,
+    favored_dog: null,
+    author: 'curator',
     ...overrides,
   };
 }
@@ -56,6 +69,29 @@ describe('buildPreviewPrompt', () => {
     expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
     expect(prompt).toContain('Human-picked, AI-written.');
+  });
+});
+
+describe('buildPreviewPrompt — disclosure (Tiered Picks §12 firewall)', () => {
+  it.each(['en', 'vi', 'th', 'es'] as const)(
+    'renders the curator (real_human) disclosure in %s',
+    (lang) => {
+      const prompt = buildPreviewPrompt(publishedPick({ author: 'curator' }));
+      expect(prompt).toContain(disclosureFor('real_human', lang));
+    },
+  );
+
+  it.each(['en', 'vi', 'th', 'es'] as const)(
+    'renders the scout (fictional_ai) disclosure in %s',
+    (lang) => {
+      const prompt = buildPreviewPrompt(publishedPick({ author: 'scout' }));
+      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
+    },
+  );
+
+  it('never leaks the curator wording into a scout pick prompt', () => {
+    const prompt = buildPreviewPrompt(publishedPick({ author: 'scout' }));
+    expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
   });
 });
 

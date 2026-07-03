@@ -77,7 +77,7 @@ describe('buildArticleLink', () => {
 describe('announceArticle', () => {
   it('never throws even when TG + FB both fail', async () => {
     const deps = {
-      api: { sendMessage: vi.fn().mockRejectedValue(new Error('TG down')) },
+      api: { sendMessage: vi.fn().mockRejectedValue(new Error('TG down')), sendPhoto: vi.fn().mockRejectedValue(new Error('no photo')) },
       channelChatId: '-100123',
       store: new MemoryStore(),
       siteUrl: SITE,
@@ -97,7 +97,7 @@ describe('announceArticle', () => {
     const sendMessage = vi.fn().mockResolvedValue({ message_id: 42 });
     const store = new MemoryStore();
     const deps = {
-      api: { sendMessage },
+      api: { sendMessage, sendPhoto: vi.fn().mockRejectedValue(new Error('no photo')) },
       channelChatId: '-100123',
       store,
       siteUrl: SITE,
@@ -113,7 +113,7 @@ describe('announceArticle', () => {
   it('skips TG when channelChatId is undefined', async () => {
     const sendMessage = vi.fn();
     const deps = {
-      api: { sendMessage },
+      api: { sendMessage, sendPhoto: vi.fn() },
       channelChatId: undefined,
       store: new MemoryStore(),
       siteUrl: SITE,

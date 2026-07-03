@@ -68,4 +68,11 @@ describe('parseNoPlay — author (Tiered Picks §12)', () => {
     if (r.ok) return;
     expect(r.errors.join('\n')).toContain('author must be curator/scout');
   });
+
+  it('rejects author: placed after note instead of silently swallowing it into the free text', () => {
+    const r = parseNoPlay(`${VALID}\nauthor: scout`);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.join('\n')).toContain('field "author" found after note');
+  });
 });

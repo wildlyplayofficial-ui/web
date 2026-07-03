@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, publishWatchingNews } from './watching-news';
+import { disclosureFor } from './recap';
 import { MemoryStore, type WatchingRow } from './store';
 
 function activeWatching(overrides: Partial<WatchingRow> = {}): WatchingRow {
@@ -93,6 +94,29 @@ describe('buildWatchingNewsPrompt', () => {
   it('instructs responsible language and disclosure', () => {
     expect(prompt).toContain('"sure win"');
     expect(prompt).toContain('AI-written');
+  });
+});
+
+describe('buildWatchingNewsPrompt — disclosure (Tiered Picks §12 firewall)', () => {
+  it.each(['en', 'vi', 'th', 'es'] as const)(
+    'renders the curator (real_human) disclosure in %s',
+    (lang) => {
+      const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'curator' }));
+      expect(prompt).toContain(disclosureFor('real_human', lang));
+    },
+  );
+
+  it.each(['en', 'vi', 'th', 'es'] as const)(
+    'renders the scout (fictional_ai) disclosure in %s',
+    (lang) => {
+      const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'scout' }));
+      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
+    },
+  );
+
+  it('never leaks the curator wording into a scout watching prompt', () => {
+    const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'scout' }));
+    expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
   });
 });
 

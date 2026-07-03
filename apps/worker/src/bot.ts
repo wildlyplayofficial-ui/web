@@ -235,10 +235,11 @@ export function createBot(deps: BotDeps): Bot {
     }
     // Nick 16/6: generate buzz immediately on /watching (don't wait for cron)
     if (deps.aiEnv?.apiKey) {
+      const aiEnv = deps.aiEnv;
       void (async () => {
         try {
           const snapshot = await generateBuzz(
-            { store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl },
+            { store: deps.store, env: aiEnv },
             row as unknown as import('./store').WatchingRow,
           );
           if (snapshot) {

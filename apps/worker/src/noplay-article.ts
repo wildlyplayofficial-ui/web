@@ -4,10 +4,11 @@
  * A failure must NEVER break the /noplay reply — every path logs and returns.
  */
 import type { Api } from 'grammy';
-import { callClaude, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL } from './recap';
+import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL } from './recap';
 import { parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import type { NewPost, PostLang, Store } from './store';
+import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
 import type { ParsedNoPlay, NoPlayReason } from './parse-noplay';
@@ -54,7 +55,8 @@ Reason for passing: ${REASON_LABELS[np.reason]} (${np.reason})${watchingLine}${n
 - Work ONLY from the data above plus general football knowledge — do NOT invent injuries, lineups, stats, quotes, or specific match events.
 - Explain why the Curator is passing — frame the specific reason clearly.${watchingRule}
 - End each section with the discipline framing: "We pass when there's nothing worth backing — that's the discipline."
-- Then disclosure as plain text (no bold, no italic): AI-written — WildlyPlay Newsroom
+- Then this disclosure as plain text (no bold, no italic), matching that section's own language exactly:
+${disclosureBlock(authorTypeOf(np.author))}
 - Responsible language: NEVER use "sure win", "guaranteed", "lock" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "nothing worth backing" or "no reason to play" instead.
 - Do NOT copy any external source verbatim.

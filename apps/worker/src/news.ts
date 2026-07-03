@@ -4,7 +4,8 @@
  * Model: Claude Sonnet (higher quality than Haiku used for recaps).
  */
 import type { NewPost, PostLang, PickRow, Store } from './store';
-import { callClaude, computeRecord, POST_FLAGS, slugify, splitLangSections, type SettledRecord } from './recap';
+import { authorTypeOf } from './store';
+import { callClaude, computeRecord, disclosureBlock, POST_FLAGS, slugify, splitLangSections, type SettledRecord } from './recap';
 import { log } from './log';
 import { createRevalidator } from './revalidate';
 
@@ -148,7 +149,8 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
     '- If a signed consensus pricing figure is given above, preserve its exact sign/polarity faithfully in every language — do NOT invert a disclosed disadvantage (negative) into a positive "edge" or "value" claim, and do NOT invent a figure not present in the data above.',
     '- BANNED VOCABULARY — applies IDENTICALLY to every language section, including Thai and Spanish. Do not let a local idiom or "softer" translation smuggle back in the banned meaning: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.',
     '- Include a one-line responsible gambling note at the end of each section.',
-    '- End each section with disclosure as plain text (no bold, no italic, no markdown formatting): Human-data, AI-written — The Curator @ WildlyPlay',
+    '- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section\'s own language exactly:',
+    disclosureBlock(authorTypeOf(topic.pick?.author ?? 'curator')),
     '- Do NOT copy any external source verbatim.',
   ].join('\n');
 }

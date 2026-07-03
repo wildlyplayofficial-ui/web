@@ -4,10 +4,11 @@
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
 import type { Api } from 'grammy';
-import { callClaude, DEFAULT_MODEL, POST_FLAGS, slugify, validate4Lang } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, validate4Lang } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
+import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
 import { log } from './log';
 
@@ -51,7 +52,8 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     '- Work ONLY from the data above plus your general football knowledge — do NOT invent specific injuries, quotes, transfer rumors, or match events you cannot verify.',
     '- Neutral and informative tone — this is editorial journalism, NOT a betting recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
-    '- End each section with disclosure as plain text (no bold, no italic, no markdown formatting): AI-written — WildlyPlay Newsroom',
+    '- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section\'s own language exactly:',
+    disclosureBlock(authorTypeOf(w.author)),
     '- Do NOT copy any external source verbatim.',
   ].filter(Boolean).join('\n');
 }

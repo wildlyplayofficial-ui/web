@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildRecapPosts, buildRecapPrompt, computeRecord, generateRecap, splitLangSections } from './recap';
+import {
+  buildRecapArticlePrompt,
+  buildRecapPosts,
+  buildRecapPrompt,
+  computeRecord,
+  disclosureFor,
+  generateRecap,
+  splitLangSections,
+} from './recap';
 import type { PickRow } from './store';
 
 function settledPick(overrides: Partial<PickRow> = {}): PickRow {
@@ -28,6 +36,18 @@ function settledPick(overrides: Partial<PickRow> = {}): PickRow {
     raw_outcome: 'win',
     units_pl: 1.05,
     settled_at: '2026-06-11T21:00:00.000Z',
+    confidence: null,
+    primary_edge: null,
+    consensus_edge_pct: null,
+    supporting_evidence: null,
+    loss_type: null,
+    postmortem_status: null,
+    postmortem_draft: null,
+    postmortem_approved: null,
+    postmortem_at: null,
+    market_side: null,
+    favored_dog: null,
+    author: 'curator',
     ...overrides,
   };
 }
@@ -70,6 +90,31 @@ describe('buildRecapPrompt', () => {
     expect(prompt).toContain('"guaranteed"');
     expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
+  });
+});
+
+describe('buildRecapArticlePrompt — disclosure (Tiered Picks §12 firewall)', () => {
+  const record = { won: 3, lost: 1, push: 0, units: 2.55 };
+
+  it.each(['en', 'vi', 'th', 'es'] as const)(
+    'renders the curator (real_human) disclosure in %s',
+    (lang) => {
+      const prompt = buildRecapArticlePrompt(settledPick({ author: 'curator' }), record);
+      expect(prompt).toContain(disclosureFor('real_human', lang));
+    },
+  );
+
+  it.each(['en', 'vi', 'th', 'es'] as const)(
+    'renders the scout (fictional_ai) disclosure in %s',
+    (lang) => {
+      const prompt = buildRecapArticlePrompt(settledPick({ author: 'scout' }), record);
+      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
+    },
+  );
+
+  it('never leaks the curator wording into a scout pick prompt', () => {
+    const prompt = buildRecapArticlePrompt(settledPick({ author: 'scout' }), record);
+    expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
   });
 });
 

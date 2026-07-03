@@ -56,7 +56,17 @@ export function parseNoPlay(text: string): ParseNoPlayResult {
       continue;
     }
     if (key === 'note') {
-      note = [m[2], ...lines.slice(i + 1)].join('\n').trim();
+      // note is free text: rest of this line + all remaining lines.
+      // Guard (firewall, Jane review 3/7): a known field line placed after note
+      // must be rejected, not silently swallowed into the free text.
+      const tail = lines.slice(i + 1);
+      for (const l of tail) {
+        const tm = l.match(/^\s*([a-zA-Z_]+)\s*:\s*.*$/);
+        if (tm && KNOWN_KEYS.has(tm[1].toLowerCase())) {
+          errors.push(`field "${tm[1].toLowerCase()}" found after note — fields must appear before note`);
+        }
+      }
+      note = [m[2], ...tail].join('\n').trim();
       break;
     }
     if (fields.has(key)) errors.push(`duplicate field: "${key}"`);

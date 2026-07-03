@@ -103,4 +103,11 @@ describe('parseWatching — author (Tiered Picks §12)', () => {
     if (r.ok) return;
     expect(r.errors.join('\n')).toContain('author must be curator/scout');
   });
+
+  it('rejects author: placed after note instead of silently swallowing it into the free text', () => {
+    const r = parseWatching(`${VALID}\nauthor: scout`, NOW);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.join('\n')).toContain('field "author" found after note');
+  });
 });

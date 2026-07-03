@@ -138,7 +138,11 @@ export interface WatchingRow {
   author: PickAuthor;
 }
 
-export type NewWatching = Omit<WatchingRow, 'id' | 'created_at'>;
+export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'note_translations' | 'buzz_history'> & {
+  author?: PickAuthor;
+  note_translations?: Record<string, string> | null;
+  buzz_history?: BuzzSnapshot[];
+};
 
 export interface Store {
   insertPick(pick: NewPick): Promise<PickRow>;
@@ -246,6 +250,7 @@ export class MemoryStore implements Store {
       buzz_history: [],
       note_translations: null,
       ...watching,
+      author: watching.author ?? 'curator',
     };
     this.watchings.set(row.id, row);
     return row;

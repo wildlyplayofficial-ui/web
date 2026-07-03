@@ -27,6 +27,18 @@ function publishedPick(overrides: Partial<NewPick> = {}): NewPick {
     raw_outcome: null,
     units_pl: null,
     settled_at: null,
+    confidence: null,
+    primary_edge: null,
+    consensus_edge_pct: null,
+    supporting_evidence: null,
+    loss_type: null,
+    postmortem_status: null,
+    postmortem_draft: null,
+    postmortem_approved: null,
+    postmortem_at: null,
+    market_side: null,
+    favored_dog: null,
+    author: 'curator',
     ...overrides,
   };
 }

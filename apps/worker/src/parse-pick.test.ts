@@ -232,4 +232,7 @@ describe('parsePick — author (Tiered Picks §12)', () => {
 
   it('rejects an invalid author value', () =>
     expectErrors(VALID.replace('thesis:', 'author: robot\nthesis:'), 'author must be curator/scout'));
+
+  it('rejects author: placed after thesis instead of silently swallowing it into the free text', () =>
+    expectErrors(`${VALID}\nauthor: scout`, 'field "author" found after thesis'));
 });

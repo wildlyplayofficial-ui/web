@@ -14,6 +14,7 @@ export interface BuzzSnapshot {
   lean_label: Record<BuzzLang, string>;
   themes: Record<BuzzLang, string[]>;
   confidence: string;
+  sources?: string[];
 }
 
 type BuzzLang = 'en' | 'vi' | 'th' | 'es';
