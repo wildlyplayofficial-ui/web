@@ -6,42 +6,30 @@ export const dynamic = "force-dynamic";
 
 const BASE = "https://livescore-api.com/api-client";
 
-export async function GET() {
+export async function GET(req: Request) {
   const key = process.env.LIVESCORE_API_KEY;
   const secret = process.env.LIVESCORE_API_SECRET;
   if (!key || !secret) return NextResponse.json({ error: "no creds" });
 
+  const sp = new URL(req.url).searchParams;
+  const feed = sp.get("feed") ?? "history";
+  const page = sp.get("page") ?? "1";
+  const date = sp.get("date") ?? "";
+
   const now = Date.now();
-  const today = new Date(now).toISOString().slice(0, 10);
-  const yesterday = new Date(now - 86_400_000).toISOString().slice(0, 10);
   const from = new Date(now - 45 * 86_400_000).toISOString().slice(0, 10);
   const to = new Date(now + 86_400_000).toISOString().slice(0, 10);
 
-  const urls: Record<string, string> = {
-    plain: `${BASE}/fixtures/matches.json?competition_id=362&key=${key}&secret=${secret}&size=100`,
-    today: `${BASE}/fixtures/matches.json?competition_id=362&key=${key}&secret=${secret}&date=${today}`,
-    yesterday: `${BASE}/fixtures/matches.json?competition_id=362&key=${key}&secret=${secret}&date=${yesterday}`,
-    history: `${BASE}/matches/history.json?competition_id=362&key=${key}&secret=${secret}&from=${from}&to=${to}`,
-  };
-
-  const out: Record<string, unknown> = {};
-  for (const [name, url] of Object.entries(urls)) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      const j = await res.json();
-      const arr = j?.data?.fixtures ?? j?.data?.match ?? [];
-      out[name] = {
-        success: j?.success,
-        count: arr.length,
-        sample: arr[0] ?? null,
-        portugal: arr.filter(
-          (m: Record<string, unknown>) =>
-            JSON.stringify(m).includes("Portugal"),
-        ),
-      };
-    } catch (e) {
-      out[name] = { error: String(e) };
-    }
+  let url: string;
+  if (feed === "history") {
+    url = `${BASE}/matches/history.json?competition_id=362&key=${key}&secret=${secret}&from=${from}&to=${to}&page=${page}`;
+  } else if (feed === "live") {
+    url = `${BASE}/scores/live.json?competition_id=362&key=${key}&secret=${secret}`;
+  } else {
+    url = `${BASE}/fixtures/matches.json?competition_id=362&key=${key}&secret=${secret}${date ? `&date=${date}` : "&size=100"}`;
   }
-  return NextResponse.json(out);
+
+  const res = await fetch(url, { cache: "no-store" });
+  const j = await res.json();
+  return NextResponse.json(j);
 }
