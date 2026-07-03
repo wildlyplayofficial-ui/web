@@ -235,11 +235,15 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
           const finished = (m.status ?? "").toUpperCase() === "FINISHED";
           const existing = matchMap.get(id);
           if (existing) {
-            if (score) {
-              existing.homeScore = score.home;
-              existing.awayScore = score.away;
+            // History already has the official FT result — don't let the
+            // (unofficial) live feed overwrite it.
+            if (!existing.finished) {
+              if (score) {
+                existing.homeScore = score.home;
+                existing.awayScore = score.away;
+              }
+              existing.finished = finished;
             }
-            existing.finished = finished;
             continue;
           }
           const date = (m.added ?? "").slice(0, 10);
