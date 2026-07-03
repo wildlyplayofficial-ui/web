@@ -5,12 +5,16 @@ export function MatchCard({ match }: { match: KnockoutMatch }) {
   const hasScore = match.homeScore !== null && match.awayScore !== null;
   const homeWin = hasScore && match.homeScore! > match.awayScore!;
   const awayWin = hasScore && match.awayScore! > match.homeScore!;
+  // Placeholder names ("Winner SF1") have no flag; skip the span so gap-1.5
+  // doesn't indent the name relative to the date line (Nick 3/7).
+  const homeFlag = teamFlag(match.homeName);
+  const awayFlag = teamFlag(match.awayName);
 
   return (
     <div className="rounded-card border border-line bg-card p-3 text-sm shadow-card">
       <div className={`flex items-center justify-between gap-2 ${homeWin ? "font-semibold text-ink" : "text-muted"}`}>
         <span className="flex items-center gap-1.5 truncate">
-          <span>{teamFlag(match.homeName)}</span>
+          {homeFlag && <span>{homeFlag}</span>}
           <span className="truncate">{match.homeName}</span>
         </span>
         {hasScore && (
@@ -21,7 +25,7 @@ export function MatchCard({ match }: { match: KnockoutMatch }) {
       </div>
       <div className={`mt-1.5 flex items-center justify-between gap-2 ${awayWin ? "font-semibold text-ink" : "text-muted"}`}>
         <span className="flex items-center gap-1.5 truncate">
-          <span>{teamFlag(match.awayName)}</span>
+          {awayFlag && <span>{awayFlag}</span>}
           <span className="truncate">{match.awayName}</span>
         </span>
         {hasScore && (
