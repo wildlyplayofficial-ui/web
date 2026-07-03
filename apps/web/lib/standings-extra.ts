@@ -38,15 +38,28 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
   const now = Date.now();
   const from = new Date(now - 45 * 86_400_000).toISOString().slice(0, 10);
   const to = new Date(now + 86_400_000).toISOString().slice(0, 10);
+  const today = new Date(now).toISOString().slice(0, 10);
+  const yesterday = new Date(now - 86_400_000).toISOString().slice(0, 10);
 
   try {
-    const [fixturesRes, historyRes] = await Promise.all([
+    const [fixturesRes, historyRes, todayRes, yesterdayRes] = await Promise.all([
       fetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&size=100`,
         { cache: "no-store" },
       ),
       fetch(
         `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
+        { cache: "no-store" },
+      ),
+      // In-play matches drop out of the plain fixtures feed and aren't in
+      // history yet. Day-scoped fixtures still list them (with a live `score`),
+      // so fetch today + yesterday (for matches crossing UTC midnight).
+      fetch(
+        `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&date=${today}`,
+        { cache: "no-store" },
+      ),
+      fetch(
+        `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&date=${yesterday}`,
         { cache: "no-store" },
       ),
     ]);
@@ -84,6 +97,44 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
             finished: false,
           });
         }
+      }
+    }
+
+    // Day-scoped fixtures include in-play matches with a live `score`;
+    // they overwrite the plain-fixtures entries (adds live scores).
+    for (const res of [yesterdayRes, todayRes]) {
+      if (!res.ok) continue;
+      const dd = (await res.json()) as {
+        success: boolean;
+        data?: {
+          fixtures?: Array<{
+            id: string | number;
+            round?: string;
+            date?: string;
+            time?: string;
+            home_name?: string;
+            away_name?: string;
+            score?: string;
+          }>;
+        };
+      };
+      if (!dd.success || !dd.data?.fixtures) continue;
+      for (const f of dd.data.fixtures) {
+        const round = (f.round ?? "").toUpperCase();
+        if (!isKnockoutRound(round)) continue;
+        const score = parseScore(f.score ?? "");
+        const id = String(f.id);
+        matchMap.set(id, {
+          id,
+          round,
+          date: f.date ?? "",
+          time: (f.time ?? "").slice(0, 5),
+          homeName: f.home_name ?? "",
+          awayName: f.away_name ?? "",
+          homeScore: score?.home ?? null,
+          awayScore: score?.away ?? null,
+          finished: false,
+        });
       }
     }
 

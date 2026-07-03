@@ -14,7 +14,7 @@ function MatchCard({ match }: { match: KnockoutMatch }) {
           <span className="truncate">{match.homeName}</span>
         </span>
         {hasScore && (
-          <span className="shrink-0 font-display text-base font-bold text-ink">
+          <span className="shrink-0 font-display text-base font-bold leading-5 text-ink">
             {match.homeScore}
           </span>
         )}
@@ -25,7 +25,7 @@ function MatchCard({ match }: { match: KnockoutMatch }) {
           <span className="truncate">{match.awayName}</span>
         </span>
         {hasScore && (
-          <span className="shrink-0 font-display text-base font-bold text-ink">
+          <span className="shrink-0 font-display text-base font-bold leading-5 text-ink">
             {match.awayScore}
           </span>
         )}
