@@ -47,6 +47,8 @@ export interface ParsedPick {
   confidence: Confidence | null;
   /** T3: Primary reason for the pick. Required. */
   primaryEdge: PrimaryEdge | null;
+  /** Signed consensus pricing figure vs market (negative = disadvantage, positive = edge). Null = not provided. */
+  consensusEdgePct: number | null;
   /** T4: Up to 2 supporting evidence tags. */
   supportingEvidence: SupportingEvidence[];
   /** Post Restructure v1 (R5): hand-written one-line hook for the card. Never auto-truncated. */
@@ -63,7 +65,7 @@ const MARKETS: readonly Market[] = ['ah', 'ou', '1x2', 'btts', 'other'];
 const KNOWN_KEYS = new Set([
   'match', 'league', 'kickoff', 'market', 'selection',
   'line', 'odds', 'stake', 'thesis', 'event', 'score', 'confidence',
-  'edge', 'evidence', 'hook', 'against_market',
+  'edge', 'evidence', 'hook', 'against_market', 'edge_pct',
 ]);
 
 export function parsePick(text: string, now: Date = new Date()): ParseResult {
@@ -240,6 +242,15 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
     }
   }
 
+  // edge_pct (optional) — signed consensus pricing figure (negative = disadvantage, positive = edge)
+  let consensusEdgePct: number | null = null;
+  const edgePctRaw = fields.get('edge_pct');
+  if (edgePctRaw !== undefined && edgePctRaw !== '') {
+    const n = Number(edgePctRaw);
+    if (Number.isNaN(n)) errors.push(`edge_pct is not a number: "${edgePctRaw}"`);
+    else consensusEdgePct = n;
+  }
+
   // T4: Supporting Evidence (optional, max 2)
   const supportingEvidence: SupportingEvidence[] = [];
   const evidenceRaw = fields.get('evidence');
@@ -264,7 +275,7 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
       homeTeam, awayTeam, league, kickoffUtc,
       market: market as Market, selection, line, odds, stake,
       thesis: thesis as string, eventId, publishScoreHome, publishScoreAway,
-      confidence, primaryEdge, supportingEvidence, hook, againstMarket,
+      confidence, primaryEdge, supportingEvidence, hook, againstMarket, consensusEdgePct,
     },
   };
 }

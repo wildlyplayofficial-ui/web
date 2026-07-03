@@ -49,6 +49,7 @@ describe('parsePick — happy path', () => {
       supportingEvidence: [],
       hook: null,
       againstMarket: false,
+      consensusEdgePct: null,
     });
   });
 
@@ -107,6 +108,23 @@ describe('parsePick — card extras (Post Restructure v1)', () => {
 
   it('rejects a non-boolean against_market', () =>
     expectErrors(withField('against_market: maybe'), 'against_market must be yes/no'));
+
+  it('parses a negative edge_pct (consensus disadvantage)', () => {
+    const r = parsePick(withField('edge_pct: -5'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.pick.consensusEdgePct).toBe(-5);
+  });
+
+  it('parses a positive edge_pct', () => {
+    const r = parsePick(withField('edge_pct: 5'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.pick.consensusEdgePct).toBe(5);
+  });
+
+  it('rejects a non-numeric edge_pct', () =>
+    expectErrors(withField('edge_pct: abc'), 'edge_pct is not a number'));
 });
 
 describe('parsePick — missing fields', () => {

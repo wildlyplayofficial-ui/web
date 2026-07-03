@@ -34,6 +34,7 @@ function settledPick(overrides: Partial<PickRow> = {}): PickRow {
     thesis: 'Mexico dominant at home',
     confidence: null,
     primary_edge: null,
+    consensus_edge_pct: null,
     supporting_evidence: null,
     loss_type: null,
     postmortem_status: null,

@@ -33,7 +33,7 @@ Create a new pick and trigger the full pipeline (preview article, thesis transla
 
 **Required fields in text:** match, league, kickoff, market (enum: `ah`/`ou`/`1x2`/`btts`/`other`), line (required for ah/ou), selection, odds, stake, thesis, confidence, edge
 
-**Optional:** evidence (max 2, comma-separated), event (odds-api event ID)
+**Optional:** evidence (max 2, comma-separated), event (odds-api event ID), edge_pct (signed consensus pricing figure vs market, e.g. `-5` for a disclosed disadvantage or `5` for an edge — feeds the analysis generator's polarity guard)
 
 **Response 200:**
 ```json

@@ -36,6 +36,8 @@ export interface PickRow {
   confidence: 'low' | 'medium' | 'high' | null;
   /** T3: Primary Edge taxonomy. */
   primary_edge: string | null;
+  /** Signed consensus pricing figure vs market (negative = disadvantage, positive = edge). Null = not provided. */
+  consensus_edge_pct: number | null;
   /** T4: Supporting Evidence tags (max 2). */
   supporting_evidence: string[] | null;
   /** T8: Loss-type (filled after settlement for losses). */

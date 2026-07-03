@@ -476,6 +476,7 @@ function toNewPick(p: ParsedPick, autoEvent: EventMatch | null = null): NewPick 
     thesis: p.thesis,
     confidence: p.confidence, // Trust anchor: pre-registered, immutable
     primary_edge: p.primaryEdge, // T3: primary reason for the pick
+    consensus_edge_pct: p.consensusEdgePct,
     supporting_evidence: p.supportingEvidence.length > 0 ? p.supportingEvidence : null, // T4: max 2 tags
     loss_type: null, // T8: set after settlement for losses
     // T5/T6: post-mortem fields — null until settlement triggers AI draft

@@ -104,6 +104,7 @@ export async function handleApiRoute(
         market_side: deriveMarketSide(result.pick.selection),
         favored_dog: null,
         primary_edge: result.pick.primaryEdge ?? null,
+        consensus_edge_pct: result.pick.consensusEdgePct ?? null,
         supporting_evidence: result.pick.supportingEvidence ?? [],
         loss_type: null,
         postmortem_status: null,

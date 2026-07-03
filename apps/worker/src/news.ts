@@ -103,9 +103,13 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
   const units = record.units > 0 ? `+${record.units}` : `${record.units}`;
   const kickoff = new Date(topic.kickoff_utc).toISOString().slice(0, 16).replace('T', ' ');
 
+  const edgePct = topic.pick?.consensus_edge_pct;
   const pickInfo = topic.pick
     ? [
         `- Our pick: ${topic.pick.selection} @ ${topic.pick.odds_publish} (market: ${topic.pick.market}, line: ${topic.pick.line ?? 'n/a'}, stake: ${Number(topic.pick.stake_units)} units)`,
+        ...(edgePct != null
+          ? [`- Consensus pricing (structured, signed — this is the authoritative sign, do not re-derive or invert it): ${edgePct > 0 ? '+' : ''}${edgePct}% (negative = priced WORSE than consensus/a disadvantage we accepted; positive = an edge vs consensus)`]
+          : []),
         `- Curator's thesis: ${topic.pick.thesis}`,
       ]
     : ['- No pick placed — this is an analysis-only preview (state this clearly).'];
@@ -141,7 +145,7 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
       ? '- This is a PICK ANALYSIS — discuss why The Curator chose this selection, the odds value, and what to watch for.'
       : '- This is an ANALYSIS ONLY (no pick) — state clearly this is editorial analysis, NOT a recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
-    '- If the thesis states a pricing/consensus figure (e.g. "consensus prices this at -5%"), preserve its exact sign/polarity faithfully — do NOT invert a disclosed disadvantage into a positive "edge" or "value" claim, and do NOT invent a figure not present in the data above.',
+    '- If a signed consensus pricing figure is given above, preserve its exact sign/polarity faithfully in every language — do NOT invert a disclosed disadvantage (negative) into a positive "edge" or "value" claim, and do NOT invent a figure not present in the data above.',
     '- BANNED VOCABULARY — applies IDENTICALLY to every language section, including Thai and Spanish. Do not let a local idiom or "softer" translation smuggle back in the banned meaning: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.',
     '- Include a one-line responsible gambling note at the end of each section.',
     '- End each section with disclosure as plain text (no bold, no italic, no markdown formatting): Human-data, AI-written — The Curator @ WildlyPlay',
@@ -238,6 +242,28 @@ export function buildAnalysisPosts(
     target_keyword: section.target_keyword,
     source_refs: sourceRefs,
   }));
+}
+
+// ── Polarity Guard ───────────────────────────────────────────────────────────
+
+/** Deterministic guard (Nick, 3/7): a banned-word list misses fluent polarity
+ *  inversions — e.g. a disclosed "-5%" (disadvantage) rendered as "5% edge".
+ *  Flags the EN section when hype vocabulary appears in the same sentence as
+ *  the disclosed magnitude while the structured sign says disadvantage.
+ *  English-only: Thai/Vietnamese/Spanish often spell numbers as words (e.g.
+ *  Thai "five percent"), so a digit-proximity check isn't reliable there —
+ *  those rely on the prompt-level polarity instruction instead. */
+export function detectPolarityInversion(consensusEdgePct: number | null, enBody: string): string | null {
+  if (consensusEdgePct == null || consensusEdgePct >= 0) return null;
+  const magnitude = Math.abs(consensusEdgePct);
+  const HYPE_WORDS = /\b(edge|value|advantage)\b/i;
+  const sentences = enBody.split(/(?<=[.!?])\s+/);
+  for (const s of sentences) {
+    if (s.includes(`${magnitude}%`) && HYPE_WORDS.test(s)) {
+      return `polarity inversion suspected: consensus_edge_pct=${consensusEdgePct} but sentence pairs "${magnitude}%" with hype vocabulary: "${s.trim()}"`;
+    }
+  }
+  return null;
 }
 
 // ── On-demand (pick-triggered) ──────────────────────────────────────────
@@ -373,6 +399,15 @@ export async function generateAnalysis(
   if (!text) return null;
 
   const posts = buildAnalysisPosts(ctx.topic, text, ctx.facts);
+
+  const enPost = posts.find((p) => p.lang === 'en');
+  const edgePct = ctx.topic.pick?.consensus_edge_pct ?? null;
+  const inversion = enPost ? detectPolarityInversion(edgePct, enPost.body_md) : null;
+  if (inversion) {
+    log.warn(`analysis: blocked publish for ${label} — ${inversion}`);
+    return null;
+  }
+
   log.info(`analysis: built ${posts.length} posts for ${label}`);
   return posts;
 }
