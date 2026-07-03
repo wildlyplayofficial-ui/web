@@ -1,7 +1,6 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
-import { postToFacebook } from './announce-pick';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
+import { postToFacebook, formatPickBlock, CARD_FOOTER } from './announce-pick';
 import { buildRecapPosts } from './recap';
 import type { PickRow, Store } from './store';
 import { log } from './log';
@@ -10,36 +9,58 @@ export interface AnnounceDeps {
   api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
   channelChatId: string | undefined;
   store: Store;
-  /** Result card image (enhancement batch 12/6): when set, the result goes out
-   *  as a photo (`{siteUrl}/api/result-card/{id}`) with the text as caption.
-   *  Card failures fall back to the plain text message. */
+  /** SETTLED card image (Post Restructure v1 §2.6): OG data-card in settled state,
+   *  branded W/L/P banner as fallback — never text-only by design. */
   siteUrl?: string;
   /** FB result post — same fail-safe rule as the pick announce. */
   facebook?: { pageId: string; pageToken: string };
-  /** Milestone 4: optional AI recap generator — failures must never break the announcement. */
+  /** Milestone 4: optional AI recap generator — failures must never break the announcement.
+   *  Post Restructure v1 (R6): recap text is web-only now, no extra TG notification. */
   recap?: (pick: PickRow) => Promise<string | null>;
   /** Decision #19: optional long-form newsroom article generator; falls back to the channel recap text. */
   recapArticle?: (pick: PickRow) => Promise<string | null>;
-  /** Nick 17/6: auto-post recap articles to TG channel + FB with caption + UTM link. */
-  announceArticleDeps?: AnnounceArticleDeps;
 }
 
 const BADGES: Record<string, string> = {
-  won: '\u2705 WON', lost: '\u274c LOST', push: '\u2796 PUSH', void: '\u26aa VOID',
+  won: '\u2705 WIN', lost: '\u274c LOSS', push: '\u{1F7E1} PUSH', void: '\u26aa VOID',
 };
 
-export function formatResultMessage(pick: PickRow): string {
-  // Display rule (decision #2): half_win badge = WON, half_loss = LOST; real units shown.
+/** Branded settled banner per status (§2.6 image table, fallback when OG card fails). */
+const SETTLED_IMAGES: Record<string, string> = {
+  won: 'wildlyplay_settled_win.png',
+  lost: 'wildlyplay_settled_loss.png',
+  push: 'wildlyplay_settled_push.png',
+};
+
+export interface RecordSummary { wins: number; losses: number; pushes: number; units: number }
+
+export function summarizeRecord(settled: PickRow[]): RecordSummary {
+  return {
+    wins: settled.filter((p) => p.status === 'won').length,
+    losses: settled.filter((p) => p.status === 'lost').length,
+    pushes: settled.filter((p) => p.status === 'push').length,
+    units: settled.reduce((sum, p) => sum + Number(p.units_pl ?? 0), 0),
+  };
+}
+
+export function formatUnits(n: number): string {
+  const rounded = Math.round(n * 100) / 100;
+  return `${rounded > 0 ? '+' : ''}${rounded}u`;
+}
+
+/** 3-line SETTLED card (Post Restructure Spec v1 §2.3, Nick DUYỆT 3/7). */
+export function formatResultMessage(pick: PickRow, record?: RecordSummary): string {
+  // Display rule (decision #2): half_win badge = WIN, half_loss = LOSS; real units shown.
   const half = pick.raw_outcome === 'half_win' || pick.raw_outcome === 'half_loss'
     ? ` (${pick.raw_outcome.replace('_', ' ')})` : '';
-  const pl = Number(pick.units_pl);
-  const plStr = pl > 0 ? `+${pl}` : `${pl}`;
-  return [
-    `${BADGES[pick.status] ?? pick.status}${half} \u2014 ${pick.selection} @ ${pick.odds_publish}`,
-    `${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}`,
-    pick.league,
-    `Units: ${plStr} (stake ${Number(pick.stake_units)})`,
-  ].join('\n');
+  const lines = [
+    `${BADGES[pick.status] ?? pick.status}${half} | ${formatPickBlock(pick)} \u2192 FT ${pick.home_score}-${pick.away_score} \u00b7 ${formatUnits(Number(pick.units_pl))}`,
+  ];
+  if (record) {
+    lines.push(`\u{1F4CA} Record: ${record.wins}-${record.losses}-${record.pushes} \u00b7 ${formatUnits(record.units)}`);
+  }
+  lines.push(CARD_FOOTER);
+  return lines.join('\n');
 }
 
 /** POST a photo to the FB Page. Returns the FB object id; throws on API error. */
@@ -60,8 +81,9 @@ export async function postPhotoToFacebook(
   return body.id ?? '';
 }
 
+/** R7: SETTLED carries the OG data-card in settled state (WIN/LOSS/PUSH badge + updated record). */
 export function resultCardUrl(siteUrl: string, pick: PickRow): string {
-  return `${siteUrl}/api/result-card/${pick.id}`;
+  return `${siteUrl}/api/og/play/${pick.id}`;
 }
 
 export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise<void> {
@@ -76,23 +98,37 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     return;
   }
 
-  const text = formatResultMessage(pick);
-  const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
+  // 📊 record line — failures must not block the result card.
+  let record: RecordSummary | undefined;
+  try {
+    record = summarizeRecord(await deps.store.listByStatus(['won', 'lost', 'push']));
+  } catch (err) {
+    log.warn(`record summary failed for pick ${pick.id} — sending card without record line:`, err);
+  }
 
-  // Result card photo when possible; plain text is the unconditional fallback.
+  const text = formatResultMessage(pick, record);
+  const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
+  const brandUrl = deps.siteUrl && SETTLED_IMAGES[pick.status]
+    ? `${deps.siteUrl}/images/${SETTLED_IMAGES[pick.status]}` : null;
+
+  // OG settled card → branded W/L/P banner → plain text (unconditional fallback).
   let msgId: number;
   let detail = `result ${pick.status} ${pick.units_pl}u`;
-  if (cardUrl) {
+  try {
+    if (!cardUrl) throw new Error('no siteUrl');
+    const photoMsg = await deps.api.sendPhoto(deps.channelChatId, cardUrl, { caption: text });
+    msgId = photoMsg.message_id;
+    detail += ' (card)';
+  } catch (err) {
+    if (cardUrl) log.warn(`result card photo failed for pick ${pick.id} — trying branded banner:`, err);
     try {
-      const photoMsg = await deps.api.sendPhoto(deps.channelChatId, cardUrl, { caption: text });
+      if (!brandUrl) throw new Error('no brand image');
+      const photoMsg = await deps.api.sendPhoto(deps.channelChatId, brandUrl, { caption: text });
       msgId = photoMsg.message_id;
-      detail += ' (card)';
-    } catch (err) {
-      log.warn(`result card photo failed for pick ${pick.id} — falling back to text:`, err);
+      detail += ' (banner)';
+    } catch {
       msgId = (await deps.api.sendMessage(deps.channelChatId, text)).message_id;
     }
-  } else {
-    msgId = (await deps.api.sendMessage(deps.channelChatId, text)).message_id;
   }
   await deps.store.insertChannelLog({
     pick_id: pick.id,
@@ -104,11 +140,12 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   log.info(`announced result for pick ${pick.id} to channel ${deps.channelChatId}`);
 
   // FB result post (fail-safe: never blocks the rest of the announcement).
+  // §3: branded W/L/P banner as hero; OG card would underperform as FB hero.
   if (deps.facebook && deps.siteUrl) {
     try {
       let fbId: string;
       try {
-        fbId = await postPhotoToFacebook(deps.facebook, cardUrl!, text);
+        fbId = await postPhotoToFacebook(deps.facebook, brandUrl ?? cardUrl!, text);
       } catch (err) {
         log.warn(`FB result card failed for pick ${pick.id} — falling back to link post:`, err);
         fbId = await postToFacebook(deps.facebook, text, `${deps.siteUrl}/play/${pick.id}`);
@@ -126,23 +163,13 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     }
   }
 
+  // Post Restructure v1 (R6): recap/post-mortem content is web-only — published to the
+  // newsroom, no extra TG/FB notification here (POST-MORTEM announce fires separately
+  // when the 4-lang article is live).
   if (!deps.recap) return;
   try {
     const text = await deps.recap(pick);
     if (text === null) return;
-    const recapMsg = await deps.api.sendMessage(deps.channelChatId, text);
-    await deps.store.insertChannelLog({
-      pick_id: pick.id,
-      channel: 'telegram',
-      external_id: String(recapMsg.message_id),
-      ok: true,
-      detail: 'recap',
-    });
-    log.info(`announced recap for pick ${pick.id} to channel ${deps.channelChatId}`);
-
-    // Publish the newsroom recap article (decision #19, 12/6: auto-publish).
-    // Long-form article when the generator delivers; channel recap text otherwise.
-    // Must never break the announcement.
     try {
       const articleText = (await deps.recapArticle?.(pick)) ?? text;
       const recapPosts = buildRecapPosts(pick, articleText);
@@ -150,10 +177,8 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
         await deps.store.insertPost(post);
       }
       log.info(`published recap posts for pick ${pick.id}`);
-      const enPost = recapPosts.find((p) => p.lang === 'en');
-      if (enPost && deps.announceArticleDeps) void announceArticle(deps.announceArticleDeps, enPost);
     } catch (err) {
-      log.warn(`recap post storage failed for pick ${pick.id} — recap already announced:`, err);
+      log.warn(`recap post storage failed for pick ${pick.id} — result already announced:`, err);
     }
   } catch (err) {
     log.warn(`recap step failed for pick ${pick.id} — result already announced:`, err);

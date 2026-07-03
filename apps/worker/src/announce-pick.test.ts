@@ -27,6 +27,16 @@ function publishedPick(overrides: Partial<NewPick> = {}): NewPick {
     raw_outcome: null,
     units_pl: null,
     settled_at: null,
+    confidence: null,
+    primary_edge: null,
+    supporting_evidence: null,
+    loss_type: null,
+    postmortem_status: null,
+    postmortem_draft: null,
+    postmortem_approved: null,
+    postmortem_at: null,
+    market_side: null,
+    favored_dog: null,
     ...overrides,
   };
 }
@@ -42,25 +52,43 @@ const FB = { pageId: '111', pageToken: 'tok' };
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe('formatPickMessage', () => {
-  it('includes matchup, play, thesis, play link and disclosure', async () => {
+describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () => {
+  it('includes matchup, KO in UTC, pick block, play link and disclosure — no thesis dump', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick());
     const msg = formatPickMessage(pick, SITE);
-    expect(msg).toContain('Mexico vs South Africa');
-    expect(msg).toContain('Mexico -1.25 @ 2.05 (line -1.25) | stake 1u');
-    expect(msg).toContain('test thesis');
+    expect(msg).toContain('\u{1F3AF} PICK \u2014 Mexico vs South Africa \u00b7 FIFA World Cup 2026 \u2014 Group A');
+    expect(msg).toContain('\u23F0 KO 19:00 UTC');
+    expect(msg).toContain('\u{1F449} Mexico -1.25 -1.25 @ 2.05 \u00b7 1u');
     expect(msg).toContain(`${SITE}/play/${pick.id}`);
-    expect(msg).toContain('Human-picked. Odds at publish. Not financial advice.');
+    expect(msg).toContain('Human-picked \u00b7 Odds at publish \u00b7 Not financial advice');
+    expect(msg).not.toContain('test thesis'); // R2: card is scannable, thesis lives on the play page
     expect(msg).not.toContain('sure win');
     expect(msg).not.toContain('live @');
+    expect(msg).not.toContain('Confidence:'); // none registered on this pick
   });
 
   it('marks a running pick with the score at entry', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick({ publish_score_home: 1, publish_score_away: 0 }));
     const msg = formatPickMessage(pick, SITE);
-    expect(msg).toContain('Mexico -1.25 @ 2.05 (line -1.25) (live @ 1-0) | stake 1u');
+    expect(msg).toContain('\u23F0 KO 19:00 UTC (live @ 1-0)');
+  });
+
+  it('shows the confidence line with the against-the-market cue (R3)', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick({ confidence: 'high' }));
+    expect(formatPickMessage(pick, SITE)).toContain('\u{1F39A} Confidence: HIGH');
+    expect(formatPickMessage(pick, SITE, { againstMarket: true }))
+      .toContain('\u{1F39A} Confidence: HIGH \u00b7 \u26A0\uFE0F against the market');
+  });
+
+  it('renders the hand-written hook untouched and omits the line when absent (R5)', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick());
+    const hook = 'Swiss press suffocates deep blocks — market slept on it.';
+    expect(formatPickMessage(pick, SITE, { hook })).toContain(`\u{1F4DD} ${hook}`);
+    expect(formatPickMessage(pick, SITE)).not.toContain('\u{1F4DD}');
   });
 });
 

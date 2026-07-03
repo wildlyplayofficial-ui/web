@@ -4,7 +4,6 @@
  * A preview failure must NEVER break the pick publication — every path logs and returns.
  */
 import { callClaude, POST_FLAGS, slugify, splitLangSections } from './recap';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PickRow, PostLang, Store } from './store';
 import { log } from './log';
 
@@ -81,7 +80,7 @@ export function buildPreviewPosts(pick: PickRow, text: string): NewPost[] {
 
 /** Generate + publish the preview article for a fresh pick. Never throws. */
 export async function publishPreview(
-  deps: { store: Store; env: { apiKey: string | undefined; model?: string }; announceArticle?: AnnounceArticleDeps },
+  deps: { store: Store; env: { apiKey: string | undefined; model?: string } },
   pick: PickRow,
 ): Promise<void> {
   try {
@@ -91,9 +90,9 @@ export async function publishPreview(
     for (const post of posts) {
       await deps.store.insertPost(post);
     }
+    // Post Restructure v1 (R6): preview articles are web/SEO-only — no TG/FB notification
+    // (the 🎯 PICK card is the one canonical announcement per pick).
     log.info(`published preview posts for pick ${pick.id}`);
-    const enPost = posts.find((p) => p.lang === 'en');
-    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
   } catch (err) {
     log.warn(`preview publication failed for pick ${pick.id} — pick already published:`, err);
   }

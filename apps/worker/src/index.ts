@@ -68,19 +68,16 @@ const fbPageToken = process.env.FB_PAGE_TOKEN;
 if (!fbPageId || !fbPageToken) log.warn('FB_PAGE_ID/FB_PAGE_TOKEN unset — Facebook posting disabled');
 const facebook = fbPageId && fbPageToken ? { pageId: fbPageId, pageToken: fbPageToken } : undefined;
 
-// Nick 17/6: announceArticle deps — lazy ref because bot.api isn't available yet.
-// Populated right after createBot(). All article publishers read from this object.
-const articleDepsRef: { current: AnnounceArticleDeps | undefined } = { current: undefined };
-
 const translateThesis = anthropicApiKey
   ? (pick: PickRow) => publishThesisTranslations({ store, env: aiEnv }, pick)
   : undefined;
 const analysisEnv = { apiKey: anthropicApiKey, model: process.env.ANALYSIS_MODEL };
+// Post Restructure v1 (R6): preview + analysis articles are web/SEO-only — no announce deps.
 const preview = anthropicApiKey
-  ? (pick: PickRow) => publishPreview({ store, env: aiEnv, announceArticle: articleDepsRef.current }, pick)
+  ? (pick: PickRow) => publishPreview({ store, env: aiEnv }, pick)
   : undefined;
 const publishAnalysis = anthropicApiKey
-  ? (pick: PickRow) => publishAnalysisForPick({ store, env: analysisEnv, revalidateUrl: siteUrl, announceArticle: articleDepsRef.current }, pick)
+  ? (pick: PickRow) => publishAnalysisForPick({ store, env: analysisEnv, revalidateUrl: siteUrl }, pick)
   : undefined;
 
 // Event auto-attach at /pick time — gated on the same key as the poller.
@@ -104,9 +101,6 @@ const onApprove = persistDb ? async (pickId: string) => {
 } : undefined;
 const bot = createBot({ token, allowlist, store, channelChatId, recap, recapArticle, preview, translateThesis, publishAnalysis, findEvent: lookupEvent, siteUrl, facebook, revalidate, aiEnv, postmortem, onApprove });
 
-// Now that bot exists, populate the article announce deps (Nick 17/6).
-articleDepsRef.current = { api: bot.api, channelChatId, store, siteUrl, facebook };
-
 let stopPoller: () => void = () => {};
 if (oddsApiKey) {
   stopPoller = startPoller({
@@ -125,7 +119,7 @@ if (oddsApiKey) {
       if (postmortem && persistDb) {
         void enqueueJob(persistDb, 'postmortem', { pickId: pick.id }).catch((e) => log.warn('enqueue postmortem failed:', e));
       }
-      await announceResult({ api: bot.api, channelChatId, store, siteUrl, facebook, recap, recapArticle, announceArticleDeps: articleDepsRef.current }, pick);
+      await announceResult({ api: bot.api, channelChatId, store, siteUrl, facebook, recap, recapArticle }, pick);
     },
   });
 } else {
@@ -138,7 +132,7 @@ const stopDigest = startWeeklyDigest({ api: bot.api, store, channelChatId, siteU
 // Analysis cron (M5): auto-generate analysis articles, ENV-driven cadence.
 // Separate env from recap — analysis uses Sonnet (not RECAP_MODEL which is Haiku).
 const stopAnalysis = anthropicApiKey
-  ? startAnalysisCron({ store, env: { apiKey: anthropicApiKey, model: process.env.ANALYSIS_MODEL }, revalidateUrl: siteUrl, announceArticle: articleDepsRef.current })
+  ? startAnalysisCron({ store, env: { apiKey: anthropicApiKey, model: process.env.ANALYSIS_MODEL }, revalidateUrl: siteUrl })
   : () => {};
 
 // Buzz cron (v2): community sentiment snapshots for watched matches, every 3h + pre-kickoff.
@@ -227,8 +221,10 @@ if (persistDb) {
     const all = await store.getActiveWatching();
     const w = all.find((r) => r.id === watchingId);
     if (!w) throw new Error(`watching ${watchingId} not found`);
-    const articleDeps: AnnounceArticleDeps = { api: bot.api, channelChatId, store, siteUrl, facebook };
-    await publishWatchingNews({ store, env: aiEnv, revalidateUrl: siteUrl, announceArticle: articleDeps }, w);
+    await publishWatchingNews({
+      store, env: aiEnv, revalidateUrl: siteUrl,
+      card: { api: bot.api, channelChatId, siteUrl },
+    }, w);
   };
   jobHandlers['postmortem'] = async (payload) => {
     const { pickId } = payload as { pickId: string };
@@ -314,10 +310,10 @@ const server = createServer(async (req, res) => {
       } else if (aiEnv.apiKey) {
         // Fallback: no persistDb, fire-and-forget like before
         void translateWatchingNote({ store, env: aiEnv }, watching);
-        const articleDeps: AnnounceArticleDeps = {
-          api: bot.api, channelChatId, store, siteUrl, facebook,
-        };
-        void publishWatchingNews({ store, env: aiEnv, revalidateUrl: siteUrl, announceArticle: articleDeps }, watching);
+        void publishWatchingNews({
+          store, env: aiEnv, revalidateUrl: siteUrl,
+          card: { api: bot.api, channelChatId, siteUrl },
+        }, watching);
       }
       void revalidate(['watching']);
       res.writeHead(200).end(JSON.stringify({ ok: true }));
@@ -333,9 +329,6 @@ const server = createServer(async (req, res) => {
       }
       log.info(`webhook: triggering pipeline for pick ${pick.id} (${pick.home_team} vs ${pick.away_team})`);
 
-      const articleDeps: AnnounceArticleDeps = {
-        api: bot.api, channelChatId, store, siteUrl, facebook,
-      };
       // Same pipeline as bot /pick command
       if (preview) void preview(pick);
       if (translateThesis) void translateThesis(pick);

@@ -16,7 +16,6 @@ import { settlePick } from './settle';
 import { announceResult } from './announce';
 import { announcePick, announceVoid } from './announce-pick';
 import { generatePostmortemDraft, listOverdue, formatPostmortemCard, LOSS_TYPES, type LossType, type PostmortemDeps } from './postmortem';
-import type { AnnounceArticleDeps } from './announce-article';
 import type { NewPick, PickRow, Store } from './store';
 import { log } from './log';
 
@@ -104,7 +103,7 @@ export function createBot(deps: BotDeps): Bot {
       store: deps.store,
       siteUrl: deps.siteUrl,
       facebook: deps.facebook,
-    }, row);
+    }, row, { hook: result.pick.hook, againstMarket: result.pick.againstMarket });
   });
 
   bot.command('board', async (ctx) => {
@@ -162,10 +161,6 @@ export function createBot(deps: BotDeps): Bot {
         facebook: deps.facebook,
         recap: deps.recap,
         recapArticle: deps.recapArticle,
-        announceArticleDeps: {
-          api: bot.api, channelChatId: deps.channelChatId, store: deps.store,
-          siteUrl: deps.siteUrl, facebook: deps.facebook,
-        },
       }, settled);
     } catch (err) {
       log.error(`/score failed for pick ${pick.id}:`, err);
@@ -257,13 +252,13 @@ export function createBot(deps: BotDeps): Bot {
       })();
     }
     // News article (SEO pre-match preview) — fire-and-forget, never throws.
+    // Post Restructure v1 §2.4: WATCHING card replaces the article announce (TG only).
     if (deps.aiEnv?.apiKey) {
-      const articleDeps: AnnounceArticleDeps = {
-        api: bot.api, channelChatId: deps.channelChatId, store: deps.store,
-        siteUrl: deps.siteUrl, facebook: deps.facebook,
-      };
       void publishWatchingNews(
-        { store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl, announceArticle: articleDeps },
+        {
+          store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
+          card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl },
+        },
         row as unknown as import('./store').WatchingRow,
       );
     }
@@ -295,13 +290,13 @@ export function createBot(deps: BotDeps): Bot {
       (noplay.note ? `\nnote: ${noplay.note}` : ''),
     );
     // Generate no-play article — fire-and-forget, never throws.
+    // Post Restructure v1 §2.2: 3-line NO-PLAY card, verdict first (TG only).
     if (deps.aiEnv?.apiKey) {
-      const articleDeps: AnnounceArticleDeps = {
-        api: bot.api, channelChatId: deps.channelChatId, store: deps.store,
-        siteUrl: deps.siteUrl, facebook: deps.facebook,
-      };
       void publishNoPlayArticle(
-        { store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl, announceArticle: articleDeps },
+        {
+          store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
+          card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl },
+        },
         noplay,
       );
     }
