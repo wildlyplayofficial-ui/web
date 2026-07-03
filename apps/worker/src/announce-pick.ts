@@ -30,7 +30,7 @@ const CONFIDENCE_LABELS: Record<string, string> = { low: 'LOW', medium: 'MED', h
 /** "selection line @ odds" pick block (R2), e.g. "Switzerland -0.25 @ 1.70". */
 export function formatPickBlock(pick: PickRow): string {
   const line = pick.line != null ? ` ${pick.line > 0 ? '+' : ''}${pick.line}` : '';
-  return `${pick.selection}${line} @ ${pick.odds_publish}`;
+  return `${pick.selection}${line} @ ${Number(pick.odds_publish).toFixed(2)}`;
 }
 
 /** 3-second card (Post Restructure Spec v1 §2.1, Nick DUYỆT 3/7 — EN, UTC-only). */
