@@ -79,7 +79,7 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
 
   it('marks half wins and losses next to the badge', () => {
     const pick = { ...settledPick({ raw_outcome: 'half_win', units_pl: 0.53 }), id: 'p1' } as PickRow;
-    expect(formatResultMessage(pick)).toContain('\u2705 WIN (half win) |');
+    expect(formatResultMessage(pick)).toContain('\u2705\u00bd HALF-WIN |');
   });
 
   it('formats units with sign', () => {

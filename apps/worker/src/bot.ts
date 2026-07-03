@@ -260,6 +260,7 @@ export function createBot(deps: BotDeps): Bot {
           card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl },
         },
         row as unknown as import('./store').WatchingRow,
+        watching.reason,
       );
     }
     await ctx.reply(

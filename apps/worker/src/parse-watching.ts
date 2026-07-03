@@ -9,13 +9,15 @@ export interface ParsedWatching {
   league: string;
   kickoffUtc: string; // ISO 8601
   note: string | null;
+  /** Hand-written one-sentence card hook (R5). Card-only — never auto-filled from note/article. */
+  reason: string | null;
 }
 
 export type ParseWatchingResult =
   | { ok: true; watching: ParsedWatching }
   | { ok: false; errors: string[] };
 
-const KNOWN_KEYS = new Set(['match', 'league', 'kickoff', 'note']);
+const KNOWN_KEYS = new Set(['match', 'league', 'kickoff', 'reason', 'note']);
 
 export function parseWatching(text: string, now: Date = new Date()): ParseWatchingResult {
   const errors: string[] = [];
@@ -73,9 +75,11 @@ export function parseWatching(text: string, now: Date = new Date()): ParseWatchi
     else kickoffUtc = d.toISOString();
   }
 
+  const reason = fields.get('reason')?.trim() || null;
+
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
-    watching: { homeTeam, awayTeam, league, kickoffUtc, note: note || null },
+    watching: { homeTeam, awayTeam, league, kickoffUtc, note: note || null, reason },
   };
 }

@@ -33,6 +33,13 @@ const BADGES: Record<string, { label: string; color: string; bg: string }> = {
   void: { label: "VOID", color: C.muted, bg: C.card },
 };
 
+// Post Restructure Spec v1 §2.3: quarter-line settlements get distinct badges.
+// Keyed by raw_outcome — displayStatus folds half into won/lost, so status alone can't tell.
+const OUTCOME_BADGES: Record<string, { label: string; color: string; bg: string }> = {
+  half_win: { label: "HALF-WIN", color: C.brand, bg: C.brandDim },
+  half_loss: { label: "HALF-LOSS", color: C.loss, bg: C.lossDim },
+};
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -47,7 +54,7 @@ export async function GET(
   const record = published ? await getTrackRecord() : null;
   const badge = published
     ? BADGES[new Date(pick.kickoff_utc) <= new Date() ? "live" : "upcoming"]
-    : BADGES[pick.status];
+    : (pick.raw_outcome && OUTCOME_BADGES[pick.raw_outcome]) ?? BADGES[pick.status];
   // Flags like the play page; ImageResponse renders emoji via twemoji by default.
   const home = `${teamFlag(pick.home_team)} ${pick.home_team}`.trim();
   const away = `${pick.away_team} ${teamFlag(pick.away_team)}`.trim();

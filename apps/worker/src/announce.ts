@@ -25,6 +25,15 @@ const BADGES: Record<string, string> = {
   won: '\u2705 WIN', lost: '\u274c LOSS', push: '\u{1F7E1} PUSH', void: '\u26aa VOID',
 };
 
+/** §2.3: all 5 AH settlement states get distinct markers (quarter-lines are routine). */
+const OUTCOME_BADGES: Record<string, string> = {
+  win: '\u2705 WIN',
+  half_win: '\u2705\u00bd HALF-WIN',
+  push: '\u{1F7E1} PUSH',
+  half_loss: '\u274c\u00bd HALF-LOSS',
+  loss: '\u274c LOSS',
+};
+
 /** Branded settled banner per status (§2.6 image table, fallback when OG card fails). */
 const SETTLED_IMAGES: Record<string, string> = {
   won: 'wildlyplay_settled_win.png',
@@ -44,17 +53,17 @@ export function summarizeRecord(settled: PickRow[]): RecordSummary {
 }
 
 export function formatUnits(n: number): string {
-  const rounded = Math.round(n * 100) / 100;
+  // 3 dp: quarter-stakes on half-states settle at .125 precision (spec §2.3 example: −0.125u).
+  const rounded = Math.round(n * 1000) / 1000;
   return `${rounded > 0 ? '+' : ''}${rounded}u`;
 }
 
-/** 3-line SETTLED card (Post Restructure Spec v1 §2.3, Nick DUYỆT 3/7). */
+/** 3-line SETTLED card (Post Restructure Spec v1 §2.3, locked 3/7 — 5 AH states). */
 export function formatResultMessage(pick: PickRow, record?: RecordSummary): string {
-  // Display rule (decision #2): half_win badge = WIN, half_loss = LOSS; real units shown.
-  const half = pick.raw_outcome === 'half_win' || pick.raw_outcome === 'half_loss'
-    ? ` (${pick.raw_outcome.replace('_', ' ')})` : '';
+  const badge = (pick.raw_outcome && OUTCOME_BADGES[pick.raw_outcome])
+    ?? BADGES[pick.status] ?? pick.status;
   const lines = [
-    `${BADGES[pick.status] ?? pick.status}${half} | ${formatPickBlock(pick)} \u2192 FT ${pick.home_score}-${pick.away_score} \u00b7 ${formatUnits(Number(pick.units_pl))}`,
+    `${badge} | ${formatPickBlock(pick)} \u2192 FT ${pick.home_score}-${pick.away_score} \u00b7 ${formatUnits(Number(pick.units_pl))}`,
   ];
   if (record) {
     lines.push(`\u{1F4CA} Record: ${record.wins}-${record.losses}-${record.pushes} \u00b7 ${formatUnits(record.units)}`);

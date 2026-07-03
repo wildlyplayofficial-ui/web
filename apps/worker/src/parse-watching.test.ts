@@ -20,6 +20,7 @@ describe('parseWatching — happy path', () => {
       league: 'FIFA World Cup 2026 — Group E',
       kickoffUtc: '2026-06-15T18:00:00.000Z',
       note: 'Yamal out, Germany resting Musiala',
+      reason: null,
     });
   });
 

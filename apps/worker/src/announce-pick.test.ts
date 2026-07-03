@@ -57,30 +57,31 @@ describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () =
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick());
     const msg = formatPickMessage(pick, SITE);
-    expect(msg).toContain('\u{1F3AF} PICK \u2014 Mexico vs South Africa \u00b7 FIFA World Cup 2026 \u2014 Group A');
-    expect(msg).toContain('\u23F0 KO 19:00 UTC');
+    expect(msg).toContain('\u{1F3AF} Mexico vs South Africa \u00b7 FIFA World Cup 2026 \u2014 Group A \u00b7 KO 19:00 UTC');
     expect(msg).toContain('\u{1F449} Mexico -1.25 -1.25 @ 2.05 \u00b7 1u');
     expect(msg).toContain(`${SITE}/play/${pick.id}`);
     expect(msg).toContain('Human-picked \u00b7 Odds at publish \u00b7 Not financial advice');
     expect(msg).not.toContain('test thesis'); // R2: card is scannable, thesis lives on the play page
     expect(msg).not.toContain('sure win');
     expect(msg).not.toContain('live @');
-    expect(msg).not.toContain('Confidence:'); // none registered on this pick
+    expect(msg).not.toContain('\u00b7 HIGH'); // none registered on this pick
+    expect(msg).not.toContain('\u00b7 MED');
+    expect(msg).not.toContain('\u00b7 LOW');
   });
 
   it('marks a running pick with the score at entry', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick({ publish_score_home: 1, publish_score_away: 0 }));
     const msg = formatPickMessage(pick, SITE);
-    expect(msg).toContain('\u23F0 KO 19:00 UTC (live @ 1-0)');
+    expect(msg).toContain('KO 19:00 UTC (live @ 1-0)');
   });
 
   it('shows the confidence line with the against-the-market cue (R3)', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick({ confidence: 'high' }));
-    expect(formatPickMessage(pick, SITE)).toContain('\u{1F39A} Confidence: HIGH');
+    expect(formatPickMessage(pick, SITE)).toContain('\u{1F449} Mexico -1.25 -1.25 @ 2.05 \u00b7 1u \u00b7 HIGH');
     expect(formatPickMessage(pick, SITE, { againstMarket: true }))
-      .toContain('\u{1F39A} Confidence: HIGH \u00b7 \u26A0\uFE0F against the market');
+      .toContain('\u00b7 HIGH \u00b7 \u26A0\uFE0F against market');
   });
 
   it('renders the hand-written hook untouched and omits the line when absent (R5)', async () => {

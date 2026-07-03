@@ -217,14 +217,15 @@ if (persistDb) {
     await translateWatchingNote({ store, env: aiEnv }, w);
   };
   jobHandlers['watching-news'] = async (payload) => {
-    const { watchingId } = payload as { watchingId: string };
+    // reason = hand-written card hook (R5) — card-only, rides the payload since the row doesn't persist it
+    const { watchingId, reason } = payload as { watchingId: string; reason?: string | null };
     const all = await store.getActiveWatching();
     const w = all.find((r) => r.id === watchingId);
     if (!w) throw new Error(`watching ${watchingId} not found`);
     await publishWatchingNews({
       store, env: aiEnv, revalidateUrl: siteUrl,
       card: { api: bot.api, channelChatId, siteUrl },
-    }, w);
+    }, w, reason);
   };
   jobHandlers['postmortem'] = async (payload) => {
     const { pickId } = payload as { pickId: string };

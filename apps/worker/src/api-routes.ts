@@ -149,13 +149,13 @@ export async function handleApiRoute(
     void deps.revalidate(['watching']);
     if (row.note && deps.aiEnv?.apiKey && deps.persistDb) {
       void enqueueJob(deps.persistDb, 'note-translate', { watchingId: row.id }).catch(e => log.warn('enqueue note-translate:', e));
-      void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id }).catch(e => log.warn('enqueue watching-news:', e));
+      void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id, reason: watching.reason }).catch(e => log.warn('enqueue watching-news:', e));
     } else if (row.note && deps.aiEnv?.apiKey) {
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row);
       void publishWatchingNews({
         store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
         card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
-      }, row as unknown as import('./store').WatchingRow);
+      }, row as unknown as import('./store').WatchingRow, watching.reason);
     }
     if (deps.aiEnv?.apiKey) {
       void (async () => {

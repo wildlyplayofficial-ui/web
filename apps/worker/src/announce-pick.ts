@@ -33,17 +33,15 @@ export function formatPickBlock(pick: PickRow): string {
   return `${pick.selection}${line} @ ${Number(pick.odds_publish).toFixed(2)}`;
 }
 
-/** 3-second card (Post Restructure Spec v1 §2.1, Nick DUYỆT 3/7 — EN, UTC-only). */
+/** FINAL 5-line card (Post Restructure Spec v1 §2.1, locked 3/7 — 5 lines is the floor). */
 export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCardExtras = {}): string {
   const live = pick.publish_score_home != null
     ? ` (live @ ${pick.publish_score_home}-${pick.publish_score_away})` : '';
   const confidence = pick.confidence ? CONFIDENCE_LABELS[pick.confidence] ?? pick.confidence.toUpperCase() : null;
-  const against = extras.againstMarket ? ' \u00b7 \u26A0\uFE0F against the market' : '';
+  const against = extras.againstMarket ? ' \u00b7 \u26A0\uFE0F against market' : '';
   return [
-    `\u{1F3AF} PICK \u2014 ${pick.home_team} vs ${pick.away_team} \u00b7 ${pick.league}`,
-    `\u23F0 KO ${pick.kickoff_utc.slice(11, 16)} UTC${live}`,
-    `\u{1F449} ${formatPickBlock(pick)} \u00b7 ${Number(pick.stake_units)}u`,
-    ...(confidence ? [`\u{1F39A} Confidence: ${confidence}${against}`] : []),
+    `\u{1F3AF} ${pick.home_team} vs ${pick.away_team} \u00b7 ${pick.league} \u00b7 KO ${pick.kickoff_utc.slice(11, 16)} UTC${live}`,
+    `\u{1F449} ${formatPickBlock(pick)} \u00b7 ${Number(pick.stake_units)}u${confidence ? ` \u00b7 ${confidence}` : ''}${against}`,
     ...(extras.hook ? [`\u{1F4DD} ${extras.hook}`] : []),
     `\u{1F517} ${siteUrl}/play/${pick.id}`,
     CARD_FOOTER,

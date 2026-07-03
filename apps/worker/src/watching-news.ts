@@ -116,21 +116,33 @@ export interface WatchingNewsDeps {
   card?: WatchingCardDeps;
 }
 
-/** 3-line 👀 WATCHING card (Post Restructure Spec v1 §2.4, Nick DUYỆT 3/7 — TG only). */
-export function formatWatchingMessage(w: WatchingRow, siteUrl: string, slug: string): string {
+/** 3-line 👀 WATCHING card (Post Restructure Spec v1 §2.4, locked 3/7 — TG only).
+ *  R5: the middle line is the hand-written one-sentence reason. NEVER w.note —
+ *  the note feeds the article prompt and can be a long analysis/excerpt. */
+export function formatWatchingMessage(
+  w: WatchingRow,
+  siteUrl: string,
+  slug: string,
+  reason?: string | null,
+): string {
   const ko = new Date(w.kickoff_utc).toISOString().slice(11, 16);
   return [
-    `\u{1F440} Watching \u2014 ${w.home_team} vs ${w.away_team} \u00b7 KO ${ko} UTC`,
-    ...(w.note ? [w.note] : []),
+    `\u{1F440} Watching \u2014 ${w.home_team} vs ${w.away_team} \u00b7 ${w.league} \u00b7 KO ${ko} UTC`,
+    ...(reason ? [reason] : []),
     `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
   ].join('\n');
 }
 
 /** Send the WATCHING card to the TG channel. Fire-and-forget — never throws. */
-async function sendWatchingCard(deps: WatchingCardDeps, w: WatchingRow, slug: string): Promise<void> {
+async function sendWatchingCard(
+  deps: WatchingCardDeps,
+  w: WatchingRow,
+  slug: string,
+  reason?: string | null,
+): Promise<void> {
   if (!deps.channelChatId) return;
   try {
-    const msg = formatWatchingMessage(w, deps.siteUrl, slug);
+    const msg = formatWatchingMessage(w, deps.siteUrl, slug, reason);
     const imageUrl = `${deps.siteUrl}/images/wildlyplay_watching.png`;
     try {
       await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
@@ -143,10 +155,12 @@ async function sendWatchingCard(deps: WatchingCardDeps, w: WatchingRow, slug: st
   }
 }
 
-/** Generate + publish a news article for a /watching entry. Fire-and-forget: never throws. */
+/** Generate + publish a news article for a /watching entry. Fire-and-forget: never throws.
+ *  `reason` = hand-written one-sentence card hook (R5) — card-only, not persisted. */
 export async function publishWatchingNews(
   deps: WatchingNewsDeps,
   watching: WatchingRow,
+  reason?: string | null,
 ): Promise<void> {
   try {
     if (!deps.env.apiKey) return;
@@ -176,7 +190,7 @@ export async function publishWatchingNews(
       await deps.store.insertPost(post);
     }
     log.info(`watching-news: published ${posts.length} posts for ${watching.home_team} vs ${watching.away_team}`);
-    if (deps.card) await sendWatchingCard(deps.card, watching, slug);
+    if (deps.card) await sendWatchingCard(deps.card, watching, slug, reason);
 
     if (deps.revalidateUrl) {
       const revalidate = createRevalidator({
