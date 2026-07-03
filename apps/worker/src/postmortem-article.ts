@@ -36,7 +36,9 @@ Thesis: ${pick.thesis}
 - For losses: explain the loss-type honestly (variance vs bad read).
 - For wins: apply honest calibration — acknowledge variance on coinflip/LOW-confidence picks, state confounds, do NOT claim skill on thin margins. WIN reviews must be as critical as LOSS reviews.
 - FAITHFULLY reflect the Curator review tone. If the Curator wrote honest/humble text, preserve that tone in ALL 4 languages. Do NOT embellish or add hype.
-- BANNED VOCABULARY: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
+- BANNED VOCABULARY — applies IDENTICALLY to every language section, including Thai and Spanish. Do not let a local idiom or "softer" translation smuggle back in the banned meaning:
+  - Win-hype: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
+  - Loss-excuse: unlucky, deserved to win, deserved better, hard luck, bad break, wrong call, robbed, harsh result.
 - Do NOT invent stats or events not in the data above.
 </rules>
 
@@ -52,7 +54,7 @@ Then a blank line, then article body (200-400 words, markdown, no H1).
 </output>
 
 <self_critique>
-Before outputting: (1) no banned vocabulary, (2) honest about result, (3) each section in correct language.
+Before outputting, check ALL FOUR sections individually (Thai and Spanish are not exempt): (1) no win-hype vocabulary, (2) no loss-excuse vocabulary, (3) honest about result, (4) each section in correct language.
 </self_critique>`;
 }
 
