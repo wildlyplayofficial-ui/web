@@ -1,7 +1,7 @@
 import type { KnockoutRound, KnockoutMatch } from "@/lib/standings";
 import { teamFlag } from "@/lib/flags";
 
-function MatchCard({ match }: { match: KnockoutMatch }) {
+export function MatchCard({ match }: { match: KnockoutMatch }) {
   const hasScore = match.homeScore !== null && match.awayScore !== null;
   const homeWin = hasScore && match.homeScore! > match.awayScore!;
   const awayWin = hasScore && match.awayScore! > match.homeScore!;

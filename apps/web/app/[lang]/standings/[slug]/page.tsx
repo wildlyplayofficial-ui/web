@@ -6,7 +6,7 @@ import { fetchCompetitionTable } from "@/lib/standings";
 import { getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
-import { KnockoutBracket } from "@/components/knockout-bracket";
+import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -71,6 +71,17 @@ export default async function StandingSlugPage({ params }: Props) {
 
   const sortedRows = rows.slice().sort((a, b) => a.rank - b.rank);
 
+  // Fully finished rounds drop below the group tables (Nick's request 3/7)
+  // so the bracket up top only shows rounds still in play/upcoming. Keep
+  // everything up top while no round is active (e.g. tournament over).
+  const isRoundFinished = (r: (typeof knockoutRounds)[number]) =>
+    r.matches.every((m) => m.finished);
+  const hasActiveRound = knockoutRounds.some((r) => !isRoundFinished(r));
+  const archivedRounds = hasActiveRound ? knockoutRounds.filter(isRoundFinished) : [];
+  const activeRounds = hasActiveRound
+    ? knockoutRounds.filter((r) => !isRoundFinished(r))
+    : knockoutRounds;
+
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
       <BreadcrumbJsonLd
@@ -97,7 +108,7 @@ export default async function StandingSlugPage({ params }: Props) {
         <>
           {/* Knockout bracket first (Nick's request 2/7): during knockout phase
               it's the content users come for; group tables are reference. */}
-          <KnockoutBracket rounds={knockoutRounds} knockoutLabel={dict.standings.knockout} />
+          <KnockoutBracket rounds={activeRounds} knockoutLabel={dict.standings.knockout} />
           {/* WC groups layout: filter out 3rd teams aggregate */}
           {(() => {
             const thirdTeams = [...groupMap.entries()].filter(([g]) =>
@@ -132,6 +143,25 @@ export default async function StandingSlugPage({ params }: Props) {
                       />
                     ))}
                   </div>
+                )}
+                {archivedRounds.length > 0 && (
+                  <section className="mt-12">
+                    <h2 className="mb-6 text-center font-display text-2xl font-bold">
+                      {dict.standings.knockoutFinished}
+                    </h2>
+                    {archivedRounds.map((r) => (
+                      <div key={r.round} className="mt-6 first:mt-0">
+                        <h3 className="mb-3 text-center font-display text-sm font-semibold uppercase tracking-wide text-muted">
+                          {r.label}
+                        </h3>
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                          {r.matches.map((m) => (
+                            <MatchCard key={m.id} match={m} />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </section>
                 )}
               </>
             );
