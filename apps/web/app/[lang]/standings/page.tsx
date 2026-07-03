@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { getStandings, getEplStandings } from "@/lib/standings";
+import { getKnockoutRounds } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
+import { KnockoutBracket } from "@/components/knockout-bracket";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -32,53 +34,68 @@ export default async function StandingsPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   const eplEnabled = await isFeatureEnabled("epl_standings");
-  const [standings, eplStandings] = await Promise.all([
+  const [standings, eplStandings, knockoutRounds] = await Promise.all([
     getStandings(),
     eplEnabled ? getEplStandings() : Promise.resolve([]),
+    getKnockoutRounds(362),
   ]);
+
+  if (standings.length === 0 && knockoutRounds.length === 0) {
+    return (
+      <div className="mx-auto max-w-[1100px] px-5 pb-12">
+        <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/standings" }]} />
+        <section className="py-12 text-center">
+          <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
+          <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
+        </section>
+        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
+          {dict.standings.empty}
+        </div>
+      </div>
+    );
+  }
+
+  const thirdTeams = standings.filter((g) => g.group.toLowerCase().includes("3rd"));
+  const groups = standings.filter((g) => !g.group.toLowerCase().includes("3rd"));
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
-      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Standings",url:"/standings"}]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/standings" }]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
         <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
       </section>
 
-      {standings.length === 0 ? (
-        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
-          {dict.standings.empty}
+      {groups.length > 0 && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {groups.map((g) => (
+            <GroupTableWithTabs
+              key={g.group}
+              group={g.group}
+              teams={g.teams}
+              labels={dict.standings}
+            />
+          ))}
         </div>
-      ) : (() => {
-        const thirdTeams = standings.filter((g) => g.group.toLowerCase().includes("3rd"));
-        const groups = standings.filter((g) => !g.group.toLowerCase().includes("3rd"));
-        return (
-          <>
-            <div className="grid gap-6 md:grid-cols-2">
-              {groups.map((g) => (
-                <GroupTableWithTabs
-                  key={g.group}
-                  group={g.group}
-                  teams={g.teams}
-                  labels={dict.standings}
-                />
-              ))}
-            </div>
-            {thirdTeams.length > 0 && (
-              <div className="mt-8">
-                {thirdTeams.map((g) => (
-                  <GroupTableWithTabs
-                    key={g.group}
-                    group={g.group}
-                    teams={g.teams}
-                    labels={dict.standings}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        );
-      })()}
+      )}
+
+      {thirdTeams.length > 0 && (
+        <div className="mt-8">
+          {thirdTeams.map((g) => (
+            <GroupTableWithTabs
+              key={g.group}
+              group={g.group}
+              teams={g.teams}
+              labels={dict.standings}
+            />
+          ))}
+        </div>
+      )}
+
+      <KnockoutBracket
+        rounds={knockoutRounds}
+        knockoutLabel={dict.standings.knockout}
+      />
 
       {eplStandings.length > 0 && (
         <section className="mt-12">
