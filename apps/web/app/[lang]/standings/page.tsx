@@ -5,7 +5,7 @@ import { getStandings, getEplStandings } from "@/lib/standings";
 import { getKnockoutRounds } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
-import { KnockoutBracket } from "@/components/knockout-bracket";
+import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -58,6 +58,16 @@ export default async function StandingsPage({ params }: Props) {
   const thirdTeams = standings.filter((g) => g.group.toLowerCase().includes("3rd"));
   const groups = standings.filter((g) => !g.group.toLowerCase().includes("3rd"));
 
+  // Same split as /standings/[slug]: bracket first with rounds still in
+  // play/upcoming; fully finished rounds drop below the group tables.
+  const isRoundFinished = (r: (typeof knockoutRounds)[number]) =>
+    r.matches.every((m) => m.finished);
+  const hasActiveRound = knockoutRounds.some((r) => !isRoundFinished(r));
+  const archivedRounds = hasActiveRound ? knockoutRounds.filter(isRoundFinished) : [];
+  const activeRounds = hasActiveRound
+    ? knockoutRounds.filter((r) => !isRoundFinished(r))
+    : knockoutRounds;
+
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/standings" }]} />
@@ -66,8 +76,14 @@ export default async function StandingsPage({ params }: Props) {
         <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
       </section>
 
+      {/* Bracket first, same as /standings/[slug] (Nick 3/7) */}
+      <KnockoutBracket
+        rounds={activeRounds}
+        knockoutLabel={dict.standings.knockout}
+      />
+
       {groups.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className={`grid gap-6 md:grid-cols-2${activeRounds.length > 0 ? " mt-12" : ""}`}>
           {groups.map((g) => (
             <GroupTableWithTabs
               key={g.group}
@@ -92,10 +108,25 @@ export default async function StandingsPage({ params }: Props) {
         </div>
       )}
 
-      <KnockoutBracket
-        rounds={knockoutRounds}
-        knockoutLabel={dict.standings.knockout}
-      />
+      {archivedRounds.length > 0 && (
+        <section className="mt-12">
+          <h2 className="mb-6 text-center font-display text-2xl font-bold">
+            {dict.standings.knockoutFinished}
+          </h2>
+          {archivedRounds.map((r) => (
+            <div key={r.round} className="mt-6 first:mt-0">
+              <h3 className="mb-3 text-center font-display text-sm font-semibold uppercase tracking-wide text-muted">
+                {r.label}
+              </h3>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {r.matches.map((m) => (
+                  <MatchCard key={m.id} match={m} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {eplStandings.length > 0 && (
         <section className="mt-12">
