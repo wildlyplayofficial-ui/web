@@ -52,13 +52,13 @@ if (!anthropicApiKey) log.warn('ANTHROPIC_API_KEY unset — AI recap + newsroom 
 const aiEnv = { apiKey: anthropicApiKey, model: process.env.RECAP_MODEL };
 const recap = anthropicApiKey
   ? async (pick: PickRow) => {
-      const settled = await store.listByStatus(['won', 'lost', 'push', 'void']);
+      const settled = await store.listByStatus(['won', 'lost', 'push', 'void'], pick.author);
       return generateRecap(aiEnv, pick, computeRecord(settled));
     }
   : undefined;
 const recapArticle = anthropicApiKey
   ? async (pick: PickRow) => {
-      const settled = await store.listByStatus(['won', 'lost', 'push', 'void']);
+      const settled = await store.listByStatus(['won', 'lost', 'push', 'void'], pick.author);
       return generateRecapArticle(aiEnv, pick, computeRecord(settled));
     }
   : undefined;

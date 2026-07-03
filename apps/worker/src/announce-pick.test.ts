@@ -38,6 +38,7 @@ function publishedPick(overrides: Partial<NewPick> = {}): NewPick {
     postmortem_at: null,
     market_side: null,
     favored_dog: null,
+    author: 'curator',
     ...overrides,
   };
 }

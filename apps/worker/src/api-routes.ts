@@ -15,7 +15,7 @@ import { announceResult } from './announce';
 import { announcePick, announceVoid } from './announce-pick';
 import { generatePostmortemDraft, listOverdue, LOSS_TYPES, type LossType } from './postmortem';
 import type { AnnounceArticleDeps } from './announce-article';
-import type { PickRow, Store, NewPick } from './store';
+import { authorTypeOf, type PickAuthor, type PickRow, type Store, type NewPick } from './store';
 import type { EventMatch, MatchQuery } from './event-lookup';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { enqueueJob } from './job-queue';
@@ -53,6 +53,13 @@ function deriveMarketSide(sel: string): string {
   if (s.includes('under')) return 'under';
   if (s === 'draw' || s === 'x') return 'draw';
   return 'side';
+}
+
+/** Author query param: defaults to 'curator' when unspecified (credibility firewall, §12.A). */
+function parseAuthorParam(raw: unknown): PickAuthor | 'invalid' {
+  if (raw === undefined) return 'curator';
+  if (raw === 'curator' || raw === 'scout') return raw;
+  return 'invalid';
 }
 
 export async function handleApiRoute(
@@ -118,15 +125,20 @@ export async function handleApiRoute(
         away_score: null,
         raw_outcome: null,
         units_pl: null,
+        author: result.pick.author,
       };
       const row = await deps.store.insertPick(newPick);
-      log.info(`api: published pick ${row.id}: ${row.selection} @ ${row.odds_publish}`);
+      log.info(`api: published pick ${row.id}: ${row.selection} @ ${row.odds_publish} (author=${row.author})`);
       void deps.revalidate(['picks']);
       if (deps.preview) void deps.preview(row);
       if (deps.translateThesis) void deps.translateThesis(row);
       if (deps.publishAnalysis && row.publish_score_home == null) void deps.publishAnalysis(row);
       void announcePick(deps.announceDeps, row, { hook: result.pick.hook, againstMarket: result.pick.againstMarket });
-      json(res, 200, { ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}`, selection: row.selection });
+      json(res, 200, {
+        ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}`, selection: row.selection,
+        // T7 (launch blocker): author_type is ALWAYS derived here from `author` — never accept it from the client.
+        author: row.author, author_type: authorTypeOf(row.author),
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       log.warn(`api /pick failed: ${msg}`);
@@ -145,6 +157,7 @@ export async function handleApiRoute(
       home_team: watching.homeTeam, away_team: watching.awayTeam,
       league: watching.league, kickoff_utc: watching.kickoffUtc,
       note: watching.note, status: 'active', pick_id: null,
+      author: watching.author,
     });
     log.info(`api: watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     void deps.revalidate(['watching']);
@@ -166,7 +179,10 @@ export async function handleApiRoute(
         } catch (err) { log.warn(`api buzz failed:`, err); }
       })();
     }
-    json(res, 200, { ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}` });
+    json(res, 200, {
+      ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}`,
+      author: row.author, author_type: authorTypeOf(row.author),
+    });
     return true;
   }
 
@@ -183,7 +199,10 @@ export async function handleApiRoute(
         card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
       }, noplay);
     }
-    json(res, 200, { ok: true, match: `${noplay.homeTeam} vs ${noplay.awayTeam}`, reason: noplay.reason });
+    json(res, 200, {
+      ok: true, match: `${noplay.homeTeam} vs ${noplay.awayTeam}`, reason: noplay.reason,
+      author: noplay.author, author_type: authorTypeOf(noplay.author),
+    });
     return true;
   }
 
@@ -225,7 +244,10 @@ export async function handleApiRoute(
     log.info(`api: voided ${voided.id}`);
     void deps.revalidate(['picks']);
     void announceVoid(deps.announceDeps, voided);
-    json(res, 200, { ok: true, id: voided.id, match: `${voided.home_team} vs ${voided.away_team}` });
+    json(res, 200, {
+      ok: true, id: voided.id, match: `${voided.home_team} vs ${voided.away_team}`,
+      author: voided.author, author_type: authorTypeOf(voided.author),
+    });
     return true;
   }
 
@@ -277,24 +299,30 @@ export async function handleApiRoute(
 
   // ── GET /api/board ──
   if (url === '/api/board') {
-    const published = await deps.store.listByStatus(['published']);
+    const author = parseAuthorParam(payload.author);
+    if (author === 'invalid') { json(res, 400, { ok: false, error: 'author must be curator/scout' }); return true; }
+    const published = await deps.store.listByStatus(['published'], author);
     const today = new Date().toISOString().slice(0, 10);
     const todays = published.filter(p => p.kickoff_utc.slice(0, 10) === today);
     json(res, 200, { ok: true, count: todays.length, picks: todays.map(p => ({
       id: p.id, match: `${p.home_team} vs ${p.away_team}`, selection: p.selection,
       odds: p.odds_publish, stake: p.stake_units, kickoff: p.kickoff_utc,
+      author: p.author, author_type: authorTypeOf(p.author),
     }))});
     return true;
   }
 
   // ── GET /api/record ──
   if (url === '/api/record') {
-    const settled = await deps.store.listByStatus(['won', 'lost', 'push']);
+    const author = parseAuthorParam(payload.author);
+    if (author === 'invalid') { json(res, 400, { ok: false, error: 'author must be curator/scout' }); return true; }
+    const settled = await deps.store.listByStatus(['won', 'lost', 'push'], author);
     const wins = settled.filter(p => p.status === 'won').length;
     const losses = settled.filter(p => p.status === 'lost').length;
     const pushes = settled.filter(p => p.status === 'push').length;
     const units = Math.round(settled.reduce((s, p) => s + Number(p.units_pl ?? 0), 0) * 100) / 100;
-    json(res, 200, { ok: true, wins, losses, pushes, units, total: settled.length });
+    const noPlayCount = await deps.store.countNoPlayByAuthor(author);
+    json(res, 200, { ok: true, author, wins, losses, pushes, units, total: settled.length, no_play_count: noPlayCount });
     return true;
   }
 
@@ -306,7 +334,8 @@ export async function handleApiRoute(
     if (!pick) { json(res, 404, { ok: false, error: 'pick not found' }); return true; }
     json(res, 200, { ok: true, id: pick.id, match: `${pick.home_team} vs ${pick.away_team}`,
       status: pick.status, postmortem_status: pick.postmortem_status,
-      draft: pick.postmortem_draft, approved: pick.postmortem_approved });
+      draft: pick.postmortem_draft, approved: pick.postmortem_approved,
+      author: pick.author, author_type: authorTypeOf(pick.author) });
     return true;
   }
 

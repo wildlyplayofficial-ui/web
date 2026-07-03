@@ -118,7 +118,7 @@ export async function digestOnce(
     log.warn('digest: CHANNEL_CHAT_ID unset — skipping weekly ledger');
     return key;
   }
-  const settled = await deps.store.listByStatus(['won', 'lost', 'push']);
+  const settled = await deps.store.listByStatus(['won', 'lost', 'push'], 'curator');
   const noPlaySlugs = await deps.store.listPostSlugsByType('no-play');
   const passes = weeklyPassCount(noPlaySlugs, now);
   const text = buildWeeklyDigest(settled, passes, deps.siteUrl, now);

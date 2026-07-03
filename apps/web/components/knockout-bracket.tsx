@@ -1,5 +1,6 @@
 import type { KnockoutRound, KnockoutMatch } from "@/lib/standings";
 import { teamFlag } from "@/lib/flags";
+import { LocalKickoffTime } from "./local-kickoff-time";
 
 export function MatchCard({ match }: { match: KnockoutMatch }) {
   const hasScore = match.homeScore !== null && match.awayScore !== null;
@@ -35,10 +36,15 @@ export function MatchCard({ match }: { match: KnockoutMatch }) {
         )}
       </div>
       {/* Always show kickoff date/time (even for finished matches) so cards
-          in a column stay equal height — Nick's request 2/7. */}
+          in a column stay equal height — Nick's request 2/7. Shown in the
+          viewer's local timezone (source date/time is UTC) — Nick 3/7. */}
       {match.date && (
         <p className="mt-2 text-[10px] text-muted">
-          {match.date}{match.time ? ` · ${match.time}` : ""}
+          {match.time ? (
+            <LocalKickoffTime iso={`${match.date}T${match.time}:00Z`} showDate className="text-[10px] text-muted" />
+          ) : (
+            match.date
+          )}
         </p>
       )}
     </div>

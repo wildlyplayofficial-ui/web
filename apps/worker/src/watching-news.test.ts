@@ -15,6 +15,7 @@ function activeWatching(overrides: Partial<WatchingRow> = {}): WatchingRow {
     created_at: '2026-06-11T10:00:00.000Z',
     pick_id: null,
     buzz_history: [],
+    author: 'curator',
     ...overrides,
   };
 }
@@ -168,6 +169,7 @@ describe('publishWatchingNews', () => {
       pick_ids: [],
       status: 'published',
       published_at: new Date().toISOString(),
+      author: 'curator',
     });
 
     await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());

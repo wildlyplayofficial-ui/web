@@ -81,6 +81,7 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
       meta_title: null,
       meta_description: null,
       target_keyword: null,
+      author: w.author,
     }];
   }
 
@@ -92,6 +93,7 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
       title: section.meta_title,
       body_md: section.body,
       pick_ids: [],
+      author: w.author,
       status: 'published' as const,
       published_at: now,
       meta_title: section.meta_title,

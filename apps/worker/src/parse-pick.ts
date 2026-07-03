@@ -7,6 +7,12 @@ export type Market = 'ah' | 'ou' | '1x2' | 'btts' | 'other';
 export type Confidence = 'low' | 'medium' | 'high';
 const CONFIDENCE_VALUES: readonly string[] = ['low', 'medium', 'high'];
 
+/** Tiered Picks (§12, spec locked 3/7): curator = real human (default), scout = fictional AI persona.
+ *  Firewall boundary — this is the ONLY field the client sets; author_type disclosure is
+ *  always server-derived from this value, never accepted from the client (see store.ts authorTypeOf). */
+export type PickAuthor = 'curator' | 'scout';
+const AUTHOR_VALUES: readonly string[] = ['curator', 'scout'];
+
 /** T3: Primary Edge — choose exactly one. */
 export type PrimaryEdge =
   | 'PRICE_VALUE' | 'TACTICAL_MATCHUP' | 'TEAM_NEWS'
@@ -55,6 +61,8 @@ export interface ParsedPick {
   hook: string | null;
   /** Post Restructure v1 (R3): pick goes against the market → ⚠️ cue on the card. */
   againstMarket: boolean;
+  /** Tiered Picks firewall (§12): who this pick belongs to. Default 'curator' (backward compatible). */
+  author: PickAuthor;
 }
 
 export type ParseResult =
@@ -65,7 +73,7 @@ const MARKETS: readonly Market[] = ['ah', 'ou', '1x2', 'btts', 'other'];
 const KNOWN_KEYS = new Set([
   'match', 'league', 'kickoff', 'market', 'selection',
   'line', 'odds', 'stake', 'thesis', 'event', 'score', 'confidence',
-  'edge', 'evidence', 'hook', 'against_market', 'edge_pct',
+  'edge', 'evidence', 'hook', 'against_market', 'edge_pct', 'author',
 ]);
 
 export function parsePick(text: string, now: Date = new Date()): ParseResult {
@@ -251,6 +259,15 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
     else consensusEdgePct = n;
   }
 
+  // author (optional) — Tiered Picks firewall (§12): curator (default) or scout.
+  let author: PickAuthor = 'curator';
+  const authorRaw = fields.get('author');
+  if (authorRaw !== undefined && authorRaw !== '') {
+    const val = authorRaw.toLowerCase();
+    if (AUTHOR_VALUES.includes(val)) author = val as PickAuthor;
+    else errors.push(`author must be curator/scout, got "${authorRaw}"`);
+  }
+
   // T4: Supporting Evidence (optional, max 2)
   const supportingEvidence: SupportingEvidence[] = [];
   const evidenceRaw = fields.get('evidence');
@@ -276,6 +293,7 @@ export function parsePick(text: string, now: Date = new Date()): ParseResult {
       market: market as Market, selection, line, odds, stake,
       thesis: thesis as string, eventId, publishScoreHome, publishScoreAway,
       confidence, primaryEdge, supportingEvidence, hook, againstMarket, consensusEdgePct,
+      author,
     },
   };
 }

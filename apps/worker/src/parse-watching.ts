@@ -2,6 +2,7 @@
  * Pure parser for the /watching command. Simpler than /pick — only match, league,
  * kickoff and an optional note. String in, ParsedWatching or error list out.
  */
+import type { PickAuthor } from './parse-pick';
 
 export interface ParsedWatching {
   homeTeam: string;
@@ -11,13 +12,17 @@ export interface ParsedWatching {
   note: string | null;
   /** Hand-written one-sentence card hook (R5). Card-only — never auto-filled from note/article. */
   reason: string | null;
+  /** Tiered Picks firewall (§12): who this watching entry belongs to. Default 'curator'. */
+  author: PickAuthor;
 }
+
+const AUTHOR_VALUES: readonly string[] = ['curator', 'scout'];
 
 export type ParseWatchingResult =
   | { ok: true; watching: ParsedWatching }
   | { ok: false; errors: string[] };
 
-const KNOWN_KEYS = new Set(['match', 'league', 'kickoff', 'reason', 'note']);
+const KNOWN_KEYS = new Set(['match', 'league', 'kickoff', 'reason', 'note', 'author']);
 
 export function parseWatching(text: string, now: Date = new Date()): ParseWatchingResult {
   const errors: string[] = [];
@@ -77,9 +82,18 @@ export function parseWatching(text: string, now: Date = new Date()): ParseWatchi
 
   const reason = fields.get('reason')?.trim() || null;
 
+  // author (optional) — Tiered Picks firewall (§12): curator (default) or scout.
+  let author: PickAuthor = 'curator';
+  const authorRaw = fields.get('author');
+  if (authorRaw !== undefined && authorRaw !== '') {
+    const val = authorRaw.toLowerCase();
+    if (AUTHOR_VALUES.includes(val)) author = val as PickAuthor;
+    else errors.push(`author must be curator/scout, got "${authorRaw}"`);
+  }
+
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
-    watching: { homeTeam, awayTeam, league, kickoffUtc, note: note || null, reason },
+    watching: { homeTeam, awayTeam, league, kickoffUtc, note: note || null, reason, author },
   };
 }

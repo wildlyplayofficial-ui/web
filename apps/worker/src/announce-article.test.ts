@@ -14,6 +14,7 @@ const mockPost: NewPost = {
   pick_ids: ['abc-123'],
   status: 'published',
   published_at: new Date().toISOString(),
+  author: 'curator',
 };
 
 describe('buildArticleCaption', () => {

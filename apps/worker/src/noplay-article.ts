@@ -113,6 +113,7 @@ export function buildNoPlayPosts(np: ParsedNoPlay, text: string): NewPost[] {
       meta_title: null,
       meta_description: null,
       target_keyword: null,
+      author: np.author,
     }];
   }
 
@@ -138,6 +139,7 @@ export function buildNoPlayPosts(np: ParsedNoPlay, text: string): NewPost[] {
         meta_title: section?.meta_title ?? title,
         meta_description: section?.meta_description ?? null,
         target_keyword: section?.target_keyword ?? null,
+        author: np.author,
       };
     });
 }

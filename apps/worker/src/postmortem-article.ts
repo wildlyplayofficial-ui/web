@@ -108,6 +108,7 @@ export async function publishPostmortemArticle(
           meta_title: section?.meta_title ?? title,
           meta_description: section?.meta_description ?? null,
           target_keyword: section?.target_keyword ?? null,
+          author: pick.author,
         });
       }
     } else {
@@ -115,6 +116,7 @@ export async function publishPostmortemArticle(
         type: 'post-mortem' as const, slug, lang: 'en',
         title: `Post-mortem: ${score}`, body_md: text.trim(),
         pick_ids: [pick.id], status: 'published', published_at: now,
+        author: pick.author,
       });
     }
 

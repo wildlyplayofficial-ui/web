@@ -5,10 +5,18 @@
 import { randomUUID } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { RawOutcome } from '@wildlyplay/settlement';
-import type { Market } from './parse-pick';
+import type { Market, PickAuthor } from './parse-pick';
 import { log } from './log';
 
+export type { PickAuthor } from './parse-pick';
 export type PickStatus = 'draft' | 'published' | 'won' | 'lost' | 'push' | 'void';
+
+/** T7: disclosure label — ALWAYS derived from `author` server-side, never client-sent
+ *  (Tiered Picks §12.A item 7, launch blocker: a Scout pick must never render without it). */
+export type AuthorType = 'real_human' | 'fictional_ai';
+export function authorTypeOf(author: PickAuthor): AuthorType {
+  return author === 'scout' ? 'fictional_ai' : 'real_human';
+}
 
 export interface PickRow {
   id: string;
@@ -58,6 +66,8 @@ export interface PickRow {
   raw_outcome: RawOutcome | null;
   units_pl: number | null;
   settled_at: string | null;
+  /** Tiered Picks firewall (§12): who this pick belongs to. Immutable after publish (DB trigger). */
+  author: PickAuthor;
 }
 
 export type NewPick = Omit<PickRow, 'id'>;
@@ -79,6 +89,8 @@ export interface NewPost {
   meta_description?: string | null;
   target_keyword?: string | null;
   source_refs?: Record<string, unknown> | null;
+  /** Tiered Picks firewall (§12): who this article belongs to (no-play per-author tracking, item 3). */
+  author: PickAuthor;
 }
 
 /** Per-language pick analysis row (`pick_content`). Thesis translations:
@@ -122,6 +134,8 @@ export interface WatchingRow {
   created_at: string;
   pick_id: string | null;
   buzz_history: BuzzSnapshot[];
+  /** Tiered Picks firewall (§12): who this watching entry belongs to. */
+  author: PickAuthor;
 }
 
 export type NewWatching = Omit<WatchingRow, 'id' | 'created_at'>;
@@ -130,7 +144,9 @@ export interface Store {
   insertPick(pick: NewPick): Promise<PickRow>;
   getPick(id: string): Promise<PickRow | null>;
   updatePick(id: string, patch: Partial<PickRow>): Promise<PickRow>;
-  listByStatus(statuses: PickStatus[]): Promise<PickRow[]>;
+  /** Optional author filter — the credibility firewall (§12.A item 1/6): callers computing
+   *  a public record/board/recap MUST pass the relevant author to avoid blending ledgers. */
+  listByStatus(statuses: PickStatus[], author?: PickAuthor): Promise<PickRow[]>;
   insertChannelLog(entry: ChannelLogEntry): Promise<void>;
   insertPost(post: NewPost): Promise<void>;
   upsertPickContent(rows: NewPickContent[]): Promise<void>;
@@ -140,6 +156,8 @@ export interface Store {
   listPostSlugsByType(type: string): Promise<Set<string>>;
   /** Count posts of a type published today (UTC), lang='en' to count per-article not per-row. */
   countPostsTodayByType(type: string): Promise<number>;
+  /** All-time count of no-play articles for one author (§12.A item 3: per-author no-play tracking). */
+  countNoPlayByAuthor(author: PickAuthor): Promise<number>;
   /** Insert a new watching row. */
   insertWatching(watching: NewWatching): Promise<WatchingRow>;
   /** All active watching rows (status='active'). */
@@ -183,9 +201,9 @@ export class MemoryStore implements Store {
     return next;
   }
 
-  async listByStatus(statuses: PickStatus[]): Promise<PickRow[]> {
+  async listByStatus(statuses: PickStatus[], author?: PickAuthor): Promise<PickRow[]> {
     return [...this.picks.values()]
-      .filter((p) => statuses.includes(p.status))
+      .filter((p) => statuses.includes(p.status) && (author === undefined || p.author === author))
       .sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc));
   }
 
@@ -215,6 +233,10 @@ export class MemoryStore implements Store {
     return this.posts.filter((p) =>
       p.type === type && p.lang === 'en' && p.published_at && new Date(p.published_at) >= startOfDay
     ).length;
+  }
+
+  async countNoPlayByAuthor(author: PickAuthor): Promise<number> {
+    return this.posts.filter((p) => p.type === 'no-play' && p.lang === 'en' && p.author === author).length;
   }
 
   async insertWatching(watching: NewWatching): Promise<WatchingRow> {
@@ -305,10 +327,12 @@ class SupabaseStore implements Store {
     return data as PickRow;
   }
 
-  async listByStatus(statuses: PickStatus[]): Promise<PickRow[]> {
-    const { data, error } = await this.db
+  async listByStatus(statuses: PickStatus[], author?: PickAuthor): Promise<PickRow[]> {
+    let query = this.db
       .from('picks').select('*').in('status', statuses)
       .order('kickoff_utc', { ascending: true });
+    if (author) query = query.eq('author', author);
+    const { data, error } = await query;
     if (error) throw new Error(`listByStatus failed: ${error.message}`);
     return (data ?? []) as PickRow[];
   }
@@ -361,6 +385,17 @@ class SupabaseStore implements Store {
       .eq('lang', 'en')
       .gte('published_at', startOfDay.toISOString());
     if (error) throw new Error(`countPostsTodayByType failed: ${error.message}`);
+    return count ?? 0;
+  }
+
+  async countNoPlayByAuthor(author: PickAuthor): Promise<number> {
+    const { count, error } = await this.db
+      .from('posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('type', 'no-play')
+      .eq('lang', 'en')
+      .eq('author', author);
+    if (error) throw new Error(`countNoPlayByAuthor failed: ${error.message}`);
     return count ?? 0;
   }
 

@@ -136,6 +136,7 @@ export function buildRecapPosts(pick: PickRow, text: string): NewPost[] {
     pick_ids: [pick.id],
     status: 'published' as const,
     published_at: new Date().toISOString(),
+    author: pick.author,
   };
   const sections = splitLangSections(text);
   if (!sections) {

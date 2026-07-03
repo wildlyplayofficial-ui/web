@@ -3,6 +3,7 @@
  * passing on a match — no edge, price too short, etc.
  * String in, ParsedNoPlay or error list out.
  */
+import type { PickAuthor } from './parse-pick';
 
 export type NoPlayReason =
   | 'NO_EDGE'
@@ -26,13 +27,16 @@ export interface ParsedNoPlay {
   reason: NoPlayReason;
   watching: string | null;
   note: string | null;
+  /** Tiered Picks firewall (§12): who this no-play decision belongs to. Default 'curator'. */
+  author: PickAuthor;
 }
 
 export type ParseNoPlayResult =
   | { ok: true; noplay: ParsedNoPlay }
   | { ok: false; errors: string[] };
 
-const KNOWN_KEYS = new Set(['match', 'league', 'reason', 'watching', 'note']);
+const KNOWN_KEYS = new Set(['match', 'league', 'reason', 'watching', 'note', 'author']);
+const AUTHOR_VALUES: readonly string[] = ['curator', 'scout'];
 
 export function parseNoPlay(text: string): ParseNoPlayResult {
   const errors: string[] = [];
@@ -93,9 +97,18 @@ export function parseNoPlay(text: string): ParseNoPlayResult {
 
   const watching = fields.get('watching')?.trim() || null;
 
+  // author (optional) — Tiered Picks firewall (§12): curator (default) or scout.
+  let author: PickAuthor = 'curator';
+  const authorRaw = fields.get('author');
+  if (authorRaw !== undefined && authorRaw !== '') {
+    const val = authorRaw.toLowerCase();
+    if (AUTHOR_VALUES.includes(val)) author = val as PickAuthor;
+    else errors.push(`author must be curator/scout, got "${authorRaw}"`);
+  }
+
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
-    noplay: { homeTeam, awayTeam, league, reason, watching, note: note || null },
+    noplay: { homeTeam, awayTeam, league, reason, watching, note: note || null, author },
   };
 }

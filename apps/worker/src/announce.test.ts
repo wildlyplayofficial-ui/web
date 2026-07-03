@@ -44,6 +44,7 @@ function settledPick(overrides: Partial<NewPick> = {}): NewPick {
     raw_outcome: 'win',
     units_pl: 1.05,
     settled_at: '2026-06-11T21:00:00.000Z',
+    author: 'curator',
     ...overrides,
   };
 }

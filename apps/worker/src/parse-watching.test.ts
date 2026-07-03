@@ -21,6 +21,7 @@ describe('parseWatching — happy path', () => {
       kickoffUtc: '2026-06-15T18:00:00.000Z',
       note: 'Yamal out, Germany resting Musiala',
       reason: null,
+      author: 'curator',
     });
   });
 
@@ -78,5 +79,28 @@ describe('parseWatching — errors', () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.errors.join('\n')).toContain('unknown field: "odds"');
+  });
+});
+
+describe('parseWatching — author (Tiered Picks §12)', () => {
+  it('defaults to curator when author is omitted', () => {
+    const r = parseWatching(VALID, NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.watching.author).toBe('curator');
+  });
+
+  it('accepts author: scout', () => {
+    const r = parseWatching(VALID.replace('note:', 'author: scout\nnote:'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.watching.author).toBe('scout');
+  });
+
+  it('rejects an invalid author value', () => {
+    const r = parseWatching(VALID.replace('note:', 'author: robot\nnote:'), NOW);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.join('\n')).toContain('author must be curator/scout');
   });
 });

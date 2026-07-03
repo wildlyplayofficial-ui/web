@@ -50,6 +50,7 @@ describe('parsePick — happy path', () => {
       hook: null,
       againstMarket: false,
       consensusEdgePct: null,
+      author: 'curator',
     });
   });
 
@@ -212,4 +213,23 @@ describe('parsePick — running picks (score field)', () => {
       withScore('1-0').replace('kickoff: 2026-06-11T19:00Z', 'kickoff: yesterday'),
       'not a valid ISO datetime',
     ));
+});
+
+describe('parsePick — author (Tiered Picks §12)', () => {
+  it('defaults to curator when author is omitted', () => {
+    const r = parsePick(VALID, NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.pick.author).toBe('curator');
+  });
+
+  it('accepts author: scout', () => {
+    const r = parsePick(VALID.replace('thesis:', 'author: scout\nthesis:'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.pick.author).toBe('scout');
+  });
+
+  it('rejects an invalid author value', () =>
+    expectErrors(VALID.replace('thesis:', 'author: robot\nthesis:'), 'author must be curator/scout'));
 });

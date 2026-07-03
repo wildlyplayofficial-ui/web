@@ -210,6 +210,8 @@ export function buildAnalysisPosts(
   const now = new Date().toISOString();
   const sourceRefs = facts.length > 0 ? { facts, gathered_at: now } : null;
 
+  const author = topic.pick?.author ?? 'curator';
+
   const sections = splitAnalysisSections(text);
   if (!sections) {
     return [{
@@ -225,6 +227,7 @@ export function buildAnalysisPosts(
       meta_description: null,
       target_keyword: null,
       source_refs: sourceRefs,
+      author,
     }];
   }
 
@@ -241,6 +244,7 @@ export function buildAnalysisPosts(
     meta_description: section.meta_description,
     target_keyword: section.target_keyword,
     source_refs: sourceRefs,
+    author,
   }));
 }
 
@@ -290,7 +294,7 @@ export async function publishAnalysisForPick(
       return;
     }
 
-    const allPicks = await deps.store.listByStatus(['won', 'lost', 'push']);
+    const allPicks = await deps.store.listByStatus(['won', 'lost', 'push'], pick.author);
     const record = computeRecord(allPicks);
 
     const topic: AnalysisTopic = {

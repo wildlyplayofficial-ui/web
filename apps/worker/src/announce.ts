@@ -110,7 +110,7 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   // 📊 record line — failures must not block the result card.
   let record: RecordSummary | undefined;
   try {
-    record = summarizeRecord(await deps.store.listByStatus(['won', 'lost', 'push']));
+    record = summarizeRecord(await deps.store.listByStatus(['won', 'lost', 'push'], pick.author));
   } catch (err) {
     log.warn(`record summary failed for pick ${pick.id} — sending card without record line:`, err);
   }

@@ -107,7 +107,7 @@ export function createBot(deps: BotDeps): Bot {
   });
 
   bot.command('board', async (ctx) => {
-    const published = await deps.store.listByStatus(['published']);
+    const published = await deps.store.listByStatus(['published'], 'curator');
     const today = new Date().toISOString().slice(0, 10);
     const todays = published.filter((p) => p.kickoff_utc.slice(0, 10) === today);
     if (todays.length === 0) {
@@ -118,7 +118,7 @@ export function createBot(deps: BotDeps): Bot {
   });
 
   bot.command('record', async (ctx) => {
-    const settled = await deps.store.listByStatus(['won', 'lost', 'push']);
+    const settled = await deps.store.listByStatus(['won', 'lost', 'push'], 'curator');
     const count = (s: string) => settled.filter((p) => p.status === s).length;
     const units = Math.round(settled.reduce((sum, p) => sum + Number(p.units_pl ?? 0), 0) * 100) / 100;
     await ctx.reply(
@@ -494,6 +494,7 @@ function toNewPick(p: ParsedPick, autoEvent: EventMatch | null = null): NewPick 
     raw_outcome: null,
     units_pl: null,
     settled_at: null,
+    author: p.author,
   };
 }
 
