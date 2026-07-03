@@ -160,7 +160,9 @@ export default async function NewsPost({ params }: Props) {
 
       <RelatedArticles slug={slug} lang={lang} currentType={post.type} pickIds={post.pick_ids} />
 
-      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
+      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
+        {post.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
+      </p>
     </article>
   );
 }

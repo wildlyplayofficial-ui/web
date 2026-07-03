@@ -153,7 +153,7 @@ export default async function PlayDetail({ params }: Props) {
 
       <section className="mt-8">
         <h2 className="font-display text-lg font-bold text-indigo-soft">
-          {dict.play.thesis} &mdash; {dict.pick.curator}
+          {dict.play.thesis} &mdash; {pick.author === "scout" ? dict.pick.scoutLabel : dict.pick.curator}
         </h2>
         <blockquote className="mt-3 border-l-2 border-indigo-soft/60 pl-4 leading-relaxed text-ink/90">
           {thesisText}
@@ -221,7 +221,9 @@ export default async function PlayDetail({ params }: Props) {
 
       <ShareBar lang={lang} text={`${pick.home_team} vs ${pick.away_team} \u2014 ${pick.selection} | WildlyPlay`} />
 
-      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
+      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
+        {pick.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
+      </p>
     </article>
   );
 }

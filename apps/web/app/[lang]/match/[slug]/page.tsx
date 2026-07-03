@@ -132,7 +132,7 @@ export default async function MatchPage({ params }: Props) {
         })()}
       </header>
 
-      {match.picks.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
+      {match.picks.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{match.picks[0].author === "scout" ? dict.match.scoutPick : dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
 
       {match.picks.length > 0 && match.picks[0].fixture_id > 0 && (<MatchCommentary fixtureId={match.picks[0].fixture_id} homeTeam={match.homeTeam} awayTeam={match.awayTeam} pick={match.picks[0]} lang={lang} />)}
 
@@ -143,11 +143,11 @@ export default async function MatchPage({ params }: Props) {
           <h3 className="text-xs font-medium tracking-wider text-muted uppercase">Post-match review</h3>
           {postmortemArticle ? (<><p className="mt-2 text-sm text-ink">{postmortemArticle.meta_description}</p>{match.picks[0].status === "lost" && (match.picks[0] as unknown as { loss_type?: string }).loss_type && (<p className="mt-2 text-xs text-muted">Loss type: <span className="font-medium text-ink">{(match.picks[0] as unknown as { loss_type: string }).loss_type.replace(/-/g, " ")}</span></p>)}<Link href={withLang(`/news/${postmortemArticle.slug}`, lang)} className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">{dict.match.readReview} &rarr;</Link></>
           ) : (match.picks[0] as unknown as { postmortem_approved?: string }).postmortem_approved ? (<><p className="mt-2 text-sm text-ink whitespace-pre-line">{(match.picks[0] as unknown as { postmortem_approved: string }).postmortem_approved.replace(/\*\*/g, "").replace(/\*/g, "")}</p>{match.picks[0].status === "lost" && (match.picks[0] as unknown as { loss_type?: string }).loss_type && (<p className="mt-2 text-xs text-muted">Loss type: <span className="font-medium text-ink">{(match.picks[0] as unknown as { loss_type: string }).loss_type.replace(/-/g, " ")}</span></p>)}</>
-          ) : (<p className="mt-2 text-sm text-muted italic">Review pending &mdash; the Curator will review this play.</p>)}
+          ) : (<p className="mt-2 text-sm text-muted italic">{match.picks[0].author === "scout" ? "Review pending \u2014 the Scout will review this play." : "Review pending \u2014 the Curator will review this play."}</p>)}
         </section>
       )}
 
-      {match.watching && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{dict.match.curatorWatch}</h2><WatchingTeaser items={[match.watching]} lang={lang} hideLinks /></section>)}
+      {match.watching && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{match.watching.author === "scout" ? dict.match.scoutWatch : dict.match.curatorWatch}</h2><WatchingTeaser items={[match.watching]} lang={lang} hideLinks /></section>)}
 
       {uniquePosts.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{dict.match.articles}</h2><ul className="flex flex-col gap-3">{uniquePosts.map((post) => (<li key={post.id} className="rounded-card border border-line bg-card p-4 shadow-card"><span className="mb-1 inline-block rounded-md bg-card px-2 py-0.5 text-xs font-semibold uppercase text-muted">{post.type}</span><p className="font-display font-bold"><Link href={withLang(`/news/${post.slug}`, lang)} className="transition-colors hover:text-brand">{post.title}</Link></p><Link href={withLang(`/news/${post.slug}`, lang)} className="mt-1 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">{dict.match.readArticle} &rarr;</Link></li>))}</ul></section>)}
 

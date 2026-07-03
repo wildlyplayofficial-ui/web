@@ -73,7 +73,9 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
           </span>
         )}
         <span className="font-display text-sm font-semibold text-brand">
-          {isPast ? dict.watching.titlePast : dict.watching.title}
+          {item.author === "scout"
+            ? isPast ? dict.watching.titlePastScout : dict.watching.titleScout
+            : isPast ? dict.watching.titlePast : dict.watching.title}
         </span>
       </div>
 
@@ -93,8 +95,12 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
 
       {note && (
         <p className="mt-2 text-sm text-muted">
-          <span className="font-semibold">{dict.watching.note}:</span> {note}
+          <span className="font-semibold">{item.author === "scout" ? dict.watching.noteScout : dict.watching.note}:</span> {note}
         </p>
+      )}
+
+      {item.author === "scout" && (
+        <p className="mt-2 text-xs text-muted/80">{dict.watching.disclosureScout}</p>
       )}
 
       {buzz && (

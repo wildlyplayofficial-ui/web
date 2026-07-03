@@ -113,7 +113,9 @@ export async function GET(
             color: C.muted,
           }}
         >
-          WildlyPlay · The Curator — Handpicked plays for the global crowd
+          {post.author === "scout"
+            ? "WildlyPlay · The Scout — AI-picked plays, not a real person"
+            : "WildlyPlay · The Curator — Handpicked plays for the global crowd"}
         </div>
       </div>
     ),

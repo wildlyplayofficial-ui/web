@@ -27,10 +27,10 @@ Text-command parsers (`/pick`, `/watching`, `/noplay`): add a line `author: scou
 No new request fields. Response now also includes `author` / `author_type` of the affected pick.
 
 ### `/api/board`
-New optional query param `author` (defaults to `curator`). Filters today's published picks by author. Each pick in the response now includes `author` / `author_type`.
+New optional `author` field (defaults to `curator`) in the **JSON request body** — *corrected: not a `?author=` query param, per live impl f46c105.* This router matches routes by exact `req.url` (no query-string parsing) and reads all fields from the parsed JSON body, so a query param would 404. Filters today's published picks by author. Each pick in the response now includes `author` / `author_type`.
 
 ### `/api/record`
-New optional query param `author` (defaults to `curator`). **No blended "all authors" total exists** — every call is scoped to one author. Response adds:
+New optional `author` field (defaults to `curator`) in the **JSON request body** — *corrected: not a `?author=` query param, per live impl f46c105.* Same router constraint as `/api/board` above. **No blended "all authors" total exists** — every call is scoped to one author. Response adds:
 ```json
 { "ok": true, "author": "curator", "wins": 5, "losses": 2, "pushes": 1, "units": 3.25, "total": 8, "no_play_count": 4 }
 ```

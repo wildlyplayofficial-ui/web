@@ -8,6 +8,10 @@ export type PickStatus = "published" | "won" | "lost" | "push" | "void";
 export type RawOutcome = "win" | "half_win" | "push" | "half_loss" | "loss" | "void";
 export type PostType = "recap" | "preview" | "news" | "analysis" | "no-play" | "post-mortem" | "guide";
 
+/** Tiered Picks firewall (§12): Curator (real human) vs Scout (fictional AI persona).
+ *  Optional — legacy/mock rows predate Scout and default to "curator" at call sites. */
+export type Author = "curator" | "scout";
+
 export interface Pick {
   id: string;
   fixture_id: number;
@@ -37,6 +41,8 @@ export interface Pick {
   away_id: number | null;
   /** Source domains informing the thesis (1/7). Null for older picks. */
   sources: string[] | null;
+  /** Tiered Picks firewall (§12): who this pick belongs to. Optional — defaults to "curator". */
+  author?: Author;
 }
 
 export interface Post {
@@ -53,6 +59,8 @@ export interface Post {
   meta_description: string | null;
   target_keyword: string | null;
   source_refs: Record<string, unknown> | null;
+  /** Tiered Picks firewall (§12): who this article belongs to. Optional — defaults to "curator". */
+  author?: Author;
 }
 
 /** Admin-only post type with draft/stale fields for AI regen workflow (Phase 2). */
@@ -107,6 +115,8 @@ export interface WatchingRow {
   created_at: string;
   pick_id: string | null;
   buzz_history: BuzzSnapshot[];
+  /** Tiered Picks firewall (§12): who this watching entry belongs to. Optional — defaults to "curator". */
+  author?: Author;
 }
 
 /** Crowd poll (decision #5, 11/6): per-pick Follow / Fade / Skip tallies. */

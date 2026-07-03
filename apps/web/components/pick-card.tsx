@@ -97,7 +97,9 @@ export function PickCard({
       </div>
 
       <blockquote className="mt-4 border-l-2 border-indigo-soft/60 pl-4 text-[0.95rem] leading-relaxed text-ink/90">
-        <span className="font-display font-semibold text-indigo-soft">{dict.pick.curator}: </span>
+        <span className="font-display font-semibold text-indigo-soft">
+          {pick.author === "scout" ? dict.pick.scoutLabel : dict.pick.curator}:{" "}
+        </span>
         {thesisText ?? pick.thesis}
       </blockquote>
 
@@ -115,7 +117,9 @@ export function PickCard({
         </Link>
       )}
 
-      <p className="mt-4 border-t border-line-muted pt-3 text-xs text-muted">{dict.pick.disclosure}</p>
+      <p className="mt-4 border-t border-line-muted pt-3 text-xs text-muted">
+        {pick.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
+      </p>
     </article>
   );
 }

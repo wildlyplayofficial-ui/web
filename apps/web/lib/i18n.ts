@@ -124,11 +124,13 @@ export interface Dict {
   };
   pick: {
     disclosure: string;
+    disclosureScout: string;
     odds: string;
     stake: string;
     finalScore: string;
     viewPlay: string;
     curator: string;
+    scoutLabel: string;
     halfWin: string;
     halfLoss: string;
   };
@@ -207,11 +209,17 @@ export interface Dict {
     title: string;
     titlePast: string;
     note: string;
+    titleScout: string;
+    titlePastScout: string;
+    noteScout: string;
+    disclosureScout: string;
   };
   match: {
     backToMatches: string;
     curatorWatch: string;
     curatorPick: string;
+    scoutWatch: string;
+    scoutPick: string;
     articles: string;
     noContent: string;
     readArticle: string;
@@ -324,11 +332,13 @@ const en: Dict = {
   },
   pick: {
     disclosure: "Human-picked, AI-operated. A human chose this play; AI wrote, published and settles it.",
+    disclosureScout: "AI-picked, AI-written — Scout is an experimental AI persona, not a real person.",
     odds: "Odds at publish",
     stake: "Stake",
     finalScore: "FT",
     viewPlay: "View play",
     curator: "The Curator",
+    scoutLabel: "The Scout",
     halfWin: "half-win",
     halfLoss: "half-loss",
   },
@@ -407,11 +417,17 @@ const en: Dict = {
     title: "The Curator is watching",
     titlePast: "The Curator was watching",
     note: "Curator note",
+    titleScout: "The Scout is watching",
+    titlePastScout: "The Scout was watching",
+    noteScout: "Scout note",
+    disclosureScout: "AI-picked, AI-written — Scout is an experimental AI persona, not a real person.",
   },
   match: {
     backToMatches: "Back",
     curatorWatch: "Curator's Watch",
     curatorPick: "Curator's Pick",
+    scoutWatch: "Scout's Watch",
+    scoutPick: "Scout's Pick",
     articles: "Match Articles",
     noContent: "No content for this match yet.",
     readArticle: "Read article",
@@ -524,11 +540,13 @@ const vi: Dict = {
   },
   pick: {
     disclosure: "Người chọn kèo, AI vận hành. Con người chọn kèo này; AI viết, đăng và kết sổ.",
+    disclosureScout: "AI chọn kèo, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.",
     odds: "Odds lúc đăng",
     stake: "Mức cược",
     finalScore: "FT",
     viewPlay: "Xem chi tiết kèo",
     curator: "The Curator",
+    scoutLabel: "The Scout",
     halfWin: "thắng nửa",
     halfLoss: "thua nửa",
   },
@@ -607,11 +625,17 @@ const vi: Dict = {
     title: "Curator \u0111ang theo d\u00f5i",
     titlePast: "Curator \u0111\u00e3 theo d\u00f5i",
     note: "Ghi ch\u00fa t\u1eeb Curator",
+    titleScout: "Scout \u0111ang theo d\u00f5i",
+    titlePastScout: "Scout \u0111\u00e3 theo d\u00f5i",
+    noteScout: "Ghi ch\u00fa t\u1eeb Scout",
+    disclosureScout: "AI ch\u1ecdn k\u00e8o, AI vi\u1ebft b\u00e0i \u2014 Scout l\u00e0 nh\u00e2n v\u1eadt AI th\u1eed nghi\u1ec7m, kh\u00f4ng ph\u1ea3i ng\u01b0\u1eddi th\u1eadt.",
   },
   match: {
     backToMatches: "Quay l\u1ea1i",
     curatorWatch: "Curator \u0111ang theo d\u00f5i",
     curatorPick: "K\u00e8o c\u1ee7a Curator",
+    scoutWatch: "Scout \u0111ang theo d\u00f5i",
+    scoutPick: "K\u00e8o c\u1ee7a Scout",
     articles: "B\u00e0i vi\u1ebft v\u1ec1 tr\u1eadn",
     noContent: "Ch\u01b0a c\u00f3 n\u1ed9i dung cho tr\u1eadn n\u00e0y.",
     readArticle: "\u0110\u1ecdc b\u00e0i",
@@ -724,11 +748,13 @@ const th: Dict = {
   },
   pick: {
     disclosure: "คนเลือก AI ดำเนินการ — มนุษย์เป็นผู้เลือกทีเด็ดนี้ ส่วน AI เขียน เผยแพร่ และตัดสินผล",
+    disclosureScout: "AI เลือกเดิมพัน เขียนโดย AI — Scout เป็นตัวละคร AI ทดลอง ไม่ใช่บุคคลจริง",
     odds: "ราคาตอนเผยแพร่",
     stake: "เดิมพัน",
     finalScore: "FT",
     viewPlay: "ดูรายละเอียดทีเด็ด",
     curator: "The Curator",
+    scoutLabel: "The Scout",
     halfWin: "ชนะครึ่ง",
     halfLoss: "แพ้ครึ่ง",
   },
@@ -807,11 +833,17 @@ const th: Dict = {
     title: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
     titlePast: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e08\u0e31\u0e1a\u0e15\u0e32\u0e41\u0e25\u0e49\u0e27",
     note: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Curator",
+    titleScout: "Scout \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
+    titlePastScout: "Scout \u0e08\u0e31\u0e1a\u0e15\u0e32\u0e41\u0e25\u0e49\u0e27",
+    noteScout: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Scout",
+    disclosureScout: "AI \u0e40\u0e25\u0e37\u0e2d\u0e01\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u2014 Scout \u0e40\u0e1b\u0e47\u0e19\u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23 AI \u0e17\u0e14\u0e25\u0e2d\u0e07 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e1a\u0e38\u0e04\u0e04\u0e25\u0e08\u0e23\u0e34\u0e07",
   },
   match: {
     backToMatches: "\u0e01\u0e25\u0e31\u0e1a",
     curatorWatch: "Curator \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
     curatorPick: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07 Curator",
+    scoutWatch: "Scout \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
+    scoutPick: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07 Scout",
     articles: "\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c",
     noContent: "\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49",
     readArticle: "\u0e2d\u0e48\u0e32\u0e19\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21",
@@ -925,11 +957,14 @@ const es: Dict = {
   pick: {
     disclosure:
       "Elegida por un humano, operada por IA. Un humano eligió esta jugada; la IA la escribió, la publicó y la liquida.",
+    disclosureScout:
+      "Elegido por IA, escrito por IA — Scout es un personaje de IA experimental, no una persona real.",
     odds: "Cuota al publicar",
     stake: "Apuesta",
     finalScore: "FT",
     viewPlay: "Ver el pick",
     curator: "The Curator",
+    scoutLabel: "The Scout",
     halfWin: "media ganancia",
     halfLoss: "media pérdida",
   },
@@ -1008,11 +1043,17 @@ const es: Dict = {
     title: "El Curator est\u00e1 observando",
     titlePast: "El Curator estuvo observando",
     note: "Nota del Curator",
+    titleScout: "El Scout est\u00e1 observando",
+    titlePastScout: "El Scout estuvo observando",
+    noteScout: "Nota del Scout",
+    disclosureScout: "Elegido por IA, escrito por IA \u2014 Scout es un personaje de IA experimental, no una persona real.",
   },
   match: {
     backToMatches: "Volver",
     curatorWatch: "El Curator observa",
     curatorPick: "Pick del Curator",
+    scoutWatch: "El Scout observa",
+    scoutPick: "Pick del Scout",
     articles: "Art\u00edculos del partido",
     noContent: "A\u00fan no hay contenido para este partido.",
     readArticle: "Leer art\u00edculo",
