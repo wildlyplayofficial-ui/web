@@ -75,7 +75,7 @@ export default async function StandingSlugPage({ params }: Props) {
   // so the bracket up top only shows rounds still in play/upcoming. Keep
   // everything up top while no round is active (e.g. tournament over).
   const isRoundFinished = (r: (typeof knockoutRounds)[number]) =>
-    r.matches.every((m) => m.finished);
+    r.round === "R32"; // TEMP preview-only: simulate finished R32
   const hasActiveRound = knockoutRounds.some((r) => !isRoundFinished(r));
   const archivedRounds = hasActiveRound ? knockoutRounds.filter(isRoundFinished) : [];
   const activeRounds = hasActiveRound
