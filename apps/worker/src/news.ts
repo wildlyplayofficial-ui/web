@@ -141,6 +141,8 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
       ? '- This is a PICK ANALYSIS — discuss why The Curator chose this selection, the odds value, and what to watch for.'
       : '- This is an ANALYSIS ONLY (no pick) — state clearly this is editorial analysis, NOT a recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
+    '- If the thesis states a pricing/consensus figure (e.g. "consensus prices this at -5%"), preserve its exact sign/polarity faithfully — do NOT invert a disclosed disadvantage into a positive "edge" or "value" claim, and do NOT invent a figure not present in the data above.',
+    '- BANNED VOCABULARY — applies IDENTICALLY to every language section, including Thai and Spanish. Do not let a local idiom or "softer" translation smuggle back in the banned meaning: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.',
     '- Include a one-line responsible gambling note at the end of each section.',
     '- End each section with disclosure as plain text (no bold, no italic, no markdown formatting): Human-data, AI-written — The Curator @ WildlyPlay',
     '- Do NOT copy any external source verbatim.',
