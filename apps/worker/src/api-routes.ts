@@ -17,6 +17,8 @@ import { generatePostmortemDraft, listOverdue, LOSS_TYPES, type LossType } from 
 import type { AnnounceArticleDeps } from './announce-article';
 import { authorTypeOf, type PickAuthor, type PickRow, type Store, type NewPick } from './store';
 import type { EventMatch, MatchQuery } from './event-lookup';
+import { fetchFinishedFixtures } from './finished-fixtures';
+import { fetchUpcomingFixtures } from './upcoming-fixtures';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { enqueueJob } from './job-queue';
 import { log } from './log';
@@ -37,6 +39,7 @@ export interface ApiDeps {
   persistDb: SupabaseClient | null;
   recap?: (pick: PickRow) => Promise<string | null>;
   recapArticle?: (pick: PickRow) => Promise<string | null>;
+  livescore?: { key: string; secret: string };
 }
 
 type Json = Record<string, unknown>;
@@ -346,6 +349,27 @@ export async function handleApiRoute(
       id: p.id, match: `${p.home_team} vs ${p.away_team}`, status: p.status,
       settled_at: p.settled_at,
     }))});
+    return true;
+  }
+
+  // ── GET /api/fixtures/finished (R0 Triage enrichment, Nick 4/7) ──
+  // Note: served as POST like every other route here (server only accepts POST).
+  if (url === '/api/fixtures/finished') {
+    if (!deps.livescore) { json(res, 503, { ok: false, error: 'livescore not configured' }); return true; }
+    const days = typeof payload.days === 'number' ? payload.days : 10;
+    const fixtures = await fetchFinishedFixtures(deps.livescore, days);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(fixtures));
+    return true;
+  }
+
+  // ── GET /api/fixtures/upcoming (R0 Triage shadow-read diff, Nick 4/7 item ②) ──
+  if (url === '/api/fixtures/upcoming') {
+    if (!deps.livescore) { json(res, 503, { ok: false, error: 'livescore not configured' }); return true; }
+    const days = typeof payload.days === 'number' ? payload.days : 14;
+    const fixtures = await fetchUpcomingFixtures(deps.livescore, days);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(fixtures));
     return true;
   }
 

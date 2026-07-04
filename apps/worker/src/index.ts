@@ -352,6 +352,9 @@ const server = createServer(async (req, res) => {
       announceDeps: { api: bot.api, channelChatId, store, siteUrl, facebook },
       persistDb,
       recap, recapArticle: recapArticle,
+      livescore: (process.env.LIVESCORE_API_KEY && process.env.LIVESCORE_API_SECRET)
+        ? { key: process.env.LIVESCORE_API_KEY, secret: process.env.LIVESCORE_API_SECRET }
+        : undefined,
     };
     const handled = await handleApiRoute(req, res, body, apiDeps);
     if (handled) return;
