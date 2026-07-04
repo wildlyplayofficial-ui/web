@@ -49,6 +49,15 @@ const rules: LintRule[] = [
   { pattern: /\blandscape of\b.*\blandscape\b/i, category: 'AI-TELL', description: 'Repeated "landscape"' },
 ];
 
+/**
+ * Script-consistency check (Nick 4/7 item ②): none of the 4 languages we
+ * publish in (en/vi/th/es) use CJK, Greek, or Cyrillic script — any codepoint
+ * in these ranges is a generation glitch (e.g. "แพรากουย" — Thai text with
+ * 2 stray Greek letters "ου", or an earlier CJK glitch in a TH post-mortem).
+ * Wordlists can't catch this class of bug since the glyphs read fluently.
+ */
+const STRAY_SCRIPT_RE = /[\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7A3\u0370-\u03FF\u0400-\u04FF]/;
+
 /** Unique data anchors — at least ONE must be present for the article to pass. */
 const DATA_ANCHORS = [
   /\d+\.\d{2}/, // odds (e.g. 2.03, 1.85)
@@ -111,6 +120,12 @@ export function lintSeoArticle(body: string, slug?: string, lang?: string): SeoL
         flags.push(`${rule.category}: ${rule.description} (matched: '${match[0]}')`);
       }
     }
+  }
+
+  // Script-consistency check — CJK/Greek/Cyrillic codepoints never belong in en/vi/th/es output.
+  const strayScript = body.match(STRAY_SCRIPT_RE);
+  if (strayScript) {
+    flags.push(`SCRIPT: unexpected script character '${strayScript[0]}' — CJK/Greek/Cyrillic codepoints not valid in en/vi/th/es output`);
   }
 
   // GEO readiness checks — scoped to post-match content with real data.
