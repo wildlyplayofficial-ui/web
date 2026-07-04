@@ -289,6 +289,7 @@ export function createBot(deps: BotDeps): Bot {
       `${noplay.league}\n` +
       `reason: ${noplay.reason}` +
       (noplay.watching ? `\nwatching: ${noplay.watching}` : '') +
+      (noplay.verdict ? `\nverdict: ${noplay.verdict}` : '') +
       (noplay.note ? `\nnote: ${noplay.note}` : ''),
     );
     // Generate no-play article — fire-and-forget, never throws.

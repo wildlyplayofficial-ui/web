@@ -162,9 +162,9 @@ export interface NoPlayArticleDeps {
   card?: NoPlayCardDeps;
 }
 
-/** 3-line ⛔ NO-PLAY card (Post Restructure Spec v1 §2.2, Nick DUYỆT 3/7). Verdict = hand-written note, reason label as fallback — never auto-truncated article text (R5). */
+/** 3-line ⛔ NO-PLAY card (Post Restructure Spec v1 §2.2, Nick DUYỆT 3/7). Verdict = dedicated `verdict:` field (author-written), reason label as fallback — never the long-form `note:` (R5: never auto-truncate). */
 export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: string): string {
-  const verdict = np.note ?? REASON_LABELS[np.reason];
+  const verdict = np.verdict ?? REASON_LABELS[np.reason];
   return [
     `\u26D4 NO-PLAY \u2014 ${np.homeTeam} vs ${np.awayTeam} \u00b7 ${np.league}`,
     `${verdict} \u2014 why the Curator passes:`,

@@ -18,9 +18,34 @@ describe('parseNoPlay — happy path', () => {
       league: 'FIFA World Cup 2026 — Group H',
       reason: 'NO_EDGE',
       watching: null,
+      verdict: null,
       note: 'Full-strength favorite, nothing worth backing at this price',
       author: 'curator',
     });
+  });
+});
+
+describe('parseNoPlay — verdict (TG card short line, R5: never auto-truncate)', () => {
+  it('parses an explicit verdict field, separate from the long-form note', () => {
+    const r = parseNoPlay(VALID.replace('note:', 'verdict: No position — two-pole variance\nnote:'));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.noplay.verdict).toBe('No position — two-pole variance');
+    expect(r.noplay.note).toBe('Full-strength favorite, nothing worth backing at this price');
+  });
+
+  it('defaults verdict to null when omitted', () => {
+    const r = parseNoPlay(VALID);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.noplay.verdict).toBeNull();
+  });
+
+  it('rejects verdict: placed after note instead of silently swallowing it into the free text', () => {
+    const r = parseNoPlay(`${VALID}\nverdict: too late`);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.join('\n')).toContain('field "verdict" found after note');
   });
 });
 

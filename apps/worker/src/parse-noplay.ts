@@ -26,6 +26,8 @@ export interface ParsedNoPlay {
   league: string;
   reason: NoPlayReason;
   watching: string | null;
+  /** Short, author-written TG card line. Falls back to the reason label — never the long-form `note` (R5: never auto-truncate). */
+  verdict: string | null;
   note: string | null;
   /** Tiered Picks firewall (§12): who this no-play decision belongs to. Default 'curator'. */
   author: PickAuthor;
@@ -35,7 +37,7 @@ export type ParseNoPlayResult =
   | { ok: true; noplay: ParsedNoPlay }
   | { ok: false; errors: string[] };
 
-const KNOWN_KEYS = new Set(['match', 'league', 'reason', 'watching', 'note', 'author']);
+const KNOWN_KEYS = new Set(['match', 'league', 'reason', 'watching', 'verdict', 'note', 'author']);
 const AUTHOR_VALUES: readonly string[] = ['curator', 'scout'];
 
 export function parseNoPlay(text: string): ParseNoPlayResult {
@@ -106,6 +108,7 @@ export function parseNoPlay(text: string): ParseNoPlayResult {
   }
 
   const watching = fields.get('watching')?.trim() || null;
+  const verdict = fields.get('verdict')?.trim() || null;
 
   // author (optional) — Tiered Picks firewall (§12): curator (default) or scout.
   let author: PickAuthor = 'curator';
@@ -119,6 +122,6 @@ export function parseNoPlay(text: string): ParseNoPlayResult {
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
-    noplay: { homeTeam, awayTeam, league, reason, watching, note: note || null, author },
+    noplay: { homeTeam, awayTeam, league, reason, watching, verdict, note: note || null, author },
   };
 }
