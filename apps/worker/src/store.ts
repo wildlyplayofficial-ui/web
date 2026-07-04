@@ -136,9 +136,11 @@ export interface WatchingRow {
   buzz_history: BuzzSnapshot[];
   /** Tiered Picks firewall (§12): who this watching entry belongs to. */
   author: PickAuthor;
+  /** Public closing line when a thread resolves without a pick (web-only, no TG push). */
+  close_note: string | null;
 }
 
-export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'note_translations' | 'buzz_history'> & {
+export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'note_translations' | 'buzz_history' | 'close_note'> & {
   author?: PickAuthor;
   note_translations?: Record<string, string> | null;
   buzz_history?: BuzzSnapshot[];
@@ -166,8 +168,8 @@ export interface Store {
   insertWatching(watching: NewWatching): Promise<WatchingRow>;
   /** All active watching rows (status='active'). */
   getActiveWatching(): Promise<WatchingRow[]>;
-  /** Expire a watching row by setting status='expired'. */
-  expireWatching(id: string): Promise<WatchingRow>;
+  /** Expire a watching row by setting status='expired'. Optional closeNote for public closing line. */
+  expireWatching(id: string, closeNote?: string): Promise<WatchingRow>;
   /** Link a watching row to a pick: status='picked' + pick_id. */
   linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow>;
   /** Partial update on a watching row (buzz_history, note_translations, etc). */
@@ -249,6 +251,7 @@ export class MemoryStore implements Store {
       created_at: new Date().toISOString(),
       buzz_history: [],
       note_translations: null,
+      close_note: null,
       ...watching,
       author: watching.author ?? 'curator',
     };
@@ -262,10 +265,10 @@ export class MemoryStore implements Store {
       .sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc));
   }
 
-  async expireWatching(id: string): Promise<WatchingRow> {
+  async expireWatching(id: string, closeNote?: string): Promise<WatchingRow> {
     const row = this.watchings.get(id);
     if (!row) throw new Error(`expireWatching: watching ${id} not found`);
-    const next = { ...row, status: 'expired' as const };
+    const next = { ...row, status: 'expired' as const, ...(closeNote !== undefined ? { close_note: closeNote } : {}) };
     this.watchings.set(id, next);
     return next;
   }
@@ -418,9 +421,11 @@ class SupabaseStore implements Store {
     return (data ?? []) as WatchingRow[];
   }
 
-  async expireWatching(id: string): Promise<WatchingRow> {
+  async expireWatching(id: string, closeNote?: string): Promise<WatchingRow> {
+    const patch: Partial<WatchingRow> = { status: 'expired' };
+    if (closeNote !== undefined) patch.close_note = closeNote;
     const { data, error } = await this.db
-      .from('watching').update({ status: 'expired' }).eq('id', id).select().single();
+      .from('watching').update(patch).eq('id', id).select().single();
     if (error) throw new Error(`expireWatching failed: ${error.message}`);
     return data as WatchingRow;
   }

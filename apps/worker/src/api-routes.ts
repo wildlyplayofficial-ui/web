@@ -289,8 +289,9 @@ export async function handleApiRoute(
   if (url === '/api/unwatch') {
     const watchingId = typeof payload.watchingId === 'string' ? payload.watchingId : '';
     if (!watchingId) { json(res, 400, { ok: false, error: 'watchingId required' }); return true; }
+    const note = typeof payload.note === 'string' ? payload.note : undefined;
     try {
-      const row = await deps.store.expireWatching(watchingId);
+      const row = await deps.store.expireWatching(watchingId, note);
       log.info(`api: expired watching ${row.id}`);
       void deps.revalidate(['watching']);
       json(res, 200, { ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}` });

@@ -117,6 +117,8 @@ export interface WatchingRow {
   buzz_history: BuzzSnapshot[];
   /** Tiered Picks firewall (§12): who this watching entry belongs to. Optional — defaults to "curator". */
   author?: Author;
+  /** Public closing line when a thread resolves without a pick (web-only, no TG push). */
+  close_note: string | null;
 }
 
 /** Crowd poll (decision #5, 11/6): per-pick Follow / Fade / Skip tallies. */

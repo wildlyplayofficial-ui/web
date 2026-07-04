@@ -17,6 +17,7 @@ function activeWatching(overrides: Partial<WatchingRow> = {}): WatchingRow {
     pick_id: null,
     buzz_history: [],
     author: 'curator',
+    close_note: null,
     ...overrides,
   };
 }

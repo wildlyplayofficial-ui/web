@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryStore, type NewPick, type NewPost, type PickAuthor } from './store';
+import { MemoryStore, type NewPick, type NewPost, type NewWatching, type PickAuthor } from './store';
+
+function watching(overrides: Partial<NewWatching> = {}): NewWatching {
+  return {
+    home_team: 'Mexico',
+    away_team: 'South Africa',
+    league: 'FIFA World Cup 2026 — Group A',
+    kickoff_utc: '2026-06-11T19:00:00.000Z',
+    note: 'Mexico dominant at home, visitors missing key players',
+    status: 'active',
+    pick_id: null,
+    ...overrides,
+  };
+}
 
 function pick(author: PickAuthor, status: NewPick['status'], overrides: Partial<NewPick> = {}): NewPick {
   return {
@@ -105,5 +118,27 @@ describe('MemoryStore.countNoPlayByAuthor (§12.A item 3)', () => {
 
     expect(await store.countNoPlayByAuthor('curator')).toBe(2);
     expect(await store.countNoPlayByAuthor('scout')).toBe(1);
+  });
+});
+
+describe('MemoryStore.expireWatching — closing note (Nick 4/7 item ①)', () => {
+  it('expires without a note by default', async () => {
+    const store = new MemoryStore();
+    const row = await store.insertWatching(watching());
+
+    const expired = await store.expireWatching(row.id);
+
+    expect(expired.status).toBe('expired');
+    expect(expired.close_note).toBeNull();
+  });
+
+  it('sets close_note when provided', async () => {
+    const store = new MemoryStore();
+    const row = await store.insertWatching(watching());
+
+    const expired = await store.expireWatching(row.id, 'Might, not is — turned out: not.');
+
+    expect(expired.status).toBe('expired');
+    expect(expired.close_note).toBe('Might, not is — turned out: not.');
   });
 });

@@ -101,6 +101,12 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
         </p>
       )}
 
+      {item.close_note && (
+        <p className={isScout ? "mt-2 text-sm italic text-scout/90" : "mt-2 text-sm italic text-brand/90"}>
+          {item.close_note}
+        </p>
+      )}
+
       {item.author === "scout" && (
         <p className="mt-2 text-xs text-muted/80">{dict.watching.disclosureScout}</p>
       )}
