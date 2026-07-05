@@ -139,6 +139,7 @@ export default async function StatsPage({ params }: Props) {
   const scoutSummary = scoutPicks.length > 0 ? summarize(scoutPicks) : null;
   const scoutByLeague = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => p.league) : [];
   const scoutByMarket = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => marketLabels[p.market]) : [];
+  const scoutPoints = scoutPicks.length > 0 ? cumulativeUnits(scoutPicks) : [];
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
@@ -204,6 +205,13 @@ export default async function StatsPage({ params }: Props) {
             <StatBlock label={dict.stats.roi} value={formatPct(scoutSummary.roi)} className={plClass(scoutSummary.roi)} />
             <StatBlock label={dict.stats.avgClv} value={formatPct(scoutSummary.avgClv)} className={plClass(scoutSummary.avgClv)} />
           </div>
+
+          {scoutPoints.length > 0 && (
+            <>
+              <h3 className="mt-8 font-display text-lg font-semibold text-[#6b9e9e]">Cumulative Units P/L</h3>
+              <UnitsChart points={scoutPoints} lang={lang} />
+            </>
+          )}
 
           <StatsTable heading={`${dict.stats.byLeague}`} firstCol={dict.stats.league} rows={scoutByLeague} dict={dict} />
           <StatsTable heading={`${dict.stats.byMarket}`} firstCol={dict.stats.market} rows={scoutByMarket} dict={dict} />
