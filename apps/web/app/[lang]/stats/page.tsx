@@ -127,7 +127,8 @@ function UnitsChart({ points, lang }: { points: { date: string; total: number }[
 export default async function StatsPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const picks = await getSettledPicks();
+  const allPicks = await getSettledPicks();
+  const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
 
   const summary = summarize(picks);
   const byLeague = groupStats(picks, (p) => p.league);
