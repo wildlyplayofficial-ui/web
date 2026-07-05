@@ -37,12 +37,14 @@ export default async function PlayArchive({ params, searchParams }: Props) {
     ? sp.month
     : undefined;
 
-  const [picks, record, months] = await Promise.all([
+  const [allPicks, record, months] = await Promise.all([
     getSettledPicks(month),
     getTrackRecord(),
     getArchiveMonths(),
   ]);
-  const translations = await getThesisTranslations(picks.map((p) => p.id));
+  const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
+  const scoutPicks = allPicks.filter((p) => p.author === "scout");
+  const translations = await getThesisTranslations(allPicks.map((p) => p.id));
 
   return (
     <div className="mx-auto max-w-[1100px] px-5">
@@ -123,6 +125,31 @@ export default async function PlayArchive({ params, searchParams }: Props) {
           </div>
         )}
       </section>
+
+      {/* ── Scout section — hidden when 0 settled picks (§7.1 rule 2) ── */}
+      {scoutPicks.length > 0 && (
+        <section className="mt-14 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
+          <div className="text-center">
+            <h2 className="font-display text-2xl font-bold text-[#6b9e9e]">
+              Alternative Picks &middot; The Scout
+            </h2>
+            <p className="mt-2 text-xs text-muted">
+              Fictional, AI-operated WildlyPlay persona &middot; lower confidence &middot; separate ledger
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-5">
+            {scoutPicks.map((pick) => (
+              <PickCard
+                key={pick.id}
+                pick={pick}
+                lang={lang}
+                thesisText={translations[pick.id]?.[lang] ?? pick.thesis}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
