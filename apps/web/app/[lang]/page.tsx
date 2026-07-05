@@ -48,15 +48,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DailyBoard({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [picks, record, settledPicks, watching] = await Promise.all([
+  const [allPicks, record, settledPicks, watching, scoutRecord] = await Promise.all([
     getTodaysPicks(),
     getTrackRecordForAuthor("curator"),
     getSettledPicks(),
     getActiveWatching(),
+    getTrackRecordForAuthor("scout"),
   ]);
+  // §7.1: split picks by author — curator picks go to Daily Board, scout picks to Scout section
+  const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
+  const scoutPicks = allPicks.filter((p) => p.author === "scout");
   const [votes, translations] = await Promise.all([
-    getVoteCounts(picks.map((p) => p.id)),
-    getThesisTranslations(picks.map((p) => p.id)),
+    getVoteCounts(allPicks.map((p) => p.id)),
+    getThesisTranslations(allPicks.map((p) => p.id)),
   ]);
 
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
@@ -116,7 +120,7 @@ export default async function DailyBoard({ params }: Props) {
           <p className="mt-4 text-base text-muted sm:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
             <p className="mt-6 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm">
-              <span className="text-muted">{dict.archive.record}</span>
+              <span className="text-muted">The Curator</span>
               <span className="font-semibold text-ink">
                 {record.wins}-{record.losses}-{record.pushes}
               </span>
@@ -203,6 +207,50 @@ export default async function DailyBoard({ params }: Props) {
           </div>
         )}
       </section>
+
+      {/* §7.1 Scout section — hidden when scout has 0 settled picks (pre-launch rule) */}
+      {scoutRecord.settled > 0 && (
+        <section className="mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-xl font-bold text-[#6b9e9e]">
+              Alternative Picks &middot; The Scout 🤖
+            </h2>
+            <span className="rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-[#6b9e9e]">
+              Lower Confidence
+            </span>
+          </div>
+
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
+            <span className="text-muted">The Scout</span>
+            <span className="font-semibold text-ink">
+              {scoutRecord.wins}-{scoutRecord.losses}-{scoutRecord.pushes}
+            </span>
+            <span className={`font-semibold ${scoutRecord.units_pl >= 0 ? "text-brand" : "text-loss"}`}>
+              {formatUnits(scoutRecord.units_pl)}
+            </span>
+          </p>
+
+          {scoutPicks.length > 0 ? (
+            <div className="mt-5 flex flex-col gap-5">
+              {scoutPicks.map((pick) => (
+                <PickCard
+                  key={pick.id}
+                  pick={pick}
+                  lang={lang}
+                  votes={votes[pick.id]}
+                  thesisText={translations[pick.id]?.[lang] ?? pick.thesis}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-5 text-sm text-muted">The Scout — no Alt play today.</p>
+          )}
+
+          <p className="mt-5 text-xs text-muted">
+            The Scout — a fictional, AI-operated WildlyPlay persona &middot; lower confidence &middot; separate ledger
+          </p>
+        </section>
+      )}
 
       <WatchingTeaser items={watching} lang={lang} />
 
