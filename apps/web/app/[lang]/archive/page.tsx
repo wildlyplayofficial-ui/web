@@ -142,6 +142,18 @@ export default async function PlayArchive({ params, searchParams }: Props) {
             </p>
           </div>
 
+          <div className="mt-4 flex justify-center">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
+              <span className="text-muted">The Scout</span>
+              <span className="font-semibold text-ink">
+                {scoutPicks.filter((p) => p.status === "won").length}-{scoutPicks.filter((p) => p.status === "lost").length}-{scoutPicks.filter((p) => p.status === "push").length}
+              </span>
+              <span className={`font-semibold ${scoutPicks.reduce((s, p) => s + (p.units_pl ?? 0), 0) >= 0 ? "text-brand" : "text-loss"}`}>
+                {formatUnits(scoutPicks.reduce((s, p) => s + (p.units_pl ?? 0), 0))}
+              </span>
+            </p>
+          </div>
+
           <div className="mt-6 flex flex-col gap-5">
             {scoutPicks.map((pick) => (
               <PickCard
