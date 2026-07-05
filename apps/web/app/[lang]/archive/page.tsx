@@ -53,6 +53,34 @@ export default async function PlayArchive({ params, searchParams }: Props) {
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.archive.title}</h1>
         <p className="mt-3 text-muted">{dict.archive.subtitle}</p>
         <p className="mt-2 text-xs text-muted">{dict.archive.unitsNote}</p>
+
+      {months.length > 0 && (
+        <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Filter by month">
+          <Link
+            href={monthHref(null, lang)}
+            className={`rounded-full border px-4 py-1.5 font-display text-sm transition-colors ${
+              !month
+                ? "border-brand/40 bg-brand-dim text-brand"
+                : "border-line bg-card text-muted hover:text-ink"
+            }`}
+          >
+            {dict.archive.allMonths}
+          </Link>
+          {months.map((m) => (
+            <Link
+              key={m}
+              href={monthHref(m, lang)}
+              className={`rounded-full border px-4 py-1.5 font-display text-sm transition-colors ${
+                month === m
+                  ? "border-brand/40 bg-brand-dim text-brand"
+                  : "border-line bg-card text-muted hover:text-ink"
+              }`}
+            >
+              {formatMonth(m, lang)}
+            </Link>
+          ))}
+        </nav>
+      )}
       </section>
 
       <div className="mb-6 text-center">
@@ -82,34 +110,6 @@ export default async function PlayArchive({ params, searchParams }: Props) {
           </p>
         </div>
       </div>
-
-      {months.length > 0 && (
-        <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Filter by month">
-          <Link
-            href={monthHref(null, lang)}
-            className={`rounded-full border px-4 py-1.5 font-display text-sm transition-colors ${
-              !month
-                ? "border-brand/40 bg-brand-dim text-brand"
-                : "border-line bg-card text-muted hover:text-ink"
-            }`}
-          >
-            {dict.archive.allMonths}
-          </Link>
-          {months.map((m) => (
-            <Link
-              key={m}
-              href={monthHref(m, lang)}
-              className={`rounded-full border px-4 py-1.5 font-display text-sm transition-colors ${
-                month === m
-                  ? "border-brand/40 bg-brand-dim text-brand"
-                  : "border-line bg-card text-muted hover:text-ink"
-              }`}
-            >
-              {formatMonth(m, lang)}
-            </Link>
-          ))}
-        </nav>
-      )}
 
       <section className="mt-8 pb-8">
         {picks.length === 0 ? (
