@@ -54,6 +54,11 @@ export default async function PlayArchive({ params, searchParams }: Props) {
         <p className="mt-3 text-muted">{dict.archive.subtitle}</p>
       </section>
 
+      <div className="mb-6 text-center">
+        <h2 className="font-display text-2xl font-bold text-brand">Main Picks &middot; The Curator</h2>
+        <p className="mt-2 text-xs text-muted">Real analyst &middot; highest conviction &middot; primary ledger</p>
+      </div>
+
       {/* Sticky summary: W-L-P badge record AND real units P/L side by side (decision #2) */}
       <div className="sticky top-16 z-40 -mx-5 border-y border-line bg-bg/90 px-5 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-center gap-x-8 gap-y-2">
