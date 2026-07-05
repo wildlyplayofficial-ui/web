@@ -213,10 +213,10 @@ export default async function DailyBoard({ params }: Props) {
         <section className="mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display text-xl font-bold text-[#6b9e9e]">
-              Alternative Picks &middot; The Scout 🤖
+              {dict.scout.heading} 🤖
             </h2>
             <span className="rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-[#6b9e9e]">
-              Lower Confidence
+              {dict.scout.badge}
             </span>
           </div>
 
@@ -243,11 +243,11 @@ export default async function DailyBoard({ params }: Props) {
               ))}
             </div>
           ) : (
-            <p className="mt-5 text-sm text-muted">The Scout — no Alt play today.</p>
+            <p className="mt-5 text-sm text-muted">{dict.scout.noPlay}</p>
           )}
 
           <p className="mt-5 text-xs text-muted">
-            The Scout — a fictional, AI-operated WildlyPlay persona &middot; lower confidence &middot; separate ledger
+            {dict.scout.disclosure}
           </p>
         </section>
       )}

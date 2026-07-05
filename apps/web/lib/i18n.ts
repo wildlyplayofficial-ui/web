@@ -205,6 +205,12 @@ export interface Dict {
     redCard: string;
     substitution: string;
   };
+  scout: {
+    heading: string;
+    badge: string;
+    noPlay: string;
+    disclosure: string;
+  };
   watching: {
     title: string;
     titlePast: string;
@@ -412,6 +418,12 @@ const en: Dict = {
     yellowCard: "Yellow Card",
     redCard: "Red Card",
     substitution: "Sub",
+  },
+  scout: {
+    heading: "Alternative Picks \u00b7 The Scout",
+    badge: "Lower Confidence",
+    noPlay: "The Scout \u2014 no Alt play today.",
+    disclosure: "The Scout \u2014 a fictional, AI-operated WildlyPlay persona \u00b7 lower confidence \u00b7 separate ledger",
   },
   watching: {
     title: "The Curator is watching",
@@ -621,6 +633,12 @@ const vi: Dict = {
     redCard: "Thẻ đỏ",
     substitution: "Thay người",
   },
+  scout: {
+    heading: "K\u00e8o Ph\u1ee5 \u00b7 The Scout",
+    badge: "\u0110\u1ed9 tin th\u1ea5p h\u01a1n",
+    noPlay: "The Scout \u2014 kh\u00f4ng c\u00f3 k\u00e8o ph\u1ee5 h\u00f4m nay.",
+    disclosure: "The Scout \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a WildlyPlay \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
+  },
   watching: {
     title: "Curator \u0111ang theo d\u00f5i",
     titlePast: "Curator \u0111\u00e3 theo d\u00f5i",
@@ -828,6 +846,12 @@ const th: Dict = {
     yellowCard: "ใบเหลือง",
     redCard: "ใบแดง",
     substitution: "เปลี่ยนตัว",
+  },
+  scout: {
+    heading: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07 \u00b7 The Scout",
+    badge: "\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32",
+    noPlay: "The Scout \u2014 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49",
+    disclosure: "The Scout \u2014 \u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e21\u0e21\u0e15\u0e34 \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e02\u0e2d\u0e07 WildlyPlay \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u00b7 \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01",
   },
   watching: {
     title: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
@@ -1038,6 +1062,12 @@ const es: Dict = {
     yellowCard: "Tarjeta amarilla",
     redCard: "Tarjeta roja",
     substitution: "Cambio",
+  },
+  scout: {
+    heading: "Picks Alternativos \u00b7 The Scout",
+    badge: "Menor Confianza",
+    noPlay: "The Scout \u2014 sin pick alternativo hoy.",
+    disclosure: "The Scout \u2014 personaje ficticio, operado por IA, de WildlyPlay \u00b7 menor confianza \u00b7 registro separado",
   },
   watching: {
     title: "El Curator est\u00e1 observando",
