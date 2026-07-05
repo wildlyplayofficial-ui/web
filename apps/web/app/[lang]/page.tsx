@@ -60,12 +60,14 @@ export default async function DailyBoard({ params }: Props) {
   ]);
 
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
+  // §7.1: hero form strip + units = curator-only (never blend Scout results)
+  const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
   const cutoff30 = Date.now() - 30 * 86_400_000;
-  const form = settledPicks
+  const form = curatorSettled
     .filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30)
     .reverse()
     .slice(-15);
-  const units30 = unitsLast30(settledPicks);
+  const units30 = unitsLast30(curatorSettled);
   const formLetter: Record<string, string> = { won: "W", lost: "L", push: "P" };
   const formClass: Record<string, string> = {
     won: "border-brand/30 bg-brand-dim text-brand",
