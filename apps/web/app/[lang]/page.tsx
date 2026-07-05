@@ -12,7 +12,7 @@ import {
   getSettledPicks,
   getThesisTranslations,
   getTodaysPicks,
-  getTrackRecord,
+  getTrackRecordForAuthor,
   getVoteCounts,
 } from "@/lib/data";
 import { formatBoardDate, formatUnits } from "@/lib/format";
@@ -50,7 +50,7 @@ export default async function DailyBoard({ params }: Props) {
   const dict = getDict(lang);
   const [picks, record, settledPicks, watching] = await Promise.all([
     getTodaysPicks(),
-    getTrackRecord(),
+    getTrackRecordForAuthor("curator"),
     getSettledPicks(),
     getActiveWatching(),
   ]);

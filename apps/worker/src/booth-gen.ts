@@ -32,6 +32,8 @@ interface PickContext {
   stake: number;
   thesis: string;
   status: string;
+  /** Tiered Picks firewall: who made this pick — Booth must attribute correctly. */
+  author: 'curator' | 'scout';
 }
 
 interface EventContext {
@@ -54,7 +56,7 @@ Voices:
 🟢 SONNY (Strategist, optimist): reads momentum/upside/what's still open. Warm, controlled-enthusiasm, lightly self-deprecating about his optimism; concedes cleanly when momentum doesn't convert. ROTATE openers — use a DIFFERENT one each time: "Glass half-full here…", "What I'm seeing is…", "Hold on, there's still…", "Don't bury this lot yet…". NEVER repeat the same opener or phrase across events. When mentioning time remaining, CALCULATE from the event minute (e.g. event at 69' = ~21 minutes left, NOT "12 minutes").
 🔴 COLE (Skeptic, risk/price realist): reads what the board already priced; calls coin-flips; enforces no-hindsight. Dry, deadpan, NOT a doomer; concedes when a real verified angle exists. ROTATE tics — vary between: "Board priced that already.", "That's variance, not edge.", "Ask again at the 90th.", deadpan one-liners. NEVER repeat the same tic across events.
 Soul = two-way concede + self-awareness → humour emerges from real tension, never forced jokes.
-If a Curator pick is provided: tie the banter to the Curator's pre-match READ (call it "the read" or "the lean", NOT "thesis" — that's a Curator-formal term, the Booth is casual). Pick winning → honest, no victory-lap, stay HUMBLE (Cole will poke any victory-lap). Pick losing → honest, no spin/double-down (Cole enforces). NEVER re-tip.
+If a pick is provided: tie the banter to that persona's pre-match READ (call it "the read" or "the lean", NOT "thesis" — that's a formal term, the Booth is casual). Refer to the persona by the name given in the PICK_AUTHOR field — "the Curator" or "the Scout" — NEVER hardcode one name. Pick winning → honest, no victory-lap, stay HUMBLE (Cole will poke any victory-lap). Pick losing → honest, no spin/double-down (Cole enforces). NEVER re-tip.
 BANNED WORDS (do not use even in negation — rephrase instead): lock, guaranteed, smash, banker, sure thing, slam.
 Output: a 2–3 line exchange. ONE analyst LEADS (per lead_voice) + ONE response, then STOP. Each line ≤ ~25 words. Write in ENGLISH — this is the SOURCE generation. Return JSON: {"lines":[{"who":"sonny|cole","text":"..."}]}`;
 
@@ -128,11 +130,63 @@ function describeEvent(event: EventContext): string {
   }
 }
 
+/** Compute a human-readable line-state so the model doesn't have to derive quarter-line math.
+ *  e.g. "Over 2.5 with total 2 → needs 1 more goal to WIN, currently LOSING" */
+function computeLineState(pick: PickContext, score: { home: number; away: number }): string {
+  const total = score.home + score.away;
+  const sel = pick.selection.toLowerCase();
+
+  if (pick.market === 'ou' && pick.line != null) {
+    const line = pick.line;
+    if (sel.startsWith('over')) {
+      if (total > line) return `Over ${line}: total ${total} → currently WINNING`;
+      if (total === Math.ceil(line)) return `Over ${line}: total ${total} → needs ${Math.ceil(line) - total + 1} more goal(s) to clear the line`;
+      return `Over ${line}: total ${total} → needs ${Math.ceil(line) - total + 1} more goal(s), currently LOSING`;
+    }
+    if (sel.startsWith('under')) {
+      if (total < line) return `Under ${line}: total ${total} → currently WINNING, can afford ${Math.floor(line) - total} more goal(s)`;
+      return `Under ${line}: total ${total} → currently LOSING (line breached)`;
+    }
+  }
+
+  if (pick.market === 'ah' && pick.line != null) {
+    const margin = sel.includes('home') || sel.includes(score.home.toString())
+      ? score.home - score.away
+      : score.away - score.home;
+    const adjusted = margin + pick.line;
+    if (adjusted > 0) return `AH ${pick.line}: adjusted margin ${adjusted > 0 ? '+' : ''}${adjusted} → currently WINNING`;
+    if (adjusted === 0) return `AH ${pick.line}: adjusted margin 0 → currently PUSH`;
+    return `AH ${pick.line}: adjusted margin ${adjusted} → currently LOSING`;
+  }
+
+  if (pick.market === '1x2') {
+    const result = score.home > score.away ? 'home' : score.home < score.away ? 'away' : 'draw';
+    const winning = (sel === 'draw' || sel === 'x') ? result === 'draw'
+      : sel.includes('home') ? result === 'home'
+      : result === 'away';
+    return `1X2 "${pick.selection}": score ${score.home}-${score.away} → currently ${winning ? 'WINNING' : 'LOSING'}`;
+  }
+
+  if (pick.market === 'btts') {
+    const both = score.home > 0 && score.away > 0;
+    const winning = (sel === 'yes') === both;
+    return `BTTS ${sel}: ${score.home}-${score.away} → currently ${winning ? 'WINNING' : 'LOSING'}`;
+  }
+
+  return `${pick.selection} @ ${pick.odds}: score ${score.home}-${score.away}`;
+}
+
+const PERSONA_LABEL: Record<string, string> = { curator: 'the Curator', scout: 'the Scout' };
+
 function buildUserPrompt(event: EventContext, pick: PickContext, thesis: string, leadVoice: 'sonny' | 'cole'): string {
   const shots = FEW_SHOTS[event.type] ?? '';
+  const persona = PERSONA_LABEL[pick.author] ?? 'the Curator';
+  const lineState = computeLineState(pick, event.score);
   return `${shots ? shots + '\n\n' : ''}MATCH: ${event.homeTeam} vs ${event.awayTeam} (${event.minute}', score ${event.score.home}-${event.score.away})
-PRE-MATCH THESIS (Curator): ${thesis}
+PICK_AUTHOR: ${persona}
+PRE-MATCH READ (${persona}): ${thesis}
 PICK: ${pick.selection} @ ${pick.odds} (${pick.market}, ${pick.stake}u)
+LINE STATE: ${lineState}
 EVENT (feed-confirmed): ${describeEvent(event)}
 LEAD VOICE: ${leadVoice}
 Write the Booth exchange now.`;

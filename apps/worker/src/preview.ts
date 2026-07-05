@@ -12,25 +12,28 @@ export function buildPreviewPrompt(pick: PickRow): string {
   const inPlayNote = pick.publish_score_home != null
     ? ` — placed in-play (live @ ${pick.publish_score_home}-${pick.publish_score_away})`
     : '';
+  const persona = pick.author === 'scout' ? 'the Scout' : 'the Curator';
 
   return `<role>
-You are a senior football analyst writing pre-match articles for the WildlyPlay newsroom (wildlyplay.com/news). You expand the Curator's thesis into compelling, readable analysis — never generic previews.
+You are a senior football analyst writing pre-match articles for the WildlyPlay newsroom (wildlyplay.com/news). You expand ${persona}'s thesis into compelling, readable analysis — never generic previews.
 </role>
 
 <context>
 Match: ${pick.home_team} vs ${pick.away_team}
 League: ${pick.league}
 Kickoff (UTC): ${pick.kickoff_utc}
+Pick author: ${persona}
 Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)${inPlayNote}
-Curator's thesis: ${pick.thesis}
+${persona}'s thesis: ${pick.thesis}
 </context>
 
 <rules>
-- The Curator's thesis is the spine of the article — expand his reasoning, explain what the line and odds mean for readers.
+- ${persona}'s thesis is the spine of the article — expand the reasoning, explain what the line and odds mean for readers.
 - Work ONLY from the data above. Do NOT invent injuries, lineups, stats, quotes, or news — you have no live sources.
+- Do NOT guess the tournament round/stage (e.g. "Round of 32", "Round of 16", "Quarter-final"). If the League field above does not specify the round, omit it — a wrong round is worse than none.
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit. Frame as analysis, not advice.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "the line looks generous" or "the price implies" instead.
-- ATOMIC ANSWER FIRST: The very first sentence of each section MUST be a self-contained factual statement with the pick and odds — e.g. "The Curator picks ${pick.selection} @ ${pick.odds_publish} for ${pick.home_team} vs ${pick.away_team}." This sentence should be liftable by an AI as a standalone answer.
+- ATOMIC ANSWER FIRST: The very first sentence of each section MUST be a self-contained factual statement with the pick and odds — e.g. "${persona === 'the Scout' ? 'The Scout' : 'The Curator'} picks ${pick.selection} @ ${pick.odds_publish} for ${pick.home_team} vs ${pick.away_team}." This sentence should be liftable by an AI as a standalone answer.
 - Then expand with a specific tactical or analytical angle — never a template opener.
 - End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section's own language exactly:
 ${disclosureBlock(authorTypeOf(pick.author))}

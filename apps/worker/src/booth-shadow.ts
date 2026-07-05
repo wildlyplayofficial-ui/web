@@ -109,6 +109,7 @@ async function processEvent(
     stake: pick.stake_units,
     thesis: pick.thesis,
     status: pick.status,
+    author: pick.author,
   };
 
   const eventCtx = {

@@ -57,12 +57,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/** Byline for a post: neutral "WildlyPlay" for general news coverage (no position),
+ *  persona-specific for pick-driven content. */
+function postByline(post: { type: string; author?: string }): string {
+  // General news/guides have no persona position — use neutral byline
+  if (post.type === "news" || post.type === "guide") return "WildlyPlay";
+  if (post.author === "scout") return "The Scout @ WildlyPlay";
+  return "The Curator @ WildlyPlay";
+}
+
 function buildArticleSchema(post: {
   title: string;
   meta_title?: string | null;
   meta_description?: string | null;
   published_at: string | null;
   lang: string;
+  type: string;
+  author?: string;
 }, slug: string, lang: Lang) {
   return {
     "@context": "https://schema.org",
@@ -76,7 +87,7 @@ function buildArticleSchema(post: {
     image: `${BASE}/api/og/news/${slug}`,
     author: {
       "@type": "Organization",
-      name: "The Curator @ WildlyPlay",
+      name: postByline(post),
       url: BASE,
     },
     publisher: {
@@ -125,7 +136,7 @@ export default async function NewsPost({ params }: Props) {
         {published && (
           <p className="mt-3 text-sm text-muted">
             <time dateTime={post.published_at ?? undefined}>{published}</time>
-            {post.author === "scout" ? " \u00b7 The Scout @ WildlyPlay" : " \u00b7 The Curator @ WildlyPlay"}
+            {" \u00b7 "}{postByline(post)}
           </p>
         )}
       </header>

@@ -50,6 +50,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     '',
     'Rules:',
     '- Work ONLY from the data above plus your general football knowledge — do NOT invent specific injuries, quotes, transfer rumors, or match events you cannot verify.',
+    '- Do NOT guess the tournament round/stage (e.g. "Round of 32", "Round of 16", "Quarter-final"). If the League field above does not specify the round, omit it entirely — a wrong round is worse than none.',
     '- Neutral and informative tone — this is editorial journalism, NOT a betting recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
     '- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section\'s own language exactly:',

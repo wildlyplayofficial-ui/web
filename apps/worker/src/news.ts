@@ -141,6 +141,7 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
     '',
     'Rules:',
     '- Work ONLY from the data above — do not invent injuries, quotes, stats or events you cannot verify.',
+    '- Do NOT guess the tournament round/stage (e.g. "Round of 32", "Round of 16", "Quarter-final"). If the League field above does not specify the round, omit it — a wrong round is worse than none.',
     '- Do NOT make claims about team form, historical results, head-to-head, injuries, lineups or player condition UNLESS explicitly provided in the data above. If you lack data for a point, omit it — do not speculate.',
     topic.has_pick
       ? '- This is a PICK ANALYSIS — discuss why The Curator chose this selection, the odds value, and what to watch for.'
