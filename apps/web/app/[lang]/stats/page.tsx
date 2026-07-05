@@ -149,7 +149,10 @@ export default async function StatsPage({ params }: Props) {
         <p className="mt-3 text-muted">{dict.stats.subtitle}</p>
       </section>
 
-      <h2 className="mb-4 font-display text-2xl font-bold">The Curator <span className="text-sm font-normal text-muted">(real analyst)</span></h2>
+      <div className="mb-6 text-center">
+        <h2 className="font-display text-2xl font-bold text-brand">Main Picks &middot; The Curator</h2>
+        <p className="mt-2 text-xs text-muted">Real analyst &middot; highest conviction &middot; primary ledger</p>
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         <StatBlock
           label={dict.archive.record}
