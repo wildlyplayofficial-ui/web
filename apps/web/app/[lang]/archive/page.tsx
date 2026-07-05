@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PickCard } from "@/components/pick-card";
-import { getArchiveMonths, getSettledPicks, getThesisTranslations, getTrackRecord } from "@/lib/data";
+import { getArchiveMonths, getSettledPicks, getThesisTranslations, getTrackRecordForAuthor } from "@/lib/data";
 import { formatMonth, formatUnits } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -39,7 +39,7 @@ export default async function PlayArchive({ params, searchParams }: Props) {
 
   const [allPicks, record, months] = await Promise.all([
     getSettledPicks(month),
-    getTrackRecord(),
+    getTrackRecordForAuthor("curator"),
     getArchiveMonths(),
   ]);
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
