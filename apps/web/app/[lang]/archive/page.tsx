@@ -52,6 +52,7 @@ export default async function PlayArchive({ params, searchParams }: Props) {
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.archive.title}</h1>
         <p className="mt-3 text-muted">{dict.archive.subtitle}</p>
+        <p className="mt-2 text-xs text-muted">{dict.archive.unitsNote}</p>
       </section>
 
       <div className="mb-6 text-center">
@@ -81,8 +82,6 @@ export default async function PlayArchive({ params, searchParams }: Props) {
           </p>
         </div>
       </div>
-
-      <p className="mt-4 text-center text-xs text-muted">{dict.archive.unitsNote}</p>
 
       {months.length > 0 && (
         <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Filter by month">
