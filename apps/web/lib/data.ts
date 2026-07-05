@@ -162,6 +162,43 @@ export const getTrackRecord = unstable_cache(getTrackRecordImpl, ["track-record"
   tags: ["picks"],
 });
 
+/** Track record filtered by author (Bug B: Scout OG card must not show Curator record). */
+async function getTrackRecordForAuthorImpl(author: string): Promise<TrackRecord> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    const settled = mockPicks
+      .filter((p) => (p.author ?? "curator") === author)
+      .filter((p) => (SETTLED as readonly string[]).includes(p.status));
+    return {
+      wins: settled.filter((p) => p.status === "won").length,
+      losses: settled.filter((p) => p.status === "lost").length,
+      pushes: settled.filter((p) => p.status === "push").length,
+      units_pl: Math.round(settled.reduce((sum, p) => sum + (p.units_pl ?? 0), 0) * 100) / 100,
+      settled: settled.length,
+    };
+  }
+  const { data, error } = await supabase
+    .from("picks")
+    .select("status, units_pl")
+    .eq("author", author)
+    .in("status", [...SETTLED]);
+  if (error) throw new Error(`getTrackRecordForAuthor: ${error.message}`);
+  const rows = (data ?? []) as { status: string; units_pl: number | null }[];
+  return {
+    wins: rows.filter((r) => r.status === "won").length,
+    losses: rows.filter((r) => r.status === "lost").length,
+    pushes: rows.filter((r) => r.status === "push").length,
+    units_pl: Math.round(rows.reduce((sum, r) => sum + (r.units_pl ?? 0), 0) * 100) / 100,
+    settled: rows.length,
+  };
+}
+
+export const getTrackRecordForAuthor = unstable_cache(
+  getTrackRecordForAuthorImpl,
+  ["track-record-author"],
+  { revalidate: 900, tags: ["picks"] },
+);
+
 /** Published posts for a language, newest first. Falls back to EN when a VI version is missing. */
 async function getPostsImpl(lang: Lang): Promise<Post[]> {
   const supabase = getSupabase();

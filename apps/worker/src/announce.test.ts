@@ -68,7 +68,7 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
   it('leads with the badge, pick block, FT score and units', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const text = formatResultMessage(pick);
-    expect(text).toContain('\u2705 WIN | Mexico -1.25 -1.25 @ 2.05 \u2192 FT 3-0 \u00b7 +1.05u');
+    expect(text).toContain('\u2705 WIN | Mexico -1.25 @ 2.05 \u2192 FT 3-0 \u00b7 +1.05u');
     expect(text).toContain('Not financial advice');
     expect(text).not.toContain('Record:');
   });

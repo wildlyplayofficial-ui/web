@@ -60,8 +60,8 @@ describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () =
     const pick = await store.insertPick(publishedPick());
     const msg = formatPickMessage(pick, SITE);
     expect(msg).toContain('\u{1F3AF} Mexico vs South Africa \u00b7 FIFA World Cup 2026 \u2014 Group A \u00b7 KO 19:00 UTC');
-    expect(msg).toContain('\u{1F449} Mexico -1.25 -1.25 @ 2.05 \u00b7 1u');
-    expect(msg).toContain(`${SITE}/play/${pick.id}`);
+    expect(msg).toContain('\u{1F449} Mexico -1.25 @ 2.05 \u00b7 1u');
+    expect(msg).toContain(`${SITE}/play/mexico-vs-south-africa-mexico-1-25-2026-06-11`);
     expect(msg).toContain('Human-picked \u00b7 Odds at publish \u00b7 Not financial advice');
     expect(msg).not.toContain('test thesis'); // R2: card is scannable, thesis lives on the play page
     expect(msg).not.toContain('sure win');
@@ -81,7 +81,7 @@ describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () =
   it('shows the confidence line with the against-the-market cue (R3)', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick({ confidence: 'high' }));
-    expect(formatPickMessage(pick, SITE)).toContain('\u{1F449} Mexico -1.25 -1.25 @ 2.05 \u00b7 1u \u00b7 HIGH');
+    expect(formatPickMessage(pick, SITE)).toContain('\u{1F449} Mexico -1.25 @ 2.05 \u00b7 1u \u00b7 HIGH');
     expect(formatPickMessage(pick, SITE, { againstMarket: true }))
       .toContain('\u00b7 HIGH \u00b7 \u26A0\uFE0F against market');
   });

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getPick, getTrackRecord } from "@/lib/data";
+import { getPick, getTrackRecordForAuthor } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { formatKickoff, formatOdds, formatUnits } from "@/lib/format";
 
@@ -51,7 +51,10 @@ export async function GET(
   }
 
   const published = pick.status === "published";
-  const record = published ? await getTrackRecord() : null;
+  const author = pick.author ?? "curator";
+  const rawRecord = published ? await getTrackRecordForAuthor(author) : null;
+  // Bug B fix: hide record line entirely when author has zero settled picks (e.g. new Scout).
+  const record = rawRecord && rawRecord.settled > 0 ? rawRecord : null;
   const badge = published
     ? BADGES[new Date(pick.kickoff_utc) <= new Date() ? "live" : "upcoming"]
     : (pick.raw_outcome && OUTCOME_BADGES[pick.raw_outcome]) ?? BADGES[pick.status];

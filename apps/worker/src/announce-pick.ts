@@ -4,7 +4,7 @@
  * A failed announcement must NEVER break the pick publication.
  */
 import type { Api } from 'grammy';
-import type { PickRow, Store } from './store';
+import { authorTypeOf, type PickRow, type Store } from './store';
 import { log } from './log';
 
 export interface AnnouncePickDeps {
@@ -23,14 +23,48 @@ export interface PickCardExtras {
   againstMarket?: boolean;
 }
 
+/** Legacy constant — Curator footer only. Used by digest.ts and announce.ts for non-pick-specific cards. */
 export const CARD_FOOTER = '\u2014 Human-picked \u00b7 Odds at publish \u00b7 Not financial advice';
+
+/** Disclosure footer keyed by author_type (Bug A fix: Scout picks must say AI-picked). */
+export function cardFooter(pick: PickRow): string {
+  const at = authorTypeOf(pick.author);
+  return at === 'fictional_ai'
+    ? '\u2014 AI-picked \u00b7 Not a real person \u00b7 Odds at publish \u00b7 Not financial advice'
+    : '\u2014 Human-picked \u00b7 Odds at publish \u00b7 Not financial advice';
+}
 
 const CONFIDENCE_LABELS: Record<string, string> = { low: 'LOW', medium: 'MED', high: 'HIGH' };
 
-/** "selection line @ odds" pick block (R2), e.g. "Switzerland -0.25 @ 1.70". */
+/** SEO slug for outbound TG links (Bug D: prefer slug over UUID). Mirrors web buildPlaySlug. */
+function slugify(s: string): string {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+function buildPickSlug(pick: PickRow): string {
+  const date = pick.kickoff_utc.slice(0, 10);
+  const homeSl = slugify(pick.home_team);
+  const awaySl = slugify(pick.away_team);
+  let selSl = slugify(pick.selection);
+  if (selSl === homeSl) selSl = 'home';
+  else if (selSl === awaySl) selSl = 'away';
+  return `${homeSl}-vs-${awaySl}-${selSl}-${date}`;
+}
+
+/** "selection line @ odds" pick block (R2), e.g. "Switzerland -0.25 @ 1.70".
+ *  Bug C fix: suppress duplicate line when selection already contains it;
+ *  don't apply AH sign-formatter to over/under markets. */
 export function formatPickBlock(pick: PickRow): string {
-  const line = pick.line != null ? ` ${pick.line > 0 ? '+' : ''}${pick.line}` : '';
-  return `${pick.selection}${line} @ ${Number(pick.odds_publish).toFixed(2)}`;
+  let lineSuffix = '';
+  if (pick.line != null) {
+    const lineStr = String(pick.line);
+    const selectionContainsLine = pick.selection.includes(lineStr);
+    if (!selectionContainsLine) {
+      // AH sign formatting only for AH markets, not O/U
+      const formatted = pick.market === 'ou' ? lineStr : `${pick.line > 0 ? '+' : ''}${pick.line}`;
+      lineSuffix = ` ${formatted}`;
+    }
+  }
+  return `${pick.selection}${lineSuffix} @ ${Number(pick.odds_publish).toFixed(2)}`;
 }
 
 /** FINAL 5-line card (Post Restructure Spec v1 §2.1, locked 3/7 — 5 lines is the floor). */
@@ -39,12 +73,13 @@ export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCa
     ? ` (live @ ${pick.publish_score_home}-${pick.publish_score_away})` : '';
   const confidence = pick.confidence ? CONFIDENCE_LABELS[pick.confidence] ?? pick.confidence.toUpperCase() : null;
   const against = extras.againstMarket ? ' \u00b7 \u26A0\uFE0F against market' : '';
+  const slug = buildPickSlug(pick);
   return [
     `\u{1F3AF} ${pick.home_team} vs ${pick.away_team} \u00b7 ${pick.league} \u00b7 KO ${pick.kickoff_utc.slice(11, 16)} UTC${live}`,
     `\u{1F449} ${formatPickBlock(pick)} \u00b7 ${Number(pick.stake_units)}u${confidence ? ` \u00b7 ${confidence}` : ''}${against}`,
     ...(extras.hook ? [`\u{1F4DD} ${extras.hook}`] : []),
-    `\u{1F517} ${siteUrl}/play/${pick.id}`,
-    CARD_FOOTER,
+    `\u{1F517} ${siteUrl}/play/${slug}`,
+    cardFooter(pick),
   ].join('\n');
 }
 
