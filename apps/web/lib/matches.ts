@@ -233,13 +233,18 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
             }
           } catch { /* empty */ }
         }
+        // Stale-live guard (same as fixtures block): a finished match kept at
+        // minute 90 with a non-FT status would otherwise show "live" forever.
+        const kickoffMs = kickoffUtc ? new Date(kickoffUtc).getTime() : 0;
+        const staleLive = kickoffMs > 0 && now.getTime() - kickoffMs > MAX_LIVE_MS;
+        const isFinished = m.status === "FINISHED" || m.status === "FT" || staleLive;
         matches.push({
           id,
           homeTeam: m.home_name,
           awayTeam: m.away_name,
           kickoffUtc,
-          status: m.status === "FINISHED" || m.status === "FT" ? "finished" : "live",
-          minute: parseMinute(m.time),
+          status: isFinished ? "finished" : "live",
+          minute: isFinished ? null : parseMinute(m.time),
           homeScore: score?.home ?? null,
           awayScore: score?.away ?? null,
           competition: m.competition_name || "FIFA World Cup",
@@ -264,13 +269,19 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           for (const p of persisted) {
             if (seenIds.has(String(p.id))) continue;
             seenIds.add(String(p.id));
+            // Stale-live guard: persisted state can also be stuck at "live".
+            const koMs = p.kickoff_utc ? new Date(p.kickoff_utc).getTime() : 0;
+            const staleLive = koMs > 0 && now.getTime() - koMs > MAX_LIVE_MS;
+            const st: MatchStatus = staleLive
+              ? "finished"
+              : p.status === "finished" ? "finished" : p.status === "live" ? "live" : "upcoming";
             matches.push({
               id: String(p.id),
               homeTeam: p.home_team,
               awayTeam: p.away_team,
               kickoffUtc: p.kickoff_utc ?? "",
-              status: (p.status === "finished" ? "finished" : p.status === "live" ? "live" : "upcoming") as MatchStatus,
-              minute: p.minute ?? null,
+              status: st,
+              minute: st === "live" ? (p.minute ?? null) : null,
               homeScore: p.home_score ?? null,
               awayScore: p.away_score ?? null,
               competition: p.competition || "FIFA World Cup",
