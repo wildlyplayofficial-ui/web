@@ -3,7 +3,7 @@
  * After settlement, AI generates a draft review. Curator approves via bot.
  * Settlement NEVER waits for AI — this is fire-and-forget.
  */
-import { callClaude } from './recap';
+import { callClaude, clvContextLine, CLV_RULE } from './recap';
 import type { PickRow, Store } from './store';
 import { log } from './log';
 
@@ -38,7 +38,7 @@ You are WildlyPlay's post-mortem analyst. You write brutally honest, concise rev
 Result: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}
 League: ${pick.league}
 Market: ${pick.market}, Selection: ${pick.selection}, Line: ${pick.line ?? 'n/a'}
-Odds: ${pick.odds_publish}, Stake: ${Number(pick.stake_units)}u
+Odds: ${pick.odds_publish}, Stake: ${Number(pick.stake_units)}u${clvContextLine(pick)}
 Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl}u)
 Pre-match thesis: "${pick.thesis}"
 </context>
@@ -46,6 +46,7 @@ Pre-match thesis: "${pick.thesis}"
 <rules>
 - Did the thesis play out? Analyse specifically what happened vs what was expected.${lossInstruction}${winInstruction}
 - Work ONLY from the data above — do not invent xG, possession stats, or match events you cannot know from the score alone.
+${CLV_RULE}
 - Be honest and analytical. No hype, no excuses, no sugar-coating.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
 - Responsible language: NEVER use "sure win", "guaranteed", "lock" or any promise of profit.

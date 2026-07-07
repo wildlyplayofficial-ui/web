@@ -3,6 +3,7 @@ import {
   buildRecapArticlePrompt,
   buildRecapPosts,
   buildRecapPrompt,
+  clvContextLine,
   computeRecord,
   disclosureFor,
   generateRecap,
@@ -90,6 +91,36 @@ describe('buildRecapPrompt', () => {
     expect(prompt).toContain('"guaranteed"');
     expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
+  });
+});
+
+describe('clvContextLine — No-Fabricated-Fact guard', () => {
+  it('returns empty string when no closing odds were captured', () => {
+    expect(clvContextLine(settledPick({ odds_close: null }))).toBe('');
+  });
+
+  it('renders the exact publish and closing numbers when captured', () => {
+    expect(clvContextLine(settledPick({ odds_publish: 2.05, odds_close: 1.85 }))).toBe(
+      '\nClosing odds: 1.85 (published at 2.05)',
+    );
+  });
+});
+
+describe('CLV wiring into recap prompts', () => {
+  it('omits the closing line and never mentions closing when odds_close is null', () => {
+    const prompt = buildRecapPrompt(settledPick({ odds_close: null }), { won: 1, lost: 0, push: 0, units: 1.05 });
+    expect(prompt).not.toContain('Closing odds:');
+    expect(prompt).toContain('- Closing line:'); // the rule is present so the model knows to stay silent
+  });
+
+  it('surfaces the captured closing odds to the channel recap prompt', () => {
+    const prompt = buildRecapPrompt(settledPick({ odds_publish: 2.05, odds_close: 1.85 }), { won: 1, lost: 0, push: 0, units: 1.05 });
+    expect(prompt).toContain('Closing odds: 1.85 (published at 2.05)');
+  });
+
+  it('surfaces the captured closing odds to the newsroom article prompt', () => {
+    const prompt = buildRecapArticlePrompt(settledPick({ odds_publish: 2.05, odds_close: 1.85 }), { won: 1, lost: 0, push: 0, units: 1.05 });
+    expect(prompt).toContain('Closing odds: 1.85 (published at 2.05)');
   });
 });
 

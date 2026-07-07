@@ -79,6 +79,19 @@ export function computeRecord(picks: PickRow[]): SettledRecord {
   return record;
 }
 
+/** CLV context line for post-settlement prompts. Empty string when no closing
+ *  odds were captured (odds_close null) — so the model is never handed a closing
+ *  number it could editorialize, and cannot fabricate one it was never given. */
+export function clvContextLine(pick: PickRow): string {
+  if (pick.odds_close === null) return '';
+  return `\nClosing odds: ${pick.odds_close} (published at ${pick.odds_publish})`;
+}
+
+/** Shared <rules> line governing how closing-line movement may be described.
+ *  Factual, direction-preserving, banned-vocabulary-safe. */
+export const CLV_RULE =
+  '- Closing line: ONLY if a "Closing odds" figure is given above may you note how the price moved from publish to close — a lower closing number means the market moved toward this selection, a higher one means it moved away. State it as a neutral market-movement fact, never as proof the read was clever, and never with the banned vocabulary. If no closing odds are given, do NOT mention the closing line at all.';
+
 export function buildRecapPrompt(pick: PickRow, record: SettledRecord): string {
   const units = record.units > 0 ? `+${record.units}` : `${record.units}`;
   const pl = Number(pick.units_pl);
@@ -91,7 +104,7 @@ You write post-match recaps for WildlyPlay's public Telegram channel. Short, hon
 <context>
 League: ${pick.league}
 Final score: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}
-Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)
+Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)${clvContextLine(pick)}
 Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl} units)
 Curator's pre-match thesis: ${pick.thesis}
 Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total
@@ -100,6 +113,7 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 <rules>
 - Honest transparency: state plainly whether the thesis played out or not — recap misses as openly as hits.
 - Work ONLY from the data above — do not invent match events, xG, or stats you cannot know.
+${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
 - No emoji spam.
@@ -248,7 +262,7 @@ You write post-match articles for the WildlyPlay newsroom (wildlyplay.com/news).
 <context>
 League: ${pick.league}
 Final score: ${pick.home_team} ${pick.home_score}-${pick.away_score} ${pick.away_team}
-Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)
+Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'}, stake: ${Number(pick.stake_units)} units)${clvContextLine(pick)}
 Outcome: ${pick.raw_outcome} (${pl > 0 ? `+${pl}` : pl} units)
 Curator's pre-match thesis: ${pick.thesis}
 Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total
@@ -257,6 +271,7 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 <rules>
 - Work ONLY from the data above — do not invent injuries, quotes, stats, or match events you cannot know.
 - Honest transparency: state plainly whether the thesis played out or not — cover misses as openly as hits.
+${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
 - Lead with thesis evaluation — never a generic scoreline summary.
@@ -272,6 +287,8 @@ WHY: Generic scoreline recap, no thesis evaluation, "dominant performance" is fi
 <good_examples>
 GOOD: "The Over thesis needed three goals and got five — but four came after the 70th minute. The read was right on the game state; the first half would have tested anyone's nerve."
 WHY: Evaluates thesis with specifics, honest about how the result unfolded, adds nuance.
+GOOD (closing line, only when 'Closing odds' is supplied): "Posted at 2.05 and closed at 1.85 — the market moved toward this side after we published, even though the result went the other way."
+WHY: States the price move as a plain fact, keeps the numbers exact, stays honest about the miss, uses no banned vocabulary.
 </good_examples>
 
 <output>
