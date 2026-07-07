@@ -90,7 +90,14 @@ const WINDOW_MS = 6 * 60 * 60 * 1000;
 function deriveStatus(f: LivescoreFixture, now: Date): MatchStatus {
   const s = (f.status || "").toUpperCase();
   if (s === "FINISHED" || s === "FT") return "finished";
-  if (s === "IN PLAY" || s === "LIVE" || s === "HT" || s === "HALF TIME") return "live";
+  if (s === "IN PLAY" || s === "LIVE" || s === "HT" || s === "HALF TIME") {
+    // Stale-live guard: even an explicit LIVE status string is finished if it
+    // kicked off longer ago than any match can run.
+    if (f.date && f.time && now.getTime() - new Date(`${f.date}T${f.time}Z`).getTime() > MAX_LIVE_MS) {
+      return "finished";
+    }
+    return "live";
+  }
   // Only derive "live" from kickoff time when there's a real score (not "? - ?").
   // Without this guard, timezone drift or API delay can show "live" before actual kickoff.
   if (f.date && f.time) {
