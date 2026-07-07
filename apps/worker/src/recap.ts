@@ -92,6 +92,22 @@ export function clvContextLine(pick: PickRow): string {
 export const CLV_RULE =
   '- Closing line: ONLY if a "Closing odds" figure is given above may you note how the price moved from publish to close — a lower closing number means the market moved toward this selection, a higher one means it moved away. State it as a neutral market-movement fact, never as proof the read was clever, and never with the banned vocabulary. If no closing odds are given, do NOT mention the closing line at all.';
 
+/** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
+ *  football language ("closing stages", "closed out the win") never matches. */
+const CLOSING_LINE_MENTION = /\bclosing (?:odds|line|price)\b|\bclosed at \d/i;
+
+/** No-Fabricated-Fact lint (Jane 7/7): recap auto-publishes with no human gate,
+ *  so this backs up the structural clvContextLine guard. When no closing odds
+ *  were captured (odds_close null), the prose must not reference a closing line.
+ *  Returns a reason string to block on, or null when clean. English-only, like
+ *  the polarity guard — other languages spell it differently and rely on the
+ *  prompt-level rule instead. */
+export function detectClosingLineFabrication(oddsClose: number | null, enBody: string): string | null {
+  if (oddsClose !== null) return null;
+  const m = enBody.match(CLOSING_LINE_MENTION);
+  return m ? `closing-line reference with no captured odds_close: "${m[0]}"` : null;
+}
+
 export function buildRecapPrompt(pick: PickRow, record: SettledRecord): string {
   const units = record.units > 0 ? `+${record.units}` : `${record.units}`;
   const pl = Number(pick.units_pl);

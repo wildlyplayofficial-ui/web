@@ -1,7 +1,7 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
 import { postToFacebook, formatPickBlock, CARD_FOOTER } from './announce-pick';
-import { buildRecapPosts } from './recap';
+import { buildRecapPosts, detectClosingLineFabrication } from './recap';
 import type { PickRow, Store } from './store';
 import { log } from './log';
 
@@ -182,6 +182,12 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     try {
       const articleText = (await deps.recapArticle?.(pick)) ?? text;
       const recapPosts = buildRecapPosts(pick, articleText);
+      const enPost = recapPosts.find((p) => p.lang === 'en');
+      const fabrication = enPost ? detectClosingLineFabrication(pick.odds_close, enPost.body_md) : null;
+      if (fabrication) {
+        log.warn(`recap: blocked publish for pick ${pick.id} — ${fabrication}`);
+        return;
+      }
       for (const post of recapPosts) {
         await deps.store.insertPost(post);
       }

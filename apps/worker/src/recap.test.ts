@@ -5,6 +5,7 @@ import {
   buildRecapPrompt,
   clvContextLine,
   computeRecord,
+  detectClosingLineFabrication,
   disclosureFor,
   generateRecap,
   splitLangSections,
@@ -121,6 +122,23 @@ describe('CLV wiring into recap prompts', () => {
   it('surfaces the captured closing odds to the newsroom article prompt', () => {
     const prompt = buildRecapArticlePrompt(settledPick({ odds_publish: 2.05, odds_close: 1.85 }), { won: 1, lost: 0, push: 0, units: 1.05 });
     expect(prompt).toContain('Closing odds: 1.85 (published at 2.05)');
+  });
+});
+
+describe('detectClosingLineFabrication — post-gen lint for auto-publish', () => {
+  it('never blocks when closing odds were actually captured', () => {
+    expect(detectClosingLineFabrication(1.85, 'Posted at 2.05 and the closing line moved to 1.85.')).toBeNull();
+  });
+
+  it('blocks a closing-line reference when no odds_close was captured', () => {
+    expect(detectClosingLineFabrication(null, 'The closing line agreed with our read.')).not.toBeNull();
+    expect(detectClosingLineFabrication(null, 'It closed at 1.80 by kickoff.')).not.toBeNull();
+    expect(detectClosingLineFabrication(null, 'Closing odds tightened sharply.')).not.toBeNull();
+  });
+
+  it('does not false-positive on ordinary football language', () => {
+    expect(detectClosingLineFabrication(null, 'They defended well in the closing stages and closed out the win.')).toBeNull();
+    expect(detectClosingLineFabrication(null, 'The keeper was closing down the angle all night.')).toBeNull();
   });
 });
 
