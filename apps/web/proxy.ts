@@ -21,9 +21,18 @@ export function proxy(request: NextRequest) {
   if (qLang) {
     const url = request.nextUrl.clone();
     url.searchParams.delete("lang");
-    if (VALID_LANGS.has(qLang) && !LANG_PREFIX_RE.test(pathname)) {
+    if (qLang !== "en" && VALID_LANGS.has(qLang) && !LANG_PREFIX_RE.test(pathname)) {
       url.pathname = `/${qLang}${pathname}`;
     }
+    return NextResponse.redirect(url, 301);
+  }
+
+  // ── /en prefix is redundant (English is the prefix-less canonical) ──
+  // Rewrite maps bare paths to /en internally, but /en/... stays directly
+  // reachable and duplicates the canonical URL. 301 strip it so Google sees one.
+  if (pathname === "/en" || pathname.startsWith("/en/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.slice(3) || "/";
     return NextResponse.redirect(url, 301);
   }
 
