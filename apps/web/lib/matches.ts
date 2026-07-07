@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
+import { MAX_LIVE_MS } from "./match-constants";
 
 /**
  * Fetch today's matches from livescore-api.com.
@@ -95,7 +96,12 @@ function deriveStatus(f: LivescoreFixture, now: Date): MatchStatus {
   if (f.date && f.time) {
     const kickoff = new Date(`${f.date}T${f.time}Z`);
     const hasScore = f.score && f.score !== "? - ?" && f.score !== "";
-    if (kickoff <= now && hasScore) return "live";
+    if (kickoff <= now && hasScore) {
+      // Same stale-live guard as the live-feed branch: a scored match kicked
+      // off longer ago than any match can run is finished, not live.
+      if (now.getTime() - kickoff.getTime() > MAX_LIVE_MS) return "finished";
+      return "live";
+    }
   }
   return "upcoming";
 }
@@ -160,7 +166,12 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
         // Match is in live feed — but API sometimes adds matches early (before actual kickoff).
         // Guard: only treat as live if kickoff has actually passed.
         const score = parseScore(live.score);
-        const isFinished = live.status === "FINISHED" || live.status === "FT";
+        // Stale-live guard: the live feed sometimes keeps a finished match at
+        // minute 90 with a non-FT status, which would show "live" forever.
+        // If kickoff was longer ago than a match can possibly run, force finished.
+        const kickoffMs = kickoffUtc ? new Date(kickoffUtc).getTime() : 0;
+        const staleLive = kickoffMs > 0 && now.getTime() - kickoffMs > MAX_LIVE_MS;
+        const isFinished = live.status === "FINISHED" || live.status === "FT" || staleLive;
         const kickoffPassed = kickoffUtc ? new Date(kickoffUtc) <= now : true;
         const actuallyLive = kickoffPassed && !isFinished;
         matches.push({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MAX_LIVE_MS } from "@/lib/match-constants";
 
 interface Props {
   kickoffUtc: string;
@@ -53,10 +54,10 @@ export function MatchStatus({ kickoffUtc, liveStatus, minute }: Props) {
     );
   }
 
-  // Scheduled — but if kickoff was >3h ago, the match is almost certainly finished
-  // and liveStatus just wasn't set (e.g. match_live_state slug mismatch).
+  // Scheduled — but if kickoff was longer ago than a match can run, it's almost
+  // certainly finished and liveStatus just wasn't set (e.g. match_live_state slug mismatch).
   const diff = kickoff - now;
-  if (diff < -3 * 3_600_000) {
+  if (diff < -MAX_LIVE_MS) {
     return (
       <div className="flex items-center justify-between text-xs">
         <span className="font-semibold text-muted">FT</span>
