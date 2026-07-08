@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { fetchCompetitionTable } from "@/lib/standings";
-import { getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
+import { getCompetitionFixtures, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
+import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -52,9 +53,11 @@ export default async function StandingSlugPage({ params }: Props) {
   // "league_playoff") when MLS/Liga MX playoff brackets land.
   const isWorldCup = comp.livescoreId === 362;
 
-  const [rows, knockoutRounds] = await Promise.all([
+  const [rows, knockoutRounds, fixtureDays] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId),
     isWorldCup ? getKnockoutRounds(comp.livescoreId) : Promise.resolve([]),
+    // League schedule-by-date: non-WC competitions only (WC uses the bracket).
+    isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId),
   ]);
 
   // Group by groupName when multiple distinct values exist
@@ -169,21 +172,27 @@ export default async function StandingSlugPage({ params }: Props) {
         </>
       ) : hasGroups ? (
         /* Multi-group non-WC (e.g. MLS conferences) */
-        <div className="space-y-8">
-          {[...groupMap.entries()]
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([group, teams]) => (
-              <section key={group}>
-                {group && (
-                  <h2 className="mb-3 font-display text-lg font-bold">{group}</h2>
-                )}
-                <LeagueTable teams={teams.sort((a, b) => a.rank - b.rank)} labels={dict.standings} />
-              </section>
-            ))}
-        </div>
+        <>
+          <div className="space-y-8">
+            {[...groupMap.entries()]
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([group, teams]) => (
+                <section key={group}>
+                  {group && (
+                    <h2 className="mb-3 font-display text-lg font-bold">{group}</h2>
+                  )}
+                  <LeagueTable teams={teams.sort((a, b) => a.rank - b.rank)} labels={dict.standings} />
+                </section>
+              ))}
+          </div>
+          <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
+        </>
       ) : (
         /* Single flat table (EPL, La Liga, etc.) */
-        <LeagueTable teams={sortedRows} labels={dict.standings} />
+        <>
+          <LeagueTable teams={sortedRows} labels={dict.standings} />
+          <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
+        </>
       )}
     </div>
   );

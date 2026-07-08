@@ -84,8 +84,31 @@ function getApiCredentials(): { key: string; secret: string } | null {
   return { key, secret };
 }
 
+// Fallback only: the flagship WC feed, used when the competitions table is
+// unavailable so the homepage never goes blank during a DB hiccup. The primary
+// path is DB-driven (getActiveCompetitionIds) — fixtures are no longer locked
+// to a single competition.
 const WC_COMPETITION_ID = 362;
 const WINDOW_MS = 6 * 60 * 60 * 1000;
+
+/** Livescore competition_ids for every competition currently marked active in the DB. */
+async function getActiveCompetitionIds(): Promise<number[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [WC_COMPETITION_ID];
+  try {
+    const { data, error } = await supabase
+      .from("competitions")
+      .select("livescore_id")
+      .eq("status", "active");
+    if (error || !data) return [WC_COMPETITION_ID];
+    const ids = data
+      .map((r) => Number(r.livescore_id))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    return ids.length > 0 ? ids : [WC_COMPETITION_ID];
+  } catch {
+    return [WC_COMPETITION_ID];
+  }
+}
 
 function deriveStatus(f: LivescoreFixture, now: Date): MatchStatus {
   const s = (f.status || "").toUpperCase();
@@ -123,36 +146,42 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
   const windowStart = new Date(now.getTime() - WINDOW_MS);
 
   try {
-    // Fixtures = source of truth for match list (always returns all matches for the day)
-    const fixturesUrl = `${LIVESCORE_BASE}/fixtures/matches.json?key=${creds.key}&secret=${creds.secret}&competition_id=${WC_COMPETITION_ID}&date=${today}`;
-    const yesterdayUrl = `${LIVESCORE_BASE}/fixtures/matches.json?key=${creds.key}&secret=${creds.secret}&competition_id=${WC_COMPETITION_ID}&date=${yesterday}`;
-    // Live = supplements with real-time minute/score
-    const liveUrl = `${LIVESCORE_BASE}/scores/live.json?key=${creds.key}&secret=${creds.secret}&competition_id=${WC_COMPETITION_ID}`;
+    const competitionIds = await getActiveCompetitionIds();
 
-    const [fixturesRes, yesterdayRes, liveRes] = await Promise.all([
-      fetch(fixturesUrl, { cache: "no-store" }),
-      fetch(yesterdayUrl, { cache: "no-store" }),
-      fetch(liveUrl, { cache: "no-store" }),
+    // Fixtures = source of truth for match list (always returns all matches for
+    // the day). Fetch today + yesterday for every active competition; the live
+    // feed supplements with real-time minute/score. All requests fire in parallel.
+    const fixtureUrls = competitionIds.flatMap((cid) => [
+      `${LIVESCORE_BASE}/fixtures/matches.json?key=${creds.key}&secret=${creds.secret}&competition_id=${cid}&date=${today}`,
+      `${LIVESCORE_BASE}/fixtures/matches.json?key=${creds.key}&secret=${creds.secret}&competition_id=${cid}&date=${yesterday}`,
+    ]);
+    const liveUrls = competitionIds.map(
+      (cid) => `${LIVESCORE_BASE}/scores/live.json?key=${creds.key}&secret=${creds.secret}&competition_id=${cid}`,
+    );
+
+    const fetchJson = (u: string) =>
+      fetch(u, { cache: "no-store" }).then((r) => r.json()).catch(() => ({ success: false }));
+    const [fixtureData, liveDataList] = await Promise.all([
+      Promise.all(fixtureUrls.map(fetchJson)),
+      Promise.all(liveUrls.map(fetchJson)),
     ]);
 
-    const fixturesData = await fixturesRes.json();
-    const yesterdayData = await yesterdayRes.json();
-    const liveData = await liveRes.json();
+    // Flatten every competition's live feed into one list.
+    const allLiveMatches: LivescoreMatch[] = liveDataList.flatMap((d) =>
+      d.success && d.data?.match ? (d.data.match as LivescoreMatch[]) : [],
+    );
 
     // Build live match lookup by fixture_id for real-time data
     const liveMap = new Map<string, LivescoreMatch>();
-    if (liveData.success && liveData.data?.match) {
-      for (const m of liveData.data.match as LivescoreMatch[]) {
-        liveMap.set(String(m.fixture_id || m.id), m);
-        liveMap.set(String(m.id), m);
-      }
+    for (const m of allLiveMatches) {
+      liveMap.set(String(m.fixture_id || m.id), m);
+      liveMap.set(String(m.id), m);
     }
 
-    // Process all fixtures (today + yesterday)
-    const allFixtures = [
-      ...(fixturesData.success && fixturesData.data?.fixtures ? fixturesData.data.fixtures : []),
-      ...(yesterdayData.success && yesterdayData.data?.fixtures ? yesterdayData.data.fixtures : []),
-    ];
+    // Process all fixtures (today + yesterday, every active competition)
+    const allFixtures = fixtureData.flatMap((d) =>
+      d.success && d.data?.fixtures ? (d.data.fixtures as LivescoreFixture[]) : [],
+    );
 
     const matches: Match[] = [];
     const seenIds = new Set<string>();
@@ -190,7 +219,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           minute: actuallyLive ? parseMinute(live.time) : null,
           homeScore: actuallyLive || isFinished ? (score?.home ?? null) : null,
           awayScore: actuallyLive || isFinished ? (score?.away ?? null) : null,
-          competition: f.competition_name || "FIFA World Cup",
+          competition: f.competition_name || "",
           eventsUrl: live.events || f.events || null,
         });
       } else {
@@ -206,15 +235,15 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           minute: null,
           homeScore: score?.home ?? null,
           awayScore: score?.away ?? null,
-          competition: f.competition_name || "FIFA World Cup",
+          competition: f.competition_name || "",
           eventsUrl: f.events || null,
         });
       }
     }
 
     // Also add any live matches not in fixtures (edge case)
-    if (liveData.success && liveData.data?.match) {
-      for (const m of liveData.data.match as LivescoreMatch[]) {
+    if (allLiveMatches.length > 0) {
+      for (const m of allLiveMatches) {
         const fixtureId = String(m.fixture_id || m.id);
         const id = String(m.id || m.fixture_id);
         if (seenIds.has(fixtureId) || seenIds.has(id)) continue;
@@ -254,7 +283,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           minute: isFinished ? null : parseMinute(m.time),
           homeScore: score?.home ?? null,
           awayScore: score?.away ?? null,
-          competition: m.competition_name || "FIFA World Cup",
+          competition: m.competition_name || "",
           eventsUrl: m.events || null,
         });
       }
@@ -291,7 +320,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
               minute: st === "live" ? (p.minute ?? null) : null,
               homeScore: p.home_score ?? null,
               awayScore: p.away_score ?? null,
-              competition: p.competition || "FIFA World Cup",
+              competition: p.competition || "",
               eventsUrl: p.events_url ?? null,
             });
           }

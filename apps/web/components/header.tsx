@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useParams, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
+
+interface NavCompetition {
+  name: string;
+  href: string;
+}
 
 const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
 
@@ -48,7 +53,100 @@ function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => voi
   );
 }
 
-export function Header() {
+/**
+ * "Standings" nav entry as a dropdown of competitions. Inline list on mobile
+ * (the nav is already an expanded column); absolute card menu on desktop.
+ * Falls back to a plain link to /standings when no competitions loaded.
+ */
+function StandingsNavItem({
+  label,
+  active,
+  competitions,
+  lang,
+  onNavigate,
+}: {
+  label: string;
+  active: boolean;
+  competitions: NavCompetition[];
+  lang: Lang;
+  onNavigate: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [open]);
+
+  if (competitions.length === 0) {
+    return (
+      <li>
+        <Link
+          href={withLang("/standings", lang)}
+          onClick={onNavigate}
+          className={`text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`}
+        >
+          {label}
+        </Link>
+      </li>
+    );
+  }
+
+  return (
+    <li ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`}
+      >
+        {label}
+        <svg
+          className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+      {open && (
+        <ul
+          role="menu"
+          className="mt-2 flex flex-col gap-3 pl-3 md:absolute md:left-0 md:z-20 md:w-56 md:gap-0 md:rounded-card md:border md:border-line md:bg-card md:py-1 md:pl-0 md:shadow-card"
+        >
+          {competitions.map((c) => (
+            <li key={c.href} role="none">
+              <Link
+                role="menuitem"
+                href={withLang(c.href, lang)}
+                onClick={() => {
+                  setOpen(false);
+                  onNavigate();
+                }}
+                className="block text-sm text-muted transition-colors hover:text-ink md:px-4 md:py-2 md:hover:bg-card-hover"
+              >
+                {c.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+export function Header({ competitions = [] }: { competitions?: NavCompetition[] }) {
   const pathname = usePathname();
   const params = useParams<{ lang: string }>();
   const lang = resolveLang(params.lang);
@@ -82,19 +180,32 @@ export function Header() {
           className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 md:static md:flex md:flex-row md:items-center md:gap-6 md:border-0 md:p-0`}
         >
           <ul className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
-            {navItems.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={withLang(item.href, lang)}
-                  onClick={() => setOpen(false)}
-                  className={`text-sm font-medium transition-colors hover:text-ink ${
-                    (item.href === "/" ? barePath === "/" : barePath.startsWith(item.href)) ? "text-ink" : "text-muted"
-                  }`}
-                >
-                  {dict.nav[item.key]}
-                </Link>
-              </li>
-            ))}
+            {navItems.map((item) => {
+              const active = item.href === "/" ? barePath === "/" : barePath.startsWith(item.href);
+              if (item.key === "standings") {
+                return (
+                  <StandingsNavItem
+                    key={item.href}
+                    label={dict.nav.standings}
+                    active={active}
+                    competitions={competitions}
+                    lang={lang}
+                    onNavigate={() => setOpen(false)}
+                  />
+                );
+              }
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={withLang(item.href, lang)}
+                    onClick={() => setOpen(false)}
+                    className={`text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`}
+                  >
+                    {dict.nav[item.key]}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
           <div className="flex items-center gap-2">
             <LocaleSwitch lang={lang} onNavigate={() => setOpen(false)} />
