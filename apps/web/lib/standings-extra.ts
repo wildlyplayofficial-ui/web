@@ -469,6 +469,85 @@ export const getCompetitionFixtures = unstable_cache(
   { revalidate: 600 },
 );
 
+// livescore's table.json returns an empty `form` field for league competitions
+// (MLS, Liga MX, …), so recent form is derived here from finished results.
+// Returns { [teamName]: "WDLWW" } — up to the last 5 results, oldest → newest.
+async function fetchCompetitionFormImpl(
+  livescoreId: number,
+): Promise<Record<string, string>> {
+  const key = process.env.LIVESCORE_API_KEY;
+  const secret = process.env.LIVESCORE_API_SECRET;
+  if (!key || !secret) return {};
+
+  // Wide enough to capture ~5 matches per team (leagues play ~1/week).
+  const now = Date.now();
+  const from = new Date(now - 60 * 86_400_000).toISOString().slice(0, 10);
+  const to = new Date(now + 86_400_000).toISOString().slice(0, 10);
+
+  try {
+    const res = await fetch(
+      `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return {};
+
+    const hd = (await res.json()) as {
+      success: boolean;
+      data?: {
+        match?: Array<{
+          date?: string;
+          scheduled?: string;
+          home?: { name?: string };
+          away?: { name?: string };
+          scores?: { ft_score?: string };
+          status?: string;
+        }>;
+      };
+    };
+    if (!hd.success || !hd.data?.match) return {};
+
+    // Per team: chronological list of results (letter + sort key).
+    const perTeam = new Map<string, Array<{ key: string; result: string }>>();
+    const push = (team: string, key: string, result: string) => {
+      if (!team) return;
+      const list = perTeam.get(team) ?? [];
+      list.push({ key, result });
+      perTeam.set(team, list);
+    };
+
+    for (const m of hd.data.match) {
+      if ((m.status ?? "").toUpperCase() !== "FINISHED") continue;
+      const score = parseScore(m.scores?.ft_score ?? "");
+      if (!score) continue;
+      const home = m.home?.name ?? "";
+      const away = m.away?.name ?? "";
+      const sortKey = `${m.date ?? ""} ${(m.scheduled ?? "").slice(0, 5)}`;
+      const homeRes = score.home > score.away ? "W" : score.home < score.away ? "L" : "D";
+      const awayRes = homeRes === "W" ? "L" : homeRes === "L" ? "W" : "D";
+      push(home, sortKey, homeRes);
+      push(away, sortKey, awayRes);
+    }
+
+    const form: Record<string, string> = {};
+    for (const [team, results] of perTeam) {
+      form[team] = results
+        .sort((a, b) => a.key.localeCompare(b.key))
+        .slice(-5)
+        .map((r) => r.result)
+        .join("");
+    }
+    return form;
+  } catch {
+    return {};
+  }
+}
+
+export const getCompetitionForm = unstable_cache(
+  fetchCompetitionFormImpl,
+  ["competition-form"],
+  { revalidate: 600 },
+);
+
 async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
