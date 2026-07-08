@@ -8,6 +8,7 @@ import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
 import { LeagueFixtures } from "@/components/league-fixtures";
+import { CompetitionSwitcher } from "@/components/competition-switcher";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -53,12 +54,17 @@ export default async function StandingSlugPage({ params }: Props) {
   // "league_playoff") when MLS/Liga MX playoff brackets land.
   const isWorldCup = comp.livescoreId === 362;
 
-  const [rows, knockoutRounds, fixtureDays] = await Promise.all([
+  const [rows, knockoutRounds, fixtureDays, allComps] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId),
     isWorldCup ? getKnockoutRounds(comp.livescoreId) : Promise.resolve([]),
     // League schedule-by-date: non-WC competitions only (WC uses the bracket).
     isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId),
+    getStandingsCompetitions(),
   ]);
+
+  const activeComps = allComps
+    .filter((c) => c.status === "active")
+    .map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
 
   // Group by groupName when multiple distinct values exist
   const distinctGroups = new Set(rows.map((r) => r.groupName).filter(Boolean));
@@ -102,6 +108,13 @@ export default async function StandingSlugPage({ params }: Props) {
           </p>
         )}
       </section>
+
+      <CompetitionSwitcher
+        competitions={activeComps}
+        currentSlug={slug}
+        lang={lang}
+        label={dict.standings.title}
+      />
 
       {rows.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
