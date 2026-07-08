@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { fetchCompetitionTable } from "@/lib/standings";
-import { getCompetitionFixtures, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
+import { getCompetitionFixtures, getCompetitionForm, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
@@ -53,12 +53,17 @@ export default async function StandingSlugPage({ params }: Props) {
   // "league_playoff") when MLS/Liga MX playoff brackets land.
   const isWorldCup = comp.livescoreId === 362;
 
-  const [rows, knockoutRounds, fixtureDays] = await Promise.all([
+  const [tableRows, knockoutRounds, fixtureDays, formMap] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId),
     isWorldCup ? getKnockoutRounds(comp.livescoreId) : Promise.resolve([]),
     // League schedule-by-date: non-WC competitions only (WC uses the bracket).
     isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId),
+    // livescore's table has no form for leagues — derive it from results.
+    isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId),
   ]);
+
+  // Backfill the empty API form with the computed last-5 results.
+  const rows = tableRows.map((r) => (r.form ? r : { ...r, form: formMap[r.name] ?? "" }));
 
   // Group by groupName when multiple distinct values exist
   const distinctGroups = new Set(rows.map((r) => r.groupName).filter(Boolean));
@@ -173,7 +178,10 @@ export default async function StandingSlugPage({ params }: Props) {
       ) : hasGroups ? (
         /* Multi-group non-WC (e.g. MLS conferences) */
         <>
-          <div className="space-y-8">
+          {/* Schedule first (Nick 7/8): upcoming fixtures are more timely than
+              the table, so they sit above it. */}
+          <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
+          <div className="mt-12 space-y-8">
             {[...groupMap.entries()]
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([group, teams]) => (
@@ -185,13 +193,14 @@ export default async function StandingSlugPage({ params }: Props) {
                 </section>
               ))}
           </div>
-          <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
         </>
       ) : (
         /* Single flat table (EPL, La Liga, etc.) */
         <>
-          <LeagueTable teams={sortedRows} labels={dict.standings} />
           <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
+          <div className="mt-12">
+            <LeagueTable teams={sortedRows} labels={dict.standings} />
+          </div>
         </>
       )}
     </div>
