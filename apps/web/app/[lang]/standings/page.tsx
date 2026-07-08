@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { getStandings, getEplStandings } from "@/lib/standings";
-import { getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
+import { getKnockoutRounds } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
-import { CompetitionSwitcher } from "@/components/competition-switcher";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -35,19 +34,11 @@ export default async function StandingsPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   const eplEnabled = await isFeatureEnabled("epl_standings");
-  const [standings, eplStandings, knockoutRounds, competitions] = await Promise.all([
+  const [standings, eplStandings, knockoutRounds] = await Promise.all([
     getStandings(),
     eplEnabled ? getEplStandings() : Promise.resolve([]),
     getKnockoutRounds(362),
-    getStandingsCompetitions(),
   ]);
-
-  // Switcher lets users hop to Liga MX / MLS etc. Index page IS the World Cup,
-  // so its selected slug is the active WC competition (livescoreId 362).
-  const activeComps = competitions
-    .filter((c) => c.status === "active")
-    .map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
-  const wcSlug = competitions.find((c) => c.livescoreId === 362)?.slug ?? "";
 
   if (standings.length === 0 && knockoutRounds.length === 0) {
     return (
@@ -84,13 +75,6 @@ export default async function StandingsPage({ params }: Props) {
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
         <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
       </section>
-
-      <CompetitionSwitcher
-        competitions={activeComps}
-        currentSlug={wcSlug}
-        lang={lang}
-        label={dict.standings.title}
-      />
 
       {/* Bracket first, same as /standings/[slug] (Nick 3/7) */}
       <KnockoutBracket
