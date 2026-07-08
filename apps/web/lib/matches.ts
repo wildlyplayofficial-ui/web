@@ -219,7 +219,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           minute: actuallyLive ? parseMinute(live.time) : null,
           homeScore: actuallyLive || isFinished ? (score?.home ?? null) : null,
           awayScore: actuallyLive || isFinished ? (score?.away ?? null) : null,
-          competition: f.competition_name || "FIFA World Cup",
+          competition: f.competition_name || "",
           eventsUrl: live.events || f.events || null,
         });
       } else {
@@ -235,7 +235,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           minute: null,
           homeScore: score?.home ?? null,
           awayScore: score?.away ?? null,
-          competition: f.competition_name || "FIFA World Cup",
+          competition: f.competition_name || "",
           eventsUrl: f.events || null,
         });
       }
@@ -283,7 +283,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
           minute: isFinished ? null : parseMinute(m.time),
           homeScore: score?.home ?? null,
           awayScore: score?.away ?? null,
-          competition: m.competition_name || "FIFA World Cup",
+          competition: m.competition_name || "",
           eventsUrl: m.events || null,
         });
       }
@@ -320,7 +320,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
               minute: st === "live" ? (p.minute ?? null) : null,
               homeScore: p.home_score ?? null,
               awayScore: p.away_score ?? null,
-              competition: p.competition || "FIFA World Cup",
+              competition: p.competition || "",
               eventsUrl: p.events_url ?? null,
             });
           }

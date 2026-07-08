@@ -49,6 +49,11 @@ function MatchCard({ match, lang }: { match: Match; lang: Lang }) {
   if (match.status === "live") {
     return (
       <div className="h-full rounded-card border border-line bg-card p-4 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover">
+        {match.competition && (
+          <p className="mb-2 truncate text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {match.competition}
+          </p>
+        )}
         <LiveMatchCard
           matchId={match.id}
           initialMinute={match.minute}
@@ -64,6 +69,11 @@ function MatchCard({ match, lang }: { match: Match; lang: Lang }) {
 
   return (
     <div className="h-full rounded-card border border-line bg-card p-4 transition-colors hover:border-line-hover hover:bg-card-hover">
+      {match.competition && (
+        <p className="mb-2 truncate text-[11px] font-semibold uppercase tracking-wide text-muted">
+          {match.competition}
+        </p>
+      )}
       {/* Status row */}
       <div className="mb-3 flex items-center justify-between">
         {match.status === "upcoming" && <MatchCountdown kickoffUtc={match.kickoffUtc} prefix={dict.matches.kicksOff} />}
