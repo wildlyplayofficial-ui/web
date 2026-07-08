@@ -290,6 +290,185 @@ export const getKnockoutRounds = unstable_cache(
   { revalidate: 600 },
 );
 
+export interface FixtureDay {
+  date: string;
+  matches: KnockoutMatch[];
+}
+
+// League/regular-season schedule grouped by date. Unlike getKnockoutRounds this
+// keeps every match (no knockout-round filter) and organises by calendar date.
+// Reuses the KnockoutMatch shape so the standings page can render it with the
+// same MatchCard (round is unused here, left "").
+async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<FixtureDay[]> {
+  const key = process.env.LIVESCORE_API_KEY;
+  const secret = process.env.LIVESCORE_API_SECRET;
+  if (!key || !secret) return [];
+
+  // Recent finished results (last 14 days) + all upcoming fixtures.
+  const now = Date.now();
+  const from = new Date(now - 14 * 86_400_000).toISOString().slice(0, 10);
+  const to = new Date(now + 86_400_000).toISOString().slice(0, 10);
+
+  try {
+    const [fixturesRes, historyRes, liveRes] = await Promise.all([
+      fetch(
+        `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&size=100`,
+        { cache: "no-store" },
+      ),
+      fetch(
+        `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
+        { cache: "no-store" },
+      ),
+      fetch(
+        `${LIVESCORE_BASE}/scores/live.json?competition_id=${livescoreId}&key=${key}&secret=${secret}`,
+        { cache: "no-store" },
+      ),
+    ]);
+
+    const matchMap = new Map<string, KnockoutMatch>();
+
+    if (fixturesRes.ok) {
+      const fd = (await fixturesRes.json()) as {
+        success: boolean;
+        data?: {
+          fixtures?: Array<{
+            id: string | number;
+            date?: string;
+            time?: string;
+            home_name?: string;
+            away_name?: string;
+          }>;
+        };
+      };
+      if (fd.success && fd.data?.fixtures) {
+        for (const f of fd.data.fixtures) {
+          const id = String(f.id);
+          matchMap.set(id, {
+            id,
+            round: "",
+            date: f.date ?? "",
+            time: (f.time ?? "").slice(0, 5),
+            homeName: f.home_name ?? "",
+            awayName: f.away_name ?? "",
+            homeScore: null,
+            awayScore: null,
+            finished: false,
+          });
+        }
+      }
+    }
+
+    // History overwrites fixtures for finished matches (official FT scores).
+    if (historyRes.ok) {
+      const hd = (await historyRes.json()) as {
+        success: boolean;
+        data?: {
+          match?: Array<{
+            fixture_id?: string | number;
+            round?: string;
+            date?: string;
+            scheduled?: string;
+            home?: { name?: string };
+            away?: { name?: string };
+            scores?: { ft_score?: string };
+            status?: string;
+          }>;
+        };
+      };
+      if (hd.success && hd.data?.match) {
+        for (const m of hd.data.match) {
+          if (m.fixture_id == null) continue;
+          const id = String(m.fixture_id);
+          const score = parseScore(m.scores?.ft_score ?? "");
+          matchMap.set(id, {
+            id,
+            round: "",
+            date: m.date ?? "",
+            time: (m.scheduled ?? "").slice(0, 5),
+            homeName: m.home?.name ?? "",
+            awayName: m.away?.name ?? "",
+            homeScore: score?.home ?? null,
+            awayScore: score?.away ?? null,
+            finished: (m.status ?? "").toUpperCase() === "FINISHED",
+          });
+        }
+      }
+    }
+
+    // Live feed: in-play + just-finished scores that lag history. Updates known
+    // matches; only overwrite when history hasn't posted the official result.
+    if (liveRes.ok) {
+      const ld = (await liveRes.json()) as {
+        success: boolean;
+        data?: {
+          match?: Array<{
+            fixture_id?: string | number;
+            scheduled?: string;
+            added?: string;
+            home_name?: string;
+            away_name?: string;
+            score?: string;
+            status?: string;
+          }>;
+        };
+      };
+      if (ld.success && ld.data?.match) {
+        for (const m of ld.data.match) {
+          if (m.fixture_id == null) continue;
+          const id = String(m.fixture_id);
+          const score = parseScore(m.score ?? "");
+          const finished = (m.status ?? "").toUpperCase() === "FINISHED";
+          const existing = matchMap.get(id);
+          if (existing) {
+            if (!existing.finished) {
+              if (score) {
+                existing.homeScore = score.home;
+                existing.awayScore = score.away;
+              }
+              existing.finished = finished;
+            }
+            continue;
+          }
+          matchMap.set(id, {
+            id,
+            round: "",
+            date: (m.added ?? "").slice(0, 10),
+            time: (m.scheduled ?? "").slice(0, 5),
+            homeName: m.home_name ?? "",
+            awayName: m.away_name ?? "",
+            homeScore: score?.home ?? null,
+            awayScore: score?.away ?? null,
+            finished,
+          });
+        }
+      }
+    }
+
+    const byDate = new Map<string, KnockoutMatch[]>();
+    for (const m of matchMap.values()) {
+      if (!m.date) continue;
+      const arr = byDate.get(m.date) ?? [];
+      arr.push(m);
+      byDate.set(m.date, arr);
+    }
+
+    return [...byDate.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, matches]) => ({
+        date,
+        matches: matches.sort((a, b) => a.time.localeCompare(b.time)),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+export const getCompetitionFixtures = unstable_cache(
+  fetchCompetitionFixturesImpl,
+  ["competition-fixtures"],
+  { revalidate: 600 },
+);
+
 async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]> {
   const supabase = getSupabase();
   if (!supabase) return [];

@@ -251,6 +251,7 @@ export interface Dict {
     knockoutFinished: string;
     seasonNote: string;
     titleFor: string;
+    schedule: string;
   };
 }
 
@@ -465,6 +466,7 @@ const en: Dict = {
     knockoutFinished: "Completed Rounds",
     seasonNote: "{season} season",
     titleFor: "{name} Standings",
+    schedule: "Schedule",
   },
 };
 
@@ -679,6 +681,7 @@ const vi: Dict = {
     knockoutFinished: "C\u00e1c v\u00f2ng \u0111\u00e3 k\u1ebft th\u00fac",
     seasonNote: "M\u00f9a {season}",
     titleFor: "B\u1ea3ng x\u1ebfp h\u1ea1ng {name}",
+    schedule: "L\u1ecbch thi \u0111\u1ea5u",
   },
 };
 
@@ -893,6 +896,7 @@ const th: Dict = {
     knockoutFinished: "\u0e23\u0e2d\u0e1a\u0e17\u0e35\u0e48\u0e08\u0e1a\u0e41\u0e25\u0e49\u0e27",
     seasonNote: "\u0e24\u0e14\u0e39\u0e01\u0e32\u0e25 {season}",
     titleFor: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19 {name}",
+    schedule: "\u0e42\u0e1b\u0e23\u0e41\u0e01\u0e23\u0e21\u0e01\u0e32\u0e23\u0e41\u0e02\u0e48\u0e07\u0e02\u0e31\u0e19",
   },
 };
 
@@ -1109,6 +1113,7 @@ const es: Dict = {
     knockoutFinished: "Rondas finalizadas",
     seasonNote: "Temporada {season}",
     titleFor: "Clasificaci\u00f3n de {name}",
+    schedule: "Calendario",
   },
 };
 
