@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, publishWatchingNews } from './watching-news';
+import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, publishWatchingNews, type WatchingCardDeps } from './watching-news';
 import { disclosureFor } from './recap';
 import { MemoryStore, type WatchingRow } from './store';
 
@@ -236,5 +236,82 @@ describe('publishWatchingNews', () => {
       publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching()),
     ).resolves.toBeUndefined();
     expect(store.posts).toHaveLength(0);
+  });
+
+  // Regression: France-Morocco 09/07 — a single lang failing seo-lint (Thai katakana glitch)
+  // blocked the whole insert loop, so the TG card was never sent even though EN/VI/ES were fine.
+  it('publishes surviving langs and STILL sends the card when one lang is blocked', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true, status: 200,
+      json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
+    })));
+    const store = new MemoryStore();
+    const realInsert = store.insertPost.bind(store);
+    store.insertPost = vi.fn(async (post) => {
+      if (post.lang === 'th') throw new Error("seo-lint BLOCK for news/x/th: unexpected script character '\u30F3'");
+      return realInsert(post);
+    });
+    const sendPhoto = vi.fn(async (_chat: string | number, _photo: unknown, _opts?: unknown) => ({ message_id: 1 }));
+    const sendMessage = vi.fn(async (_chat: string | number, _text: string) => ({ message_id: 1 }));
+    const api = { sendPhoto, sendMessage } as unknown as WatchingCardDeps['api'];
+
+    await publishWatchingNews(
+      { store, env: { apiKey: 'k' }, card: { api, channelChatId: '-100', siteUrl: 'https://x' } },
+      activeWatching(),
+    );
+
+    expect(store.posts.map((p) => p.lang).sort()).toEqual(['en', 'es', 'vi']);
+    expect(sendPhoto).toHaveBeenCalledTimes(1);
+    expect(sendPhoto).toHaveBeenCalledWith('-100', expect.stringContaining('wildlyplay_watching'), expect.anything());
+  });
+
+  it('skips the card when EVERY lang is blocked', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true, status: 200,
+      json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
+    })));
+    const store = new MemoryStore();
+    store.insertPost = vi.fn(async () => { throw new Error('seo-lint BLOCK'); });
+    const sendPhoto = vi.fn(async (_chat: string | number, _photo: unknown, _opts?: unknown) => ({ message_id: 1 }));
+    const sendMessage = vi.fn(async (_chat: string | number, _text: string) => ({ message_id: 1 }));
+    const api = { sendPhoto, sendMessage } as unknown as WatchingCardDeps['api'];
+
+    await publishWatchingNews(
+      { store, env: { apiKey: 'k' }, card: { api, channelChatId: '-100', siteUrl: 'https://x' } },
+      activeWatching(),
+    );
+
+    expect(store.posts).toHaveLength(0);
+    expect(sendPhoto).not.toHaveBeenCalled();
+    expect(sendMessage).not.toHaveBeenCalled();
+  });
+
+  // Restore (Nick 09/07): watching cards used to go to FB too, before the 3/7 "TG only" change.
+  it('also posts the watching card to Facebook when facebook creds are set', async () => {
+    const fbCalls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (String(url).includes('graph.facebook.com')) {
+        fbCalls.push(String(url));
+        return { ok: true, status: 200, json: async () => ({ id: 'fb-1' }) };
+      }
+      return { ok: true, status: 200, json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }) };
+    }));
+    const store = new MemoryStore();
+    const sendPhoto = vi.fn(async (_chat: string | number, _photo: unknown, _opts?: unknown) => ({ message_id: 1 }));
+    const sendMessage = vi.fn(async (_chat: string | number, _text: string) => ({ message_id: 1 }));
+    const api = { sendPhoto, sendMessage } as unknown as WatchingCardDeps['api'];
+
+    await publishWatchingNews(
+      {
+        store, env: { apiKey: 'k' },
+        card: { api, channelChatId: '-100', siteUrl: 'https://x', facebook: { pageId: 'PID', pageToken: 'TOK' } },
+      },
+      activeWatching(),
+    );
+
+    expect(store.posts).toHaveLength(4);
+    expect(sendPhoto).toHaveBeenCalledTimes(1);
+    expect(fbCalls).toHaveLength(1);
+    expect(fbCalls[0]).toContain('/PID/photos');
   });
 });

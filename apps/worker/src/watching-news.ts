@@ -7,6 +7,8 @@ import type { Api } from 'grammy';
 import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, validate4Lang } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
+import { postToFacebook } from './announce-pick';
+import { postPhotoToFacebook } from './announce';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -111,6 +113,8 @@ export interface WatchingCardDeps {
   api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
   channelChatId: string | undefined;
   siteUrl: string;
+  /** WATCHING FB post — same fail-safe rule as the TG card; skipped when unset. */
+  facebook?: { pageId: string; pageToken: string };
 }
 
 export interface WatchingNewsDeps {
@@ -145,18 +149,36 @@ async function sendWatchingCard(
   slug: string,
   reason?: string | null,
 ): Promise<void> {
-  if (!deps.channelChatId) return;
-  try {
-    const msg = formatWatchingMessage(w, deps.siteUrl, slug, reason);
-    const imageUrl = `${deps.siteUrl}/images/wildlyplay_watching.png`;
+  const msg = formatWatchingMessage(w, deps.siteUrl, slug, reason);
+  const imageUrl = `${deps.siteUrl}/images/wildlyplay_watching.png`;
+
+  // TG channel card — independent fail-safe.
+  if (deps.channelChatId) {
     try {
-      await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
-    } catch {
-      await deps.api.sendMessage(deps.channelChatId, msg);
+      try {
+        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
+      } catch {
+        await deps.api.sendMessage(deps.channelChatId, msg);
+      }
+      log.info(`watching card sent for ${w.home_team} vs ${w.away_team}`);
+    } catch (err) {
+      log.warn(`watching card failed for ${w.home_team} vs ${w.away_team} — article already published:`, err);
     }
-    log.info(`watching card sent for ${w.home_team} vs ${w.away_team}`);
-  } catch (err) {
-    log.warn(`watching card failed for ${w.home_team} vs ${w.away_team} — article already published:`, err);
+  }
+
+  // FB post — same restore Nick asked for; never blocks the TG card (own try/catch).
+  if (deps.facebook) {
+    try {
+      try {
+        await postPhotoToFacebook(deps.facebook, imageUrl, msg);
+      } catch (err) {
+        log.warn(`watching FB photo failed for ${w.home_team} vs ${w.away_team} — falling back to link post:`, err);
+        await postToFacebook(deps.facebook, msg, buildArticleLink(deps.siteUrl, slug, 'facebook'));
+      }
+      log.info(`watching FB post sent for ${w.home_team} vs ${w.away_team}`);
+    } catch (err) {
+      log.warn(`watching FB post failed for ${w.home_team} vs ${w.away_team} — TG card already sent:`, err);
+    }
   }
 }
 
@@ -191,10 +213,26 @@ export async function publishWatchingNews(
     for (const p of posts) langBodies[p.lang as import('./store').PostLang] = p.body_md;
     const { ok, missing } = validate4Lang(langBodies);
     if (!ok) log.warn(`watching-news: incomplete langs [${missing.join(',')}] for ${watching.home_team} vs ${watching.away_team} — publishing available langs`);
+    // Per-lang resilience: one lang failing seo-lint must NOT drop the card (bug: France-Morocco
+    // 09/07 — a Thai katakana glitch blocked insert, killing the whole announce). Publish what
+    // passes; send the card as long as ≥1 lang is live.
+    let published = 0;
+    const failedLangs: string[] = [];
     for (const post of posts) {
-      await deps.store.insertPost(post);
+      try {
+        await deps.store.insertPost(post);
+        published++;
+      } catch (err) {
+        failedLangs.push(post.lang);
+        log.warn(`watching-news: insertPost failed for ${post.slug}/${post.lang} — skipping this lang:`, err);
+      }
     }
-    log.info(`watching-news: published ${posts.length} posts for ${watching.home_team} vs ${watching.away_team}`);
+    if (published === 0) {
+      log.warn(`watching-news: no langs published for ${watching.home_team} vs ${watching.away_team} — skipping card`);
+      return;
+    }
+    if (failedLangs.length) log.warn(`watching-news: published ${published}/${posts.length} for ${watching.home_team} vs ${watching.away_team}, failed langs [${failedLangs.join(',')}]`);
+    else log.info(`watching-news: published ${published} posts for ${watching.home_team} vs ${watching.away_team}`);
     if (deps.card) await sendWatchingCard(deps.card, watching, slug, reason);
 
     if (deps.revalidateUrl) {

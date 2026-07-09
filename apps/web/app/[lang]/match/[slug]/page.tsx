@@ -29,12 +29,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Preview, Pick & Result`;
   const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on WildlyPlay.`;
+  const ogImage = `/api/og/match/${slug}`;
 
   return {
     title,
     description,
-    openGraph: { title: `${title} | WildlyPlay`, description, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
-    twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    openGraph: { title: `${title} | WildlyPlay`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     alternates: buildAlternates(`/match/${slug}`, lang),
   };
 }

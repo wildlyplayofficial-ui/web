@@ -224,7 +224,7 @@ if (persistDb) {
     if (!w) throw new Error(`watching ${watchingId} not found`);
     await publishWatchingNews({
       store, env: aiEnv, revalidateUrl: siteUrl,
-      card: { api: bot.api, channelChatId, siteUrl },
+      card: { api: bot.api, channelChatId, siteUrl, facebook },
     }, w, reason);
   };
   jobHandlers['postmortem'] = async (payload) => {
@@ -313,7 +313,7 @@ const server = createServer(async (req, res) => {
         void translateWatchingNote({ store, env: aiEnv }, watching);
         void publishWatchingNews({
           store, env: aiEnv, revalidateUrl: siteUrl,
-          card: { api: bot.api, channelChatId, siteUrl },
+          card: { api: bot.api, channelChatId, siteUrl, facebook },
         }, watching);
       }
       void revalidate(['watching']);
