@@ -14,6 +14,8 @@ export function Footer() {
     { href: "/about", label: dict.nav.about },
     { href: "/archive", label: dict.nav.archive },
     { href: "/news", label: dict.nav.news },
+    { href: "/matches", label: dict.nav.matches },
+    { href: "/standings", label: dict.nav.standings },
     { href: "/guides", label: dict.nav.guides },
     { href: "/calculators", label: dict.nav.calculators },
     { href: "/transparency", label: dict.nav.transparency },

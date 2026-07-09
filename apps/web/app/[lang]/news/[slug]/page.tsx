@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost, getPostLangs, getMatchBySlug } from "@/lib/data";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
@@ -123,6 +124,8 @@ export default async function NewsPost({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: schema }}
       />
+
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.nav.news, url: "/news" }, { name: post.title, url: `/news/${slug}` }]} />
 
       <Link
         href={withLang("/news", lang)}

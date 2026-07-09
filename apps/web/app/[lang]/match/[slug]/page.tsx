@@ -5,6 +5,7 @@ import { BoothSection } from "@/components/booth-section";
 import { MatchCommentary } from "@/components/match-commentary";
 import { PickCard } from "@/components/pick-card";
 import { WatchingTeaser } from "@/components/watching-teaser";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { getBoothForPick } from "@/lib/booth-data";
 import { getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
@@ -115,6 +116,7 @@ export default async function MatchPage({ params }: Props) {
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.nav.matches, url: "/matches" }, { name: `${match.homeTeam} vs ${match.awayTeam}`, url: `/match/${slug}` }]} />
       <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">&larr; {dict.match.backToMatches}</Link>
 
       <header className="mt-6">
