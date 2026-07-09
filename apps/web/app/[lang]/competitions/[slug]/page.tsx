@@ -63,6 +63,12 @@ export default async function StandingSlugPage({ params }: Props) {
   // "league_playoff") when MLS/Liga MX playoff brackets land.
   const isWorldCup = comp.livescoreId === 362;
 
+  // The Champions League / Europa League / Relegation legend only applies to the
+  // top-5 European leagues. MLS/Liga MX (and anything else) use playoffs, not
+  // European cups, so their table renders without that misleading legend.
+  const EURO_LEAGUES = new Set(["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1"]);
+  const showQualification = EURO_LEAGUES.has(slug);
+
   const [tableRows, knockoutRounds, fixtureDays, formMap] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId),
     isWorldCup ? getKnockoutRounds(comp.livescoreId) : Promise.resolve([]),
@@ -199,7 +205,7 @@ export default async function StandingSlugPage({ params }: Props) {
                   {group && (
                     <h2 className="mb-3 font-display text-lg font-bold">{group}</h2>
                   )}
-                  <LeagueTable teams={teams.sort((a, b) => a.rank - b.rank)} labels={dict.standings} />
+                  <LeagueTable teams={teams.sort((a, b) => a.rank - b.rank)} labels={dict.standings} showQualification={showQualification} />
                 </section>
               ))}
           </div>
@@ -209,7 +215,7 @@ export default async function StandingSlugPage({ params }: Props) {
         <>
           <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
           <div className="mt-12">
-            <LeagueTable teams={sortedRows} labels={dict.standings} />
+            <LeagueTable teams={sortedRows} labels={dict.standings} showQualification={showQualification} />
           </div>
         </>
       )}

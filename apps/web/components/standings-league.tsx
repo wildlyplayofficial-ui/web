@@ -55,9 +55,14 @@ interface Labels {
 export function LeagueTable({
   teams,
   labels,
+  showQualification = true,
 }: {
   teams: StandingTeam[];
   labels: Labels;
+  // European CL/EL/relegation zones apply to the top-5 European leagues only.
+  // North-American leagues (MLS, Liga MX) use playoffs, not European cups, so
+  // the caller passes false to hide the misleading legend + row highlights.
+  showQualification?: boolean;
 }) {
   const [tab, setTab] = useState<Tab>("all");
 
@@ -111,7 +116,7 @@ export function LeagueTable({
             {teams.map((team) => (
               <tr
                 key={team.name}
-                className={`border-b border-line last:border-0 ${zoneClass(team.rank, teams.length)}`}
+                className={`border-b border-line last:border-0 ${showQualification ? zoneClass(team.rank, teams.length) : ""}`}
               >
                 <td className="px-2 py-2 text-center text-muted">{team.rank}</td>
                 <td className="px-2 py-2 font-medium text-ink">
@@ -141,17 +146,19 @@ export function LeagueTable({
           </tbody>
         </table>
       </div>
-      <div className="mt-2 flex gap-4 text-[10px] text-muted">
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-2 w-6 rounded border-l-2 border-l-brand" /> Champions League
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-2 w-6 rounded border-l-2 border-l-indigo-soft" /> Europa League
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-2 w-6 rounded border-l-2 border-l-loss" /> Relegation
-        </span>
-      </div>
+      {showQualification && (
+        <div className="mt-2 flex gap-4 text-[10px] text-muted">
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-6 rounded border-l-2 border-l-brand" /> Champions League
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-6 rounded border-l-2 border-l-indigo-soft" /> Europa League
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-6 rounded border-l-2 border-l-loss" /> Relegation
+          </span>
+        </div>
+      )}
     </section>
   );
 }
