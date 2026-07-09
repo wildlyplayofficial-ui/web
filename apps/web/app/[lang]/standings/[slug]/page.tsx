@@ -16,16 +16,6 @@ type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
-// Prerender active competition slugs at build so the first visit is instant
-// (ISR keeps them fresh via `revalidate`). Feature-flagged/inactive slugs stay
-// on-demand — `dynamicParams` is left at its default (true) for this segment.
-export async function generateStaticParams() {
-  const competitions = await getStandingsCompetitions();
-  return competitions
-    .filter((c) => c.status === "active" && c.slug)
-    .map((c) => ({ slug: c.slug }));
-}
-
 async function resolveCompetition(slug: string) {
   const competitions = await getStandingsCompetitions();
   return competitions.find((c) => c.slug === slug) ?? null;
