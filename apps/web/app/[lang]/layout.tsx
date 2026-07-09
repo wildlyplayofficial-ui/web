@@ -20,7 +20,7 @@ async function HeaderWithData() {
     .map((c) => ({
       name: c.name,
       // World Cup keeps its canonical index page; others go to their slug page.
-      href: c.livescoreId === 362 ? "/standings" : `/standings/${c.slug}`,
+      href: c.livescoreId === 362 ? "/competitions" : `/competitions/${c.slug}`,
     }));
   return <Header competitions={competitions} />;
 }

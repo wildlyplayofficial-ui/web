@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: dict.standings.subtitle,
       images: [{ url: "/og-home.png", width: 1200, height: 630 }],
     },
-    alternates: buildAlternates("/standings", lang),
+    alternates: buildAlternates("/competitions", lang),
   };
 }
 
@@ -43,7 +43,7 @@ export default async function StandingsPage({ params }: Props) {
   if (standings.length === 0 && knockoutRounds.length === 0) {
     return (
       <div className="mx-auto max-w-[1100px] px-5 pb-12">
-        <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/standings" }]} />
+        <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/competitions" }]} />
         <section className="py-12 text-center">
           <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
           <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
@@ -70,7 +70,7 @@ export default async function StandingsPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/standings" }]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Standings", url: "/competitions" }]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
         <p className="mt-3 text-muted">{dict.standings.subtitle}</p>

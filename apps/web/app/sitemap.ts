@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/archive`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/archive") },
     { url: `${BASE}/stats`, changeFrequency: "daily", priority: 0.8, alternates: alternates("/stats") },
     { url: `${BASE}/matches`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/matches") },
-    { url: `${BASE}/standings`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/standings") },
+    { url: `${BASE}/competitions`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/competitions") },
     { url: `${BASE}/calculators`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators") },
     { url: `${BASE}/calculators/odds-converter`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/odds-converter") },
     { url: `${BASE}/calculators/kelly`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/kelly") },
@@ -86,10 +86,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const standingsRoutes: MetadataRoute.Sitemap = competitions
     .filter((c) => c.slug)
     .map((c) => ({
-      url: `${BASE}/standings/${c.slug}`,
+      url: `${BASE}/competitions/${c.slug}`,
       changeFrequency: "daily",
       priority: 0.7,
-      alternates: alternates(`/standings/${c.slug}`),
+      alternates: alternates(`/competitions/${c.slug}`),
     }));
 
   return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];

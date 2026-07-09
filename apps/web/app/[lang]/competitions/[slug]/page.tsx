@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = dict.standings.titleFor.replace("{name}", comp.name);
   return {
     title,
-    alternates: buildAlternates(`/standings/${slug}`, lang),
+    alternates: buildAlternates(`/competitions/${slug}`, lang),
   };
 }
 
@@ -105,8 +105,8 @@ export default async function StandingSlugPage({ params }: Props) {
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
-          { name: dict.standings.title, url: "/standings" },
-          { name: comp.name, url: `/standings/${slug}` },
+          { name: dict.standings.title, url: "/competitions" },
+          { name: comp.name, url: `/competitions/${slug}` },
         ]}
       />
       <section className="py-12 text-center">

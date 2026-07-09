@@ -27,6 +27,11 @@ const nextConfig: NextConfig = {
       // 301 redirect old /guides/transparency-report-* to /transparency/*
       { source: "/guides/transparency-report-:slug", destination: "/transparency/:slug", permanent: true },
       { source: "/:lang(en|vi|th|es)/guides/transparency-report-:slug", destination: "/:lang/transparency/:slug", permanent: true },
+      // 301 migrate /standings -> /competitions (moved 9/7/2026, IA rebuild)
+      { source: "/standings", destination: "/competitions", statusCode: 301 },
+      { source: "/standings/:path*", destination: "/competitions/:path*", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/standings", destination: "/:lang/competitions", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/standings/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
     ];
   },
 };
