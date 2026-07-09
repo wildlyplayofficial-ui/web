@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs } from "@/lib/data";
+import { getStandingsCompetitions } from "@/lib/standings-extra";
 
 /** SEO: every settled play + published post + all 4 language variants. */
 
@@ -20,7 +21,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches, guides, reports] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs()]);
+  const [picks, posts, matches, guides, reports, competitions] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions()]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -30,6 +31,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/archive`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/archive") },
     { url: `${BASE}/stats`, changeFrequency: "daily", priority: 0.8, alternates: alternates("/stats") },
     { url: `${BASE}/matches`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/matches") },
+    { url: `${BASE}/standings`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/standings") },
+    { url: `${BASE}/calculators`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators") },
+    { url: `${BASE}/calculators/odds-converter`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/odds-converter") },
+    { url: `${BASE}/calculators/kelly`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/kelly") },
+    { url: `${BASE}/calculators/de-vig`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/de-vig") },
     { url: `${BASE}/news`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/news") },
     { url: `${BASE}/guides`, changeFrequency: "weekly", priority: 0.7, alternates: alternates("/guides") },
     { url: `${BASE}/transparency`, changeFrequency: "monthly", priority: 0.7, alternates: alternates("/transparency") },
@@ -77,5 +83,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/transparency/${r.slug}`),
   }));
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes];
+  const standingsRoutes: MetadataRoute.Sitemap = competitions
+    .filter((c) => c.slug)
+    .map((c) => ({
+      url: `${BASE}/standings/${c.slug}`,
+      changeFrequency: "daily",
+      priority: 0.7,
+      alternates: alternates(`/standings/${c.slug}`),
+    }));
+
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
