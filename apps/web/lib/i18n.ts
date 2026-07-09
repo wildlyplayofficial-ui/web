@@ -58,6 +58,10 @@ export interface Dict {
     guides: string;
     transparency: string;
     calculators: string;
+    todaysPick: string;
+    trackRecord: string;
+    analysis: string;
+    learn: string;
   };
   tagline: string;
   footerDisclaimer: string;
@@ -271,6 +275,10 @@ const en: Dict = {
     guides: "Guides",
     transparency: "Transparency",
     calculators: "Calculators",
+    todaysPick: "Today's Pick",
+    trackRecord: "Track Record",
+    analysis: "Analysis",
+    learn: "Learn",
   },
   tagline: "Handpicked plays for the global crowd",
   footerDisclaimer: "Entertainment only. Play responsibly.",
@@ -486,6 +494,10 @@ const vi: Dict = {
     guides: "Hướng Dẫn",
     transparency: "Minh Bạch",
     calculators: "Công Cụ",
+    todaysPick: "Kèo Hôm Nay",
+    trackRecord: "Thành Tích",
+    analysis: "Phân Tích",
+    learn: "Học Hỏi",
   },
   tagline: "Kèo tuyển chọn cho cộng đồng toàn cầu",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
@@ -701,6 +713,10 @@ const th: Dict = {
     guides: "คู่มือ",
     transparency: "ความโปร่งใส",
     calculators: "เครื่องคิดเลข",
+    todaysPick: "ทีเด็ดวันนี้",
+    trackRecord: "สถิติผลงาน",
+    analysis: "บทวิเคราะห์",
+    learn: "เรียนรู้",
   },
   tagline: "ทีเด็ดคัดมากับมือ เพื่อคอบอลทั่วโลก",
   footerDisclaimer: "เพื่อความบันเทิงเท่านั้น โปรดเล่นอย่างมีความรับผิดชอบ",
@@ -916,6 +932,10 @@ const es: Dict = {
     guides: "Guías",
     transparency: "Transparencia",
     calculators: "Calculadoras",
+    todaysPick: "Pick de Hoy",
+    trackRecord: "Historial",
+    analysis: "Análisis",
+    learn: "Aprender",
   },
   tagline: "Jugadas seleccionadas a mano para la afición global",
   footerDisclaimer: "Solo entretenimiento. Juega con responsabilidad.",
