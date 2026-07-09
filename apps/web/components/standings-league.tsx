@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { StandingTeam } from "@/lib/standings";
-import { teamFlag } from "@/lib/flags";
+import { TeamCrest } from "@/components/team-crest";
 
 type Tab = "all" | "form";
 
@@ -115,7 +115,7 @@ export function LeagueTable({
               >
                 <td className="px-2 py-2 text-center text-muted">{team.rank}</td>
                 <td className="px-2 py-2 font-medium text-ink">
-                  <span className="mr-1.5">{teamFlag(team.name)}</span>
+                  <TeamCrest name={team.name} />
                   {team.name}
                 </td>
                 {tab === "all" ? (
