@@ -49,6 +49,7 @@ export interface Dict {
     archive: string;
     stats: string;
     matches: string;
+    allMatches: string;
     standings: string;
     news: string;
     about: string;
@@ -266,6 +267,7 @@ const en: Dict = {
     archive: "Archive",
     stats: "Stats",
     matches: "Matches",
+    allMatches: "All Matches",
     standings: "Standings",
     news: "Newsroom",
     about: "About",
@@ -485,6 +487,7 @@ const vi: Dict = {
     archive: "Lưu Trữ",
     stats: "Thống Kê",
     matches: "Trận Đấu",
+    allMatches: "Tất Cả Trận",
     standings: "BXH",
     news: "Tin Tức",
     about: "Giới Thiệu",
@@ -704,6 +707,7 @@ const th: Dict = {
     archive: "คลังทีเด็ด",
     stats: "สถิติ",
     matches: "แมตช์",
+    allMatches: "แมตช์ทั้งหมด",
     standings: "ตารางคะแนน",
     news: "ข่าวสาร",
     about: "เกี่ยวกับเรา",
@@ -923,6 +927,7 @@ const es: Dict = {
     archive: "Archivo",
     stats: "Estadísticas",
     matches: "Partidos",
+    allMatches: "Todos los Partidos",
     standings: "Clasificaci\u00f3n",
     news: "Noticias",
     about: "Acerca de",

@@ -12,8 +12,10 @@ interface NavCompetition {
 }
 
 type NavLink = { name: string; href: string };
-/** A top-level nav cluster: either a single link or a dropdown of links. */
-type NavCluster = { label: string; href: string } | { label: string; items: NavLink[] };
+/** A dropdown row: a link, or a visual divider between groups. */
+type NavItem = NavLink | { divider: true };
+/** A top-level nav cluster: either a single link or a dropdown of items. */
+type NavCluster = { label: string; href: string } | { label: string; items: NavItem[] };
 
 const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
 
@@ -59,7 +61,7 @@ function NavDropdown({
 }: {
   label: string;
   active: boolean;
-  items: NavLink[];
+  items: NavItem[];
   lang: Lang;
   onNavigate: () => void;
 }) {
@@ -103,21 +105,30 @@ function NavDropdown({
           role="menu"
           className="mt-2 flex flex-col gap-3 pl-3 md:absolute md:left-0 md:z-20 md:w-56 md:gap-0 md:rounded-card md:border md:border-line md:bg-card md:py-1 md:pl-0 md:shadow-card"
         >
-          {items.map((it) => (
-            <li key={it.href} role="none">
-              <Link
-                role="menuitem"
-                href={withLang(it.href, lang)}
-                onClick={() => {
-                  setOpen(false);
-                  onNavigate();
-                }}
-                className="block text-sm text-muted transition-colors hover:text-ink md:px-4 md:py-2 md:hover:bg-card-hover"
-              >
-                {it.name}
-              </Link>
-            </li>
-          ))}
+          {items.map((it, i) =>
+            "divider" in it ? (
+              <li
+                key={`divider-${i}`}
+                role="separator"
+                aria-hidden="true"
+                className="border-t border-line md:my-1"
+              />
+            ) : (
+              <li key={it.href} role="none">
+                <Link
+                  role="menuitem"
+                  href={withLang(it.href, lang)}
+                  onClick={() => {
+                    setOpen(false);
+                    onNavigate();
+                  }}
+                  className="block text-sm text-muted transition-colors hover:text-ink md:px-4 md:py-2 md:hover:bg-card-hover"
+                >
+                  {it.name}
+                </Link>
+              </li>
+            ),
+          )}
         </ul>
       )}
     </li>
@@ -156,8 +167,8 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     {
       label: nav.matches,
       items: [
-        { name: nav.matches, href: "/matches" },
-        { name: nav.standings, href: "/standings" },
+        { name: nav.allMatches, href: "/matches" },
+        ...(competitions.length > 0 ? [{ divider: true } as const] : []),
         ...competitions,
       ],
     },
@@ -209,7 +220,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
                   </li>
                 );
               }
-              const active = cluster.items.some((it) => isActive(it.href));
+              const active = cluster.items.some((it) => "href" in it && isActive(it.href));
               return (
                 <NavDropdown
                   key={cluster.label}
