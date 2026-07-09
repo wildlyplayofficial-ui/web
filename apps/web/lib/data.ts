@@ -199,6 +199,20 @@ export const getTrackRecordForAuthor = unstable_cache(
   { revalidate: 900, tags: ["picks"] },
 );
 
+/** Single pick by id — used by the news OG card to resolve teams/odds from post.pick_ids. */
+async function getPickByIdImpl(id: string): Promise<Pick | null> {
+  const supabase = getSupabase();
+  if (!supabase) return mockPicks.find((p) => p.id === id) ?? null;
+  const { data, error } = await supabase.from("picks").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`getPickById: ${error.message}`);
+  return (data as Pick) ?? null;
+}
+
+export const getPickById = unstable_cache(getPickByIdImpl, ["pick-by-id"], {
+  revalidate: 300,
+  tags: ["picks"],
+});
+
 /** Published posts for a language, newest first. Falls back to EN when a VI version is missing. */
 async function getPostsImpl(lang: Lang): Promise<Post[]> {
   const supabase = getSupabase();
