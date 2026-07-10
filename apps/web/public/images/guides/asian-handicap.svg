@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" rx="16" fill="#f4f6f8"/>
+  <!-- Title -->
+  <text x="400" y="45" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#0d1117">Asian Handicap Line Diagram</text>
+  <!-- Goal axis -->
+  <line x1="80" y1="200" x2="720" y2="200" stroke="#e2e6ea" stroke-width="2"/>
+  <text x="50" y="205" font-family="system-ui,sans-serif" font-size="13" fill="#5b6572" text-anchor="end">Goals</text>
+  <!-- Tick marks and labels -->
+  <line x1="160" y1="185" x2="160" y2="215" stroke="#5b6572" stroke-width="2"/>
+  <text x="160" y="240" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#0d1117">0</text>
+  <line x1="280" y1="185" x2="280" y2="215" stroke="#5b6572" stroke-width="2"/>
+  <text x="280" y="240" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#0d1117">1</text>
+  <line x1="400" y1="185" x2="400" y2="215" stroke="#5b6572" stroke-width="2"/>
+  <text x="400" y="240" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#0d1117">2</text>
+  <line x1="520" y1="185" x2="520" y2="215" stroke="#5b6572" stroke-width="2"/>
+  <text x="520" y="240" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#0d1117">3</text>
+  <line x1="640" y1="185" x2="640" y2="215" stroke="#5b6572" stroke-width="2"/>
+  <text x="640" y="240" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#0d1117">4</text>
+  <!-- Handicap lines -->
+  <!-- -0.5 -->
+  <line x1="220" y1="100" x2="220" y2="180" stroke="#00c853" stroke-width="3" stroke-dasharray="6,4"/>
+  <circle cx="220" cy="95" r="6" fill="#00c853"/>
+  <text x="220" y="80" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#00c853">-0.5</text>
+  <!-- -1.0 -->
+  <line x1="280" y1="110" x2="280" y2="180" stroke="#009e42" stroke-width="3"/>
+  <circle cx="280" cy="105" r="6" fill="#009e42"/>
+  <text x="280" y="90" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#009e42">-1.0</text>
+  <!-- -1.5 -->
+  <line x1="340" y1="120" x2="340" y2="180" stroke="#00c853" stroke-width="3" stroke-dasharray="6,4"/>
+  <circle cx="340" cy="115" r="6" fill="#00c853"/>
+  <text x="340" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#00c853">-1.5</text>
+  <!-- -2.0 -->
+  <line x1="400" y1="130" x2="400" y2="180" stroke="#009e42" stroke-width="3"/>
+  <circle cx="400" cy="125" r="6" fill="#009e42"/>
+  <text x="400" y="110" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#009e42">-2.0</text>
+  <!-- Legend -->
+  <line x1="160" y1="300" x2="190" y2="300" stroke="#009e42" stroke-width="3"/>
+  <text x="200" y="305" font-family="system-ui,sans-serif" font-size="12" fill="#5b6572">Whole ball = push possible</text>
+  <line x1="400" y1="300" x2="430" y2="300" stroke="#00c853" stroke-width="3" stroke-dasharray="6,4"/>
+  <text x="440" y="305" font-family="system-ui,sans-serif" font-size="12" fill="#5b6572">Half ball = no push</text>
+  <!-- Annotations -->
+  <rect x="100" y="340" width="600" height="36" rx="8" fill="#00c853" fill-opacity="0.08" stroke="#00c853" stroke-opacity="0.3"/>
+  <text x="400" y="363" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#0d1117">Favorite gets a handicap deficit · Underdog gets a head start · Eliminates the draw</text>
+</svg>

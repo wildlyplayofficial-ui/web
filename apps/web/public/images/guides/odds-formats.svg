@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui,sans-serif">
+  <rect width="800" height="400" fill="#f4f6f8" rx="16"/>
+  <text x="400" y="45" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">Odds Formats Explained</text>
+  <text x="400" y="72" text-anchor="middle" font-size="14" fill="#5b6572">Same probability, different formats</text>
+
+  <!-- Table header -->
+  <rect x="60" y="95" width="680" height="40" rx="8" fill="#0d1117"/>
+  <text x="170" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Format</text>
+  <text x="340" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Favourite (65%)</text>
+  <text x="510" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Even (50%)</text>
+  <text x="670" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Underdog (30%)</text>
+
+  <!-- Row 1: Decimal -->
+  <rect x="60" y="140" width="680" height="44" rx="0" fill="#fff"/>
+  <line x1="60" y1="184" x2="740" y2="184" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="170" y="167" text-anchor="middle" font-size="14" font-weight="600" fill="#0d1117">Decimal</text>
+  <text x="340" y="167" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">1.54</text>
+  <text x="510" y="167" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">2.00</text>
+  <text x="670" y="167" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">3.33</text>
+
+  <!-- Row 2: American -->
+  <rect x="60" y="184" width="680" height="44" rx="0" fill="#f9fafb"/>
+  <line x1="60" y1="228" x2="740" y2="228" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="170" y="211" text-anchor="middle" font-size="14" font-weight="600" fill="#0d1117">American</text>
+  <text x="340" y="211" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">-185</text>
+  <text x="510" y="211" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">+100</text>
+  <text x="670" y="211" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">+233</text>
+
+  <!-- Row 3: Fractional -->
+  <rect x="60" y="228" width="680" height="44" rx="0" fill="#fff"/>
+  <line x1="60" y1="272" x2="740" y2="272" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="170" y="255" text-anchor="middle" font-size="14" font-weight="600" fill="#0d1117">Fractional</text>
+  <text x="340" y="255" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">6/11</text>
+  <text x="510" y="255" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">1/1</text>
+  <text x="670" y="255" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">7/3</text>
+
+  <!-- Row 4: Malay -->
+  <rect x="60" y="272" width="680" height="44" rx="0" fill="#f9fafb"/>
+  <text x="170" y="299" text-anchor="middle" font-size="14" font-weight="600" fill="#0d1117">Malay</text>
+  <text x="340" y="299" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">-1.85</text>
+  <text x="510" y="299" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">1.00</text>
+  <text x="670" y="299" text-anchor="middle" font-size="16" font-weight="700" fill="#00c853">0.43</text>
+
+  <!-- Footer annotation bar -->
+  <rect x="60" y="340" width="680" height="44" rx="10" fill="#00c853" fill-opacity="0.08"/>
+  <text x="400" y="367" text-anchor="middle" font-size="13" fill="#5b6572">All rows show the same three probabilities — only the notation changes</text>
+</svg>

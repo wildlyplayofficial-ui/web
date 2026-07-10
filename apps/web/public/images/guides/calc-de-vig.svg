@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui,sans-serif">
+  <rect width="800" height="400" fill="#f4f6f8" rx="16"/>
+  <text x="400" y="45" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">De-Vig Calculator</text>
+
+  <!-- Input box -->
+  <rect x="50" y="100" width="280" height="160" rx="14" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="190" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#0d1117">INPUT</text>
+  <line x1="80" y1="145" x2="300" y2="145" stroke="#e2e6ea" stroke-width="1"/>
+
+  <text x="100" y="175" font-size="13" fill="#5b6572">Home odds:</text>
+  <text x="260" y="175" text-anchor="end" font-size="18" font-weight="700" fill="#0d1117">1.85</text>
+
+  <text x="100" y="205" font-size="13" fill="#5b6572">Away odds:</text>
+  <text x="260" y="205" text-anchor="end" font-size="18" font-weight="700" fill="#0d1117">2.05</text>
+
+  <text x="190" y="245" text-anchor="middle" font-size="12" fill="#5b6572">Sum of implied prob = 103%</text>
+
+  <!-- Arrow -->
+  <line x1="340" y1="180" x2="440" y2="180" stroke="#00c853" stroke-width="2.5"/>
+  <polygon points="440,175 455,180 440,185" fill="#00c853"/>
+
+  <!-- Vig removed label on arrow -->
+  <rect x="350" y="145" width="80" height="24" rx="12" fill="#e5484d" fill-opacity="0.1"/>
+  <text x="390" y="162" text-anchor="middle" font-size="11" font-weight="600" fill="#e5484d">-3.0% vig</text>
+
+  <!-- Output box -->
+  <rect x="465" y="100" width="280" height="160" rx="14" fill="#fff" stroke="#00c853" stroke-width="2"/>
+  <text x="605" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#00c853">OUTPUT</text>
+  <line x1="495" y1="145" x2="715" y2="145" stroke="#e2e6ea" stroke-width="1"/>
+
+  <text x="515" y="175" font-size="13" fill="#5b6572">Home true prob:</text>
+  <text x="690" y="175" text-anchor="end" font-size="18" font-weight="700" fill="#00c853">52.6%</text>
+
+  <text x="515" y="205" font-size="13" fill="#5b6572">Away true prob:</text>
+  <text x="690" y="205" text-anchor="end" font-size="18" font-weight="700" fill="#00c853">47.4%</text>
+
+  <text x="605" y="245" text-anchor="middle" font-size="12" fill="#5b6572">Sum = 100% (fair odds)</text>
+
+  <!-- Formula -->
+  <text x="400" y="310" text-anchor="middle" font-size="12" fill="#5b6572">Formula: True Prob = (1/Odds) ÷ Sum(1/All Odds)</text>
+
+  <!-- Footer annotation bar -->
+  <rect x="50" y="340" width="700" height="44" rx="10" fill="#00c853" fill-opacity="0.08"/>
+  <text x="400" y="367" text-anchor="middle" font-size="13" fill="#5b6572">Remove the bookmaker's margin to reveal the real implied probabilities</text>
+</svg>

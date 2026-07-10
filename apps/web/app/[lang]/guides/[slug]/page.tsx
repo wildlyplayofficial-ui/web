@@ -11,6 +11,21 @@ export const revalidate = 300;
 
 const BASE = "https://www.wildlyplay.com";
 
+/** Static concept-diagram SVGs for each guide topic (spec §4). */
+const GUIDE_DIAGRAMS: Record<string, string> = {
+  "what-is-asian-handicap": "asian-handicap.svg",
+  "how-de-vigging-works": "de-vig-methods.svg",
+  "what-is-devigging": "de-vig-intro.svg",
+  "what-is-closing-line-value": "closing-line-value.svg",
+  "kelly-criterion-betting": "kelly-criterion.svg",
+  "what-is-value-betting": "value-betting.svg",
+  "how-to-read-betting-odds": "odds-anatomy.svg",
+  "odds-formats-explained": "odds-formats.svg",
+  "what-makes-a-good-tipster": "good-tipster.svg",
+  "no-play-discipline": "no-play-discipline.svg",
+  "responsible-play-guide": "responsible-play.svg",
+};
+
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -130,17 +145,19 @@ export default async function GuidePage({ params }: Props) {
         )}
       </header>
 
-      {/* Hero card: branded guide image with topic-specific anchor */}
-      <div className="mt-6 overflow-hidden rounded-card">
-        <img
-          src={`/api/og/guide?slug=${slug}&title=${encodeURIComponent(post.meta_title ?? post.title)}`}
-          alt={post.title}
-          width={1200}
-          height={630}
-          className="w-full"
-          loading="eager"
-        />
-      </div>
+      {/* Hero: concept diagram SVG (static asset, evergreen) */}
+      {GUIDE_DIAGRAMS[slug] && (
+        <div className="mt-6 overflow-hidden rounded-card border border-line">
+          <img
+            src={`/images/guides/${GUIDE_DIAGRAMS[slug]}`}
+            alt={post.title}
+            width={800}
+            height={400}
+            className="w-full"
+            loading="eager"
+          />
+        </div>
+      )}
 
       <hr className="my-6 border-line" />
 

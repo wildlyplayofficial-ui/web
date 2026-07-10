@@ -40,8 +40,8 @@ export default async function KellyPage({ params }: Props) {
         {dict.calculators.kelly}
       </h1>
       <p className="mt-2 text-muted">{dict.calculators.kellyDesc}</p>
-      <div className="mt-6 overflow-hidden rounded-card">
-        <img src="/api/og/guide?slug=kelly&title=Kelly%20Criterion%20Calculator" alt={dict.calculators.kelly} width={1200} height={630} className="w-full" loading="eager" />
+      <div className="mt-6 overflow-hidden rounded-card border border-line">
+        <img src="/images/guides/calc-kelly.svg" alt={dict.calculators.kelly} width={800} height={400} className="w-full" loading="eager" />
       </div>
       <KellyCalculator />
       <div className="mt-8 rounded-card border border-line bg-card p-5 text-center shadow-card">

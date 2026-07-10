@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui,sans-serif">
+  <rect width="800" height="400" fill="#f4f6f8" rx="16"/>
+  <text x="400" y="45" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">What Makes a Good Tipster</text>
+
+  <!-- Base line -->
+  <line x1="60" y1="310" x2="740" y2="310" stroke="#e2e6ea" stroke-width="2"/>
+
+  <!-- Pillar 1: Record -->
+  <g transform="translate(80,90)">
+    <rect width="140" height="220" rx="10" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+    <rect width="140" height="6" rx="3" fill="#00c853" y="0"/>
+    <text x="70" y="50" text-anchor="middle" font-size="28">📊</text>
+    <text x="70" y="85" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">Record</text>
+    <text x="70" y="110" text-anchor="middle" font-size="12" fill="#5b6572">Verified W-L-P</text>
+    <text x="70" y="130" text-anchor="middle" font-size="12" fill="#5b6572">over 500+ picks</text>
+    <text x="70" y="160" text-anchor="middle" font-size="11" fill="#5b6572">Long-term sample</text>
+    <text x="70" y="178" text-anchor="middle" font-size="11" fill="#5b6572">size matters most</text>
+  </g>
+
+  <!-- Pillar 2: CLV -->
+  <g transform="translate(250,90)">
+    <rect width="140" height="220" rx="10" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+    <rect width="140" height="6" rx="3" fill="#00c853" y="0"/>
+    <text x="70" y="50" text-anchor="middle" font-size="28">📈</text>
+    <text x="70" y="85" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">CLV</text>
+    <text x="70" y="110" text-anchor="middle" font-size="12" fill="#5b6572">Closing Line</text>
+    <text x="70" y="130" text-anchor="middle" font-size="12" fill="#5b6572">Value edge</text>
+    <text x="70" y="160" text-anchor="middle" font-size="11" fill="#5b6572">Beating the close</text>
+    <text x="70" y="178" text-anchor="middle" font-size="11" fill="#5b6572">= sustainable skill</text>
+  </g>
+
+  <!-- Pillar 3: Reasoning -->
+  <g transform="translate(420,90)">
+    <rect width="140" height="220" rx="10" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+    <rect width="140" height="6" rx="3" fill="#00c853" y="0"/>
+    <text x="70" y="50" text-anchor="middle" font-size="28">🧠</text>
+    <text x="70" y="85" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">Reasoning</text>
+    <text x="70" y="110" text-anchor="middle" font-size="12" fill="#5b6572">Clear analysis</text>
+    <text x="70" y="130" text-anchor="middle" font-size="12" fill="#5b6572">behind each pick</text>
+    <text x="70" y="160" text-anchor="middle" font-size="11" fill="#5b6572">Not just "trust me"</text>
+    <text x="70" y="178" text-anchor="middle" font-size="11" fill="#5b6572">— show the work</text>
+  </g>
+
+  <!-- Pillar 4: Transparency -->
+  <g transform="translate(590,90)">
+    <rect width="140" height="220" rx="10" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+    <rect width="140" height="6" rx="3" fill="#00c853" y="0"/>
+    <text x="70" y="50" text-anchor="middle" font-size="28">🔓</text>
+    <text x="70" y="85" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">Transparency</text>
+    <text x="70" y="110" text-anchor="middle" font-size="12" fill="#5b6572">Public record</text>
+    <text x="70" y="130" text-anchor="middle" font-size="12" fill="#5b6572">tracked by 3rd party</text>
+    <text x="70" y="160" text-anchor="middle" font-size="11" fill="#5b6572">No hidden losses</text>
+    <text x="70" y="178" text-anchor="middle" font-size="11" fill="#5b6572">or cherry-picking</text>
+  </g>
+
+  <!-- Footer annotation bar -->
+  <rect x="60" y="340" width="680" height="44" rx="10" fill="#00c853" fill-opacity="0.08"/>
+  <text x="400" y="367" text-anchor="middle" font-size="13" fill="#5b6572">All four pillars required — missing any one is a red flag</text>
+</svg>

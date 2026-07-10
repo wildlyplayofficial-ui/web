@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" rx="16" fill="#f4f6f8"/>
+  <text x="400" y="45" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#0d1117">Value Betting — Finding the Edge</text>
+  <!-- Two bars comparison -->
+  <!-- Bar 1: Your model -->
+  <rect x="180" y="100" width="120" height="200" rx="10" fill="#00c853" fill-opacity="0.15" stroke="#00c853" stroke-width="2"/>
+  <rect x="180" y="145" width="120" height="155" rx="0" fill="#00c853" fill-opacity="0.3"/>
+  <text x="240" y="135" text-anchor="middle" font-family="system-ui,sans-serif" font-size="32" font-weight="800" fill="#00c853">55%</text>
+  <text x="240" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#0d1117">Your Model</text>
+  <text x="240" y="340" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5b6572">True probability</text>
+  <!-- Bar 2: Market implied -->
+  <rect x="500" y="100" width="120" height="200" rx="10" fill="#5b6572" fill-opacity="0.1" stroke="#5b6572" stroke-width="2"/>
+  <rect x="500" y="165" width="120" height="135" rx="0" fill="#5b6572" fill-opacity="0.2"/>
+  <text x="560" y="155" text-anchor="middle" font-family="system-ui,sans-serif" font-size="32" font-weight="800" fill="#5b6572">48%</text>
+  <text x="560" y="320" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#0d1117">Market Implied</text>
+  <text x="560" y="340" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5b6572">From bookmaker odds</text>
+  <!-- Edge arrow between bars -->
+  <line x1="310" y1="190" x2="490" y2="190" stroke="#00c853" stroke-width="3" stroke-dasharray="8,4"/>
+  <rect x="350" y="170" width="100" height="40" rx="10" fill="#00c853" fill-opacity="0.12" stroke="#00c853" stroke-width="2"/>
+  <text x="400" y="196" text-anchor="middle" font-family="system-ui,sans-serif" font-size="18" font-weight="800" fill="#00c853">+7% edge</text>
+  <!-- Footer -->
+  <rect x="100" y="355" width="600" height="30" rx="8" fill="#00c853" fill-opacity="0.08" stroke="#00c853" stroke-opacity="0.3"/>
+  <text x="400" y="375" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#0d1117">Value = your estimated probability exceeds the market's implied probability</text>
+</svg>

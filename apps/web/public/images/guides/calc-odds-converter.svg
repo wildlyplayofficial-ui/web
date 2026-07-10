@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui,sans-serif">
+  <rect width="800" height="400" fill="#f4f6f8" rx="16"/>
+  <text x="400" y="45" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">Odds Converter</text>
+
+  <!-- Central circle -->
+  <circle cx="400" cy="200" r="60" fill="#fff" stroke="#00c853" stroke-width="2.5"/>
+  <text x="400" y="193" text-anchor="middle" font-size="14" font-weight="600" fill="#5b6572">Decimal</text>
+  <text x="400" y="218" text-anchor="middle" font-size="28" font-weight="800" fill="#0d1117">1.75</text>
+
+  <!-- Top: American -->
+  <line x1="400" y1="140" x2="400" y2="85" stroke="#00c853" stroke-width="1.5"/>
+  <polygon points="396,85 400,75 404,85" fill="#00c853"/>
+  <rect x="320" y="30" width="160" height="50" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="400" y="52" text-anchor="middle" font-size="12" font-weight="600" fill="#5b6572">American</text>
+  <text x="400" y="72" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">-133</text>
+
+  <!-- Right: Fractional -->
+  <line x1="460" y1="200" x2="540" y2="200" stroke="#00c853" stroke-width="1.5"/>
+  <polygon points="540,196 550,200 540,204" fill="#00c853"/>
+  <rect x="555" y="175" width="160" height="50" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="635" y="197" text-anchor="middle" font-size="12" font-weight="600" fill="#5b6572">Fractional</text>
+  <text x="635" y="217" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">3/4</text>
+
+  <!-- Bottom: Hong Kong -->
+  <line x1="400" y1="260" x2="400" y2="310" stroke="#00c853" stroke-width="1.5"/>
+  <polygon points="396,310 400,320 404,310" fill="#00c853"/>
+  <rect x="320" y="320" width="160" height="50" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="400" y="342" text-anchor="middle" font-size="12" font-weight="600" fill="#5b6572">Hong Kong</text>
+  <text x="400" y="362" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">0.75</text>
+
+  <!-- Left: Malay -->
+  <line x1="340" y1="200" x2="260" y2="200" stroke="#00c853" stroke-width="1.5"/>
+  <polygon points="260,196 250,200 260,204" fill="#00c853"/>
+  <rect x="85" y="175" width="160" height="50" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="165" y="197" text-anchor="middle" font-size="12" font-weight="600" fill="#5b6572">Malay</text>
+  <text x="165" y="217" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">-1.33</text>
+
+  <!-- Implied probability note -->
+  <text x="635" y="260" text-anchor="middle" font-size="12" fill="#5b6572">Implied: 57.1%</text>
+</svg>

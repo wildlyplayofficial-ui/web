@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui,sans-serif">
+  <rect width="800" height="400" fill="#f4f6f8" rx="16"/>
+  <text x="400" y="45" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">Kelly Calculator</text>
+
+  <!-- Input section -->
+  <rect x="50" y="85" width="260" height="200" rx="14" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="180" y="115" text-anchor="middle" font-size="14" font-weight="700" fill="#0d1117">INPUTS</text>
+  <line x1="80" y1="128" x2="280" y2="128" stroke="#e2e6ea" stroke-width="1"/>
+
+  <!-- Edge input -->
+  <text x="90" y="160" font-size="13" fill="#5b6572">Your edge:</text>
+  <rect x="200" y="142" width="80" height="28" rx="6" fill="#f4f6f8" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="240" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="#00c853">8%</text>
+
+  <!-- Odds input -->
+  <text x="90" y="205" font-size="13" fill="#5b6572">Odds (decimal):</text>
+  <rect x="200" y="187" width="80" height="28" rx="6" fill="#f4f6f8" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="240" y="207" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">2.10</text>
+
+  <!-- Win probability -->
+  <text x="90" y="250" font-size="13" fill="#5b6572">Win probability:</text>
+  <rect x="200" y="232" width="80" height="28" rx="6" fill="#f4f6f8" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="240" y="252" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">55.6%</text>
+
+  <!-- Arrow -->
+  <line x1="320" y1="185" x2="420" y2="185" stroke="#00c853" stroke-width="2.5"/>
+  <polygon points="420,180 435,185 420,190" fill="#00c853"/>
+  <text x="370" y="175" text-anchor="middle" font-size="11" font-weight="600" fill="#00c853">Kelly</text>
+
+  <!-- Output section -->
+  <rect x="445" y="100" width="300" height="140" rx="14" fill="#fff" stroke="#00c853" stroke-width="2"/>
+  <text x="595" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#00c853">OPTIMAL STAKE</text>
+  <line x1="475" y1="145" x2="715" y2="145" stroke="#e2e6ea" stroke-width="1"/>
+
+  <text x="595" y="185" text-anchor="middle" font-size="42" font-weight="800" fill="#0d1117">7.3%</text>
+  <text x="595" y="215" text-anchor="middle" font-size="13" fill="#5b6572">of your bankroll</text>
+
+  <!-- Formula -->
+  <rect x="445" y="260" width="300" height="40" rx="10" fill="#fff" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="595" y="285" text-anchor="middle" font-size="13" fill="#5b6572" font-style="italic">f* = (bp - q) / b</text>
+
+  <!-- Formula legend -->
+  <text x="475" y="320" font-size="11" fill="#5b6572">b = odds - 1 (net odds)</text>
+  <text x="475" y="338" font-size="11" fill="#5b6572">p = win probability</text>
+  <text x="635" y="320" font-size="11" fill="#5b6572">q = 1 - p (loss probability)</text>
+  <text x="635" y="338" font-size="11" fill="#5b6572">f* = fraction to wager</text>
+
+  <!-- Footer annotation bar -->
+  <rect x="50" y="350" width="700" height="44" rx="10" fill="#00c853" fill-opacity="0.08"/>
+  <text x="400" y="377" text-anchor="middle" font-size="13" fill="#5b6572">Most sharps use fractional Kelly (25-50%) to reduce variance</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="system-ui,sans-serif">
+  <rect width="800" height="400" fill="#f4f6f8" rx="16"/>
+  <text x="400" y="45" text-anchor="middle" font-size="20" font-weight="700" fill="#0d1117">No Play Discipline</text>
+
+  <!-- Step 1: Evaluate Match -->
+  <rect x="40" y="120" width="160" height="70" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="120" y="152" text-anchor="middle" font-size="14" font-weight="600" fill="#0d1117">Evaluate</text>
+  <text x="120" y="172" text-anchor="middle" font-size="12" fill="#5b6572">Match</text>
+
+  <!-- Arrow 1 -->
+  <line x1="200" y1="155" x2="250" y2="155" stroke="#0d1117" stroke-width="1.5"/>
+  <polygon points="250,151 260,155 250,159" fill="#0d1117"/>
+
+  <!-- Step 2: Check for Edge -->
+  <rect x="260" y="120" width="160" height="70" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1.5"/>
+  <text x="340" y="152" text-anchor="middle" font-size="14" font-weight="600" fill="#0d1117">Check for</text>
+  <text x="340" y="172" text-anchor="middle" font-size="12" fill="#5b6572">Edge?</text>
+
+  <!-- Branch: No Edge (up) -->
+  <line x1="340" y1="120" x2="340" y2="80" stroke="#e5484d" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="340" y="72" text-anchor="middle" font-size="11" font-weight="600" fill="#e5484d">No edge found</text>
+
+  <!-- Arrow to PASS -->
+  <line x1="420" y1="100" x2="500" y2="100" stroke="#e5484d" stroke-width="1.5"/>
+  <polygon points="500,96 510,100 500,104" fill="#e5484d"/>
+  <line x1="340" y1="75" x2="500" y2="75" stroke="#e5484d" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="500" y1="75" x2="500" y2="100" stroke="#e5484d" stroke-width="1.5"/>
+
+  <!-- PASS stamp -->
+  <rect x="510" y="55" width="160" height="90" rx="14" fill="#fff" stroke="#00c853" stroke-width="3"/>
+  <text x="590" y="100" text-anchor="middle" font-size="36" font-weight="800" fill="#00c853">PASS</text>
+  <text x="590" y="120" text-anchor="middle" font-size="11" fill="#5b6572">Skip this match</text>
+
+  <!-- Branch: Edge found (down) -->
+  <line x1="340" y1="190" x2="340" y2="230" stroke="#00c853" stroke-width="1.5"/>
+  <polygon points="336,230 340,240 344,230" fill="#00c853"/>
+  <text x="340" y="222" text-anchor="end" font-size="11" font-weight="600" fill="#00c853" dx="-10">Edge found</text>
+
+  <!-- Arrow to PICK -->
+  <line x1="340" y1="240" x2="340" y2="250" stroke="#00c853" stroke-width="1.5"/>
+
+  <!-- PICK box -->
+  <rect x="280" y="250" width="120" height="56" rx="12" fill="#00c853" fill-opacity="0.12" stroke="#00c853" stroke-width="2"/>
+  <text x="340" y="284" text-anchor="middle" font-size="20" font-weight="700" fill="#00c853">PICK</text>
+
+  <!-- Right side: key message -->
+  <rect x="510" y="200" width="250" height="80" rx="12" fill="#fff" stroke="#e2e6ea" stroke-width="1"/>
+  <text x="635" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#0d1117">The best bettors</text>
+  <text x="635" y="250" text-anchor="middle" font-size="13" fill="#5b6572">say NO more often</text>
+  <text x="635" y="270" text-anchor="middle" font-size="13" fill="#5b6572">than they say yes.</text>
+
+  <!-- Footer annotation bar -->
+  <rect x="40" y="340" width="720" height="44" rx="10" fill="#00c853" fill-opacity="0.08"/>
+  <text x="400" y="367" text-anchor="middle" font-size="13" fill="#5b6572">Discipline = saying no when there's no edge</text>
+</svg>
