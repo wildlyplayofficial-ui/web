@@ -180,6 +180,19 @@ export default async function GuidePage({ params }: Props) {
         </ReactMarkdown>
       </div>
 
+      {/* A4: Internal-linking hub→spoke */}
+      <nav className="mt-8 flex flex-wrap gap-3 text-xs">
+        <Link href={withLang("/learn", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.learn} &rarr;
+        </Link>
+        <Link href={withLang("/calculators", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.calculators} &rarr;
+        </Link>
+        <Link href={withLang("/track-record", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.trackRecord} &rarr;
+        </Link>
+      </nav>
+
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
     </article>
   );

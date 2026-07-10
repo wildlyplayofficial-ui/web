@@ -186,6 +186,22 @@ export default async function NewsPost({ params }: Props) {
 
       <RelatedArticles slug={slug} lang={lang} currentType={post.type} pickIds={post.pick_ids} />
 
+      {/* A4: Internal-linking hub→spoke */}
+      <nav className="mt-8 flex flex-wrap gap-3 text-xs">
+        <Link href={withLang("/track-record", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.trackRecord} &rarr;
+        </Link>
+        <Link href={withLang("/analysis", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.analysis} &rarr;
+        </Link>
+        <Link href={withLang("/learn", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.learn} &rarr;
+        </Link>
+        <Link href={withLang("/competitions", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.matches} &rarr;
+        </Link>
+      </nav>
+
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
         {post.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
       </p>
