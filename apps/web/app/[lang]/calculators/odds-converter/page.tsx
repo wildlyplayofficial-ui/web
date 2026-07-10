@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.oddsConverter} | WildlyPlay`,
       description: dict.calculators.oddsConverterDesc,
-      images: [{ url: "/api/og/editorial?title=Odds%20Converter&subtitle=Convert%20between%20decimal%2C%20fractional%2C%20American%2C%20and%20Malay%20odds", width: 1200, height: 630 }],
+      images: [{ url: "/api/og/guide?slug=odds-converter&title=Odds%20Converter", width: 1200, height: 630 }],
     },
   };
 }
