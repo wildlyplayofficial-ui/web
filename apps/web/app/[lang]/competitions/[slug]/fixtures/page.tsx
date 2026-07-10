@@ -66,7 +66,7 @@ export default async function FixturesPage({ params }: Props) {
       {fixtureDays.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">No fixtures available.</div>
       ) : (
-        <LeagueFixtures days={fixtureDays} label="Fixtures" />
+        <LeagueFixtures days={fixtureDays} label="" />
       )}
     </div>
   );
