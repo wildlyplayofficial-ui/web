@@ -78,7 +78,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title: dict.news.title,
     description: dict.news.subtitle,
     alternates: { canonical },
-    openGraph: { title: `${dict.news.title} | WildlyPlay`, description: dict.news.subtitle, images: [{ url: "/api/og/editorial?title=Newsroom&subtitle=Analysis%2C%20previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.news.title} | WildlyPlay`, description: dict.news.subtitle, images: [{ url: "/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }] },
   };
 }
 
