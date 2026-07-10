@@ -114,22 +114,32 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
   return (
     <Link
       href={withLang(`/news/${post.slug}`, lang)}
-      className="group rounded-card border border-line bg-card p-6 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover"
+      className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${TYPE_BADGE_COLORS[post.type]}`}>
-          {TYPE_LABELS[post.type]}
-        </span>
-        <time dateTime={post.published_at ?? undefined}>
-          {formatDate(post.published_at, lang)}
-        </time>
+      <img
+        src={`/api/og/news/${post.slug}`}
+        alt=""
+        width={1200}
+        height={630}
+        className="w-full"
+        loading="lazy"
+      />
+      <div className="p-5">
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${TYPE_BADGE_COLORS[post.type]}`}>
+            {TYPE_LABELS[post.type]}
+          </span>
+          <time dateTime={post.published_at ?? undefined}>
+            {formatDate(post.published_at, lang)}
+          </time>
+        </div>
+        <h2 className="mt-3 font-display text-xl font-bold transition-colors group-hover:text-brand">
+          {post.title}
+        </h2>
+        {excerpt && (
+          <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>
+        )}
       </div>
-      <h2 className="mt-3 font-display text-xl font-bold transition-colors group-hover:text-brand">
-        {post.title}
-      </h2>
-      {excerpt && (
-        <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>
-      )}
     </Link>
   );
 }

@@ -144,6 +144,18 @@ export default async function NewsPost({ params }: Props) {
         )}
       </header>
 
+      {/* Hero card: branded auto-gen image (same asset as og:image) */}
+      <div className="mt-6 overflow-hidden rounded-card">
+        <img
+          src={`/api/og/news/${slug}`}
+          alt={post.title}
+          width={1200}
+          height={630}
+          className="w-full"
+          loading="eager"
+        />
+      </div>
+
       <hr className="my-6 border-line" />
 
       <div className="prose-md mt-8">

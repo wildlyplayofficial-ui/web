@@ -198,14 +198,24 @@ export default async function Home({ params }: Props) {
               <Link
                 key={post.id}
                 href={withLang(`/news/${post.slug}`, lang)}
-                className="group rounded-card border border-line bg-card p-5 transition-colors hover:border-brand/30"
+                className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
               >
-                <time className="text-xs text-muted" dateTime={post.published_at ?? undefined}>
-                  {formatPostDate(post.published_at, lang)}
-                </time>
-                <p className="mt-2 font-display text-base font-bold transition-colors group-hover:text-brand">
-                  {post.title}
-                </p>
+                <img
+                  src={`/api/og/news/${post.slug}`}
+                  alt=""
+                  width={1200}
+                  height={630}
+                  className="w-full"
+                  loading="lazy"
+                />
+                <div className="p-5">
+                  <time className="text-xs text-muted" dateTime={post.published_at ?? undefined}>
+                    {formatPostDate(post.published_at, lang)}
+                  </time>
+                  <p className="mt-2 font-display text-base font-bold transition-colors group-hover:text-brand">
+                    {post.title}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
