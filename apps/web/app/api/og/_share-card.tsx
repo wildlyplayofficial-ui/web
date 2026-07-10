@@ -76,7 +76,8 @@ export type ShareCardProps = {
 function recordLine(author: Author, r: TrackRecord): string {
   const who = author === "scout" ? "Scout" : "Curator";
   const pl = r.units_pl > 0 ? `+${r.units_pl}u` : `${r.units_pl}u`;
-  return `${who} record ${r.wins}-${r.losses}-${r.pushes} \u00b7 ${pl}`;
+  const asOf = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  return `${who} ${r.wins}-${r.losses}-${r.pushes} \u00b7 ${pl} \u00b7 ${asOf}`;
 }
 
 function TeamColumn({ name, badge }: { name: string; badge: string | null }) {

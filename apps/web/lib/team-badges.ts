@@ -63,10 +63,14 @@ export function teamsFromSlug(slug: string): { home: string; away: string } | nu
   const left = noDate.slice(0, idx);
   const right = noDate.slice(idx + 4);
 
-  // Left may carry an editorial prefix ("news-", "preview-"); try full, then drop it.
-  const home =
-    teamNameFromSlug(left) ??
-    teamNameFromSlug(left.split("-").slice(1).join("-"));
+  // Left may carry an editorial prefix ("news-", "preview-", "no-play-", "post-mortem-", etc).
+  // Try progressively stripping leading segments until a team name matches.
+  const parts = left.split("-");
+  let home: string | null = null;
+  for (let i = 0; i < Math.min(parts.length, 3); i++) {
+    home = teamNameFromSlug(parts.slice(i).join("-"));
+    if (home) break;
+  }
   const away = teamNameFromSlug(right);
   if (!home || !away) return null;
   return { home, away };
