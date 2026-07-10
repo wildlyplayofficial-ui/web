@@ -46,7 +46,10 @@ const SLUG_ALIASES: Record<string, string> = {
   "czech-republic": "czechia",
   turkiye: "turkey",
   "korea-republic": "south-korea",
-  "dr-congo": "congo-dr",
+  "dr-congo": "dr-congo",
+  "congo-dr": "dr-congo",
+  "bosnia-herzegovina": "bosnia-and-herzegovina",
+  "cura-ao": "curacao",
 };
 
 /** Resolve a slug token (e.g. "france", "united-states") back to a display name. */
@@ -55,7 +58,33 @@ export function teamNameFromSlug(token: string): string | null {
   return NAME_BY_SLUG[t] ?? null;
 }
 
-/** Parse "…-home-vs-away-YYYY-MM-DD" article slugs into two display names. */
+/** Try all suffix substrings of a hyphenated token to find a team name.
+ *  e.g. "no-play-congo-dr" → tries "no-play-congo-dr", "play-congo-dr",
+ *  "congo-dr", "dr" — first match wins. */
+function findTeamInToken(token: string): string | null {
+  const parts = token.split("-");
+  for (let i = 0; i < parts.length; i++) {
+    const candidate = parts.slice(i).join("-");
+    const name = teamNameFromSlug(candidate);
+    if (name) return name;
+  }
+  return null;
+}
+
+/** Try all prefix substrings of a hyphenated token to find a team name.
+ *  e.g. "congo-dr-was-not-a-dead-rubber" → tries full, then "congo-dr-was-not-a-dead",
+ *  ..., "congo-dr", "congo" — first match wins. */
+function findTeamFromStart(token: string): string | null {
+  const parts = token.split("-");
+  for (let i = parts.length; i > 0; i--) {
+    const candidate = parts.slice(0, i).join("-");
+    const name = teamNameFromSlug(candidate);
+    if (name) return name;
+  }
+  return null;
+}
+
+/** Parse "…-home-vs-away-YYYY-MM-DD" (or prose suffix) article slugs into two display names. */
 export function teamsFromSlug(slug: string): { home: string; away: string } | null {
   const noDate = slug.replace(/-\d{4}-\d{2}-\d{2}$/, "");
   const idx = noDate.indexOf("-vs-");
@@ -63,15 +92,10 @@ export function teamsFromSlug(slug: string): { home: string; away: string } | nu
   const left = noDate.slice(0, idx);
   const right = noDate.slice(idx + 4);
 
-  // Left may carry an editorial prefix ("news-", "preview-", "no-play-", "post-mortem-", etc).
-  // Try progressively stripping leading segments until a team name matches.
-  const parts = left.split("-");
-  let home: string | null = null;
-  for (let i = 0; i < Math.min(parts.length, 3); i++) {
-    home = teamNameFromSlug(parts.slice(i).join("-"));
-    if (home) break;
-  }
-  const away = teamNameFromSlug(right);
+  // Left may carry an editorial prefix; right may carry a prose suffix.
+  // Try all suffix substrings of left, all prefix substrings of right.
+  const home = findTeamInToken(left);
+  const away = findTeamFromStart(right);
   if (!home || !away) return null;
   return { home, away };
 }
