@@ -63,6 +63,8 @@ export type ShareCardProps = {
   status: { label: string; color: string };
   /** Used as the hero only when teams are unknown (e.g. an article with no pick). */
   headline: string;
+  /** Article title shown in the body when teams are known but there is no pick. */
+  subhead?: string | null;
   /** Primary info line: the pick, the result, or the coverage state. */
   infoLine: string | null;
   /** Proprietary anchor number (CLV / board edge) — omitted when data can't support it. */
@@ -104,7 +106,7 @@ function TeamColumn({ name, badge }: { name: string; badge: string | null }) {
 }
 
 export function renderShareCard(props: ShareCardProps): ImageResponse {
-  const { home, away, homeBadge, awayBadge, league, status, headline, infoLine, metric, record, author } = props;
+  const { home, away, homeBadge, awayBadge, league, status, headline, subhead, infoLine, metric, record, author } = props;
   const hasTeams = Boolean(home && away);
   const homeColor = teamColor(home ?? "");
   const awayColor = teamColor(away ?? "");
@@ -239,6 +241,11 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
                 }}
               >
                 {league}
+              </div>
+            ) : null}
+            {subhead ? (
+              <div style={{ display: "flex", marginTop: 14, fontSize: 34, fontWeight: 800, color: INK, lineHeight: 1.2 }}>
+                {subhead}
               </div>
             ) : null}
             {infoLine ? (

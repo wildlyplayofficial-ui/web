@@ -1,5 +1,5 @@
 import { getPost, getPickById, getTrackRecordForAuthor } from "@/lib/data";
-import { teamBadge } from "@/lib/team-badges";
+import { teamBadge, teamsFromSlug } from "@/lib/team-badges";
 import { accentFor, pickFields, renderShareCard } from "../../_share-card";
 import type { Author } from "@/lib/types";
 
@@ -54,6 +54,26 @@ export async function GET(
     });
   }
 
+  // No linked pick: recover the two teams from the slug so the card is still
+  // colored by both sides (e.g. "…-france-vs-morocco-…"). Falls back to a
+  // branded hero when the slug isn't a matchup.
+  const teams = teamsFromSlug(slug);
+  const status = { label: TYPE_STATUS[post.type] ?? post.type.toUpperCase(), color: accent };
+  if (teams) {
+    return renderShareCard({
+      ...base,
+      home: teams.home,
+      away: teams.away,
+      homeBadge: teamBadge(teams.home),
+      awayBadge: teamBadge(teams.away),
+      league: null,
+      status,
+      subhead: base.headline,
+      infoLine: null,
+      metric: null,
+    });
+  }
+
   return renderShareCard({
     ...base,
     home: null,
@@ -61,7 +81,7 @@ export async function GET(
     homeBadge: null,
     awayBadge: null,
     league: null,
-    status: { label: TYPE_STATUS[post.type] ?? post.type.toUpperCase(), color: accent },
+    status,
     infoLine: null,
     metric: null,
   });
