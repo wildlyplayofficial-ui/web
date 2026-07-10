@@ -190,7 +190,7 @@ export default async function Home({ params }: Props) {
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
             <Link href={withLang("/news", lang)} className="text-sm font-semibold text-brand hover:underline">
-              {dict.nav.news} &rarr;
+              {dict.nav.analysis} &rarr;
             </Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
