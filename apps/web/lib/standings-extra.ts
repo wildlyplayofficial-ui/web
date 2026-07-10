@@ -565,7 +565,8 @@ async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]>
     shortName: (r.short_name ?? "") as string,
     season: (r.season ?? "") as string,
     livescoreId: r.livescore_id as number,
-    slug: r.slug as string,
+    // World Cup (362) may lack a slug in DB — ensure it always has one
+    slug: (r.slug || (r.livescore_id === 362 ? "world-cup-2026" : "")) as string,
     status: r.status as string,
   }));
 }

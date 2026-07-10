@@ -19,8 +19,7 @@ async function HeaderWithData() {
     .filter((c) => c.status === "active")
     .map((c) => ({
       name: c.name,
-      // World Cup keeps its canonical index page; others go to their slug page.
-      href: c.livescoreId === 362 ? "/competitions" : `/competitions/${c.slug}`,
+      href: `/competitions/${c.slug}`,
     }));
   return <Header competitions={competitions} />;
 }
