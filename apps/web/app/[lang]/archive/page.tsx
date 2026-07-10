@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.archive.title,
     description: dict.archive.subtitle,
-    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle, images: [{ url: "/api/og/editorial?title=Track%20Record&subtitle=Every%20pick%2C%20public%20forever.%20We%20post%20our%20losses%20too.", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle, images: [{ url: "/api/og/record?page=archive", width: 1200, height: 630 }] },
     alternates: buildAlternates("/archive", lang),
   };
 }

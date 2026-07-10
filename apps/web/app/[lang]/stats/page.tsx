@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.stats.title,
     description: dict.stats.subtitle,
-    openGraph: { title: `${dict.stats.title} | WildlyPlay`, description: dict.stats.subtitle, images: [{ url: "/api/og/editorial?title=Statistics&subtitle=ROI%2C%20CLV%2C%20and%20calibration%20by%20league%20and%20market", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.stats.title} | WildlyPlay`, description: dict.stats.subtitle, images: [{ url: "/api/og/record?page=stats", width: 1200, height: 630 }] },
     alternates: buildAlternates("/stats", lang),
   };
 }
