@@ -21,7 +21,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: dict.transparency.title,
     description: dict.transparency.subtitle,
     alternates: { canonical },
-    openGraph: { title: `${dict.transparency.title} | WildlyPlay`, description: dict.transparency.subtitle },
+    openGraph: {
+      title: `${dict.transparency.title} | WildlyPlay`,
+      description: dict.transparency.subtitle,
+      images: [{ url: "/api/og/editorial?title=Transparency&subtitle=Every%20pick%2C%20public%20forever.%20We%20post%20our%20losses%20too.", width: 1200, height: 630 }],
+    },
   };
 }
 

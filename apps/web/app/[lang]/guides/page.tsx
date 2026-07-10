@@ -21,7 +21,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: dict.guides.title,
     description: dict.guides.subtitle,
     alternates: { canonical },
-    openGraph: { title: `${dict.guides.title} | WildlyPlay`, description: dict.guides.subtitle },
+    openGraph: {
+      title: `${dict.guides.title} | WildlyPlay`,
+      description: dict.guides.subtitle,
+      images: [{ url: "/api/og/editorial?title=Learn%20%E2%80%94%20Betting%20Guides&subtitle=Free%20guides%20to%20sharpen%20your%20edge", width: 1200, height: 630 }],
+    },
   };
 }
 

@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.title} | WildlyPlay`,
       description: dict.calculators.subtitle,
+      images: [{ url: "/api/og/editorial?title=Free%20Betting%20Calculators&subtitle=De-vig%2C%20odds%20converter%2C%20and%20Kelly%20criterion", width: 1200, height: 630 }],
     },
   };
 }

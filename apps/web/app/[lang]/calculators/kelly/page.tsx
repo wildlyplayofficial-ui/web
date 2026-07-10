@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.kelly} | WildlyPlay`,
       description: dict.calculators.kellyDesc,
+      images: [{ url: "/api/og/editorial?title=Kelly%20Criterion%20Calculator&subtitle=Optimal%20stake%20sizing%20based%20on%20edge%20and%20bankroll", width: 1200, height: 630 }],
     },
   };
 }

@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.deVig} | WildlyPlay`,
       description: dict.calculators.deVigDesc,
+      images: [{ url: "/api/og/editorial?title=De-Vig%20Calculator&subtitle=Remove%20the%20bookmaker%20margin%20and%20find%20true%20implied%20probability", width: 1200, height: 630 }],
     },
   };
 }
