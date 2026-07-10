@@ -151,13 +151,14 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     {
       label: nav.todaysPick,
       items: [
-        { name: nav.board, href: "/daily-board" },
+        { name: nav.todaysPick, href: "/daily-board" },
         { name: nav.dailyLine, href: "/daily-line" },
       ],
     },
     {
       label: nav.trackRecord,
       items: [
+        { name: nav.trackRecord, href: "/track-record" },
         { name: nav.archive, href: "/archive" },
         { name: nav.stats, href: "/stats" },
         { name: nav.transparency, href: "/transparency" },
@@ -175,6 +176,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     {
       label: nav.learn,
       items: [
+        { name: nav.learn, href: "/learn" },
         { name: nav.guides, href: "/guides" },
         { name: nav.calculators, href: "/calculators" },
       ],
