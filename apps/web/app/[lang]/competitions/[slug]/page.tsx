@@ -151,11 +151,11 @@ export default async function StandingSlugPage({ params }: Props) {
         </nav>
       )}
 
-      {rows.length === 0 ? (
+      {rows.length === 0 && knockoutRounds.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
           {dict.standings.empty}
         </div>
-      ) : isWorldCup && hasGroups ? (
+      ) : isWorldCup ? (
         <>
           {/* Knockout bracket first (Nick's request 2/7): during knockout phase
               it's the content users come for; group tables are reference. */}
