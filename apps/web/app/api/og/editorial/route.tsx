@@ -17,6 +17,7 @@ export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const title = searchParams.get("title") || "WildlyPlay";
   const subtitle = searchParams.get("subtitle") || null;
+  const color = searchParams.get("color") || BRAND_GREEN;
 
   return new ImageResponse(
     (
@@ -40,7 +41,7 @@ export async function GET(request: Request): Promise<Response> {
               right: 0,
               bottom: 0,
               display: "flex",
-              backgroundImage: `linear-gradient(135deg, ${BRAND_GREEN} 0%, #009e42 100%)`,
+              backgroundImage: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
             }}
           />
           <div

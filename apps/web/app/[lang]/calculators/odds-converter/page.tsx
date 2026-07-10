@@ -40,6 +40,9 @@ export default async function OddsConverterPage({ params }: Props) {
         {dict.calculators.oddsConverter}
       </h1>
       <p className="mt-2 text-muted">{dict.calculators.oddsConverterDesc}</p>
+      <div className="mt-6 overflow-hidden rounded-card">
+        <img src="/api/og/guide?slug=odds-converter&title=Odds%20Converter" alt={dict.calculators.oddsConverter} width={1200} height={630} className="w-full" loading="eager" />
+      </div>
       <OddsConverter />
       <div className="mt-8 rounded-card border border-line bg-card p-5 text-center shadow-card">
         <Link

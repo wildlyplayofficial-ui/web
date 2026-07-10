@@ -12,6 +12,13 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
 
+/** League palette for competition OG cards (spec §1: hubs use league colors). */
+const LEAGUE_COLORS: Record<string, string> = {
+  "world-cup-2026": "#56042c",
+  mls: "#1b2a4a",
+  "liga-mx": "#1a472a",
+};
+
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
@@ -44,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
       title: `${title} | WildlyPlay`,
-      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(comp.name)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(comp.name)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
     },
   };
 }

@@ -23,11 +23,35 @@ const C = {
   under: "#42a5f5",
 } as const;
 
+const PANEL = "#f4f6f8";
+const INK2 = "#0d1117";
+const MUTED2 = "#5b6572";
+const LINE2 = "#e2e6ea";
+
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const cardNumber = parseInt(url.searchParams.get("card") ?? "", 10);
+
+  // Fallback: no card param → branded Daily Line card (1200x630 og-safe)
   if (isNaN(cardNumber)) {
-    return new Response("Missing card number", { status: 400 });
+    return new ImageResponse(
+      (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", backgroundColor: PANEL, color: INK2 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: 340, backgroundImage: `linear-gradient(135deg, ${C.brand} 0%, #009e42 100%)`, gap: 20 }}>
+            <div style={{ display: "flex", fontSize: 80, fontWeight: 800, color: "#ffffff" }}>
+              <span>Wildly</span><span style={{ color: "#a8ffcf" }}>Play</span>
+            </div>
+            <div style={{ display: "flex", fontSize: 40, fontWeight: 800, color: "#ffffff" }}>Daily Line</div>
+            <div style={{ display: "flex", fontSize: 22, color: "rgba(255,255,255,0.8)" }}>A daily Over/Under prediction game</div>
+          </div>
+          <div style={{ display: "flex", flex: 1, padding: "28px 56px 30px", alignItems: "flex-end", justifyContent: "space-between", borderTop: `1px solid ${LINE2}` }}>
+            <div style={{ display: "flex", fontSize: 20, fontWeight: 700, color: INK2 }}>www.wildlyplay.com/daily-line</div>
+            <div style={{ display: "flex", fontSize: 18, color: MUTED2 }}>Pick your side, climb the leaderboard</div>
+          </div>
+        </div>
+      ),
+      { width: 1200, height: 630, headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800" } },
+    );
   }
 
   // Optional user pick params (for personalized share)

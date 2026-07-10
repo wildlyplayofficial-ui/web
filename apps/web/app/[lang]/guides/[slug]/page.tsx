@@ -130,6 +130,18 @@ export default async function GuidePage({ params }: Props) {
         )}
       </header>
 
+      {/* Hero card: branded guide image with topic-specific anchor */}
+      <div className="mt-6 overflow-hidden rounded-card">
+        <img
+          src={`/api/og/guide?slug=${slug}&title=${encodeURIComponent(post.meta_title ?? post.title)}`}
+          alt={post.title}
+          width={1200}
+          height={630}
+          className="w-full"
+          loading="eager"
+        />
+      </div>
+
       <hr className="my-6 border-line" />
 
       <div className="prose-md mt-8">
