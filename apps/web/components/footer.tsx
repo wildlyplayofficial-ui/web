@@ -11,13 +11,15 @@ export function Footer() {
   const dict = getDict(lang);
 
   const links: ReadonlyArray<{ href: string; label: string }> = [
-    { href: "/about", label: dict.nav.about },
-    { href: "/archive", label: dict.nav.archive },
+    { href: "/daily-board", label: dict.nav.board },
+    { href: "/track-record", label: dict.nav.trackRecord },
     { href: "/analysis", label: dict.nav.analysis },
     { href: "/matches", label: dict.nav.matches },
     { href: "/competitions", label: dict.nav.standings },
+    { href: "/learn", label: dict.nav.learn },
     { href: "/guides", label: dict.nav.guides },
     { href: "/calculators", label: dict.nav.calculators },
+    { href: "/about", label: dict.nav.about },
     { href: "/transparency", label: dict.nav.transparency },
     { href: "/responsible-play", label: dict.nav.responsiblePlay },
   ];

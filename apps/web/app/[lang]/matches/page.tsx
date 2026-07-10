@@ -106,11 +106,22 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
     return true;
   });
 
-  // Collect unique leagues for chips
-  const leagues = [...new Set(deduped.map((m) => m.league).filter(Boolean))].sort();
+  // Normalize league names: strip group/round suffixes for chip display
+  // "FIFA World Cup 2026 — Group A" → "FIFA World Cup 2026"
+  // "World Cup 2026 — Round of 16" → "World Cup 2026"
+  const normalizeLeague = (l: string): string =>
+    l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
 
-  // Filter by league
-  const filtered = leagueFilter ? deduped.filter((m) => m.league === leagueFilter) : deduped;
+  const leagueMap = new Map<string, string>(); // normalized → first raw
+  for (const m of deduped) {
+    if (!m.league) continue;
+    const norm = normalizeLeague(m.league);
+    if (!leagueMap.has(norm)) leagueMap.set(norm, norm);
+  }
+  const leagues = [...leagueMap.keys()].sort();
+
+  // Filter by league (match against normalized name)
+  const filtered = leagueFilter ? deduped.filter((m) => normalizeLeague(m.league) === leagueFilter) : deduped;
 
   // Sort: upcoming first (kickoff ASC), then settled (kickoff DESC)
   const now = new Date().toISOString();
@@ -192,7 +203,7 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
                         <MatchStatus kickoffUtc={m.kickoffUtc} liveStatus={m.liveStatus} minute={m.minute} />
                         {m.league && (
                           <span className="rounded-full border border-line px-2.5 py-0.5 text-[0.65rem] font-semibold text-muted">
-                            {m.league}
+                            {normalizeLeague(m.league)}
                           </span>
                         )}
                       </div>
