@@ -11,17 +11,17 @@ import { formatKickoff, formatOdds, formatUnits } from "@/lib/format";
  * pick doesn't exist. Patterns and color tokens copied from result-card.
  */
 
-// Design tokens from globals.css (ImageResponse can't read CSS variables).
+// Light brand design tokens (kill dark template — Nick 10/7)
 const C = {
-  bg: "#0d1117",
-  card: "#161b22",
-  ink: "#e6edf3",
-  muted: "#8b949e",
-  line: "#30363d",
-  brand: "#00e676",
-  brandDim: "rgba(0, 230, 118, 0.15)",
-  loss: "#f85149",
-  lossDim: "rgba(248, 81, 73, 0.15)",
+  bg: "#f4f6f8",
+  card: "#ffffff",
+  ink: "#0d1117",
+  muted: "#5b6572",
+  line: "#e2e6ea",
+  brand: "#00c853",
+  brandDim: "rgba(0, 200, 83, 0.12)",
+  loss: "#e5484d",
+  lossDim: "rgba(229, 72, 77, 0.10)",
 } as const;
 
 const BADGES: Record<string, { label: string; color: string; bg: string }> = {
