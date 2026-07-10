@@ -64,6 +64,17 @@ export default async function CalculatorsPage({ params }: Props) {
             </p>
           </Link>
         ))}
+        <Link
+          href={withLang("/calculators/poisson", lang)}
+          className="group rounded-card border border-brand/30 bg-brand-dim/20 p-6 shadow-card transition-colors hover:border-brand/60"
+        >
+          <h2 className="font-display text-xl font-bold transition-colors group-hover:text-brand">
+            xG / Poisson Calculator
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            Over/Under, BTTS, most-likely score, and 1X2 fair probabilities from expected goals.
+          </p>
+        </Link>
       </div>
     </div>
   );

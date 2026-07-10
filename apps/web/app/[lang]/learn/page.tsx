@@ -46,6 +46,7 @@ export default async function LearnHub({ params }: Props) {
     { slug: "de-vig", title: dict.calculators.deVig, desc: dict.calculators.deVigDesc },
     { slug: "odds-converter", title: dict.calculators.oddsConverter, desc: dict.calculators.oddsConverterDesc },
     { slug: "kelly", title: dict.calculators.kelly, desc: dict.calculators.kellyDesc },
+    { slug: "poisson", title: "xG / Poisson Calculator", desc: "Over/Under, BTTS, most-likely score from expected goals" },
   ];
 
   return (
