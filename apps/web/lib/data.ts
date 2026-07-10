@@ -749,6 +749,7 @@ export interface MatchListEntry {
   pickStatus: string | null; // "won" | "lost" | "push" | null
   liveStatus: "live" | "ft" | null;
   minute: string | null;
+  league: string;
 }
 
 /** All matches that have any content — for sitemap and matches list. */
@@ -762,6 +763,7 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     pickStatus: string | null = null,
     liveStatus: "live" | "ft" | null = null,
     minute: string | null = null,
+    league: string = "",
   ) => {
     home = cleanTeamName(home);
     away = cleanTeamName(away);
@@ -777,28 +779,30 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
         pickStatus: pickStatus ?? existing?.pickStatus ?? null,
         liveStatus: liveStatus ?? existing?.liveStatus ?? null,
         minute: minute ?? existing?.minute ?? null,
+        league: league || existing?.league || "",
       });
     } else {
       if (homeScore !== null) { existing.homeScore = homeScore; existing.awayScore = awayScore; }
       if (pickStatus) existing.pickStatus = pickStatus;
       if (liveStatus) { existing.liveStatus = liveStatus; existing.minute = minute; }
+      if (league && !existing.league) existing.league = league;
     }
   };
 
   if (!supabase) {
-    for (const p of mockPicks) addEntry(p.home_team, p.away_team, p.kickoff_utc, p.settled_at ?? p.kickoff_utc);
+    for (const p of mockPicks) addEntry(p.home_team, p.away_team, p.kickoff_utc, p.settled_at ?? p.kickoff_utc, null, null, null, null, null, p.league);
     return [...slugMap.values()];
   }
 
   const [pickRes, watchRes, liveRes] = await Promise.all([
     supabase
       .from("picks")
-      .select("home_team, away_team, kickoff_utc, settled_at, home_score, away_score, status")
+      .select("home_team, away_team, kickoff_utc, settled_at, home_score, away_score, status, league")
       .neq("status", "draft")
       .neq("status", "void"),
     supabase
       .from("watching")
-      .select("home_team, away_team, kickoff_utc, created_at"),
+      .select("home_team, away_team, kickoff_utc, created_at, league"),
     supabase
       .from("match_live_state")
       .select("home_team, away_team, kickoff_utc, home_score, away_score, status, minute, updated_at")
@@ -808,13 +812,13 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
   if (pickRes.error) throw new Error(`getAllMatchSlugs picks: ${pickRes.error.message}`);
   if (watchRes.error) throw new Error(`getAllMatchSlugs watching: ${watchRes.error.message}`);
 
-  for (const p of (pickRes.data ?? []) as { home_team: string; away_team: string; kickoff_utc: string; settled_at: string | null; home_score: number | null; away_score: number | null; status: string }[]) {
+  for (const p of (pickRes.data ?? []) as { home_team: string; away_team: string; kickoff_utc: string; settled_at: string | null; home_score: number | null; away_score: number | null; status: string; league: string }[]) {
     const settled = ["won", "lost", "push"].includes(p.status) ? p.status : null;
     const ft = settled && p.home_score !== null ? "ft" as const : null;
-    addEntry(p.home_team, p.away_team, p.kickoff_utc, p.settled_at ?? p.kickoff_utc, p.home_score, p.away_score, settled, ft);
+    addEntry(p.home_team, p.away_team, p.kickoff_utc, p.settled_at ?? p.kickoff_utc, p.home_score, p.away_score, settled, ft, null, p.league);
   }
-  for (const w of (watchRes.data ?? []) as { home_team: string; away_team: string; kickoff_utc: string; created_at: string }[]) {
-    addEntry(w.home_team, w.away_team, w.kickoff_utc, w.created_at);
+  for (const w of (watchRes.data ?? []) as { home_team: string; away_team: string; kickoff_utc: string; created_at: string; league?: string }[]) {
+    addEntry(w.home_team, w.away_team, w.kickoff_utc, w.created_at, null, null, null, null, null, w.league ?? "");
   }
   // Merge live/finished scores into EXISTING entries only — never for 'upcoming'
   for (const ls of (liveRes.data ?? []) as { home_team: string; away_team: string; kickoff_utc: string; home_score: number; away_score: number; status: string; minute: string | null; updated_at: string }[]) {
