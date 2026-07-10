@@ -351,6 +351,9 @@ class SupabaseStore implements Store {
   }
 
   async insertPost(post: NewPost): Promise<void> {
+    // Auto-sanitize: strip stray CJK/Greek/Cyrillic characters from AI translations
+    // (AI translate occasionally leaks 1-2 chars from other scripts — don't let it block publish)
+    post.body_md = post.body_md.replace(/[\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7A3\u0370-\u03FF\u0400-\u04FF]/g, '');
     // SEO uniqueness gate — lint before publish (deterministic, code not prompt)
     const { lintSeoArticle } = await import('./seo-lint');
     const lint = lintSeoArticle(post.body_md, post.slug, post.lang);
