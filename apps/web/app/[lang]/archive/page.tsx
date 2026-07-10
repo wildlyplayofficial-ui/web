@@ -52,14 +52,21 @@ export default async function PlayArchive({ params, searchParams }: Props) {
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
   const translations = await getThesisTranslations(allPicks.map((p) => p.id));
 
-  // Collect unique leagues for filter
-  const leagues = [...new Set(allPicks.map((p) => p.league))].sort();
+  // Normalize league names: strip group/round suffixes + unify WC variants
+  const normalizeLeague = (l: string): string => {
+    let n = l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
+    if (/^(FIFA\s+)?World\s+Cup(\s+2026)?$/i.test(n)) n = "FIFA World Cup 2026";
+    return n;
+  };
+
+  // Collect unique normalized leagues for filter
+  const leagues = [...new Set(allPicks.map((p) => normalizeLeague(p.league)))].sort();
 
   // Apply filters
   const filterPicks = (picks: typeof allPicks) => {
     let filtered = picks;
     if (resultFilter) filtered = filtered.filter((p) => p.status === resultFilter);
-    if (leagueFilter) filtered = filtered.filter((p) => p.league === leagueFilter);
+    if (leagueFilter) filtered = filtered.filter((p) => normalizeLeague(p.league) === leagueFilter);
     return filtered;
   };
 
