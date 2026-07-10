@@ -7,6 +7,7 @@ import type { Api } from 'grammy';
 import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL } from './recap';
 import { parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
+import { postPhotoToFacebook } from './announce';
 import type { NewPost, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -152,6 +153,7 @@ export interface NoPlayCardDeps {
   api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
   channelChatId: string | undefined;
   siteUrl: string;
+  facebook?: { pageId: string; pageToken: string };
 }
 
 export interface NoPlayArticleDeps {
@@ -172,20 +174,33 @@ export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: str
   ].join('\n');
 }
 
-/** Send the NO-PLAY card to the TG channel. Fire-and-forget — never throws. */
+/** Send the NO-PLAY card to TG channel + FB page. Fire-and-forget — never throws. */
 async function sendNoPlayCard(deps: NoPlayCardDeps, np: ParsedNoPlay, slug: string): Promise<void> {
-  if (!deps.channelChatId) return;
-  try {
-    const msg = formatNoPlayMessage(np, deps.siteUrl, slug);
-    const imageUrl = `${deps.siteUrl}/images/wildlyplay_noplay.png`;
+  const msg = formatNoPlayMessage(np, deps.siteUrl, slug);
+  const imageUrl = `${deps.siteUrl}/images/wildlyplay_noplay.png`;
+
+  // TG channel
+  if (deps.channelChatId) {
     try {
-      await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
-    } catch {
-      await deps.api.sendMessage(deps.channelChatId, msg);
+      try {
+        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
+      } catch {
+        await deps.api.sendMessage(deps.channelChatId, msg);
+      }
+      log.info(`no-play TG card sent for ${np.homeTeam} vs ${np.awayTeam}`);
+    } catch (err) {
+      log.warn(`no-play TG card failed for ${np.homeTeam} vs ${np.awayTeam}:`, err);
     }
-    log.info(`no-play card sent for ${np.homeTeam} vs ${np.awayTeam}`);
-  } catch (err) {
-    log.warn(`no-play card failed for ${np.homeTeam} vs ${np.awayTeam} — article already published:`, err);
+  }
+
+  // FB page (restored — was removed in Post Restructure 3/7, Nick confirms no-play should post to FB)
+  if (deps.facebook) {
+    try {
+      await postPhotoToFacebook(deps.facebook, imageUrl, msg);
+      log.info(`no-play FB post sent for ${np.homeTeam} vs ${np.awayTeam}`);
+    } catch (err) {
+      log.warn(`no-play FB post failed for ${np.homeTeam} vs ${np.awayTeam}:`, err);
+    }
   }
 }
 

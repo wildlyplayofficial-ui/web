@@ -293,12 +293,12 @@ export function createBot(deps: BotDeps): Bot {
       (noplay.note ? `\nnote: ${noplay.note}` : ''),
     );
     // Generate no-play article — fire-and-forget, never throws.
-    // Post Restructure v1 §2.2: 3-line NO-PLAY card, verdict first (TG only).
+    // NO-PLAY card → TG channel + FB page (Nick confirms both).
     if (deps.aiEnv?.apiKey) {
       void publishNoPlayArticle(
         {
           store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-          card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl },
+          card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl, facebook: deps.facebook },
         },
         noplay,
       );
