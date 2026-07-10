@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.board.title} | WildlyPlay`,
       description: dict.board.subtitle,
-      images: [{ url: "/og-home.png", width: 1200, height: 630 }],
+      images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
   };
 }

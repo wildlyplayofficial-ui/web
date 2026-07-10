@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.standings.title} | WildlyPlay`,
       description: dict.standings.subtitle,
-      images: [{ url: "/og-home.png", width: 1200, height: 630 }],
+      images: [{ url: "/api/og/editorial?title=Competitions&subtitle=Standings%2C%20fixtures%2C%20and%20predictions%20by%20league", width: 1200, height: 630 }],
     },
     alternates: buildAlternates("/competitions", lang),
   };

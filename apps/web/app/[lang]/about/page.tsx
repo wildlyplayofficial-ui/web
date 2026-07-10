@@ -125,7 +125,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: [{ url: "/api/og/editorial?title=About%20WildlyPlay&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.", width: 1200, height: 630 }] },
     alternates: buildAlternates("/about", lang),
   };
 }

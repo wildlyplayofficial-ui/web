@@ -42,6 +42,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
+    openGraph: {
+      title: `${title} | WildlyPlay`,
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(comp.name)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions`, width: 1200, height: 630 }],
+    },
   };
 }
 
