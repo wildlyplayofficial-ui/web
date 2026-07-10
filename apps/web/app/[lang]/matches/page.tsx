@@ -106,11 +106,13 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
     return true;
   });
 
-  // Normalize league names: strip group/round suffixes for chip display
-  // "FIFA World Cup 2026 — Group A" → "FIFA World Cup 2026"
-  // "World Cup 2026 — Round of 16" → "World Cup 2026"
-  const normalizeLeague = (l: string): string =>
-    l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
+  // Normalize league names: strip group/round suffixes + unify WC variants
+  const normalizeLeague = (l: string): string => {
+    let n = l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
+    // Unify all World Cup variants to one canonical name
+    if (/^(FIFA\s+)?World\s+Cup(\s+2026)?$/i.test(n)) n = "FIFA World Cup 2026";
+    return n;
+  };
 
   const leagueMap = new Map<string, string>(); // normalized → first raw
   for (const m of deduped) {
