@@ -17,17 +17,17 @@ const ANCHORS: Record<string, { anchor: string; badge: string }> = {
   // Guides
   "what-is-asian-handicap": { anchor: "-0.5  ·  -0.75  ·  -1.0  ·  -1.5", badge: "GUIDE" },
   "how-de-vigging-works": { anchor: "110 / -110  →  remove vig  →  50.0% true prob", badge: "GUIDE" },
-  "what-is-devigging": { anchor: "Odds 1.91  →  vig 4.5%  →  fair 1.00 / 1.00", badge: "GUIDE" },
+  "what-is-devigging": { anchor: "Odds 1.91 / 1.91  →  remove vig  →  fair 2.00 / 2.00", badge: "GUIDE" },
   "what-is-closing-line-value": { anchor: "Open 2.10  →  Close 1.95  =  CLV +7.7%", badge: "GUIDE" },
   "kelly-criterion-betting": { anchor: "f* = (bp − q) / b  →  optimal stake", badge: "GUIDE" },
   "what-is-value-betting": { anchor: "Model 55%  vs  Implied 48%  =  +7% edge", badge: "GUIDE" },
-  "how-to-read-betting-odds": { anchor: "2.50  =  +150  =  6/4  =  0.60", badge: "GUIDE" },
+  "how-to-read-betting-odds": { anchor: "2.50  =  +150  =  6/4  =  HK 1.50", badge: "GUIDE" },
   "odds-formats-explained": { anchor: "Decimal  ·  American  ·  Fractional  ·  Malay", badge: "GUIDE" },
   "what-makes-a-good-tipster": { anchor: "Record  ·  CLV  ·  Reasoning  ·  Transparency", badge: "GUIDE" },
   "no-play-discipline": { anchor: "Evaluated  →  No edge found  →  PASS", badge: "GUIDE" },
   "responsible-play-guide": { anchor: "Set limits  ·  Never chase  ·  Stay in control", badge: "GUIDE" },
   // Calculators
-  "de-vig": { anchor: "Home 1.85  ·  Away 2.05  →  True: 51.8% / 48.2%", badge: "CALCULATOR" },
+  "de-vig": { anchor: "Home 1.85  ·  Away 2.05  →  True: 52.6% / 47.4%", badge: "CALCULATOR" },
   "odds-converter": { anchor: "1.75  =  -133  =  3/4  =  0.75", badge: "CALCULATOR" },
   "kelly": { anchor: "Edge 8%  ·  Odds 2.10  →  Stake 7.3% of bankroll", badge: "CALCULATOR" },
 };
