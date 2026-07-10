@@ -136,22 +136,20 @@ export default async function StandingSlugPage({ params }: Props) {
         )}
       </section>
 
-      {/* Tabs */}
-      <nav className="mb-8 flex justify-center gap-2">
-        <span className="rounded-full border border-brand/40 bg-brand-dim px-4 py-1.5 text-sm font-semibold text-brand">
-          Standings
-        </span>
-        {!isWorldCup && (
+      {/* Tabs — hidden for WC (single page with bracket + groups) */}
+      {!isWorldCup && (
+        <nav className="mb-8 flex justify-center gap-2">
+          <span className="rounded-full border border-brand/40 bg-brand-dim px-4 py-1.5 text-sm font-semibold text-brand">
+            Standings
+          </span>
           <Link href={withLang(`/competitions/${slug}/fixtures`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
             Fixtures
           </Link>
-        )}
-        {!isWorldCup && (
           <Link href={withLang(`/competitions/${slug}/form`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
             Form
           </Link>
-        )}
-      </nav>
+        </nav>
+      )}
 
       {rows.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
@@ -221,12 +219,9 @@ export default async function StandingSlugPage({ params }: Props) {
           })()}
         </>
       ) : hasGroups ? (
-        /* Multi-group non-WC (e.g. MLS conferences) */
+        /* Multi-group non-WC (e.g. MLS conferences) — standings only, fixtures in /fixtures tab */
         <>
-          {/* Schedule first (Nick 7/8): upcoming fixtures are more timely than
-              the table, so they sit above it. */}
-          <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
-          <div className="mt-12 space-y-8">
+          <div className="space-y-8">
             {[...groupMap.entries()]
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([group, teams]) => (
@@ -240,13 +235,8 @@ export default async function StandingSlugPage({ params }: Props) {
           </div>
         </>
       ) : (
-        /* Single flat table (EPL, La Liga, etc.) */
-        <>
-          <LeagueFixtures days={fixtureDays} label={dict.standings.schedule} />
-          <div className="mt-12">
-            <LeagueTable teams={sortedRows} labels={dict.standings} showQualification={showQualification} />
-          </div>
-        </>
+        /* Single flat table (EPL, La Liga, etc.) — standings only, fixtures in /fixtures tab */
+        <LeagueTable teams={sortedRows} labels={dict.standings} showQualification={showQualification} />
       )}
     </div>
   );

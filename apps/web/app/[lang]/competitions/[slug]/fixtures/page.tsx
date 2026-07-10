@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   const comp = await resolveCompetition(slug);
   if (!comp) return { title: dict.standings.title };
-  const title = `${comp.name} — Fixtures & Results`;
+  const title = `${comp.name} — Fixtures`;
   return {
     title,
     alternates: buildAlternates(`/competitions/${slug}/fixtures`, lang),
@@ -47,7 +47,7 @@ export default async function FixturesPage({ params }: Props) {
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.standings.title, url: "/competitions" }, { name: comp.name, url: `/competitions/${slug}` }, { name: "Fixtures", url: `/competitions/${slug}/fixtures` }]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{comp.name}</h1>
-        <p className="mt-2 text-muted">Fixtures & Results</p>
+        <p className="mt-2 text-muted">Fixtures</p>
       </section>
 
       {/* Tabs */}
@@ -66,7 +66,7 @@ export default async function FixturesPage({ params }: Props) {
       {fixtureDays.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">No fixtures available.</div>
       ) : (
-        <LeagueFixtures days={fixtureDays} label="Fixtures & Results" />
+        <LeagueFixtures days={fixtureDays} label="Fixtures" />
       )}
     </div>
   );
