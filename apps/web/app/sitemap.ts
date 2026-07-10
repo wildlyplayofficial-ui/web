@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/calculators/odds-converter`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/odds-converter") },
     { url: `${BASE}/calculators/kelly`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/kelly") },
     { url: `${BASE}/calculators/de-vig`, changeFrequency: "monthly", priority: 0.6, alternates: alternates("/calculators/de-vig") },
-    { url: `${BASE}/news`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/news") },
+    { url: `${BASE}/analysis`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/analysis") },
     { url: `${BASE}/guides`, changeFrequency: "weekly", priority: 0.7, alternates: alternates("/guides") },
     { url: `${BASE}/transparency`, changeFrequency: "monthly", priority: 0.7, alternates: alternates("/transparency") },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.4, alternates: alternates("/about") },
@@ -53,11 +53,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const newsRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
-    url: `${BASE}/news/${p.slug}`,
+    url: `${BASE}/analysis/${p.slug}`,
     lastModified: new Date(p.updated),
     changeFrequency: "weekly",
     priority: 0.6,
-    alternates: alternates(`/news/${p.slug}`),
+    alternates: alternates(`/analysis/${p.slug}`),
   }));
 
   const matchRoutes: MetadataRoute.Sitemap = matches.map((m) => ({

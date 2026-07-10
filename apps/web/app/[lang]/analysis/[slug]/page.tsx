@@ -26,15 +26,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = post.meta_title ?? post.title;
   const description = post.meta_description
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
-  const canonical = `${BASE}${withLang(`/news/${slug}`, lang)}`;
+  const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
 
   const availableLangs = await getPostLangs(slug);
   const languages: Record<string, string> = {};
   for (const l of availableLangs) {
-    languages[l] = `${BASE}${withLang(`/news/${slug}`, l)}`;
+    languages[l] = `${BASE}${withLang(`/analysis/${slug}`, l)}`;
   }
   if (availableLangs.includes("en")) {
-    languages["x-default"] = `${BASE}/news/${slug}`;
+    languages["x-default"] = `${BASE}/analysis/${slug}`;
   }
 
   return {
@@ -84,7 +84,7 @@ function buildArticleSchema(post: {
     datePublished: post.published_at ?? undefined,
     dateModified: post.published_at ?? undefined,
     inLanguage: post.lang,
-    mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
+    mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
     image: `${BASE}/api/og/news/${slug}`,
     author: {
       "@type": "Organization",
@@ -125,10 +125,10 @@ export default async function NewsPost({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: schema }}
       />
 
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.nav.news, url: "/news" }, { name: post.title, url: `/news/${slug}` }]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.nav.news, url: "/analysis" }, { name: post.title, url: `/analysis/${slug}` }]} />
 
       <Link
-        href={withLang("/news", lang)}
+        href={withLang("/analysis", lang)}
         className="text-sm text-muted transition-colors hover:text-brand"
       >
         &larr; {dict.news.backToNews}
@@ -235,7 +235,7 @@ async function RelatedArticles({
         {others.slice(0, 3).map((p: { slug: string; title: string; type: string }) => (
           <li key={p.slug}>
             <Link
-              href={withLang(`/news/${p.slug}`, lang)}
+              href={withLang(`/analysis/${p.slug}`, lang)}
               className="text-sm text-brand transition-colors hover:text-ink"
             >
               {typeLabels[p.type] ?? p.type}: {p.title}

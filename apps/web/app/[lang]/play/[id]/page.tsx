@@ -187,7 +187,7 @@ export default async function PlayDetail({ params }: Props) {
 
       {recapFinal && (
         <p className="mt-6">
-          <Link href={withLang(`/news/${recapFinal.slug}`, lang)} className={pick.author === "scout" ? "font-display text-sm font-semibold text-scout transition-colors hover:text-ink" : "font-display text-sm font-semibold text-brand transition-colors hover:text-ink"}>
+          <Link href={withLang(`/analysis/${recapFinal.slug}`, lang)} className={pick.author === "scout" ? "font-display text-sm font-semibold text-scout transition-colors hover:text-ink" : "font-display text-sm font-semibold text-brand transition-colors hover:text-ink"}>
             {dict.play.readRecap} &rarr;
           </Link>
         </p>

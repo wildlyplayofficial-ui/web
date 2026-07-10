@@ -13,7 +13,7 @@ export function Footer() {
   const links: ReadonlyArray<{ href: string; label: string }> = [
     { href: "/about", label: dict.nav.about },
     { href: "/archive", label: dict.nav.archive },
-    { href: "/news", label: dict.nav.analysis },
+    { href: "/analysis", label: dict.nav.analysis },
     { href: "/matches", label: dict.nav.matches },
     { href: "/competitions", label: dict.nav.standings },
     { href: "/guides", label: dict.nav.guides },

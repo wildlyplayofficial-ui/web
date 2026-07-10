@@ -167,7 +167,7 @@ async function NewsLink({ item, lang }: { item: WatchingRow; lang: Lang }) {
   };
   return (
     <Link
-      href={lang === "en" ? `/news/${slug}` : `/${lang}/news/${slug}`}
+      href={lang === "en" ? `/analysis/${slug}` : `/${lang}/analysis/${slug}`}
       className="inline-flex items-center gap-1 text-sm font-semibold text-brand transition-colors hover:text-brand/80"
     >
       {labels[lang] ?? labels.en} →

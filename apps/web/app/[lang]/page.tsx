@@ -189,7 +189,7 @@ export default async function Home({ params }: Props) {
         <section className="pb-10">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
-            <Link href={withLang("/news", lang)} className="text-sm font-semibold text-brand hover:underline">
+            <Link href={withLang("/analysis", lang)} className="text-sm font-semibold text-brand hover:underline">
               {dict.nav.analysis} &rarr;
             </Link>
           </div>
@@ -197,7 +197,7 @@ export default async function Home({ params }: Props) {
             {latestPosts.map((post) => (
               <Link
                 key={post.id}
-                href={withLang(`/news/${post.slug}`, lang)}
+                href={withLang(`/analysis/${post.slug}`, lang)}
                 className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
               >
                 <img

@@ -97,7 +97,7 @@ function buildTabHref(tab: FilterTab, lang: Lang, page?: number): string {
   if (tab !== "all") params.set("type", tab);
   if (page && page > 1) params.set("page", String(page));
   const qs = params.toString();
-  const path = qs ? `/news?${qs}` : "/news";
+  const path = qs ? `/analysis?${qs}` : "/analysis";
   return withLang(path, lang);
 }
 
@@ -113,7 +113,7 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
   const excerpt = post.meta_description || extractExcerpt(post.body_md);
   return (
     <Link
-      href={withLang(`/news/${post.slug}`, lang)}
+      href={withLang(`/analysis/${post.slug}`, lang)}
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
       <img
@@ -171,7 +171,7 @@ export default async function Newsroom({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
-      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Newsroom",url:"/news"}]} />
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Newsroom",url:"/analysis"}]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.news.title}</h1>
         <p className="mt-3 text-muted">{dict.news.subtitle}</p>

@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
       { source: "/standings/:path*", destination: "/competitions/:path*", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/standings", destination: "/:lang/competitions", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/standings/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
+      // 301 migrate /news -> /analysis (moved 10/7/2026, IA rebuild)
+      { source: "/news", destination: "/analysis", permanent: true },
+      { source: "/news/:slug", destination: "/analysis/:slug", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news", destination: "/:lang/analysis", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/:slug", destination: "/:lang/analysis/:slug", permanent: true },
     ];
   },
 };
