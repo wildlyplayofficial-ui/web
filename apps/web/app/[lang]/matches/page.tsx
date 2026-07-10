@@ -134,14 +134,16 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
   const totalPages = Math.ceil(matches.length / PER_PAGE);
   const pageMatches = matches.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  // Group by date for headers
+  // Group by kickoff date (UTC) for headers. Note: SSR renders in UTC;
+  // MatchStatus handles local time display client-side.
   const dateGroups: { date: string; matches: typeof pageMatches }[] = [];
   for (const m of pageMatches) {
+    const d = m.kickoffUtc.slice(0, 10);
     const last = dateGroups[dateGroups.length - 1];
-    if (last && last.date === m.date) {
+    if (last && last.date === d) {
       last.matches.push(m);
     } else {
-      dateGroups.push({ date: m.date, matches: [m] });
+      dateGroups.push({ date: d, matches: [m] });
     }
   }
 
@@ -201,10 +203,12 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
                       href={withLang(`/match/${m.slug}`, lang)}
                       className="group rounded-card border border-line bg-card p-4 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover"
                     >
-                      <div className="flex items-center justify-between">
-                        <MatchStatus kickoffUtc={m.kickoffUtc} liveStatus={m.liveStatus} minute={m.minute} />
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <MatchStatus kickoffUtc={m.kickoffUtc} liveStatus={m.liveStatus} minute={m.minute} />
+                        </div>
                         {m.league && (
-                          <span className="rounded-full border border-line px-2.5 py-0.5 text-[0.65rem] font-semibold text-muted">
+                          <span className="shrink-0 rounded-full border border-line px-2.5 py-0.5 text-[0.65rem] font-semibold text-muted">
                             {normalizeLeague(m.league)}
                           </span>
                         )}
