@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buildAlternates, getDict, resolveLang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { getCompetitionFixtures, getCompetitionForm, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
@@ -134,6 +135,23 @@ export default async function StandingSlugPage({ params }: Props) {
           </p>
         )}
       </section>
+
+      {/* Tabs */}
+      <nav className="mb-8 flex justify-center gap-2">
+        <span className="rounded-full border border-brand/40 bg-brand-dim px-4 py-1.5 text-sm font-semibold text-brand">
+          Standings
+        </span>
+        {!isWorldCup && (
+          <Link href={withLang(`/competitions/${slug}/fixtures`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
+            Fixtures
+          </Link>
+        )}
+        {!isWorldCup && (
+          <Link href={withLang(`/competitions/${slug}/form`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
+            Form
+          </Link>
+        )}
+      </nav>
 
       {rows.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
