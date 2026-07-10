@@ -554,6 +554,29 @@ export const getActiveWatching = unstable_cache(getActiveWatchingImpl, ["active-
   tags: ["watching"],
 });
 
+/** No-plays: watching rows evaluated and passed (status='expired') with kickoff today (UTC).
+ *  The discipline moat — shown as a real list on /daily-board, close_note = the 1-line pass reason. */
+async function getTodaysNoPlaysImpl(): Promise<WatchingRow[]> {
+  const supabase = getSupabase();
+  if (!supabase) return []; // mock mode: no no-play rows
+  const dayStart = new Date().toISOString().slice(0, 10);
+  const nextDay = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from("watching")
+    .select("*")
+    .eq("status", "expired")
+    .gte("kickoff_utc", `${dayStart}T00:00:00Z`)
+    .lt("kickoff_utc", `${nextDay}T00:00:00Z`)
+    .order("kickoff_utc", { ascending: true });
+  if (error) throw new Error(`getTodaysNoPlays: ${error.message}`);
+  return (data ?? []) as WatchingRow[];
+}
+
+export const getTodaysNoPlays = unstable_cache(getTodaysNoPlaysImpl, ["todays-no-plays"], {
+  revalidate: 300,
+  tags: ["watching"],
+});
+
 function slugify(s: string): string {
   return s
     .normalize("NFD")

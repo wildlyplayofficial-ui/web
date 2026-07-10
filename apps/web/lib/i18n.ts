@@ -73,6 +73,21 @@ export interface Dict {
     last30: string;
     emptyTitle: string;
     emptyBody: string;
+    picksLabel: string;
+    noPlaysLabel: string;
+    watchingLabel: string;
+    noPlaysTitle: string;
+    noPlaysBody: string;
+    resultsTitle: string;
+    watchingTitle: string;
+    trackRecordCta: string;
+    asOf: string;
+  };
+  home: {
+    latestAnalysis: string;
+    viewBoard: string;
+    trustCurator: string;
+    trustScout: string;
   };
   archive: {
     title: string;
@@ -286,12 +301,27 @@ const en: Dict = {
   footerDisclaimer: "Entertainment only. Play responsibly.",
   board: {
     title: "Daily Board",
-    subtitle: "One match. One take. Every day there's an edge.",
+    subtitle: "One match. One take. Only when there's an edge.",
     formTitle: "Recent form",
     last30: "Last 30 days",
     emptyTitle: "No play today.",
     emptyBody:
       "The Curator only plays when there's an edge. No forced picks, no filler — check back tomorrow or follow Telegram for the next play.",
+    picksLabel: "Picks",
+    noPlaysLabel: "No-plays",
+    watchingLabel: "Watching",
+    noPlaysTitle: "No-plays today",
+    noPlaysBody: "Evaluated and passed — no edge, no play.",
+    resultsTitle: "Today's results",
+    watchingTitle: "Watching",
+    trackRecordCta: "Full track record",
+    asOf: "as of",
+  },
+  home: {
+    latestAnalysis: "Latest analysis",
+    viewBoard: "View the Daily Board",
+    trustCurator: "The Curator — real human, hand-picked plays",
+    trustScout: "The Scout — openly AI, separate ledger, lower confidence",
   },
   archive: {
     title: "Play Archive",
@@ -512,6 +542,21 @@ const vi: Dict = {
     emptyTitle: "Hôm nay không có kèo.",
     emptyBody:
       "The Curator chỉ chơi khi thấy lợi thế thật sự. Không kèo gượng ép, không câu kéo — quay lại ngày mai hoặc theo dõi Telegram để nhận kèo tiếp theo.",
+    picksLabel: "Kèo chọn",
+    noPlaysLabel: "Bỏ qua",
+    watchingLabel: "Đang theo dõi",
+    noPlaysTitle: "Trận bỏ qua hôm nay",
+    noPlaysBody: "Đã phân tích nhưng không xuống kèo — không có lợi thế thì không chơi.",
+    resultsTitle: "Kết quả hôm nay",
+    watchingTitle: "Đang theo dõi",
+    trackRecordCta: "Xem toàn bộ thành tích",
+    asOf: "tính đến",
+  },
+  home: {
+    latestAnalysis: "Phân tích mới nhất",
+    viewBoard: "Xem Bảng Kèo Hôm Nay",
+    trustCurator: "The Curator — người thật, tự tay chọn kèo",
+    trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
   },
   archive: {
     title: "Lưu Trữ Kèo",
@@ -732,6 +777,21 @@ const th: Dict = {
     emptyTitle: "วันนี้ไม่มีทีเด็ด",
     emptyBody:
       "The Curator จะเล่นเฉพาะเมื่อเห็นความได้เปรียบจริงเท่านั้น ไม่มีทีเด็ดยัดเยียด ไม่มีของแถม — กลับมาดูใหม่พรุ่งนี้ หรือติดตาม Telegram เพื่อรอทีเด็ดถัดไป",
+    picksLabel: "ทีเด็ด",
+    noPlaysLabel: "ไม่เล่น",
+    watchingLabel: "กำลังจับตา",
+    noPlaysTitle: "แมตช์ที่ไม่เล่นวันนี้",
+    noPlaysBody: "วิเคราะห์แล้วแต่ไม่เล่น — ไม่มีความได้เปรียบ ก็ไม่เดิมพัน",
+    resultsTitle: "ผลวันนี้",
+    watchingTitle: "กำลังจับตา",
+    trackRecordCta: "ดูสถิติผลงานทั้งหมด",
+    asOf: "ณ วันที่",
+  },
+  home: {
+    latestAnalysis: "บทวิเคราะห์ล่าสุด",
+    viewBoard: "ดูบอร์ดประจำวัน",
+    trustCurator: "The Curator — คนจริง เลือกทีเด็ดด้วยมือ",
+    trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
   },
   archive: {
     title: "คลังทีเด็ด",
@@ -952,6 +1012,21 @@ const es: Dict = {
     emptyTitle: "Hoy no hay jugada.",
     emptyBody:
       "The Curator solo juega cuando hay una ventaja real. Sin picks forzados, sin relleno — vuelve mañana o sigue el Telegram para la próxima jugada.",
+    picksLabel: "Picks",
+    noPlaysLabel: "Descartados",
+    watchingLabel: "En seguimiento",
+    noPlaysTitle: "Partidos descartados hoy",
+    noPlaysBody: "Analizados y descartados — sin ventaja, no hay jugada.",
+    resultsTitle: "Resultados de hoy",
+    watchingTitle: "En seguimiento",
+    trackRecordCta: "Historial completo",
+    asOf: "al",
+  },
+  home: {
+    latestAnalysis: "Análisis recientes",
+    viewBoard: "Ver la Pizarra Diaria",
+    trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
+    trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
   },
   archive: {
     title: "Archivo de Jugadas",

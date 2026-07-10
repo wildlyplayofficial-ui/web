@@ -151,7 +151,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     {
       label: nav.todaysPick,
       items: [
-        { name: nav.board, href: "/" },
+        { name: nav.board, href: "/daily-board" },
         { name: nav.dailyLine, href: "/daily-line" },
       ],
     },

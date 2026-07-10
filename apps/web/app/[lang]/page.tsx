@@ -1,22 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { DailyLineStrip } from "@/components/daily-line-strip";
-import { LiveCommentaryStrip } from "@/components/live-commentary-strip";
-import { MatchesWidget } from "@/components/matches-widget";
-import { PickCard } from "@/components/pick-card";
-import { WatchingTeaser } from "@/components/watching-teaser";
 import {
-  buildMatchSlug,
-  getActiveWatching,
+  getPosts,
   getSettledPicks,
-  getThesisTranslations,
+  getTodaysNoPlays,
   getTodaysPicks,
   getTrackRecordForAuthor,
-  getVoteCounts,
 } from "@/lib/data";
-import { formatBoardDate, formatUnits } from "@/lib/format";
-import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+import { formatBoardDate, formatUnits, locales } from "@/lib/format";
+import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -29,9 +21,18 @@ function unitsLast30(picks: { settled_at: string | null; kickoff_utc: string; un
   return Math.round(sum * 100) / 100;
 }
 
+function formatPostDate(iso: string | null, lang: Lang): string {
+  if (!iso) return "";
+  return new Intl.DateTimeFormat(locales[lang], {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
 type Props = {
   params: Promise<{ lang: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -39,32 +40,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   return {
     title: { absolute: `WildlyPlay — ${dict.tagline}` },
-    description: dict.tagline,
+    description: dict.board.subtitle,
     alternates: buildAlternates("/", lang),
-    openGraph: { title: `${dict.board.title} | WildlyPlay`, description: dict.tagline, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    openGraph: {
+      title: `WildlyPlay — ${dict.tagline}`,
+      description: dict.board.subtitle,
+      images: [{ url: "/og-home.png", width: 1200, height: 630 }],
+    },
   };
 }
 
-export default async function DailyBoard({ params }: Props) {
+export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, watching, scoutRecord] = await Promise.all([
+  const [allPicks, record, settledPicks, noPlays, posts] = await Promise.all([
     getTodaysPicks(),
     getTrackRecordForAuthor("curator"),
     getSettledPicks(),
-    getActiveWatching(),
-    getTrackRecordForAuthor("scout"),
+    getTodaysNoPlays(),
+    getPosts(lang),
   ]);
-  // §7.1: split picks by author — curator picks go to Daily Board, scout picks to Scout section
+  // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
-  const scoutPicks = allPicks.filter((p) => p.author === "scout");
-  const [votes, translations] = await Promise.all([
-    getVoteCounts(allPicks.map((p) => p.id)),
-    getThesisTranslations(allPicks.map((p) => p.id)),
-  ]);
 
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
-  // §7.1: hero form strip + units = curator-only (never blend Scout results)
   const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
   const cutoff30 = Date.now() - 30 * 86_400_000;
   const form = curatorSettled
@@ -79,8 +78,11 @@ export default async function DailyBoard({ params }: Props) {
     push: "border-line bg-card text-muted",
   };
 
+  const latestPosts = posts.slice(0, 4);
+
   return (
     <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
+      {/* 1. Hero: brand positioning + curator record + form */}
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
         {/* Mobile pitch (slice) */}
@@ -129,14 +131,15 @@ export default async function DailyBoard({ params }: Props) {
               >
                 {formatUnits(record.units_pl)}
               </span>
+              <span className="text-muted">
+                · {dict.board.asOf} {formatBoardDate(new Date(), lang)}
+              </span>
             </p>
           )}
           {form.length > 0 && (
             <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
               <span className="text-muted">{dict.board.formTitle}</span>
-              <div
-                className="flex flex-wrap justify-center gap-1.5 py-1"
-              >
+              <div className="flex flex-wrap justify-center gap-1.5 py-1">
                 {form.map((p) => (
                   <Link
                     key={p.id}
@@ -159,102 +162,107 @@ export default async function DailyBoard({ params }: Props) {
         </div>
       </section>
 
-      {/* DL2: Always-on Daily Line strip */}
-      <Suspense fallback={null}>
-        <DailyLineStrip lang={lang} />
-      </Suspense>
-
-      {/* Live commentary snippet */}
-      <LiveCommentaryStrip
-        pickMatchSlugs={Object.fromEntries(
-          picks.map((p) => [
-            `${p.home_team}|${p.away_team}`,
-            buildMatchSlug(p.home_team, p.away_team, p.kickoff_utc),
-          ]),
-        )}
-      />
-
-      <section className="pb-8">
-        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-display text-2xl font-bold">{dict.board.title}</h2>
-          <p className="text-sm text-muted">{formatBoardDate(new Date(), lang)}</p>
-        </div>
-
-        {picks.length === 0 ? (
-          <div className="rounded-card border border-line bg-card px-6 py-16 text-center">
-            <p className="font-display text-2xl font-bold">{dict.board.emptyTitle}</p>
-            <p className="mx-auto mt-3 max-w-[480px] text-muted">{dict.board.emptyBody}</p>
-            <a
-              href="https://t.me/wildlyplay"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-display font-semibold text-bg transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,230,118,0.3)]"
-            >
-              Telegram &rarr;
-            </a>
+      {/* 2. Daily Board teaser: today's summary + CTA */}
+      <section className="pb-10">
+        <Link
+          href={withLang("/daily-board", lang)}
+          className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+        >
+          <div>
+            <p className="font-display text-lg font-bold">{dict.board.title}</p>
+            <p className="mt-1 text-sm text-muted">
+              {formatBoardDate(new Date(), lang)}
+              <span className="mx-2">·</span>
+              {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
+              <span className="mx-2">·</span>
+              {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
+            </p>
           </div>
-        ) : (
-          <div className="flex flex-col gap-5">
-            {picks.map((pick) => (
-              <PickCard
-                key={pick.id}
-                pick={pick}
-                lang={lang}
-                votes={votes[pick.id]}
-                thesisText={translations[pick.id]?.[lang] ?? pick.thesis}
-              />
-            ))}
-          </div>
-        )}
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+            {dict.home.viewBoard} &rarr;
+          </span>
+        </Link>
       </section>
 
-      {/* §7.1 Scout section — hidden when scout has 0 settled picks (pre-launch rule) */}
-      {scoutRecord.settled > 0 && (
-        <section className="mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-xl font-bold text-[#6b9e9e]">
-              {dict.scout.heading} 🤖
-            </h2>
-            <span className="rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-[#6b9e9e]">
-              {dict.scout.badge}
-            </span>
+      {/* 3. Latest analysis: newest published posts */}
+      {latestPosts.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
+            <Link href={withLang("/news", lang)} className="text-sm font-semibold text-brand hover:underline">
+              {dict.nav.news} &rarr;
+            </Link>
           </div>
-
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
-            <span className="text-muted">The Scout</span>
-            <span className="font-semibold text-ink">
-              {scoutRecord.wins}-{scoutRecord.losses}-{scoutRecord.pushes}
-            </span>
-            <span className={`font-semibold ${scoutRecord.units_pl >= 0 ? "text-brand" : "text-loss"}`}>
-              {formatUnits(scoutRecord.units_pl)}
-            </span>
-          </p>
-
-          {scoutPicks.length > 0 ? (
-            <div className="mt-5 flex flex-col gap-5">
-              {scoutPicks.map((pick) => (
-                <PickCard
-                  key={pick.id}
-                  pick={pick}
-                  lang={lang}
-                  votes={votes[pick.id]}
-                  thesisText={translations[pick.id]?.[lang] ?? pick.thesis}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-5 text-sm text-muted">{dict.scout.noPlay}</p>
-          )}
-
-          <p className="mt-5 text-xs text-muted">
-            {dict.scout.disclosure}
-          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {latestPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={withLang(`/news/${post.slug}`, lang)}
+                className="group rounded-card border border-line bg-card p-5 transition-colors hover:border-brand/30"
+              >
+                <time className="text-xs text-muted" dateTime={post.published_at ?? undefined}>
+                  {formatPostDate(post.published_at, lang)}
+                </time>
+                <p className="mt-2 font-display text-base font-bold transition-colors group-hover:text-brand">
+                  {post.title}
+                </p>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
-      <WatchingTeaser items={watching} lang={lang} />
+      {/* 4. Learn strip: calculators + guides */}
+      <section className="grid gap-4 pb-10 sm:grid-cols-2">
+        <Link
+          href={withLang("/calculators", lang)}
+          className="group rounded-card border border-line bg-card p-6 transition-colors hover:border-brand/30"
+        >
+          <h2 className="font-display text-lg font-bold transition-colors group-hover:text-brand">
+            {dict.nav.calculators} &rarr;
+          </h2>
+          <p className="mt-2 text-sm text-muted">{dict.calculators.subtitle}</p>
+        </Link>
+        <Link
+          href={withLang("/guides", lang)}
+          className="group rounded-card border border-line bg-card p-6 transition-colors hover:border-brand/30"
+        >
+          <h2 className="font-display text-lg font-bold transition-colors group-hover:text-brand">
+            {dict.nav.guides} &rarr;
+          </h2>
+          <p className="mt-2 text-sm text-muted">{dict.guides.subtitle}</p>
+        </Link>
+      </section>
 
-      <MatchesWidget lang={lang} />
+      {/* 5. Trust strip: §7.1 firewall stated in plain words + About */}
+      <section className="pb-14">
+        <div className="rounded-card border border-line bg-card px-6 py-6">
+          <ul className="flex flex-col gap-3 text-sm">
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-brand" aria-hidden />
+              <span>{dict.home.trustCurator}</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[#6b9e9e]" aria-hidden />
+              <span>{dict.home.trustScout}</span>
+            </li>
+          </ul>
+          <div className="mt-5 flex flex-wrap gap-4">
+            <Link
+              href={withLang("/about", lang)}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.nav.about} &rarr;
+            </Link>
+            <Link
+              href={withLang("/archive", lang)}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.board.trackRecordCta} &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
