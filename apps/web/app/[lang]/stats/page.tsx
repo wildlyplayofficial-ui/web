@@ -8,6 +8,13 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 /** Stats page — the full track record sliced by league, market and time.
  *  Everything aggregates from one getSettledPicks() call (lib/stats.ts). */
 
+/** Normalize league names: strip group/round suffixes + unify WC variants. */
+function normalizeLeague(l: string): string {
+  let n = l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
+  if (/^(FIFA\s+)?World\s+Cup(\s+2026)?$/i.test(n)) n = "FIFA World Cup 2026";
+  return n;
+}
+
 export const revalidate = 600;
 
 type Props = {
@@ -132,12 +139,12 @@ export default async function StatsPage({ params }: Props) {
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
 
   const summary = summarize(picks);
-  const byLeague = groupStats(picks, (p) => p.league);
+  const byLeague = groupStats(picks, (p) => normalizeLeague(p.league));
   const byMarket = groupStats(picks, (p) => marketLabels[p.market]);
   const points = cumulativeUnits(picks);
 
   const scoutSummary = scoutPicks.length > 0 ? summarize(scoutPicks) : null;
-  const scoutByLeague = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => p.league) : [];
+  const scoutByLeague = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => normalizeLeague(p.league)) : [];
   const scoutByMarket = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => marketLabels[p.market]) : [];
   const scoutPoints = scoutPicks.length > 0 ? cumulativeUnits(scoutPicks) : [];
 
