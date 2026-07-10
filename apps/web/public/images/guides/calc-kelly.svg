@@ -20,7 +20,7 @@
   <!-- Win probability -->
   <text x="90" y="250" font-size="13" fill="#5b6572">Win probability:</text>
   <rect x="200" y="232" width="80" height="28" rx="6" fill="#f4f6f8" stroke="#e2e6ea" stroke-width="1"/>
-  <text x="240" y="252" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">55.6%</text>
+  <text x="240" y="252" text-anchor="middle" font-size="15" font-weight="700" fill="#0d1117">51.4%</text>
 
   <!-- Arrow -->
   <line x1="320" y1="185" x2="420" y2="185" stroke="#00c853" stroke-width="2.5"/>
