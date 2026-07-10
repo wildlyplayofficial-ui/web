@@ -284,10 +284,13 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
 // (invocationKey = `${fixedKey}-${JSON.stringify(args)}`, next@16.2.9
 // dist/server/web/spec-extension/unstable-cache.js:82), so distinct
 // livescoreIds never collide.
+// Quota fix: cache knockout data for 1 hour (was 10 min).
+// 5 API calls per fetch — at 10min revalidate + multiple Vercel instances,
+// this was the main quota drain (~thousands of calls/day from SSR alone).
 export const getKnockoutRounds = unstable_cache(
   fetchKnockoutRoundsImpl,
   ["knockout-rounds"],
-  { revalidate: 600 },
+  { revalidate: 3600 },
 );
 
 export interface FixtureDay {
@@ -466,7 +469,7 @@ async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<Fixtur
 export const getCompetitionFixtures = unstable_cache(
   fetchCompetitionFixturesImpl,
   ["competition-fixtures"],
-  { revalidate: 600 },
+  { revalidate: 3600 },
 );
 
 // livescore's table.json returns an empty `form` field for league competitions
@@ -545,7 +548,7 @@ async function fetchCompetitionFormImpl(
 export const getCompetitionForm = unstable_cache(
   fetchCompetitionFormImpl,
   ["competition-form"],
-  { revalidate: 600 },
+  { revalidate: 3600 },
 );
 
 async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]> {
