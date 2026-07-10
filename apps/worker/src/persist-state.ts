@@ -133,20 +133,28 @@ export async function detectFinishedMatches(
   } catch (err) { log.warn('persist-state detectFinished failed:', err); }
 }
 
-/** Fetch today+yesterday fixtures from livescore-api, return LiveMatchData[]. */
+/** Fetch today (+ yesterday if early UTC) fixtures from livescore-api.
+ *  Quota optimization: skip yesterday fetch after 06:00 UTC (matches from
+ *  yesterday are settled by then). Saves 1 API call per tick = ~33% reduction. */
 export async function fetchLivescoreForPersist(env: NodeJS.ProcessEnv): Promise<LiveMatchData[]> {
   const key = env.LIVESCORE_API_KEY, secret = env.LIVESCORE_API_SECRET;
   if (!key || !secret) return [];
   const now = new Date(), today = now.toISOString().slice(0, 10);
-  const yday = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
   const q = `key=${key}&secret=${secret}&competition_id=${CID}`;
+  // Only fetch yesterday before 06:00 UTC (late matches may still be finishing)
+  const needYesterday = now.getUTCHours() < 6;
   try {
-    const [tR, yR, lR] = await Promise.all([
+    const fetches: Promise<Response>[] = [
       fetch(`${LS}/fixtures/matches.json?${q}&date=${today}`),
-      fetch(`${LS}/fixtures/matches.json?${q}&date=${yday}`),
       fetch(`${LS}/scores/live.json?${q}`),
-    ]);
-    const [tD, yD, lD] = await Promise.all([tR.json(), yR.json(), lR.json()]);
+    ];
+    if (needYesterday) {
+      const yday = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
+      fetches.push(fetch(`${LS}/fixtures/matches.json?${q}&date=${yday}`));
+    }
+    const responses = await Promise.all(fetches);
+    const [tD, lD, ...rest] = await Promise.all(responses.map(r => r.json()));
+    const yD = rest[0] ?? { success: false };
     const liveMap = new Map<string, { score: string; time: string; status: string }>();
     if (lD.success && lD.data?.match)
       for (const m of lD.data.match) liveMap.set(String(m.fixture_id || m.id), m);

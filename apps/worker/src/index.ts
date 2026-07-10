@@ -138,9 +138,12 @@ const stopAnalysis = anthropicApiKey
 // Buzz cron (v2): community sentiment snapshots for watched matches, every 3h + pre-kickoff.
 const stopBuzz = startBuzzCron({ store, env: aiEnv, revalidate });
 
-// R3: Persist live match state — adaptive interval: 2 min when matches live, 10 min idle.
-const PERSIST_FAST = 2 * 60_000;
-const PERSIST_SLOW = 10 * 60_000;
+// R3: Persist live match state — adaptive interval.
+// Quota: Starter plan 14,500 req/day. Each tick = 3 API calls (today+yesterday+live).
+// Fast 3min: 60 calls/h ≈ 1,440/day. Slow 15min: 12 calls/h ≈ 288/day.
+// (Was 2min/10min → caused overage on busy matchdays like QF)
+const PERSIST_FAST = 3 * 60_000;
+const PERSIST_SLOW = 15 * 60_000;
 let hasLiveMatches = false;
 const persistTick = async () => {
   if (!persistDb) return;
