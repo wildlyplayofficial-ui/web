@@ -5,6 +5,7 @@ import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { getCompetitionForm, getStandingsCompetitions } from "@/lib/standings-extra";
+import { teamBadge } from "@/lib/team-badges";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -84,6 +85,11 @@ export default async function FormPage({ params }: Props) {
           {rows.map((r) => (
             <div key={r.name} className="flex items-center gap-4 rounded-card border border-line bg-card p-4">
               <span className="w-8 text-center font-display text-sm font-bold text-muted">{r.rank}</span>
+              {teamBadge(r.name) ? (
+                <img src={teamBadge(r.name)!} alt="" width={24} height={24} className="h-6 w-6 shrink-0 object-contain" />
+              ) : (
+                <span className="h-6 w-6 shrink-0" />
+              )}
               <span className="min-w-0 flex-1 truncate font-display text-sm font-bold">{r.name}</span>
               <div className="flex gap-1">
                 {r.form.split("").map((ch, i) => (
