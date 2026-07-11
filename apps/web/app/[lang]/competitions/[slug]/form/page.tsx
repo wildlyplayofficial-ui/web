@@ -8,7 +8,7 @@ import { getCompetitionForm, getStandingsCompetitions } from "@/lib/standings-ex
 import { teamBadge } from "@/lib/team-badges";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 600;
+export const revalidate = 3600;
 
 type Props = { params: Promise<{ lang: string; slug: string }> };
 

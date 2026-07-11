@@ -7,7 +7,7 @@ import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standing
 import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 600;
+export const revalidate = 3600;
 
 type Props = { params: Promise<{ lang: string; slug: string }> };
 

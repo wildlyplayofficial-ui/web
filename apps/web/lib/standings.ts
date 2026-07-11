@@ -117,7 +117,7 @@ async function fetchCompetitionTableImpl(livescoreId: number): Promise<StandingT
 export const fetchCompetitionTable = unstable_cache(
   fetchCompetitionTableImpl,
   ["competition-table"],
-  { revalidate: 600 },
+  { revalidate: 3600 },
 );
 
 function groupsFromTable(rows: StandingTeam[]): GroupStanding[] {
@@ -142,7 +142,7 @@ async function fetchStandingsImpl(): Promise<GroupStanding[]> {
 }
 
 export const getStandings = unstable_cache(fetchStandingsImpl, ["wc-standings"], {
-  revalidate: 600,
+  revalidate: 3600,
 });
 
 async function fetchEplStandingsImpl(): Promise<StandingTeam[]> {
@@ -151,5 +151,5 @@ async function fetchEplStandingsImpl(): Promise<StandingTeam[]> {
 }
 
 export const getEplStandings = unstable_cache(fetchEplStandingsImpl, ["epl-standings"], {
-  revalidate: 600,
+  revalidate: 3600,
 });

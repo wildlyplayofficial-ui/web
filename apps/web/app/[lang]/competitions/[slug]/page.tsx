@@ -11,7 +11,7 @@ import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
 import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 600;
+export const revalidate = 3600;
 
 /** League palette for competition OG cards (spec §1: hubs use league colors). */
 const LEAGUE_COLORS: Record<string, string> = {
