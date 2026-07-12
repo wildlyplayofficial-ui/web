@@ -347,10 +347,10 @@ const en: Dict = {
     chartTitle: "Cumulative units P/L",
   },
   news: {
-    title: "Newsroom",
+    title: "News",
     subtitle: "Recaps and match notes, published automatically after every play.",
     empty: "No posts yet.",
-    backToNews: "Back to Newsroom",
+    backToNews: "Back to News",
   },
   guides: {
     title: "Guides",
