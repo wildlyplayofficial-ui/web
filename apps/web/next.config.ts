@@ -34,8 +34,8 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/standings/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
       // 301 redirect old news-* articles to /analysis (moved 10/7/2026, IA rebuild).
       // Only matches slugs starting with "news-" (old articles); /news landing + new slugs render normally.
-      { source: "/news/news-:rest*", destination: "/analysis/news-:rest*", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/news-:rest*", destination: "/:lang/analysis/news-:rest*", statusCode: 301 },
+      { source: "/news/news-:slug", destination: "/analysis/news-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/news-:slug", destination: "/:lang/analysis/news-:slug", statusCode: 301 },
     ];
   },
 };
