@@ -22,7 +22,6 @@ const LEAGUE_FILTERS: { id: string; label: string }[] = [
   { id: "serie-a", label: "Serie A" },
   { id: "bundesliga", label: "Bundesliga" },
   { id: "ligue-1", label: "Ligue 1" },
-  { id: "thai-league", label: "Thai League" },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
