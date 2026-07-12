@@ -76,14 +76,15 @@ export async function seedFromGlMatches(supabase: SupabaseClient): Promise<void>
       .gte('kickoff_time_utc', twoDaysAgo);
     if (!data?.length) return;
 
-    const rows = (data as { external_match_id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; status: string; kickoff_time_utc: string; competition?: string }[])
+    // gl_matches is GoalLine-specific (WC only) — no competition column
+    const rows = (data as { external_match_id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; status: string; kickoff_time_utc: string }[])
       .filter((m) => m.external_match_id && m.external_match_id !== '0')
       .map((m) => ({
         id: m.external_match_id, home_team: m.home_team, away_team: m.away_team,
         home_score: m.home_score, away_score: m.away_score,
         minute: null, status: m.status === 'finished' ? 'finished' : m.status === 'live' ? 'live' : 'upcoming',
         period: null, kickoff_utc: m.kickoff_time_utc,
-        competition: m.competition || '', events_url: null,
+        competition: 'FIFA World Cup', events_url: null,
         updated_at: new Date().toISOString(),
       }));
 
@@ -144,9 +145,8 @@ export async function detectFinishedMatches(
 }
 
 /** Fetch fixtures + live scores for all active competitions.
- *  Hybrid approach: live endpoint called GLOBALLY (1 call), fixtures per-comp.
- *  Quota optimization: skip yesterday fetch after 06:00 UTC, skip comps with no
- *  fixtures today (detected from previous poll). */
+ *  Hybrid approach: live endpoint called GLOBALLY (1 call, no pagination), fixtures per-comp.
+ *  Quota optimization: skip yesterday fetch after 06:00 UTC. */
 export async function fetchLivescoreForPersist(
   env: NodeJS.ProcessEnv,
   competitionIds: number[] = [362],
