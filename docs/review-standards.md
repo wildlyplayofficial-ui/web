@@ -7,6 +7,12 @@ description: Review checklist chuẩn Jane cho code WildlyPlay (và web đa ngô
 
 Review 2-stage, KHÔNG trộn: Stage 1 đúng spec chưa → Stage 2 code quality. Output format: `✅ Đạt` / `⚠️ Fix N` (bắt buộc sửa) / `Minor` (gộp commit sau) / `📌 Process note`.
 
+## Verify independence (áp cho MỌI review — bài học 12/7)
+
+- [ ] Review theo DIFF THẬT, không theo lời kể — fetch branch/main, đếm lại số commit từ base ("3 commits" hoá ra 4, lòi 47c8c5b không được báo).
+- [ ] Claim kỹ thuật phải tự verify trước khi dựa vào (vụ "page route ưu tiên redirect" — ngược 180°). Comment/docstring ≠ behavior — code làm gì thì tin cái đó.
+- [ ] Claim "verified qua API" phải kèm receipt raw response (vụ livescore_id).
+
 ## Stage 1 — Spec compliance
 
 - [ ] Đúng cái Nick/Peter chốt, không mở rộng scope. Trích lại nguyên văn spec khi phán sai/đúng.
@@ -34,9 +40,14 @@ Review 2-stage, KHÔNG trộn: Stage 1 đúng spec chưa → Stage 2 code qualit
 - [ ] Enum/type list = 1 nguồn duy nhất (export const canonical list), worker + web dùng chung.
 - [ ] `updated_at` Supabase KHÔNG tự nhảy — worker set tay khi UPDATE.
 - [ ] Index: cột UNIQUE đã có index sẵn, đừng tạo trùng. Status/enum nên có CHECK constraint.
+- [ ] Scope là DATA thì render từ DB, đừng hardcode list (bài chips 22cfb48: thiếu UCL + id "epl" lệch "epl-2026", cả 2 bug tự chết khi đọc bảng competitions). DDL production phải qua review TRƯỚC khi chạy SQL (flow news_items 12/7 là chuẩn).
+
+### API quota
+- [ ] Mọi thay đổi tần suất/phạm vi gọi API ngoài phải kèm phép tính call/ngày vs quota (vd multi-comp: 11-21 call/tick × tick/h vs Livescore 14.5k/ngày).
 
 ### SEO / routing
 - [ ] Redirect pattern: `:slug` vs `:rest*` — rest* nuốt nhầm sub-path (47c8c5b). Test cả URL con.
+- [ ] Slug/URL mới không được match pattern redirect đang sống (guard "news-"). Sau mọi thay đổi redirect: curl test chain = đúng 1 hop, không loop, đích trả 200.
 - [ ] 301 cho rename URL, cập nhật toàn bộ internal links, sitemap, breadcrumb JSON-LD.
 - [ ] og:image có cho MỌI page mới (fallback `/api/og/editorial?title=...`).
 - [ ] JSON-LD: escape `</` (`\\u003c`), publisher/author đúng byline.
@@ -49,6 +60,7 @@ Review 2-stage, KHÔNG trộn: Stage 1 đúng spec chưa → Stage 2 code qualit
 - [ ] Branch per feature, worktree tách biệt, không code trên branch chính đang dở việc khác.
 - [ ] Build + `tsc --noEmit` pass trước khi báo done. Deploy xong PHẢI verify live (curl H1/og/redirect thật) — "deployed" ≠ "working".
 - [ ] Deploy WildlyPlay: báo group -5152855985 trước.
+- [ ] 2 docs mâu thuẫn → thứ tự ưu tiên: quyết định TG mới nhất của owner > doc reconcile > playbook > spec cũ. Mơ hồ thì HỎI owner, không tự kết luận (vụ Nick 12/7: "file md anh gửi là cũ").
 
 ## Format báo cáo review
 ```
