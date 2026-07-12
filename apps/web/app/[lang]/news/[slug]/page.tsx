@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getNewsItemBySlug, getHeadline, getBody } from "@/lib/news";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { LocalDate } from "@/components/local-date";
 import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
@@ -89,13 +90,6 @@ export default async function NewsDetail({ params }: Props) {
   const headline = getHeadline(item, lang);
   const body = getBody(item, lang);
 
-  const published = new Intl.DateTimeFormat(locales[lang], {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(item.published_at));
-
   // JSON-LD: built from our own DB fields, JSON.stringify + escape ensures safety
   const schema = JSON.stringify(
     buildArticleSchema(headline, item, slug, lang),
@@ -128,7 +122,7 @@ export default async function NewsDetail({ params }: Props) {
           {headline}
         </h1>
         <p className="mt-3 text-sm text-muted">
-          <time dateTime={item.published_at}>{published}</time>
+          <LocalDate iso={item.published_at} locale={locales[lang]} format="long" />
           {" \u00b7 "}{item.byline || "WildlyPlay News"}
         </p>
       </header>

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { LocalDate } from "@/components/local-date";
+import { locales } from "@/lib/format";
 
 export const revalidate = 300;
 
@@ -60,7 +62,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function relativeTime(iso: string): string {
+/** TZ-agnostic relative label; null when older than 7 days (caller falls back to LocalDate). */
+function relativeTime(iso: string): string | null {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";
@@ -69,13 +72,14 @@ function relativeTime(iso: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
-  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" }).format(new Date(iso));
+  return null;
 }
 
 function NewsCard({ item, lang }: { item: NewsItem; lang: Lang }) {
   const headline = getHeadline(item, lang);
   const typeLabel = TYPE_LABELS[item.type] ?? "News";
   const badgeColor = TYPE_BADGE_COLORS[item.type] ?? TYPE_BADGE_COLORS.general;
+  const relative = relativeTime(item.published_at);
 
   return (
     <Link
@@ -91,9 +95,18 @@ function NewsCard({ item, lang }: { item: NewsItem; lang: Lang }) {
             {LEAGUE_FILTERS.find((l) => l.id === item.competition_id)?.label ?? item.competition_id}
           </span>
         )}
-        <time dateTime={item.published_at} className="ml-auto shrink-0">
-          {relativeTime(item.published_at)}
-        </time>
+        {relative ? (
+          <time dateTime={item.published_at} className="ml-auto shrink-0">
+            {relative}
+          </time>
+        ) : (
+          <LocalDate
+            iso={item.published_at}
+            locale={locales[lang]}
+            format="short"
+            className="ml-auto shrink-0"
+          />
+        )}
       </div>
       <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
         {headline}

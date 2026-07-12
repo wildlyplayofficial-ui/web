@@ -2,14 +2,18 @@ import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
 import type { Lang } from "./i18n";
 
+/** Canonical news type list — single source of truth (worker/generator must use these values). */
+export const NEWS_TYPES = ["preview", "result", "standings", "transfer", "general"] as const;
+export type NewsType = (typeof NEWS_TYPES)[number];
+
 export interface NewsItem {
   id: string;
   slug: string;
-  type: "preview" | "result" | "standings" | "transfer" | "general";
+  type: NewsType;
   headline_en: string;
-  headline_vi: string;
-  headline_th: string;
-  headline_es: string;
+  headline_vi: string | null;
+  headline_th: string | null;
+  headline_es: string | null;
   body_en: string | null;
   body_vi: string | null;
   body_th: string | null;
