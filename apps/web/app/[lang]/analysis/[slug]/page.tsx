@@ -125,13 +125,13 @@ export default async function NewsPost({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: schema }}
       />
 
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.nav.news, url: "/analysis" }, { name: post.title, url: `/analysis/${slug}` }]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.analysis.title, url: "/analysis" }, { name: post.title, url: `/analysis/${slug}` }]} />
 
       <Link
         href={withLang("/analysis", lang)}
         className="text-sm text-muted transition-colors hover:text-brand"
       >
-        &larr; {dict.news.backToNews}
+        &larr; {dict.analysis.backTo}
       </Link>
 
       <header className="mt-6">

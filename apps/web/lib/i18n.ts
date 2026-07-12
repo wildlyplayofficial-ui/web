@@ -117,6 +117,12 @@ export interface Dict {
     empty: string;
     backToNews: string;
   };
+  analysis: {
+    title: string;
+    subtitle: string;
+    empty: string;
+    backTo: string;
+  };
   guides: {
     title: string;
     subtitle: string;
@@ -348,9 +354,15 @@ const en: Dict = {
   },
   news: {
     title: "News",
-    subtitle: "Recaps and match notes, published automatically after every play.",
+    subtitle: "Transfers, match news and updates from the leagues we cover.",
     empty: "No posts yet.",
     backToNews: "Back to News",
+  },
+  analysis: {
+    title: "Analysis",
+    subtitle: "Recaps and match notes, published automatically after every play.",
+    empty: "No posts yet.",
+    backTo: "Back to Analysis",
   },
   guides: {
     title: "Guides",
@@ -583,9 +595,15 @@ const vi: Dict = {
   },
   news: {
     title: "Tin Tức",
-    subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi kèo.",
+    subtitle: "Chuyển nhượng, tin trận đấu và cập nhật từ các giải chúng tôi theo dõi.",
     empty: "Chưa có bài viết.",
     backToNews: "Quay lại Tin Tức",
+  },
+  analysis: {
+    title: "Phân Tích",
+    subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi kèo.",
+    empty: "Chưa có bài viết.",
+    backTo: "Quay lại Phân Tích",
   },
   guides: {
     title: "Hướng Dẫn",
@@ -818,9 +836,15 @@ const th: Dict = {
   },
   news: {
     title: "ข่าวสาร",
-    subtitle: "สรุปผลและบันทึกแมตช์ เผยแพร่อัตโนมัติหลังจบทุกทีเด็ด",
+    subtitle: "ข่าวย้ายทีม ข่าวแมตช์ และอัปเดตจากลีกที่เราติดตาม",
     empty: "ยังไม่มีบทความ",
     backToNews: "กลับไปหน้าข่าวสาร",
+  },
+  analysis: {
+    title: "บทวิเคราะห์",
+    subtitle: "สรุปผลและบันทึกแมตช์ เผยแพร่อัตโนมัติหลังจบทุกทีเด็ด",
+    empty: "ยังไม่มีบทความ",
+    backTo: "กลับไปหน้าบทวิเคราะห์",
   },
   guides: {
     title: "คู่มือ",
@@ -1053,9 +1077,15 @@ const es: Dict = {
   },
   news: {
     title: "Noticias",
-    subtitle: "Resúmenes y notas de partido, publicados automáticamente después de cada jugada.",
+    subtitle: "Fichajes, noticias de partidos y novedades de las ligas que cubrimos.",
     empty: "Aún no hay publicaciones.",
     backToNews: "Volver a Noticias",
+  },
+  analysis: {
+    title: "Análisis",
+    subtitle: "Resúmenes y notas de partido, publicados automáticamente después de cada jugada.",
+    empty: "Aún no hay publicaciones.",
+    backTo: "Volver a Análisis",
   },
   guides: {
     title: "Guías",

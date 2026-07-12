@@ -23,7 +23,6 @@ const LEAGUE_FILTERS: { id: string; label: string }[] = [
   { id: "bundesliga", label: "Bundesliga" },
   { id: "ligue-1", label: "Ligue 1" },
   { id: "thai-league", label: "Thai League" },
-  { id: "v-league", label: "V.League" },
 ];
 
 const TYPE_LABELS: Record<string, string> = {

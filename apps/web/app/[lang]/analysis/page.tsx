@@ -75,10 +75,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const dict = getDict(lang);
   const canonical = buildTabHref(tab, lang, page > 1 ? page : undefined);
   return {
-    title: dict.news.title,
-    description: dict.news.subtitle,
+    title: dict.analysis.title,
+    description: dict.analysis.subtitle,
     alternates: { canonical },
-    openGraph: { title: `${dict.news.title} | WildlyPlay`, description: dict.news.subtitle, images: [{ url: "/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.analysis.title} | WildlyPlay`, description: dict.analysis.subtitle, images: [{ url: "/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }] },
   };
 }
 
@@ -144,7 +144,7 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
   );
 }
 
-export default async function Newsroom({ params, searchParams }: Props) {
+export default async function AnalysisFeed({ params, searchParams }: Props) {
   const lang = resolveLang((await params).lang);
   const sp = await searchParams;
   const tab = resolveTab(sp.type);
@@ -171,10 +171,10 @@ export default async function Newsroom({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
-      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"Newsroom",url:"/analysis"}]} />
+      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:dict.analysis.title,url:"/analysis"}]} />
       <section className="py-12 text-center">
-        <h1 className="gradient-text font-display text-4xl font-bold">{dict.news.title}</h1>
-        <p className="mt-3 text-muted">{dict.news.subtitle}</p>
+        <h1 className="gradient-text font-display text-4xl font-bold">{dict.analysis.title}</h1>
+        <p className="mt-3 text-muted">{dict.analysis.subtitle}</p>
       </section>
 
       {/* Filter Chips */}
@@ -212,7 +212,7 @@ export default async function Newsroom({ params, searchParams }: Props) {
       {/* Feed */}
       {feedPosts.length === 0 && (!showRail || railPosts.length === 0) ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
-          {dict.news.empty}
+          {dict.analysis.empty}
         </div>
       ) : feedPosts.length > 0 ? (
         <>
