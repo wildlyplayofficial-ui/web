@@ -284,7 +284,7 @@ const en: Dict = {
     matches: "Matches",
     allMatches: "All Matches",
     standings: "Standings",
-    news: "Newsroom",
+    news: "News",
     about: "About",
     donate: "Donate",
     responsiblePlay: "Responsible Play",
