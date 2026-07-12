@@ -41,7 +41,6 @@ export async function persistMatchState(supabase: SupabaseClient, matches: LiveM
 }
 
 const LS = 'https://livescore-api.com/api-client';
-const CID = 362;
 
 function parseScore(s: string): { home: number; away: number } | null {
   if (!s || s === '? - ?') return null;
@@ -56,6 +55,17 @@ function status(s: string): 'finished' | 'live' | 'upcoming' {
   return 'upcoming';
 }
 
+/** Get active competition IDs from Supabase. */
+export async function getActiveCompetitionIds(supabase: SupabaseClient): Promise<number[]> {
+  try {
+    const { data } = await supabase
+      .from('competitions').select('livescore_id').eq('status', 'active');
+    const ids = (data ?? []).map((r: { livescore_id: number }) => Number(r.livescore_id))
+      .filter((n: number) => Number.isFinite(n) && n > 0);
+    return ids.length > 0 ? ids : [362]; // fallback WC
+  } catch { return [362]; }
+}
+
 /** Seed match_live_state from gl_matches (covers finished matches that livescore dropped). */
 export async function seedFromGlMatches(supabase: SupabaseClient): Promise<void> {
   try {
@@ -66,14 +76,14 @@ export async function seedFromGlMatches(supabase: SupabaseClient): Promise<void>
       .gte('kickoff_time_utc', twoDaysAgo);
     if (!data?.length) return;
 
-    const rows = (data as { external_match_id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; status: string; kickoff_time_utc: string }[])
+    const rows = (data as { external_match_id: string; home_team: string; away_team: string; home_score: number | null; away_score: number | null; status: string; kickoff_time_utc: string; competition?: string }[])
       .filter((m) => m.external_match_id && m.external_match_id !== '0')
       .map((m) => ({
         id: m.external_match_id, home_team: m.home_team, away_team: m.away_team,
         home_score: m.home_score, away_score: m.away_score,
         minute: null, status: m.status === 'finished' ? 'finished' : m.status === 'live' ? 'live' : 'upcoming',
         period: null, kickoff_utc: m.kickoff_time_utc,
-        competition: 'FIFA World Cup', events_url: null,
+        competition: m.competition || '', events_url: null,
         updated_at: new Date().toISOString(),
       }));
 
@@ -133,37 +143,57 @@ export async function detectFinishedMatches(
   } catch (err) { log.warn('persist-state detectFinished failed:', err); }
 }
 
-/** Fetch today (+ yesterday if early UTC) fixtures from livescore-api.
- *  Quota optimization: skip yesterday fetch after 06:00 UTC (matches from
- *  yesterday are settled by then). Saves 1 API call per tick = ~33% reduction. */
-export async function fetchLivescoreForPersist(env: NodeJS.ProcessEnv): Promise<LiveMatchData[]> {
+/** Fetch fixtures + live scores for all active competitions.
+ *  Hybrid approach: live endpoint called GLOBALLY (1 call), fixtures per-comp.
+ *  Quota optimization: skip yesterday fetch after 06:00 UTC, skip comps with no
+ *  fixtures today (detected from previous poll). */
+export async function fetchLivescoreForPersist(
+  env: NodeJS.ProcessEnv,
+  competitionIds: number[] = [362],
+): Promise<LiveMatchData[]> {
   const key = env.LIVESCORE_API_KEY, secret = env.LIVESCORE_API_SECRET;
   if (!key || !secret) return [];
   const now = new Date(), today = now.toISOString().slice(0, 10);
-  const q = `key=${key}&secret=${secret}&competition_id=${CID}`;
-  // Only fetch yesterday before 06:00 UTC (late matches may still be finishing)
+  const auth = `key=${key}&secret=${secret}`;
   const needYesterday = now.getUTCHours() < 6;
+
   try {
-    const fetches: Promise<Response>[] = [
-      fetch(`${LS}/fixtures/matches.json?${q}&date=${today}`),
-      fetch(`${LS}/scores/live.json?${q}`),
-    ];
-    if (needYesterday) {
-      const yday = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
-      fetches.push(fetch(`${LS}/fixtures/matches.json?${q}&date=${yday}`));
+    // 1. Live scores — 1 GLOBAL call (no competition filter), filter locally
+    const liveFetch = fetch(`${LS}/scores/live.json?${auth}`);
+
+    // 2. Fixtures per active competition (1 call each)
+    const fixtureFetches = competitionIds.flatMap((cid) => {
+      const urls = [`${LS}/fixtures/matches.json?${auth}&competition_id=${cid}&date=${today}`];
+      if (needYesterday) {
+        const yday = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
+        urls.push(`${LS}/fixtures/matches.json?${auth}&competition_id=${cid}&date=${yday}`);
+      }
+      return urls;
+    });
+
+    const allFetches = [liveFetch, ...fixtureFetches.map((u) => fetch(u))];
+    const responses = await Promise.all(allFetches);
+    const jsons = await Promise.all(responses.map((r) => r.json().catch(() => ({ success: false }))));
+    const [lD, ...fixtureJsons] = jsons;
+
+    // Build live map from global live feed, filtered to our competitions
+    const activeSet = new Set(competitionIds.map(String));
+    const liveMap = new Map<string, { score: string; time: string; status: string; competition_name: string; competition_id: string }>();
+    if (lD.success && lD.data?.match) {
+      for (const m of lD.data.match) {
+        if (!activeSet.has(String(m.competition_id))) continue;
+        liveMap.set(String(m.fixture_id || m.id), m);
+      }
     }
-    const responses = await Promise.all(fetches);
-    const [tD, lD, ...rest] = await Promise.all(responses.map(r => r.json()));
-    const yD = rest[0] ?? { success: false };
-    const liveMap = new Map<string, { score: string; time: string; status: string }>();
-    if (lD.success && lD.data?.match)
-      for (const m of lD.data.match) liveMap.set(String(m.fixture_id || m.id), m);
-    const fixtures = [
-      ...(tD.success && tD.data?.fixtures ? tD.data.fixtures : []),
-      ...(yD.success && yD.data?.fixtures ? yD.data.fixtures : []),
-    ];
+
+    // Merge all fixture responses
+    const allFixtures: Array<Record<string, string>> = [];
+    for (const fj of fixtureJsons) {
+      if (fj.success && fj.data?.fixtures) allFixtures.push(...fj.data.fixtures);
+    }
+
     const results: LiveMatchData[] = [], seen = new Set<string>();
-    for (const f of fixtures) {
+    for (const f of allFixtures) {
       const id = String(f.id || f.fixture_id);
       if (seen.has(id)) continue; seen.add(id);
       const live = liveMap.get(String(f.fixture_id || f.id));
@@ -176,12 +206,14 @@ export async function fetchLivescoreForPersist(env: NodeJS.ProcessEnv): Promise<
         minute: live ? parseInt(live.time, 10) || null : null, status: st,
         period: st === 'live' && (u === 'HT' || u === 'HALF TIME') ? 'HT' : null,
         kickoff_utc: f.date && f.time ? `${f.date}T${f.time}Z` : '',
-        competition: f.competition_name || 'FIFA World Cup', events_url: f.events || null,
+        competition: f.competition_name || '', events_url: f.events || null,
       });
     }
-    // Also include live matches NOT in fixtures (same fix as homepage getTodaysMatches)
+
+    // Also include live matches from our competitions NOT in fixtures
     if (lD.success && lD.data?.match) {
       for (const m of lD.data.match as Array<Record<string, string>>) {
+        if (!activeSet.has(String(m.competition_id))) continue;
         const fid = String(m.fixture_id || m.id);
         const mid = String(m.id || m.fixture_id);
         if (seen.has(fid) || seen.has(mid)) continue;
@@ -202,7 +234,7 @@ export async function fetchLivescoreForPersist(env: NodeJS.ProcessEnv): Promise<
           home_score: sc?.home ?? null, away_score: sc?.away ?? null,
           minute: parseInt(m.time, 10) || null, status: status(m.status || ''),
           period: m.status?.toUpperCase() === 'HT' ? 'HT' : null,
-          kickoff_utc: kickoff, competition: m.competition_name || 'FIFA World Cup',
+          kickoff_utc: kickoff, competition: m.competition_name || '',
           events_url: m.events || null,
         });
       }

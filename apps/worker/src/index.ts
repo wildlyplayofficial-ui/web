@@ -26,7 +26,7 @@ import { getFinalScore } from './scores';
 import { createStore, type PickRow } from './store';
 import { log } from './log';
 import { createClient } from '@supabase/supabase-js';
-import { persistMatchState, fetchLivescoreForPersist, seedFromGlMatches, detectFinishedMatches } from './persist-state';
+import { persistMatchState, fetchLivescoreForPersist, seedFromGlMatches, detectFinishedMatches, getActiveCompetitionIds } from './persist-state';
 import { startBoothShadow } from './booth-shadow';
 import { createIndexNowPinger } from './indexnow';
 import { checkDailyLineHealth } from './dl-monitor';
@@ -138,16 +138,24 @@ const stopAnalysis = anthropicApiKey
 // Buzz cron (v2): community sentiment snapshots for watched matches, every 3h + pre-kickoff.
 const stopBuzz = startBuzzCron({ store, env: aiEnv, revalidate });
 
-// R3: Persist live match state — adaptive interval.
-// Quota: Starter plan 14,500 req/day. Each tick = 3 API calls (today+yesterday+live).
-// Fast 3min: 60 calls/h ≈ 1,440/day. Slow 15min: 12 calls/h ≈ 288/day.
-// (Was 2min/10min → caused overage on busy matchdays like QF)
+// R3: Persist live match state — adaptive interval, multi-competition.
+// Hybrid: 1 global live call + per-comp fixture calls. Quota-efficient.
+// Fast 3min (live matches): ~11-21 calls/tick. Slow 15min (idle): same but less frequent.
 const PERSIST_FAST = 3 * 60_000;
 const PERSIST_SLOW = 15 * 60_000;
 let hasLiveMatches = false;
+let activeCompIds: number[] = [362];
+const refreshCompIds = async () => {
+  if (!persistDb) return;
+  activeCompIds = await getActiveCompetitionIds(persistDb);
+  log.info(`persist-state: active competitions: [${activeCompIds.join(', ')}]`);
+};
+void refreshCompIds();
+setInterval(() => void refreshCompIds(), 3_600_000); // refresh hourly
+
 const persistTick = async () => {
   if (!persistDb) return;
-  const matches = await fetchLivescoreForPersist(process.env);
+  const matches = await fetchLivescoreForPersist(process.env, activeCompIds);
   await persistMatchState(persistDb, matches);
   const feedIds = new Set(matches.map((m) => m.id));
   await detectFinishedMatches(persistDb, feedIds);
@@ -156,7 +164,7 @@ const persistTick = async () => {
     hasLiveMatches = nowLive;
     clearInterval(persistTimer);
     persistTimer = setInterval(() => void persistTick(), hasLiveMatches ? PERSIST_FAST : PERSIST_SLOW);
-    log.info(`persist-state: switched to ${hasLiveMatches ? '2min (live)' : '10min (idle)'} interval`);
+    log.info(`persist-state: switched to ${hasLiveMatches ? 'FAST 3min (live)' : 'SLOW 15min (idle)'} — ${activeCompIds.length} comps`);
   }
   if (matches.some((m) => m.status === 'live' || m.status === 'finished')) {
     void revalidate(['matches', 'picks', 'watching']);
