@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
+import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LocalDate } from "@/components/local-date";
 import { locales } from "@/lib/format";
@@ -12,17 +13,6 @@ type Props = {
   params: Promise<{ lang: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-const LEAGUE_FILTERS: { id: string; label: string }[] = [
-  { id: "world-cup-2026", label: "World Cup" },
-  { id: "mls", label: "MLS" },
-  { id: "liga-mx", label: "Liga MX" },
-  { id: "epl", label: "Premier League" },
-  { id: "la-liga", label: "La Liga" },
-  { id: "serie-a", label: "Serie A" },
-  { id: "bundesliga", label: "Bundesliga" },
-  { id: "ligue-1", label: "Ligue 1" },
-];
 
 const TYPE_LABELS: Record<string, string> = {
   preview: "Preview",
@@ -73,7 +63,7 @@ function relativeTime(iso: string): string | null {
   return null;
 }
 
-function NewsCard({ item, lang }: { item: NewsItem; lang: Lang }) {
+function NewsCard({ item, lang, leagueLabels }: { item: NewsItem; lang: Lang; leagueLabels: Record<string, string> }) {
   const headline = getHeadline(item, lang);
   const typeLabel = TYPE_LABELS[item.type] ?? "News";
   const badgeColor = TYPE_BADGE_COLORS[item.type] ?? TYPE_BADGE_COLORS.general;
@@ -90,7 +80,7 @@ function NewsCard({ item, lang }: { item: NewsItem; lang: Lang }) {
         </span>
         {item.competition_id && (
           <span className="text-muted/70">
-            {LEAGUE_FILTERS.find((l) => l.id === item.competition_id)?.label ?? item.competition_id}
+            {leagueLabels[item.competition_id] ?? item.competition_id}
           </span>
         )}
         {relative ? (
@@ -118,7 +108,16 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const sp = await searchParams;
   const league = resolveLeague(sp.league);
   const dict = getDict(lang);
-  const items = await getNewsItems(league, 30);
+  const [items, competitions] = await Promise.all([
+    getNewsItems(league, 30),
+    getStandingsCompetitions(),
+  ]);
+  // Chips mirror the active competition scope — same source as /competitions hub,
+  // so filter ids always match news_items.competition_id (FK -> competitions.id).
+  const leagueFilters = competitions
+    .filter((c) => c.status === "active")
+    .map((c) => ({ id: c.id, label: c.name }));
+  const leagueLabels = Object.fromEntries(leagueFilters.map((f) => [f.id, f.label]));
 
   return (
     <div className="mx-auto max-w-[800px] px-5 pb-12">
@@ -141,7 +140,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         >
           All
         </Link>
-        {LEAGUE_FILTERS.map((f) => (
+        {leagueFilters.map((f) => (
           <Link
             key={f.id}
             href={withLang(`/news?league=${f.id}`, lang)}
@@ -164,7 +163,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       ) : (
         <div className="flex flex-col gap-4">
           {items.map((item) => (
-            <NewsCard key={item.id} item={item} lang={lang} />
+            <NewsCard key={item.id} item={item} lang={lang} leagueLabels={leagueLabels} />
           ))}
         </div>
       )}
