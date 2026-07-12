@@ -55,6 +55,7 @@ export function Footer() {
           </a>
         </nav>
         <p className="text-xs text-muted">© 2026 WildlyPlay. All rights reserved.</p>
+        <p className="text-xs text-muted/60">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
       </div>
     </footer>
   );
