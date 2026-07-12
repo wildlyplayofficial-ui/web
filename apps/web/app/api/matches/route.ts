@@ -1,4 +1,4 @@
-import { fetchLiveMatches, getTodaysMatches } from "@/lib/matches";
+import { fetchLiveMatches, fetchTodaysMatchesFromDb, getTodaysMatches } from "@/lib/matches";
 
 /**
  * Returns today's WC matches for client-side components.
@@ -9,7 +9,15 @@ export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const liveOnly = url.searchParams.get("live") === "1";
 
-  const matches = liveOnly ? await fetchLiveMatches() : await getTodaysMatches();
+  // Read from Supabase (worker-persisted) — zero livescore API calls.
+  // getTodaysMatches kept as fallback if DB is empty.
+  let matches: Awaited<ReturnType<typeof fetchLiveMatches>>;
+  if (liveOnly) {
+    matches = await fetchLiveMatches();
+  } else {
+    const dbMatches = await fetchTodaysMatchesFromDb();
+    matches = dbMatches.length > 0 ? dbMatches : await getTodaysMatches();
+  }
 
   const payload = {
     matches: matches.map((m) => ({

@@ -454,25 +454,69 @@ async function fetchLivePicksFromDb(): Promise<Match[]> {
   }
 }
 
-/** Fetch only live matches (for the ticker). Not cached.
- *  Merges livescore-api data with Supabase picks fallback to cover feed gaps. */
+/** Read today's matches from Supabase (worker-persisted). Zero livescore API calls. */
+export async function fetchTodaysMatchesFromDb(): Promise<Match[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const now = new Date();
+  const dayStart = new Date(now);
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const windowEnd = new Date(now.getTime() + WINDOW_MS);
+
+  try {
+    const { data, error } = await supabase
+      .from("match_live_state")
+      .select("*")
+      .gte("kickoff_utc", dayStart.toISOString())
+      .lte("kickoff_utc", windowEnd.toISOString())
+      .order("kickoff_utc", { ascending: true });
+
+    if (error || !data) return [];
+
+    return data.map((p) => {
+      const koMs = p.kickoff_utc ? new Date(p.kickoff_utc).getTime() : 0;
+      const staleLive = koMs > 0 && now.getTime() - koMs > MAX_LIVE_MS;
+      const st: MatchStatus = staleLive
+        ? "finished"
+        : p.status === "finished" ? "finished" : p.status === "live" ? "live" : "upcoming";
+      return {
+        id: String(p.id),
+        homeTeam: p.home_team,
+        awayTeam: p.away_team,
+        kickoffUtc: p.kickoff_utc ?? "",
+        status: st,
+        minute: st === "live" ? (p.minute ?? null) : null,
+        homeScore: p.home_score ?? null,
+        awayScore: p.away_score ?? null,
+        competition: p.competition || "",
+        eventsUrl: p.events_url ?? null,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch only live matches from DB (for the ticker/sticker). Zero API calls.
+ *  Merges persisted state with Supabase picks fallback to cover feed gaps. */
 export async function fetchLiveMatches(): Promise<Match[]> {
   const [all, dbLive] = await Promise.all([
-    fetchTodaysMatchesImpl(),
+    fetchTodaysMatchesFromDb(),
     fetchLivePicksFromDb(),
   ]);
 
-  const liveFromApi = all.filter((m) => m.status === "live");
+  const liveFromDb = all.filter((m) => m.status === "live");
 
-  // Merge: add DB picks that aren't already in livescore results (dedup by team names)
+  // Merge: add DB picks that aren't already in persisted state (dedup by team names)
   for (const pick of dbLive) {
-    const alreadyInApi = liveFromApi.some(
+    const alreadyIn = liveFromDb.some(
       (m) => teamsEqual(m.homeTeam, pick.homeTeam) && teamsEqual(m.awayTeam, pick.awayTeam),
     );
-    if (!alreadyInApi) {
-      liveFromApi.push(pick);
+    if (!alreadyIn) {
+      liveFromDb.push(pick);
     }
   }
 
-  return liveFromApi;
+  return liveFromDb;
 }
