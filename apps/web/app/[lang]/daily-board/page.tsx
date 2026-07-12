@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.board.title} | WildlyPlay`,
+    title: dict.board.title,
     description: dict.board.subtitle,
     alternates: buildAlternates("/daily-board", lang),
     openGraph: {
