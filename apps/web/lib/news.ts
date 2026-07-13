@@ -90,3 +90,28 @@ export const getNewsItemBySlug = unstable_cache(
   ["news-item-by-slug"],
   { revalidate: 300, tags: ["news"] },
 );
+
+/** Fetch kickoff_utc by livescore match id. Tries fixtures first (available from ingest,
+ *  covers T-24h previews before match_live_state populates), then match_live_state. */
+async function getKickoffByMatchIdImpl(matchId: string): Promise<string | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data: fx } = await supabase
+    .from("fixtures")
+    .select("kickoff_utc")
+    .eq("livescore_match_id", matchId)
+    .single();
+  if ((fx as { kickoff_utc: string } | null)?.kickoff_utc) return fx!.kickoff_utc;
+  const { data: mls } = await supabase
+    .from("match_live_state")
+    .select("kickoff_utc")
+    .eq("id", matchId)
+    .single();
+  return (mls as { kickoff_utc: string } | null)?.kickoff_utc ?? null;
+}
+
+export const getKickoffByMatchId = unstable_cache(
+  getKickoffByMatchIdImpl,
+  ["kickoff-by-match-id"],
+  { revalidate: 3600 },
+);

@@ -3,9 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getNewsItemBySlug, getHeadline, getBody } from "@/lib/news";
+import { getNewsItemBySlug, getHeadline, getBody, getKickoffByMatchId } from "@/lib/news";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LocalDate } from "@/components/local-date";
+import { LocalKickoffTime } from "@/components/local-kickoff-time";
 import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
@@ -89,6 +90,7 @@ export default async function NewsDetail({ params }: Props) {
 
   const headline = getHeadline(item, lang);
   const body = getBody(item, lang);
+  const kickoffUtc = item.match_id ? await getKickoffByMatchId(item.match_id) : null;
 
   // JSON-LD: built from our own DB fields, JSON.stringify + escape ensures safety
   const schema = JSON.stringify(
@@ -125,6 +127,11 @@ export default async function NewsDetail({ params }: Props) {
           <LocalDate iso={item.published_at} locale={locales[lang]} format="long" />
           {" \u00b7 "}{item.byline || "WildlyPlay News"}
         </p>
+        {kickoffUtc && (
+          <p className="mt-1 text-sm text-muted">
+            &#9917; <LocalKickoffTime iso={kickoffUtc} showDate />
+          </p>
+        )}
       </header>
 
       <div className="mt-6 overflow-hidden rounded-card">
