@@ -109,7 +109,7 @@ describe('prioritize (D3: pick > watching > tier, then kickoff)', () => {
 describe('templates (4-lang, deterministic)', () => {
   const previewData = {
     home: 'Man City', away: 'Real Madrid', competition: 'FIFA World Cup',
-    dateUtc: '2026-07-20', formHome: 'W-W-D', formAway: null, pickUrl: null,
+    dateUtc: '2026-07-20', formHome: 'W-W-D', formAway: null, pickUrl: null, pickAuthor: null,
   };
 
   it('renders all 4 languages with non-empty headline + body', () => {
@@ -117,7 +117,7 @@ describe('templates (4-lang, deterministic)', () => {
       const p = renderPreview(lang, previewData);
       expect(p.headline).toContain('Man City');
       expect(p.body.length).toBeGreaterThan(20);
-      const r = renderResult(lang, { home: 'A', away: 'B', homeScore: 2, awayScore: 1, competition: 'EPL', dateUtc: '2026-07-20', pickUrl: null });
+      const r = renderResult(lang, { home: 'A', away: 'B', homeScore: 2, awayScore: 1, competition: 'EPL', dateUtc: '2026-07-20', pickUrl: null, pickAuthor: null });
       expect(r.headline).toContain('2-1');
       const s = renderStandings(lang, { competition: 'EPL', dateUtc: '2026-07-13', rows: [{ rank: 1, name: 'Arsenal', played: 3, points: 9 }] });
       expect(s.body).toContain('Arsenal');
@@ -130,25 +130,28 @@ describe('templates (4-lang, deterministic)', () => {
     expect(p.body).not.toContain('Real Madrid:');
   });
 
-  it('mentions pick only when pickUrl set (no betting talk otherwise)', () => {
+  it('mentions pick only when pickUrl+pickAuthor set (no betting talk otherwise)', () => {
     const noPick = renderPreview('en', previewData);
     expect(noPick.body).not.toContain('pick');
-    const withPick = renderPreview('en', { ...previewData, pickUrl: 'https://x/play/1' });
+    const withPick = renderPreview('en', { ...previewData, pickUrl: 'https://x/play/1', pickAuthor: 'The Scout' });
     expect(withPick.body).toContain('https://x/play/1');
+    expect(withPick.body).toContain('The Scout');
+    expect(withPick.body).not.toContain('The Curator'); // firewall: must match author
   });
 
   it('result outcome: win vs draw sentence', () => {
-    const win = renderResult('en', { home: 'A', away: 'B', homeScore: 0, awayScore: 2, competition: 'EPL', dateUtc: '2026-07-20', pickUrl: null });
+    const win = renderResult('en', { home: 'A', away: 'B', homeScore: 0, awayScore: 2, competition: 'EPL', dateUtc: '2026-07-20', pickUrl: null, pickAuthor: null });
     expect(win.body).toContain('B took the win');
-    const draw = renderResult('en', { home: 'A', away: 'B', homeScore: 1, awayScore: 1, competition: 'EPL', dateUtc: '2026-07-20', pickUrl: null });
+    const draw = renderResult('en', { home: 'A', away: 'B', homeScore: 1, awayScore: 1, competition: 'EPL', dateUtc: '2026-07-20', pickUrl: null, pickAuthor: null });
     expect(draw.body).toContain('draw');
   });
 
-  it('bodies carry human-readable UTC dates — no local-time strings (Jane 13/7)', () => {
+  it('bodies carry human-readable dates, no raw ISO, no "(UTC)", no local-time (Jane+Nick 13/7)', () => {
     for (const lang of NEWS_LANGS) {
       const p = renderPreview(lang, previewData);
       expect(p.body).toContain(lang === 'en' ? '20 Jul 2026' : '20/07/2026');
-      expect(p.body).not.toContain('2026-07-20'); // raw ISO must not leak into display
+      expect(p.body).not.toContain('2026-07-20'); // raw ISO must not leak
+      expect(p.body).not.toContain('(UTC)'); // Nick: no raw "(UTC)" in display
       expect(p.body).not.toMatch(/\d{1,2}:\d{2}\s?(AM|PM|am|pm)/);
     }
   });

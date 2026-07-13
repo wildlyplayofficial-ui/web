@@ -110,16 +110,21 @@ async function existingSlugs(sb: SupabaseClient, slugs: string[]): Promise<Set<s
   return new Set(((data ?? []) as { slug: string }[]).map((r) => r.slug));
 }
 
+/** Nick firewall review 13/7: pick line must use dynamic author label, never hardcode "The Curator". */
+const AUTHOR_LABELS: Record<string, string> = { curator: 'The Curator', scout: 'The Scout' };
+
 async function pickWatchLookup(sb: SupabaseClient, fxIds: string[]) {
-  if (fxIds.length === 0) return { pickBy: new Map<string, string>(), watchSet: new Set<string>() };
+  if (fxIds.length === 0) return { pickBy: new Map<string, string>(), pickAuthorBy: new Map<string, string>(), watchSet: new Set<string>() };
   const [p, w] = await Promise.all([
-    sb.from('picks').select('id, unified_fixture_id')
+    sb.from('picks').select('id, unified_fixture_id, author')
       .in('unified_fixture_id', fxIds).in('status', ['published', 'won', 'lost', 'push']),
     sb.from('watching').select('id, unified_fixture_id').in('unified_fixture_id', fxIds),
   ]);
-  type Link = { id: string; unified_fixture_id: string };
+  type Link = { id: string; unified_fixture_id: string; author?: string };
+  const picks = (p.data ?? []) as Link[];
   return {
-    pickBy: new Map(((p.data ?? []) as Link[]).map((r) => [r.unified_fixture_id, r.id])),
+    pickBy: new Map(picks.map((r) => [r.unified_fixture_id, r.id])),
+    pickAuthorBy: new Map(picks.map((r) => [r.unified_fixture_id, AUTHOR_LABELS[r.author ?? 'curator'] ?? 'The Curator'])),
     watchSet: new Set(((w.data ?? []) as Link[]).map((r) => r.unified_fixture_id)),
   };
 }
@@ -199,7 +204,7 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
   const comps = await getActiveComps(sb);
   const tierOf = new Map(comps.map((c) => [c.id, c.tier]));
   const nameOf = new Map(comps.map((c) => [c.id, c.name]));
-  const { pickBy, watchSet } = await pickWatchLookup(sb, fresh.map((c) => c.f.id));
+  const { pickBy, pickAuthorBy, watchSet } = await pickWatchLookup(sb, fresh.map((c) => c.f.id));
 
   const chosen = prioritize(fresh.map((c) => ({
     ...c,
@@ -222,6 +227,7 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
       formHome: computeForm(c.f.home_team_name, hist),
       formAway: computeForm(c.f.away_team_name, hist),
       pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
+      pickAuthor: pickAuthorBy.get(c.f.id) ?? null,
     };
     return buildRow('preview', c.slug, (lang) => renderPreview(lang, d), {
       competitionId: c.f.competition_id, matchId: c.f.livescore_match_id, pickId, publish: deps.autopublish,
@@ -263,7 +269,7 @@ export async function scanResults(deps: NewsGenDeps): Promise<number> {
   const fxByLs = new Map(fxs.map((f) => [f.livescore_match_id, f]));
   const comps = await getActiveComps(sb);
   const tierOf = new Map(comps.map((c) => [c.id, c.tier]));
-  const { pickBy, watchSet } = await pickWatchLookup(sb, fxs.map((f) => f.id));
+  const { pickBy, pickAuthorBy, watchSet } = await pickWatchLookup(sb, fxs.map((f) => f.id));
 
   const chosen = prioritize(fresh.map((c) => {
     const fx = fxByLs.get(c.m.id) ?? null;
@@ -282,6 +288,7 @@ export async function scanResults(deps: NewsGenDeps): Promise<number> {
       competition: c.m.competition || 'football',
       dateUtc: c.m.kickoff_utc.slice(0, 10),
       pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
+      pickAuthor: c.fx ? (pickAuthorBy.get(c.fx.id) ?? null) : null,
     };
     return buildRow('result', c.slug, (lang) => renderResult(lang, d), {
       competitionId: c.fx?.competition_id ?? null, matchId: c.m.id, pickId, publish: deps.autopublish,
