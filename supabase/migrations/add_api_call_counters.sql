@@ -17,7 +17,12 @@ security definer
 set search_path = public
 as $$
   insert into api_call_counters (day, source, count)
-  values (current_date, p_source, p_n)
+  select current_date, p_source, p_n
+  where p_n > 0
   on conflict (day, source)
   do update set count = api_call_counters.count + p_n, updated_at = now();
 $$;
+
+-- security definer bypasses RLS — only the service role may call this.
+revoke execute on function increment_api_calls(text, integer) from public, anon, authenticated;
+grant execute on function increment_api_calls(text, integer) to service_role;
