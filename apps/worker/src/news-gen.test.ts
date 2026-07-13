@@ -3,7 +3,7 @@ import {
   GEN_NEWS_TYPES, buildMatchNewsSlug, buildStandingsSlug, isSlugSafe,
   computeForm, prioritize, type FinishedMatch,
 } from './news-gen';
-import { NEWS_LANGS, renderPreview, renderResult, renderStandings } from './news-gen-templates';
+import { NEWS_LANGS, formatDateUtc, renderPreview, renderResult, renderStandings } from './news-gen-templates';
 
 describe('slug builder', () => {
   it('is deterministic (spec test case 1)', () => {
@@ -144,11 +144,20 @@ describe('templates (4-lang, deterministic)', () => {
     expect(draw.body).toContain('draw');
   });
 
-  it('bodies carry UTC dates only — no local-time strings', () => {
+  it('bodies carry human-readable UTC dates — no local-time strings (Jane 13/7)', () => {
     for (const lang of NEWS_LANGS) {
       const p = renderPreview(lang, previewData);
-      expect(p.body).toContain('2026-07-20');
+      expect(p.body).toContain(lang === 'en' ? '20 Jul 2026' : '20/07/2026');
+      expect(p.body).not.toContain('2026-07-20'); // raw ISO must not leak into display
       expect(p.body).not.toMatch(/\d{1,2}:\d{2}\s?(AM|PM|am|pm)/);
+    }
+  });
+
+  it('formatDateUtc: static per-lang mapping, deterministic', () => {
+    expect(formatDateUtc('en', '2026-07-17')).toBe('17 Jul 2026');
+    expect(formatDateUtc('en', '2026-01-05')).toBe('5 Jan 2026');
+    for (const lang of ['vi', 'th', 'es'] as const) {
+      expect(formatDateUtc(lang, '2026-07-17')).toBe('17/07/2026');
     }
   });
 });

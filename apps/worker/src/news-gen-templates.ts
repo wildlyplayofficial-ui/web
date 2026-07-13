@@ -10,6 +10,16 @@ export const NEWS_LANGS: NewsLang[] = ['en', 'vi', 'th', 'es'];
 
 export interface Rendered { headline: string; body: string }
 
+// Jane review 13/7: human-readable dates, static per-lang mapping (still 0 LLM).
+// EN "17 Jul 2026"; VI/TH/ES "17/07/2026". Slugs keep raw ISO — display only.
+const EN_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export function formatDateUtc(lang: NewsLang, dateUtc: string): string {
+  const [y, m, d] = dateUtc.split('-');
+  if (lang === 'en') return `${Number(d)} ${EN_MONTHS[Number(m) - 1]} ${y}`;
+  return `${d}/${m}/${y}`;
+}
+
 export interface PreviewData {
   home: string; away: string; competition: string;
   /** kickoff date, UTC yyyy-mm-dd */
@@ -66,8 +76,9 @@ const PREVIEW = {
   },
 } as const;
 
-export function renderPreview(lang: NewsLang, d: PreviewData): Rendered {
+export function renderPreview(lang: NewsLang, data: PreviewData): Rendered {
   const t = PREVIEW[lang];
+  const d = { ...data, dateUtc: formatDateUtc(lang, data.dateUtc) };
   const lines = [t.intro(d)];
   if (d.formHome) lines.push(t.form(d.home, d.formHome));
   if (d.formAway) lines.push(t.form(d.away, d.formAway));
@@ -109,8 +120,9 @@ const RESULT = {
   },
 } as const;
 
-export function renderResult(lang: NewsLang, d: ResultData): Rendered {
+export function renderResult(lang: NewsLang, data: ResultData): Rendered {
   const t = RESULT[lang];
+  const d = { ...data, dateUtc: formatDateUtc(lang, data.dateUtc) };
   const lines = [t.intro(d)];
   if (d.homeScore === d.awayScore) lines.push(t.draw);
   else lines.push(t.win(d.homeScore > d.awayScore ? d.home : d.away));
@@ -147,8 +159,9 @@ const STANDINGS = {
   },
 } as const;
 
-export function renderStandings(lang: NewsLang, d: StandingsData): Rendered {
+export function renderStandings(lang: NewsLang, data: StandingsData): Rendered {
   const t = STANDINGS[lang];
+  const d = { ...data, dateUtc: formatDateUtc(lang, data.dateUtc) };
   const body = [t.intro(d), d.rows.map((r) => t.row(r)).join('\n'), t.outro].join('\n\n');
   return { headline: t.headline(d), body };
 }
