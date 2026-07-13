@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/goalline/supabase";
 import { fetchWcEvents, deriveLineForMatches } from "@/lib/goalline/line-engine";
+import { lsFetch } from "@/lib/ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 const WC_COMPETITION_ID = 362;
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
   }
 
   // Fetch tomorrow's WC fixtures from livescore
-  const lsRes = await fetch(
+  const lsRes = await lsFetch(
     `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${WC_COMPETITION_ID}&date=${tomorrow}`,
     { cache: "no-store" },
   );

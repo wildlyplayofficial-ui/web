@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { lsFetch } from "@/lib/ls-fetch";
 
 export interface MatchOption {
   id: string;
@@ -46,11 +47,11 @@ export async function GET(request: Request) {
       : new Date(now.getTime() + 86400000).toISOString().slice(0, 10);
 
     const [todayRes, tomorrowRes] = await Promise.all([
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?key=${key}&secret=${secret}&competition_id=${WC_COMPETITION_ID}&date=${today}`,
         { cache: "no-store" },
       ),
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?key=${key}&secret=${secret}&competition_id=${WC_COMPETITION_ID}&date=${tomorrow}`,
         { cache: "no-store" },
       ),

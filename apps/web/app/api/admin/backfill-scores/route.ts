@@ -1,4 +1,5 @@
 import { getServiceSupabase } from "@/lib/supabase-server";
+import { lsFetch } from "@/lib/ls-fetch";
 
 /**
  * POST /api/admin/backfill-scores
@@ -39,7 +40,7 @@ export async function POST(request: Request): Promise<Response> {
 
   while (true) {
     const q = `key=${key}&secret=${secretKey}&competition_id=${CID}&from=${from}&to=${to}&page=${page}`;
-    const res = await fetch(`${LS}/scores/history.json?${q}`);
+    const res = await lsFetch(`${LS}/scores/history.json?${q}`);
     const data = await res.json();
     if (!data.success || !data.data?.match?.length) break;
 

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
 import { MAX_LIVE_MS } from "./match-constants";
+import { lsFetch } from "./ls-fetch";
 
 /**
  * Fetch today's matches from livescore-api.com.
@@ -160,7 +161,7 @@ async function fetchTodaysMatchesImpl(): Promise<Match[]> {
     );
 
     const fetchJson = (u: string) =>
-      fetch(u, { cache: "no-store" }).then((r) => r.json()).catch(() => ({ success: false }));
+      lsFetch(u, { cache: "no-store" }).then((r) => r.json()).catch(() => ({ success: false }));
     const [fixtureData, liveDataList] = await Promise.all([
       Promise.all(fixtureUrls.map(fetchJson)),
       Promise.all(liveUrls.map(fetchJson)),
