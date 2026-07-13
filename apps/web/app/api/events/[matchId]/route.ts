@@ -3,6 +3,8 @@
  * 30-second cache headers match the client poll interval.
  */
 
+import { lsFetch } from "@/lib/ls-fetch";
+
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 
 type EventType = "GOAL" | "SUBSTITUTION" | "YELLOW_CARD" | "RED_CARD" | "YELLOW_RED_CARD";
@@ -53,7 +55,7 @@ export async function GET(
 
   try {
     const url = `${LIVESCORE_BASE}/scores/events.json?key=${key}&secret=${secret}&id=${matchId}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await lsFetch(url, { cache: "no-store" });
 
     if (!res.ok) {
       return Response.json([], {

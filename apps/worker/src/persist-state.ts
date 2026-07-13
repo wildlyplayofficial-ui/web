@@ -1,6 +1,7 @@
 /** R3: Persist live match state to Supabase (fallback when livescore-api drops FT matches). */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { log } from './log';
+import { lsFetch } from './ls-fetch';
 
 export interface LiveMatchData {
   id: string; home_team: string; away_team: string;
@@ -159,7 +160,7 @@ export async function fetchLivescoreForPersist(
 
   try {
     // 1. Live scores — 1 GLOBAL call (no competition filter), filter locally
-    const liveFetch = fetch(`${LS}/scores/live.json?${auth}`);
+    const liveFetch = lsFetch(`${LS}/scores/live.json?${auth}`);
 
     // 2. Fixtures per active competition (1 call each)
     const fixtureFetches = competitionIds.flatMap((cid) => {
@@ -171,7 +172,7 @@ export async function fetchLivescoreForPersist(
       return urls;
     });
 
-    const allFetches = [liveFetch, ...fixtureFetches.map((u) => fetch(u))];
+    const allFetches = [liveFetch, ...fixtureFetches.map((u) => lsFetch(u))];
     const responses = await Promise.all(allFetches);
     const jsons = await Promise.all(responses.map((r) => r.json().catch(() => ({ success: false }))));
     const [lD, ...fixtureJsons] = jsons;

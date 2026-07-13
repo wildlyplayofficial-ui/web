@@ -5,6 +5,7 @@
  * switch — see REQUEST_wc_fixtures_endpoints.md.
  */
 import { log } from './log';
+import { lsFetch } from './ls-fetch';
 
 const LIVESCORE_BASE = 'https://livescore-api.com/api-client';
 const WC_COMPETITION_ID = 362;
@@ -44,7 +45,7 @@ export async function fetchUpcomingFixtures(
   try {
     const results = await Promise.all(
       dates.map((date) =>
-        fetch(
+        lsFetch(
           `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${WC_COMPETITION_ID}&key=${deps.key}&secret=${deps.secret}&date=${date}`,
         )
           .then((res) => (res.ok ? res.json() : null))

@@ -4,6 +4,7 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { log } from './log';
+import { lsFetch } from './ls-fetch';
 
 const LS_BASE = 'https://livescore-api.com/api-client';
 
@@ -66,7 +67,7 @@ async function fetchOddsEvents(apiKey: string, league: string): Promise<OddsEven
 /** Fetch livescore fixtures for a date + competition. */
 async function fetchLsFixtures(key: string, secret: string, compId: number, date: string): Promise<LsFixture[]> {
   try {
-    const res = await fetch(`${LS_BASE}/fixtures/matches.json?key=${key}&secret=${secret}&competition_id=${compId}&date=${date}`);
+    const res = await lsFetch(`${LS_BASE}/fixtures/matches.json?key=${key}&secret=${secret}&competition_id=${compId}&date=${date}`);
     const data = await res.json();
     return data.success && data.data?.fixtures ? data.data.fixtures : [];
   } catch { return []; }

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
 import type { KnockoutRound, KnockoutMatch, StandingsCompetition } from "./standings";
+import { lsFetch } from "./ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 
@@ -61,28 +62,28 @@ async function fetchKnockoutRoundsImpl(livescoreId: number): Promise<KnockoutRou
 
   try {
     const [fixturesRes, historyRes, todayRes, yesterdayRes, liveRes] = await Promise.all([
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&size=100`,
         { cache: "no-store" },
       ),
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
         { cache: "no-store" },
       ),
       // In-play matches drop out of the plain fixtures feed and aren't in
       // history yet. Day-scoped fixtures still list them (with a live `score`),
       // so fetch today + yesterday (for matches crossing UTC midnight).
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&date=${today}`,
         { cache: "no-store" },
       ),
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&date=${yesterday}`,
         { cache: "no-store" },
       ),
       // In-play + just-finished matches: fixtures purge past days and history
       // lags ~1h+ behind full time — this feed bridges that gap.
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/scores/live.json?competition_id=${livescoreId}&key=${key}&secret=${secret}`,
         { cache: "no-store" },
       ),
@@ -314,15 +315,15 @@ async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<Fixtur
 
   try {
     const [fixturesRes, historyRes, liveRes] = await Promise.all([
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/fixtures/matches.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&size=100`,
         { cache: "no-store" },
       ),
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
         { cache: "no-store" },
       ),
-      fetch(
+      lsFetch(
         `${LIVESCORE_BASE}/scores/live.json?competition_id=${livescoreId}&key=${key}&secret=${secret}`,
         { cache: "no-store" },
       ),
@@ -488,7 +489,7 @@ async function fetchCompetitionFormImpl(
   const to = new Date(now + 86_400_000).toISOString().slice(0, 10);
 
   try {
-    const res = await fetch(
+    const res = await lsFetch(
       `${LIVESCORE_BASE}/matches/history.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${from}&to=${to}`,
       { cache: "no-store" },
     );

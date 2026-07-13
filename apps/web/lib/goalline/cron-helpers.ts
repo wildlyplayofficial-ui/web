@@ -4,6 +4,7 @@
  */
 
 import { type SupabaseClient } from "@supabase/supabase-js";
+import { lsFetch } from "../ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 /** Default competition — will be read from competitions table in multi-league mode. */
@@ -54,7 +55,7 @@ export async function fetchLiveMatchMap(
   lsSecret: string,
   competitionId: number = WC_COMPETITION_ID,
 ): Promise<Map<string, LivescoreMatch>> {
-  const res = await fetch(
+  const res = await lsFetch(
     `${LIVESCORE_BASE}/scores/live.json?key=${lsKey}&secret=${lsSecret}&competition_id=${competitionId}`,
     { cache: "no-store" },
   );
@@ -75,7 +76,7 @@ export async function fetchFixtureMap(
   date: string,
   competitionId: number = WC_COMPETITION_ID,
 ): Promise<Map<string, LivescoreFixture>> {
-  const res = await fetch(
+  const res = await lsFetch(
     `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${competitionId}&date=${date}`,
     { cache: "no-store" },
   );

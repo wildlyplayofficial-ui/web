@@ -5,6 +5,7 @@
  * LiveScore for standings/knockout; this just reshapes it for R0 Triage.
  */
 import { log } from './log';
+import { lsFetch } from './ls-fetch';
 
 const LIVESCORE_BASE = 'https://livescore-api.com/api-client';
 const WC_COMPETITION_ID = 362;
@@ -60,7 +61,7 @@ export async function fetchFinishedFixtures(
   const to = new Date().toISOString().slice(0, 10);
   const from = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   try {
-    const res = await fetch(
+    const res = await lsFetch(
       `${LIVESCORE_BASE}/matches/history.json?competition_id=${WC_COMPETITION_ID}&key=${deps.key}&secret=${deps.secret}&from=${from}&to=${to}`,
     );
     if (!res.ok) {

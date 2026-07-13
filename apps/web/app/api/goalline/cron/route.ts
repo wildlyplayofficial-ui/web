@@ -9,6 +9,7 @@ import {
   syncMatchScores,
   WC_COMPETITION_ID,
 } from "@/lib/goalline/cron-helpers";
+import { lsFetch } from "@/lib/ls-fetch";
 
 /**
  * POST /api/goalline/cron
@@ -59,7 +60,7 @@ async function autoCreate(
   if (existing) return { done: false, reason: `Card already exists for ${tomorrow}` };
 
   // Fetch tomorrow's WC fixtures
-  const res = await fetch(
+  const res = await lsFetch(
     `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${WC_COMPETITION_ID}&date=${tomorrow}`,
     { cache: "no-store" },
   );

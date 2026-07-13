@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { lsFetch } from "./ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 const WC_COMPETITION_ID = 362;
@@ -95,7 +96,7 @@ async function fetchCompetitionTableImpl(livescoreId: number): Promise<StandingT
   if (!key || !secret) return [];
 
   try {
-    const res = await fetch(
+    const res = await lsFetch(
       `${LIVESCORE_BASE}/leagues/table.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&include_form=1`,
       { cache: "no-store" },
     );
