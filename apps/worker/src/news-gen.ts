@@ -124,7 +124,7 @@ async function pickWatchLookup(sb: SupabaseClient, fxIds: string[]) {
   const picks = (p.data ?? []) as Link[];
   return {
     pickBy: new Map(picks.map((r) => [r.unified_fixture_id, r.id])),
-    pickAuthorBy: new Map(picks.map((r) => [r.unified_fixture_id, AUTHOR_LABELS[r.author ?? 'curator'] ?? 'The Curator'])),
+    pickAuthorBy: new Map(picks.map((r) => [r.unified_fixture_id, AUTHOR_LABELS[r.author ?? ''] ?? null])),
     watchSet: new Set(((w.data ?? []) as Link[]).map((r) => r.unified_fixture_id)),
   };
 }
