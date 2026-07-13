@@ -35,6 +35,7 @@ import { runProviderMatcher } from './provider-matcher';
 import { ingestFixtures } from './fixture-ingest';
 import { linkPickToFixture, linkWatchingToFixture } from './fixture-link';
 import { enqueueJob, processJobs, retryStaleJobs, type HandlerMap } from './job-queue';
+import { startNewsGenCron } from './news-gen';
 
 const token = process.env.CURATOR_BOT_TOKEN;
 if (!token) {
@@ -214,6 +215,12 @@ const stopBooth = persistDb && anthropicApiKey
   ? startBoothShadow({ supabase: persistDb, apiKey: anthropicApiKey })
   : () => {};
 if (!persistDb || !anthropicApiKey) log.warn('booth-shadow: disabled (missing SUPABASE_URL or ANTHROPIC_API_KEY)');
+
+// ── News pipeline P1: deterministic preview/result/standings generators ──
+const stopNewsGen = persistDb
+  ? startNewsGenCron({ sb: persistDb, env: process.env, siteUrl, revalidate, pingIndexNow })
+  : () => {};
+if (!persistDb) log.warn('news-gen: disabled (missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY)');
 
 // ── Durable job queue: recover stale + process every 60s ──
 const jobHandlers: HandlerMap = {};
@@ -444,6 +451,7 @@ async function shutdown(signal: string): Promise<void> {
   stopDigest();
   stopAnalysis();
   stopBuzz();
+  stopNewsGen();
   await bot.stop();
   log.info('shutdown complete');
   process.exit(0);
