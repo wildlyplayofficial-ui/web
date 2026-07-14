@@ -14,6 +14,7 @@ import {
   NEWS_LANGS, renderPreview, renderResult, renderStandings,
   type PreviewData, type ResultData, type StandingsData, type Rendered,
 } from './news-gen-templates';
+import { P2_COMPETITION_SET, enrichPreviewP2, buildP2Row, type P2Deps, type P2EnrichInput } from './news-gen-p2';
 
 /** Values copied from apps/web/lib/news.ts NEWS_TYPES (by-convention contract — worker
  *  cannot import apps/web). Unit test asserts this stays a subset of the canonical list. */
@@ -160,6 +161,8 @@ export interface NewsGenDeps {
   autopublish: boolean;
   revalidate: (tags: string[]) => Promise<void>;
   pingIndexNow: (urls: string[]) => Promise<void>;
+  /** P2 deps — null when Guardian/Anthropic keys unavailable → all previews stay P1. */
+  p2: P2Deps | null;
 }
 
 async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
@@ -218,7 +221,19 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
     .gte('kickoff_utc', new Date(now - 60 * 86_400_000).toISOString());
   const hist = (fin ?? []) as FinishedMatch[];
 
-  const rows = chosen.map((c) => {
+  // Split into P1 (template) and P2 (enriched) candidates
+  const p1Chosen: typeof chosen = [];
+  const p2Chosen: typeof chosen = [];
+  for (const c of chosen) {
+    if (deps.p2 && P2_COMPETITION_SET.has(c.f.competition_id)) {
+      p2Chosen.push(c);
+    } else {
+      p1Chosen.push(c);
+    }
+  }
+
+  // P1 rows (deterministic templates — unchanged)
+  const p1Rows = p1Chosen.map((c) => {
     const pickId = pickBy.get(c.f.id) ?? null;
     const d: PreviewData = {
       home: c.f.home_team_name, away: c.f.away_team_name,
@@ -233,7 +248,67 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
       competitionId: c.f.competition_id, matchId: c.f.livescore_match_id, pickId, publish: deps.autopublish,
     });
   });
-  return insertRows(deps, rows);
+
+  // P2 rows (Guardian + LLM enriched, fallback to P1 on failure)
+  const p2Rows: Record<string, unknown>[] = [];
+  for (const c of p2Chosen) {
+    const pickId = pickBy.get(c.f.id) ?? null;
+    const compName = nameOf.get(c.f.competition_id) ?? c.f.competition_id;
+    const p2Input: P2EnrichInput = {
+      home: c.f.home_team_name, away: c.f.away_team_name,
+      competition: compName,
+      dateUtc: c.f.kickoff_utc.slice(0, 10),
+      formHome: computeForm(c.f.home_team_name, hist),
+      formAway: computeForm(c.f.away_team_name, hist),
+      pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
+      pickAuthor: pickAuthorBy.get(c.f.id) ?? null,
+      siteUrl: deps.siteUrl,
+    };
+
+    try {
+      const enriched = await enrichPreviewP2(deps.p2!, p2Input);
+      if (enriched) {
+        // Fetch photos for hero image in row
+        const { data: photoData } = await sb.from('player_photos')
+          .select('player_name, team, image_url, credit, license')
+          .or(`team.ilike.%${c.f.home_team_name}%,team.ilike.%${c.f.away_team_name}%`)
+          .limit(4);
+        const storageBase = `${(sb as unknown as { supabaseUrl: string }).supabaseUrl}/storage/v1/object/public/player-photos`;
+        const photos = (photoData ?? []).map((p: { player_name: string; team: string; image_url: string; credit: string; license: string }) => ({
+          player_name: p.player_name,
+          team_name: p.team,
+          photo_url: `${storageBase}/${p.image_url.replace(/^player-photos\//, '')}`,
+          credit: p.credit,
+          license: p.license,
+        }));
+
+        p2Rows.push(buildP2Row(c.slug, enriched, {
+          competitionId: c.f.competition_id, matchId: c.f.livescore_match_id, pickId, publish: deps.autopublish, photos,
+        }));
+        log.info(`news-p2: enriched preview for ${c.f.home_team_name} vs ${c.f.away_team_name}`);
+        continue;
+      }
+    } catch (err) {
+      log.warn(`news-p2: enrichment failed for ${c.f.home_team_name} vs ${c.f.away_team_name}:`, err);
+    }
+
+    // P2 failed — fall back to P1 template
+    const d: PreviewData = {
+      home: c.f.home_team_name, away: c.f.away_team_name,
+      competition: compName,
+      dateUtc: c.f.kickoff_utc.slice(0, 10),
+      formHome: computeForm(c.f.home_team_name, hist),
+      formAway: computeForm(c.f.away_team_name, hist),
+      pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
+      pickAuthor: pickAuthorBy.get(c.f.id) ?? null,
+    };
+    p2Rows.push(buildRow('preview', c.slug, (lang) => renderPreview(lang, d), {
+      competitionId: c.f.competition_id, matchId: c.f.livescore_match_id, pickId, publish: deps.autopublish,
+    }));
+    log.info(`news-p2: fell back to P1 for ${c.f.home_team_name} vs ${c.f.away_team_name}`);
+  }
+
+  return insertRows(deps, [...p1Rows, ...p2Rows]);
 }
 
 // ── Result scanner (FT within 24h, no item yet) ──────────────────────────────
@@ -359,9 +434,18 @@ export function startNewsGenCron(cfg: {
   pingIndexNow: (urls: string[]) => Promise<void>;
 }): () => void {
   const autopublish = cfg.env.NEWS_AUTOPUBLISH === 'true';
+  // P2 deps: requires both Guardian + Anthropic keys — otherwise P2 is disabled (all previews stay P1)
+  const guardianKey = cfg.env.GUARDIAN_API_KEY;
+  const anthropicKey = cfg.env.ANTHROPIC_API_KEY;
+  const p2Deps: P2Deps | null = guardianKey && anthropicKey
+    ? { sb: cfg.sb, siteUrl: cfg.siteUrl, anthropicApiKey: anthropicKey, guardianApiKey: guardianKey }
+    : null;
+  if (p2Deps) log.info('news-gen: P2 enrichment enabled (Guardian + Sonnet)');
+  else log.info('news-gen: P2 enrichment disabled (missing GUARDIAN_API_KEY or ANTHROPIC_API_KEY)');
   const deps: NewsGenDeps = {
     sb: cfg.sb, siteUrl: cfg.siteUrl, autopublish,
     revalidate: cfg.revalidate, pingIndexNow: cfg.pingIndexNow,
+    p2: p2Deps,
   };
   const lsEnv = { key: cfg.env.LIVESCORE_API_KEY, secret: cfg.env.LIVESCORE_API_SECRET };
   const safe = (name: string, fn: () => Promise<number>) =>
