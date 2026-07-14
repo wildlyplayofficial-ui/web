@@ -7,7 +7,7 @@
  * and never downgrade published→draft.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { slugify } from './recap';
+import { slugify, isPlaceholderTeam } from './recap';
 import { log } from './log';
 import { lsFetch } from './ls-fetch';
 import {
@@ -192,6 +192,7 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
   if (fixtures.length === 0) return 0;
 
   const cands = fixtures
+    .filter((f) => !isPlaceholderTeam(f.home_team_name) && !isPlaceholderTeam(f.away_team_name))
     .map((f) => ({ f, slug: buildMatchNewsSlug('preview', f.home_team_name, f.away_team_name, f.kickoff_utc) }))
     .filter((c) => c.f.kickoff_utc && isSlugSafe(c.slug));
   const existing = await existingSlugs(sb, cands.map((c) => c.slug));
@@ -253,6 +254,7 @@ export async function scanResults(deps: NewsGenDeps): Promise<number> {
   if (fts.length === 0) return 0;
 
   const cands = fts
+    .filter((m) => !isPlaceholderTeam(m.home_team) && !isPlaceholderTeam(m.away_team))
     .map((m) => ({ m, slug: buildMatchNewsSlug('result', m.home_team, m.away_team, m.kickoff_utc) }))
     .filter((c) => c.m.kickoff_utc && isSlugSafe(c.slug));
   const existing = await existingSlugs(sb, cands.map((c) => c.slug));
