@@ -9,6 +9,13 @@ import { authorTypeOf } from './store';
 export function slugify(name: string): string {
   return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
+
+/** Knockout placeholder names (W98, RU2, etc.) that should never appear in articles. */
+const PLACEHOLDER_TEAM_RE = /^(W|RU)\d+$/;
+export function isPlaceholderTeam(name: string): boolean {
+  return PLACEHOLDER_TEAM_RE.test(name.trim());
+}
+
 import { log } from './log';
 
 export const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
