@@ -4,6 +4,7 @@
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
 import type { Api } from 'grammy';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
@@ -123,6 +124,8 @@ export interface WatchingNewsDeps {
   revalidateUrl?: string;
   /** Post Restructure v1 §2.4: 3-line WATCHING card (TG only, replaces the article announce). */
   card?: WatchingCardDeps;
+  /** Optional Supabase client for player_photos lookup. If omitted, no hero image is injected. */
+  db?: SupabaseClient;
 }
 
 /** 3-line 👀 WATCHING card (Post Restructure Spec v1 §2.4, locked 3/7 — TG only).
@@ -213,6 +216,28 @@ export async function publishWatchingNews(
     if (!text) return;
 
     const posts = buildNewsPosts(watching, text);
+
+    // Player photo hero: prepend CC-licensed image to EN body when player_photos table has a match.
+    if (deps.db) {
+      try {
+        const { data: photos } = await deps.db
+          .from('player_photos')
+          .select('player_name, image_url, credit')
+          .or(`team.ilike.%${watching.home_team}%,team.ilike.%${watching.away_team}%`)
+          .limit(1);
+        if (photos?.length) {
+          const p = photos[0] as { player_name: string; image_url: string; credit: string };
+          const storageBase = `${process.env.SUPABASE_URL}/storage/v1/object/public`;
+          const heroMd = `![${p.player_name}](${storageBase}/${p.image_url})\n*${p.credit}*\n\n`;
+          for (const post of posts) {
+            if (post.lang === 'en') { post.body_md = heroMd + post.body_md; break; }
+          }
+        }
+      } catch (err) {
+        log.warn(`watching-news: player photo lookup failed — skipping:`, err);
+      }
+    }
+
     // Validation guard: check all 4 langs have body before publishing
     const langBodies: Partial<Record<import('./store').PostLang, string>> = {};
     for (const p of posts) langBodies[p.lang as import('./store').PostLang] = p.body_md;
