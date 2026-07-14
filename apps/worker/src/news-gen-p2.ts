@@ -379,7 +379,7 @@ function parseP2Output(
     // Add pick reference if available
     if (input.pickUrl && input.pickAuthor && !body.includes(input.pickUrl)) {
       const pickLine = lang === 'en' ? `${input.pickAuthor} has published a pick for this match: ${input.pickUrl}`
-        : lang === 'vi' ? `${input.pickAuthor} da dang keo cho tran nay: ${input.pickUrl}`
+        : lang === 'vi' ? `${input.pickAuthor} đã đăng kèo cho trận này: ${input.pickUrl}`
         : lang === 'th' ? `${input.pickAuthor} ได้เผยแพร่ทีเด็ดสำหรับแมตช์นี้: ${input.pickUrl}`
         : `${input.pickAuthor} ha publicado un pick para este partido: ${input.pickUrl}`;
       body += `\n\n${pickLine}`;
