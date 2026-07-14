@@ -243,6 +243,7 @@ if (persistDb) {
     await publishWatchingNews({
       store, env: aiEnv, revalidateUrl: siteUrl,
       card: { api: bot.api, channelChatId, siteUrl, facebook },
+      db: persistDb ?? undefined,
     }, w, reason);
   };
   jobHandlers['postmortem'] = async (payload) => {

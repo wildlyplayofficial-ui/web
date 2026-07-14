@@ -271,10 +271,17 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
       if (enriched) {
         // Fetch photos for hero image in row
         const { data: photoData } = await sb.from('player_photos')
-          .select('player_name, team_name, photo_url, credit, license')
-          .or(`team_name.ilike.%${c.f.home_team_name}%,team_name.ilike.%${c.f.away_team_name}%`)
+          .select('player_name, team, image_url, credit, license')
+          .or(`team.ilike.%${c.f.home_team_name}%,team.ilike.%${c.f.away_team_name}%`)
           .limit(4);
-        const photos = (photoData ?? []) as { player_name: string; team_name: string; photo_url: string; credit: string; license: string }[];
+        const storageBase = `${(sb as unknown as { supabaseUrl: string }).supabaseUrl}/storage/v1/object/public/player-photos`;
+        const photos = (photoData ?? []).map((p: { player_name: string; team: string; image_url: string; credit: string; license: string }) => ({
+          player_name: p.player_name,
+          team_name: p.team,
+          photo_url: `${storageBase}/${p.image_url.replace(/^player-photos\//, '')}`,
+          credit: p.credit,
+          license: p.license,
+        }));
 
         p2Rows.push(buildP2Row(c.slug, enriched, {
           competitionId: c.f.competition_id, matchId: c.f.livescore_match_id, pickId, publish: deps.autopublish, photos,
