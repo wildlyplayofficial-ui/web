@@ -356,13 +356,17 @@ function parseP2Output(
     // Remove the language header line itself
     body = body.replace(LANG_HEADERS[lang], '').trim();
 
-    // Inject player photo credit lines if photos were used and referenced
-    for (const photo of photos) {
-      if (body.includes(photo.player_name)) {
-        // Ensure credit line is present (may already be from LLM)
-        if (!body.includes(photo.credit)) {
-          body += `\n\n*Photo: ${photo.player_name} — ${photo.credit} (${photo.license})*`;
-        }
+    // Inject player photo credit lines
+    // Always add credit for hero photo (definitely used), match in-body by last name
+    const heroPhoto = photos.length > 0 ? photos[0] : null;
+    if (heroPhoto && !body.includes(heroPhoto.credit)) {
+      body += `\n\n*Photo: ${heroPhoto.player_name} — ${heroPhoto.credit} (${heroPhoto.license})*`;
+    }
+    // Add credits for other referenced players (match by last name to handle LLM shortening)
+    for (const photo of photos.slice(1)) {
+      const lastName = photo.player_name.split(' ').pop() ?? photo.player_name;
+      if (body.includes(lastName) && !body.includes(photo.credit)) {
+        body += `\n*Photo: ${photo.player_name} — ${photo.credit} (${photo.license})*`;
       }
     }
 
@@ -376,7 +380,7 @@ function parseP2Output(
     if (input.pickUrl && input.pickAuthor && !body.includes(input.pickUrl)) {
       const pickLine = lang === 'en' ? `${input.pickAuthor} has published a pick for this match: ${input.pickUrl}`
         : lang === 'vi' ? `${input.pickAuthor} da dang keo cho tran nay: ${input.pickUrl}`
-        : lang === 'th' ? `${input.pickAuthor} phuey phaer teedued: ${input.pickUrl}`
+        : lang === 'th' ? `${input.pickAuthor} ได้เผยแพร่ทีเด็ดสำหรับแมตช์นี้: ${input.pickUrl}`
         : `${input.pickAuthor} ha publicado un pick para este partido: ${input.pickUrl}`;
       body += `\n\n${pickLine}`;
     }
@@ -430,7 +434,8 @@ export function buildP2Row(
     published_at: opts.publish ? now : null,
     updated_at: now,
     // Player photo as hero image (CC licensed, credit in body)
-    ...(heroPhoto ? { hero_image_url: heroPhoto.photo_url, hero_image_credit: `${heroPhoto.credit} (${heroPhoto.license})` } : {}),
+    // Schema uses hero_card_url (not hero_image_url) — must match web page.tsx
+    ...(heroPhoto ? { hero_card_url: heroPhoto.photo_url } : {}),
   };
 
   for (const lang of NEWS_LANGS) {
