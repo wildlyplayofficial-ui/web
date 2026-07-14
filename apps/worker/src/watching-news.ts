@@ -230,7 +230,7 @@ export async function publishWatchingNews(
           const storageBase = `${process.env.SUPABASE_URL}/storage/v1/object/public`;
           const heroMd = `![${p.player_name}](${storageBase}/${p.image_url})\n*${p.credit}*\n\n`;
           for (const post of posts) {
-            if (post.lang === 'en') { post.body_md = heroMd + post.body_md; break; }
+            post.body_md = heroMd + post.body_md;
           }
         }
       } catch (err) {
