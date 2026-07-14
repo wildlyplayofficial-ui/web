@@ -75,7 +75,7 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
   const sections = splitAnalysisSections(text);
   if (!sections) {
     return [{
-      type: 'news',
+      type: 'analysis',
       slug,
       lang: 'en',
       title: `${NEWS_TITLES.en}: ${matchup}`,
@@ -92,7 +92,7 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
 
   return (Object.entries(sections) as [PostLang, ReturnType<typeof parseAnalysisSection> & object][])
     .map(([lang, section]) => ({
-      type: 'news' as const,
+      type: 'analysis' as const,
       slug,
       lang,
       title: section.meta_title,
@@ -198,7 +198,7 @@ export async function publishWatchingNews(
     }
 
     const slug = buildNewsSlug(watching.home_team, watching.away_team, watching.kickoff_utc);
-    const existingSlugs = await deps.store.listPostSlugsByType('news');
+    const existingSlugs = await deps.store.listPostSlugsByType('analysis');
     if (existingSlugs.has(slug)) {
       log.info(`watching-news: slug "${slug}" already exists — skipping`);
       return;
