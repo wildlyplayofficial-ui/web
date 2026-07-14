@@ -3,7 +3,7 @@
  * a pick, AI writes a bilingual pre-match article and it auto-publishes to /news.
  * A preview failure must NEVER break the pick publication — every path logs and returns.
  */
-import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections } from './recap';
+import { callClaude, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, splitLangSections } from './recap';
 import type { NewPost, PickRow, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
 import { log } from './log';
@@ -90,6 +90,10 @@ export async function publishPreview(
   pick: PickRow,
 ): Promise<void> {
   try {
+    if (isPlaceholderTeam(pick.home_team) || isPlaceholderTeam(pick.away_team)) {
+      log.info(`preview: skipping placeholder team (${pick.home_team} vs ${pick.away_team})`);
+      return;
+    }
     const text = await callClaude(deps.env, buildPreviewPrompt(pick), `preview pick ${pick.id}`, 3500);
     if (text === null) return;
     const posts = buildPreviewPosts(pick, text);

@@ -5,7 +5,7 @@
  */
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { authorTypeOf } from './store';
-import { callClaude, computeRecord, disclosureBlock, POST_FLAGS, slugify, splitLangSections, type SettledRecord } from './recap';
+import { callClaude, computeRecord, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, splitLangSections, type SettledRecord } from './recap';
 import { log } from './log';
 import { createRevalidator } from './revalidate';
 
@@ -69,6 +69,7 @@ export function selectAnalysisTopics(
   for (const pick of sorted) {
     if (topics.length >= cap) break;
     if (seenFixtures.has(pick.fixture_id)) continue;
+    if (isPlaceholderTeam(pick.home_team) || isPlaceholderTeam(pick.away_team)) continue;
 
     const slug = buildAnalysisSlug(pick.home_team, pick.away_team, pick.kickoff_utc);
     if (existingSlugs.has(slug)) continue;
@@ -289,6 +290,11 @@ export async function publishAnalysisForPick(
 ): Promise<void> {
   try {
     if (!deps.env.apiKey) return;
+
+    if (isPlaceholderTeam(pick.home_team) || isPlaceholderTeam(pick.away_team)) {
+      log.info(`analysis: skipping placeholder team (${pick.home_team} vs ${pick.away_team})`);
+      return;
+    }
 
     const slug = buildAnalysisSlug(pick.home_team, pick.away_team, pick.kickoff_utc);
     const existingSlugs = await deps.store.listPostSlugsByType('analysis');

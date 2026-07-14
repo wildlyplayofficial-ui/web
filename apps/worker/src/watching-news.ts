@@ -4,7 +4,7 @@
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
 import type { Api } from 'grammy';
-import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, validate4Lang } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import { postToFacebook } from './announce-pick';
@@ -191,6 +191,11 @@ export async function publishWatchingNews(
 ): Promise<void> {
   try {
     if (!deps.env.apiKey) return;
+
+    if (isPlaceholderTeam(watching.home_team) || isPlaceholderTeam(watching.away_team)) {
+      log.info(`watching-news: skipping placeholder team (${watching.home_team} vs ${watching.away_team})`);
+      return;
+    }
 
     const slug = buildNewsSlug(watching.home_team, watching.away_team, watching.kickoff_utc);
     const existingSlugs = await deps.store.listPostSlugsByType('news');

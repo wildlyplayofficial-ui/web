@@ -17,6 +17,8 @@ export async function ingestFixtures(sb: SupabaseClient): Promise<void> {
       .select('competition_id, home_team, away_team, kickoff_utc, odds_api_event_id, livescore_match_id, slug')
       .not('home_team', 'like', 'W%')  // Skip knockout placeholders (W101, RU101...)
       .not('home_team', 'like', 'RU%')
+      .not('away_team', 'like', 'W%')
+      .not('away_team', 'like', 'RU%')
       .order('kickoff_utc');
 
     if (!mappings?.length) return;
