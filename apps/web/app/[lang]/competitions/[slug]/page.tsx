@@ -18,6 +18,12 @@ const LEAGUE_COLORS: Record<string, string> = {
   "world-cup-2026": "#56042c",
   mls: "#1b2a4a",
   "liga-mx": "#1a472a",
+  "premier-league": "#3d195b",
+  bundesliga: "#d3010d",
+  "la-liga": "#ee8707",
+  "ligue-1": "#091c3e",
+  "serie-a": "#1a439a",
+  "champions-league": "#0e1e3d",
 };
 
 type Props = {
