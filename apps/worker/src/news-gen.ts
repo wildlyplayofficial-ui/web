@@ -24,6 +24,9 @@ export type GenNewsType = (typeof GEN_NEWS_TYPES)[number];
 /** D3 (Nick 13/7): per-type daily caps; overflow skipped for good, no backfill. */
 export const DAILY_CAPS: Record<GenNewsType, number> = { preview: 6, result: 6, standings: 3 };
 
+/** Quality gate: auto-publish only if EN body meets minimum length. Thin bodies stay draft. */
+const MIN_PUBLISH_BODY_LEN = 800;
+
 const SOURCE = 'LiveScore API';
 const SOURCE_URL = 'https://livescore-api.com/';
 const BYLINE = 'WildlyPlay News';
@@ -151,6 +154,12 @@ function buildRow(
       log.warn(`news-gen: ${lang} render failed for ${slug}:`, err);
       row[`headline_${lang}`] = null; row[`body_${lang}`] = null;
     }
+  }
+  // Quality gate: downgrade to draft if EN body is too thin (P2 failure / empty template)
+  if (opts.publish && typeof row.body_en === 'string' && row.body_en.length < MIN_PUBLISH_BODY_LEN) {
+    log.warn(`news-gen: quality gate — body too short (${row.body_en.length} chars) for ${slug}, keeping draft`);
+    row.status = 'draft';
+    row.published_at = null;
   }
   return row;
 }
