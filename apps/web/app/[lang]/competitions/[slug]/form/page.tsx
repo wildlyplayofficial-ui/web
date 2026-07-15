@@ -7,6 +7,7 @@ import { fetchCompetitionTable } from "@/lib/standings";
 import { getCompetitionForm, getStandingsCompetitions } from "@/lib/standings-extra";
 import { teamBadge } from "@/lib/team-badges";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { COMPETITION_LOGOS } from "@/lib/competition-logos";
 
 export const revalidate = 3600;
 
@@ -61,7 +62,17 @@ export default async function FormPage({ params }: Props) {
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.standings.title, url: "/competitions" }, { name: comp.name, url: `/competitions/${slug}` }, { name: "Form", url: `/competitions/${slug}/form` }]} />
       <section className="py-12 text-center">
-        <h1 className="gradient-text font-display text-4xl font-bold">{comp.name}</h1>
+        <div className="flex items-center justify-center gap-4">
+          {COMPETITION_LOGOS[slug] && (
+            <img
+              src={COMPETITION_LOGOS[slug]}
+              alt=""
+              aria-hidden="true"
+              className="h-16 w-16 flex-shrink-0 object-contain"
+            />
+          )}
+          <h1 className="gradient-text font-display text-4xl font-bold">{comp.name}</h1>
+        </div>
         <p className="mt-2 text-muted">Form Guide — Last 5 Matches</p>
       </section>
 
