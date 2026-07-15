@@ -137,7 +137,9 @@ export async function runProviderMatcher(
         // Livescore may return DD.MM.YYYY — normalize to YYYY-MM-DD
         const ddmmyyyy = ls.date.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
         const isoDate = ddmmyyyy ? `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}` : ls.date;
-        const kickoff = `${isoDate}T${ls.time ? `${ls.time}:00` : '00:00:00'}Z`;
+        // ls.time may be HH:MM or HH:MM:SS — take first HH:MM only
+        const hhmm = ls.time?.match(/^(\d{2}:\d{2})/)?.[1] ?? '00:00';
+        const kickoff = `${isoDate}T${hhmm}:00Z`;
         const slug = `${canonical(ls.home_name).replace(/\s+/g, '-')}-vs-${canonical(ls.away_name).replace(/\s+/g, '-')}-${isoDate}`;
         const { error } = await sb.from('provider_mappings').upsert({
           competition_id: comp.id,
