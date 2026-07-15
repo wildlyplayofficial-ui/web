@@ -6,6 +6,7 @@ import { HtmlLang } from "@/components/html-lang";
 import { LiveTicker } from "@/components/live-ticker";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
+import { COMPETITION_LOGOS } from "@/lib/competition-logos";
 import { LANGS, type Lang } from "@/lib/i18n";
 
 export async function generateStaticParams() {
@@ -20,6 +21,7 @@ async function HeaderWithData() {
     .map((c) => ({
       name: c.name,
       href: `/competitions/${c.slug}`,
+      logo_url: COMPETITION_LOGOS[c.slug],
     }));
   return <Header competitions={competitions} />;
 }

@@ -9,9 +9,10 @@ import { ThemeToggle } from "./theme-toggle";
 interface NavCompetition {
   name: string;
   href: string;
+  logo_url?: string;
 }
 
-type NavLink = { name: string; href: string };
+type NavLink = { name: string; href: string; logo_url?: string };
 /** A dropdown row: a link, or a visual divider between groups. */
 type NavItem = NavLink | { divider: true };
 /** A top-level nav cluster: either a single link or a dropdown of items. */
@@ -123,8 +124,16 @@ function NavDropdown({
                     setOpen(false);
                     onNavigate();
                   }}
-                  className="block text-sm text-muted transition-colors hover:text-ink md:px-4 md:py-2 md:hover:bg-card-hover"
+                  className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-ink md:px-4 md:py-2 md:hover:bg-card-hover"
                 >
+                  {it.logo_url && (
+                    <img
+                      src={it.logo_url}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-4 w-4 flex-shrink-0 object-contain"
+                    />
+                  )}
                   {it.name}
                 </Link>
               </li>
@@ -170,7 +179,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     {
       label: nav.matches,
       items: [
-        { name: nav.allMatches, href: "/matches" },
+        { name: nav.allMatches, href: "/matches", logo_url: "/icons/icon-192x192.png" },
         ...(competitions.length > 0 ? [{ divider: true } as const] : []),
         ...competitions,
       ],
