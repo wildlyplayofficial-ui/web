@@ -36,6 +36,7 @@ function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => voi
         <Link
           key={l}
           href={withLang(bareFull, l)}
+          prefetch={false}
           onClick={onNavigate}
           className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
             l === lang ? "bg-brand text-bg" : "text-muted hover:text-ink"
