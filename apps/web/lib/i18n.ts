@@ -430,7 +430,7 @@ const en: Dict = {
   },
   matches: {
     title: "Today's Matches",
-    allMatches: "All Matches",
+    allMatches: "Our Matches",
     matchesSubtitle: "Every match we've covered — picks, analysis and watchlists.",
     empty: "No matches today",
     kicksOff: "Kicks off in",
@@ -671,7 +671,7 @@ const vi: Dict = {
   },
   matches: {
     title: "Trận Đấu Hôm Nay",
-    allMatches: "Tất Cả Trận Đấu",
+    allMatches: "Trận Của Chúng Ta",
     matchesSubtitle: "Mọi trận đấu chúng tôi đã phân tích — kèo, nhận định và theo dõi.",
     empty: "Hôm nay không có trận",
     kicksOff: "Còn",
@@ -912,7 +912,7 @@ const th: Dict = {
   },
   matches: {
     title: "แมตช์วันนี้",
-    allMatches: "แมตช์ทั้งหมด",
+    allMatches: "แมตช์ของเรา",
     matchesSubtitle: "ทุกแมตช์ที่เราวิเคราะห์ — ทีเด็ด บทวิเคราะห์ และรายการจับตา",
     empty: "วันนี้ไม่มีแมตช์",
     kicksOff: "เริ่มใน",
@@ -1155,7 +1155,7 @@ const es: Dict = {
   },
   matches: {
     title: "Partidos de Hoy",
-    allMatches: "Todos los Partidos",
+    allMatches: "Nuestros Partidos",
     matchesSubtitle: "Cada partido que hemos cubierto — picks, an\u00e1lisis y seguimiento.",
     empty: "No hay partidos hoy",
     kicksOff: "Empieza en",

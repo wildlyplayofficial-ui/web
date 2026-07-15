@@ -147,7 +147,15 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
     <div className="mx-auto max-w-[800px] px-5">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Matches", url: "/matches" }]} />
       <section className="py-12 text-center">
-        <h1 className="gradient-text font-display text-4xl font-bold">{dict.matches.allMatches}</h1>
+        <div className="flex items-center justify-center gap-4">
+          <img
+            src="/icons/icon-192x192.png"
+            alt=""
+            aria-hidden="true"
+            className="h-16 w-16 flex-shrink-0 object-contain"
+          />
+          <h1 className="gradient-text font-display text-4xl font-bold">{dict.matches.allMatches}</h1>
+        </div>
         <p className="mt-3 text-muted">{dict.matches.matchesSubtitle}</p>
       </section>
 
