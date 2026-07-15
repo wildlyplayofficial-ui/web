@@ -355,7 +355,7 @@ export async function scanResults(deps: NewsGenDeps): Promise<number> {
       hasPick: fx ? pickBy.has(fx.id) : false, hasWatching: fx ? watchSet.has(fx.id) : false,
       tier: fx ? (tierOf.get(fx.competition_id) ?? 99) : 99, kickoffUtc: c.m.kickoff_utc,
     };
-  }), budget);
+  }), budget).filter((c) => c.hasPick || c.hasWatching || c.tier < 99);
 
   const rows = chosen.map((c) => {
     const pickId = c.fx ? (pickBy.get(c.fx.id) ?? null) : null;
