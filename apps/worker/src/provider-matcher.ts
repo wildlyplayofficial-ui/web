@@ -132,10 +132,14 @@ export async function runProviderMatcher(
       }
     } else {
       // Livescore-only: use schedule as primary source (odds-api inactive/off-season)
+      let lsOk = 0;
       for (const ls of lsFixtures) {
-        const kickoff = `${ls.date}T${ls.time ? `${ls.time}:00` : '00:00:00'}Z`;
-        const slug = `${canonical(ls.home_name).replace(/\s+/g, '-')}-vs-${canonical(ls.away_name).replace(/\s+/g, '-')}-${ls.date}`;
-        await sb.from('provider_mappings').upsert({
+        // Livescore may return DD.MM.YYYY — normalize to YYYY-MM-DD
+        const ddmmyyyy = ls.date.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+        const isoDate = ddmmyyyy ? `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}` : ls.date;
+        const kickoff = `${isoDate}T${ls.time ? `${ls.time}:00` : '00:00:00'}Z`;
+        const slug = `${canonical(ls.home_name).replace(/\s+/g, '-')}-vs-${canonical(ls.away_name).replace(/\s+/g, '-')}-${isoDate}`;
+        const { error } = await sb.from('provider_mappings').upsert({
           competition_id: comp.id,
           home_team: ls.home_name,
           away_team: ls.away_name,
@@ -146,9 +150,10 @@ export async function runProviderMatcher(
           slug,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'competition_id,home_team,away_team,kickoff_utc' });
-        total++;
+        if (error) log.warn(`provider-matcher: ls-only upsert failed for ${comp.id} ${ls.home_name} vs ${ls.away_name} (${kickoff}): ${error.message}`);
+        else { total++; lsOk++; }
       }
-      if (lsFixtures.length > 0) log.info(`provider-matcher: ${comp.id} — ${lsFixtures.length} ls-only fixture(s)`);
+      if (lsOk > 0) log.info(`provider-matcher: ${comp.id} — ${lsOk} ls-only fixture(s)`);
     }
   }
 
