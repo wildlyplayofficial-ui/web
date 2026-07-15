@@ -73,6 +73,15 @@ async function fetchLsFixtures(key: string, secret: string, compId: number, date
   } catch { return []; }
 }
 
+/** Generate next N dates from today (YYYY-MM-DD, UTC). */
+function nextDates(n: number): string[] {
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+}
+
 /** Run auto-matching for all active competitions. */
 export async function runProviderMatcher(
   sb: SupabaseClient,
@@ -84,42 +93,62 @@ export async function runProviderMatcher(
   let total = 0;
 
   for (const comp of competitions) {
-    if (!comp.odds_api_key || !comp.livescore_id) continue;
+    if (!comp.livescore_id) continue;
 
-    const oddsEvents = await fetchOddsEvents(oddsApiKey, comp.odds_api_key);
+    const oddsEvents = comp.odds_api_key ? await fetchOddsEvents(oddsApiKey, comp.odds_api_key) : [];
     log.info(`provider-matcher: ${comp.id} — ${oddsEvents.length} odds events, fetching LS...`);
-    if (oddsEvents.length === 0) continue;
 
-    // Fetch LS fixtures for each unique date in odds events
-    const dates = [...new Set(oddsEvents.map((e) => e.date.slice(0, 10)))];
+    // Primary source: livescore schedule (next 7 days, or dates from odds events)
+    const dates = oddsEvents.length > 0
+      ? [...new Set(oddsEvents.map((e) => e.date.slice(0, 10)))]
+      : nextDates(7);
+
     const lsFixtures: LsFixture[] = [];
-    for (const d of dates.slice(0, 5)) { // limit to 5 dates to avoid rate limit
+    for (const d of dates.slice(0, 7)) {
       lsFixtures.push(...await fetchLsFixtures(lsKey, lsSecret, comp.livescore_id, d));
     }
 
-    // Match by team names + same day
-    for (const odds of oddsEvents) {
-      const ls = lsFixtures.find((f) =>
-        teamsMatch(odds.home, f.home_name) &&
-        teamsMatch(odds.away, f.away_name) &&
-        sameDay(odds.date, `${f.date}T${f.time || '00:00'}Z`),
-      );
-
-      const slug = `${canonical(odds.home).replace(/\s+/g, '-')}-vs-${canonical(odds.away).replace(/\s+/g, '-')}-${odds.date.slice(0, 10)}`;
-
-      await sb.from('provider_mappings').upsert({
-        competition_id: comp.id,
-        home_team: odds.home,
-        away_team: odds.away,
-        kickoff_utc: odds.date,
-        odds_api_event_id: odds.id,
-        livescore_match_id: ls ? String(ls.id || ls.fixture_id) : null,
-        confidence: ls ? 'auto' : 'odds-only',
-        slug,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'competition_id,home_team,away_team,kickoff_utc' });
-
-      total++;
+    if (oddsEvents.length > 0) {
+      // Cross-match: odds-api events enriched with livescore IDs
+      for (const odds of oddsEvents) {
+        const ls = lsFixtures.find((f) =>
+          teamsMatch(odds.home, f.home_name) &&
+          teamsMatch(odds.away, f.away_name) &&
+          sameDay(odds.date, `${f.date}T${f.time || '00:00'}Z`),
+        );
+        const slug = `${canonical(odds.home).replace(/\s+/g, '-')}-vs-${canonical(odds.away).replace(/\s+/g, '-')}-${odds.date.slice(0, 10)}`;
+        await sb.from('provider_mappings').upsert({
+          competition_id: comp.id,
+          home_team: odds.home,
+          away_team: odds.away,
+          kickoff_utc: odds.date,
+          odds_api_event_id: odds.id,
+          livescore_match_id: ls ? String(ls.id || ls.fixture_id) : null,
+          confidence: ls ? 'auto' : 'odds-only',
+          slug,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'competition_id,home_team,away_team,kickoff_utc' });
+        total++;
+      }
+    } else {
+      // Livescore-only: use schedule as primary source (odds-api inactive/off-season)
+      for (const ls of lsFixtures) {
+        const kickoff = `${ls.date}T${ls.time ? `${ls.time}:00` : '00:00:00'}Z`;
+        const slug = `${canonical(ls.home_name).replace(/\s+/g, '-')}-vs-${canonical(ls.away_name).replace(/\s+/g, '-')}-${ls.date}`;
+        await sb.from('provider_mappings').upsert({
+          competition_id: comp.id,
+          home_team: ls.home_name,
+          away_team: ls.away_name,
+          kickoff_utc: kickoff,
+          odds_api_event_id: null,
+          livescore_match_id: String(ls.id || ls.fixture_id),
+          confidence: 'ls-only',
+          slug,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'competition_id,home_team,away_team,kickoff_utc' });
+        total++;
+      }
+      if (lsFixtures.length > 0) log.info(`provider-matcher: ${comp.id} — ${lsFixtures.length} ls-only fixture(s)`);
     }
   }
 
