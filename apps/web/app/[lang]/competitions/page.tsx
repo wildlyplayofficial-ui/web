@@ -70,7 +70,7 @@ export default async function CompetitionsHub({ params }: Props) {
                   )}
                 </div>
                 <span className={`shrink-0 font-display text-sm font-semibold ${colors.text}`}>
-                  {dict.standings.title} &rarr;
+                  {dict.nav.standings} &rarr;
                 </span>
               </Link>
             );

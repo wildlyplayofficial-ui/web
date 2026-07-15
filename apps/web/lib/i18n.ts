@@ -500,8 +500,8 @@ const en: Dict = {
     viewMatch: "View match",
   },
   standings: {
-    title: "World Cup 2026 Standings",
-    subtitle: "Live group tables for the 2026 FIFA World Cup.",
+    title: "Competitions",
+    subtitle: "Standings, fixtures and predictions by league.",
     group: "Group",
     team: "Team",
     mp: "MP",
@@ -741,8 +741,8 @@ const vi: Dict = {
     viewMatch: "Xem tr\u1eadn \u0111\u1ea5u",
   },
   standings: {
-    title: "B\u1ea3ng X\u1ebfp H\u1ea1ng World Cup 2026",
-    subtitle: "B\u1ea3ng x\u1ebfp h\u1ea1ng tr\u1ef1c ti\u1ebfp v\u00f2ng b\u1ea3ng FIFA World Cup 2026.",
+    title: "Các Giải Đấu",
+    subtitle: "Bảng xếp hạng, lịch thi đấu và dự đoán theo giải.",
     group: "B\u1ea3ng",
     team: "\u0110\u1ed9i",
     mp: "TR",
@@ -982,8 +982,8 @@ const th: Dict = {
     viewMatch: "\u0e14\u0e39\u0e41\u0e21\u0e15\u0e0a\u0e4c",
   },
   standings: {
-    title: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e42\u0e25\u0e01 2026",
-    subtitle: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19\u0e23\u0e2d\u0e1a\u0e41\u0e1a\u0e48\u0e07\u0e01\u0e25\u0e38\u0e48\u0e21\u0e2a\u0e14 FIFA World Cup 2026",
+    title: "การแข่งขัน",
+    subtitle: "ตารางคะแนน ตารางการแข่งขัน และการวิเคราะห์แยกตามลีก",
     group: "\u0e01\u0e25\u0e38\u0e48\u0e21",
     team: "\u0e17\u0e35\u0e21",
     mp: "\u0e40\u0e25\u0e48\u0e19",
@@ -1225,8 +1225,8 @@ const es: Dict = {
     viewMatch: "Ver partido",
   },
   standings: {
-    title: "Clasificaci\u00f3n Mundial 2026",
-    subtitle: "Tablas de grupo en vivo del Mundial FIFA 2026.",
+    title: "Competiciones",
+    subtitle: "Clasificaciones, calendarios y predicciones por liga.",
     group: "Grupo",
     team: "Equipo",
     mp: "PJ",
