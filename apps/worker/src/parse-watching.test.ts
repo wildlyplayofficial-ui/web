@@ -22,6 +22,7 @@ describe('parseWatching — happy path', () => {
       note: 'Yamal out, Germany resting Musiala',
       reason: null,
       author: 'curator',
+      presence: false,
     });
   });
 
@@ -79,6 +80,36 @@ describe('parseWatching — errors', () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.errors.join('\n')).toContain('unknown field: "odds"');
+  });
+});
+
+describe('parseWatching — presence (watch-lite)', () => {
+  it('defaults to false when omitted', () => {
+    const r = parseWatching(VALID, NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.watching.presence).toBe(false);
+  });
+
+  it('parses presence: true', () => {
+    const r = parseWatching(VALID.replace('note:', 'presence: true\nnote:'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.watching.presence).toBe(true);
+  });
+
+  it('parses presence: 1 as true', () => {
+    const r = parseWatching(VALID.replace('note:', 'presence: 1\nnote:'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.watching.presence).toBe(true);
+  });
+
+  it('parses presence: false as false', () => {
+    const r = parseWatching(VALID.replace('note:', 'presence: false\nnote:'), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.watching.presence).toBe(false);
   });
 });
 

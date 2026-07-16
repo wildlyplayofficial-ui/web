@@ -138,12 +138,15 @@ export interface WatchingRow {
   author: PickAuthor;
   /** Public closing line when a thread resolves without a pick (web-only, no TG push). */
   close_note: string | null;
+  /** Watch-lite: presence-only card — minimal render, no full preview, no pick intent. */
+  presence: boolean;
 }
 
-export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'note_translations' | 'buzz_history' | 'close_note'> & {
+export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'note_translations' | 'buzz_history' | 'close_note' | 'presence'> & {
   author?: PickAuthor;
   note_translations?: Record<string, string> | null;
   buzz_history?: BuzzSnapshot[];
+  presence?: boolean;
 };
 
 export interface Store {
@@ -254,6 +257,7 @@ export class MemoryStore implements Store {
       close_note: null,
       ...watching,
       author: watching.author ?? 'curator',
+      presence: watching.presence ?? false,
     };
     this.watchings.set(row.id, row);
     return row;

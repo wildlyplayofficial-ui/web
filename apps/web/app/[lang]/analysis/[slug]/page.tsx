@@ -135,6 +135,11 @@ export default async function NewsPost({ params }: Props) {
       </Link>
 
       <header className="mt-6">
+        {post.pick_ids.length === 0 && (
+          <span className="mb-3 inline-block rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+            {dict.watching.badge}
+          </span>
+        )}
         <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">{post.title}</h1>
         {published && (
           <p className="mt-3 text-sm text-muted">
@@ -203,7 +208,9 @@ export default async function NewsPost({ params }: Props) {
       </nav>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        {post.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
+        {post.pick_ids.length === 0
+          ? dict.watching.disclosureWatching
+          : post.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
       </p>
     </article>
   );

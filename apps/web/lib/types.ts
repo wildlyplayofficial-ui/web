@@ -119,6 +119,8 @@ export interface WatchingRow {
   author?: Author;
   /** Public closing line when a thread resolves without a pick (web-only, no TG push). */
   close_note: string | null;
+  /** Watch-lite: presence-only card — minimal render, no full preview, no pick intent. */
+  presence?: boolean;
 }
 
 /** Crowd poll (decision #5, 11/6): per-pick Follow / Fade / Skip tallies. */

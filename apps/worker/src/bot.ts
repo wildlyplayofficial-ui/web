@@ -223,6 +223,8 @@ export function createBot(deps: BotDeps): Bot {
       note: watching.note,
       status: 'active',
       pick_id: null,
+      author: watching.author,
+      presence: watching.presence,
     });
     log.info(`watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     if (deps.revalidate) void deps.revalidate(['watching']);

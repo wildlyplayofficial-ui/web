@@ -5,7 +5,7 @@
  */
 import type { Api } from 'grammy';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import { postToFacebook } from './announce-pick';
@@ -57,7 +57,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     '- Neutral and informative tone — this is editorial journalism, NOT a betting recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
     '- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section\'s own language exactly:',
-    disclosureBlock(authorTypeOf(w.author)),
+    watchingDisclosureBlock(),
     '- Do NOT copy any external source verbatim.',
   ].filter(Boolean).join('\n');
 }
@@ -106,6 +106,48 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
       meta_description: section.meta_description,
       target_keyword: section.target_keyword,
     }));
+}
+
+// ── Presence (watch-lite) minimal posts ─────────────────────────────────────
+
+const PRESENCE_FALLBACK = 'On our watch list for audience coverage.';
+
+const PRESENCE_FALLBACK_I18N: Record<PostLang, string> = {
+  en: PRESENCE_FALLBACK,
+  vi: 'Tr\u1eadn \u0111\u1ea5u n\u1eb1m trong danh s\u00e1ch theo d\u00f5i c\u1ee7a ch\u00fang t\u00f4i.',
+  th: '\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49\u0e2d\u0e22\u0e39\u0e48\u0e43\u0e19\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e02\u0e2d\u0e07\u0e40\u0e23\u0e32',
+  es: 'Este partido est\u00e1 en nuestra lista de seguimiento.',
+};
+
+/** Build minimal presence-only posts — no AI, just the note verbatim (Req 1). */
+export function buildPresencePosts(w: WatchingRow): NewPost[] {
+  const slug = buildNewsSlug(w.home_team, w.away_team, w.kickoff_utc);
+  const matchup = `${w.home_team} vs ${w.away_team}`;
+  const now = new Date().toISOString();
+
+  const noteText = w.note?.trim() || null;
+  const noteTrans = w.note_translations ?? {};
+
+  return (['en', 'vi', 'th', 'es'] as PostLang[]).map((lang) => {
+    const body = lang === 'en'
+      ? (noteText || PRESENCE_FALLBACK)
+      : (noteTrans[lang] || noteText || PRESENCE_FALLBACK_I18N[lang]);
+    const footer = watchingDisclosureFor(lang);
+    return {
+      type: 'analysis' as const,
+      slug,
+      lang,
+      title: `${NEWS_TITLES[lang]}: ${matchup}`,
+      body_md: `${body}\n\n${footer}`,
+      pick_ids: [],
+      author: w.author,
+      status: 'published' as const,
+      published_at: now,
+      meta_title: `${NEWS_TITLES[lang]}: ${matchup}`,
+      meta_description: body.slice(0, 155),
+      target_keyword: null,
+    };
+  });
 }
 
 // ── Publish ─────────────────────────────────────────────────────────────────
@@ -186,14 +228,16 @@ async function sendWatchingCard(
 }
 
 /** Generate + publish a news article for a /watching entry. Fire-and-forget: never throws.
- *  `reason` = hand-written one-sentence card hook (R5) — card-only, not persisted. */
+ *  `reason` = hand-written one-sentence card hook (R5) — card-only, not persisted.
+ *  Presence-only (watch-lite) cards skip AI generation and render minimal note-only posts. */
 export async function publishWatchingNews(
   deps: WatchingNewsDeps,
   watching: WatchingRow,
   reason?: string | null,
 ): Promise<void> {
   try {
-    if (!deps.env.apiKey) return;
+    // Presence cards don't need an API key (no AI generation) — but deep-gate cards do.
+    if (!watching.presence && !deps.env.apiKey) return;
 
     if (isPlaceholderTeam(watching.home_team) || isPlaceholderTeam(watching.away_team)) {
       log.info(`watching-news: skipping placeholder team (${watching.home_team} vs ${watching.away_team})`);
@@ -207,18 +251,25 @@ export async function publishWatchingNews(
       return;
     }
 
-    const text = await callClaude(
-      { apiKey: deps.env.apiKey, model: deps.env.model ?? DEFAULT_MODEL },
-      buildWatchingNewsPrompt(watching),
-      `watching-news ${watching.home_team} vs ${watching.away_team}`,
-      MAX_TOKENS,
-    );
-    if (!text) return;
+    // Req 1: presence cards get minimal posts (note only), no AI generation.
+    const posts = watching.presence
+      ? buildPresencePosts(watching)
+      : await (async () => {
+          const text = await callClaude(
+            { apiKey: deps.env.apiKey!, model: deps.env.model ?? DEFAULT_MODEL },
+            buildWatchingNewsPrompt(watching),
+            `watching-news ${watching.home_team} vs ${watching.away_team}`,
+            MAX_TOKENS,
+          );
+          if (!text) return null;
+          return buildNewsPosts(watching, text);
+        })();
 
-    const posts = buildNewsPosts(watching, text);
+    if (!posts) return;
 
     // Player photo hero: prepend CC-licensed image to EN body when player_photos table has a match.
-    if (deps.db) {
+    // Skip for presence cards — minimal render, no hero image needed.
+    if (deps.db && !watching.presence) {
       try {
         const { data: photos } = await deps.db
           .from('player_photos')
@@ -245,7 +296,7 @@ export async function publishWatchingNews(
     if (!ok) log.warn(`watching-news: incomplete langs [${missing.join(',')}] for ${watching.home_team} vs ${watching.away_team} — publishing available langs`);
     // Per-lang resilience: one lang failing seo-lint must NOT drop the card (bug: France-Morocco
     // 09/07 — a Thai katakana glitch blocked insert, killing the whole announce). Publish what
-    // passes; send the card as long as ≥1 lang is live.
+    // passes; send the card as long as >=1 lang is live.
     let published = 0;
     const failedLangs: string[] = [];
     for (const post of posts) {
@@ -262,7 +313,7 @@ export async function publishWatchingNews(
       return;
     }
     if (failedLangs.length) log.warn(`watching-news: published ${published}/${posts.length} for ${watching.home_team} vs ${watching.away_team}, failed langs [${failedLangs.join(',')}]`);
-    else log.info(`watching-news: published ${published} posts for ${watching.home_team} vs ${watching.away_team}`);
+    else log.info(`watching-news: published ${published}${watching.presence ? ' presence' : ''} posts for ${watching.home_team} vs ${watching.away_team}`);
     if (deps.card) await sendWatchingCard(deps.card, watching, slug, reason);
 
     if (deps.revalidateUrl) {

@@ -161,12 +161,13 @@ export async function handleApiRoute(
       league: watching.league, kickoff_utc: watching.kickoffUtc,
       note: watching.note, status: 'active', pick_id: null,
       author: watching.author,
+      presence: watching.presence,
     });
     log.info(`api: watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     void deps.revalidate(['watching']);
     if (row.note && deps.aiEnv?.apiKey && deps.persistDb) {
       void enqueueJob(deps.persistDb, 'note-translate', { watchingId: row.id }).catch(e => log.warn('enqueue note-translate:', e));
-      void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id, reason: watching.reason }).catch(e => log.warn('enqueue watching-news:', e));
+      void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id, reason: watching.reason, presence: watching.presence }).catch(e => log.warn('enqueue watching-news:', e));
     } else if (row.note && deps.aiEnv?.apiKey) {
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row);
       void publishWatchingNews({

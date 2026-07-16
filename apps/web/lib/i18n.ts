@@ -245,6 +245,10 @@ export interface Dict {
     titlePastScout: string;
     noteScout: string;
     disclosureScout: string;
+    /** Req 2: state-accurate footer for watching/no-play cards (no "chose this play"). */
+    disclosureWatching: string;
+    /** Req 3: badge text for watching/presence cards. */
+    badge: string;
   };
   match: {
     backToMatches: string;
@@ -486,6 +490,8 @@ const en: Dict = {
     titlePastScout: "The Scout was watching",
     noteScout: "Scout note",
     disclosureScout: "AI-picked, AI-written — Scout is an experimental AI persona, not a real person.",
+    disclosureWatching: "AI-written coverage. No play taken \u2014 we\u2019re watching this match, not betting it.",
+    badge: "WATCHING \u00b7 NOT A PICK",
   },
   match: {
     backToMatches: "Back",
@@ -727,6 +733,8 @@ const vi: Dict = {
     titlePastScout: "Scout \u0111\u00e3 theo d\u00f5i",
     noteScout: "Ghi ch\u00fa t\u1eeb Scout",
     disclosureScout: "AI ch\u1ecdn k\u00e8o, AI vi\u1ebft b\u00e0i \u2014 Scout l\u00e0 nh\u00e2n v\u1eadt AI th\u1eed nghi\u1ec7m, kh\u00f4ng ph\u1ea3i ng\u01b0\u1eddi th\u1eadt.",
+    disclosureWatching: "B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng xu\u1ed1ng k\u00e8o \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.",
+    badge: "THEO D\u00d5I \u00b7 KH\u00d4NG PH\u1ea2I PICK",
   },
   match: {
     backToMatches: "Quay l\u1ea1i",
@@ -968,6 +976,8 @@ const th: Dict = {
     titlePastScout: "Scout \u0e08\u0e31\u0e1a\u0e15\u0e32\u0e41\u0e25\u0e49\u0e27",
     noteScout: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Scout",
     disclosureScout: "AI \u0e40\u0e25\u0e37\u0e2d\u0e01\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u2014 Scout \u0e40\u0e1b\u0e47\u0e19\u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23 AI \u0e17\u0e14\u0e25\u0e2d\u0e07 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e1a\u0e38\u0e04\u0e04\u0e25\u0e08\u0e23\u0e34\u0e07",
+    disclosureWatching: "\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u0e44\u0e21\u0e48\u0e21\u0e35\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u2014 \u0e40\u0e23\u0e32\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49 \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19",
+    badge: "\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21 \u00b7 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e01\u0e32\u0e23\u0e40\u0e25\u0e37\u0e2d\u0e01",
   },
   match: {
     backToMatches: "\u0e01\u0e25\u0e31\u0e1a",
@@ -1211,6 +1221,8 @@ const es: Dict = {
     titlePastScout: "El Scout estuvo observando",
     noteScout: "Nota del Scout",
     disclosureScout: "Elegido por IA, escrito por IA \u2014 Scout es un personaje de IA experimental, no una persona real.",
+    disclosureWatching: "Cobertura escrita por IA. No se ha tomado ninguna apuesta \u2014 seguimos este partido, no apostamos.",
+    badge: "EN SEGUIMIENTO \u00b7 NO ES UNA APUESTA",
   },
   match: {
     backToMatches: "Volver",

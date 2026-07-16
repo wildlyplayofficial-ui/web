@@ -178,7 +178,7 @@ export default async function NewsDetail({ params }: Props) {
       </nav>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        {dict.pick.disclosure}
+        {dict.watching.disclosureWatching}
       </p>
     </article>
   );

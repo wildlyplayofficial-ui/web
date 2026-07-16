@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, publishWatchingNews, type WatchingCardDeps } from './watching-news';
-import { disclosureFor } from './recap';
+import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, buildPresencePosts, publishWatchingNews, type WatchingCardDeps } from './watching-news';
+import { disclosureFor, watchingDisclosureFor } from './recap';
 import { MemoryStore, type WatchingRow } from './store';
 
 function activeWatching(overrides: Partial<WatchingRow> = {}): WatchingRow {
@@ -18,6 +18,7 @@ function activeWatching(overrides: Partial<WatchingRow> = {}): WatchingRow {
     buzz_history: [],
     author: 'curator',
     close_note: null,
+    presence: false,
     ...overrides,
   };
 }
@@ -98,25 +99,19 @@ describe('buildWatchingNewsPrompt', () => {
   });
 });
 
-describe('buildWatchingNewsPrompt — disclosure (Tiered Picks §12 firewall)', () => {
+describe('buildWatchingNewsPrompt — disclosure (Req 2: state-accurate footer)', () => {
   it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the curator (real_human) disclosure in %s',
+    'renders the watching (no-play) disclosure in %s — never "chose this play"',
     (lang) => {
       const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'curator' }));
-      expect(prompt).toContain(disclosureFor('real_human', lang));
+      expect(prompt).toContain(watchingDisclosureFor(lang));
+      expect(prompt).not.toContain('chose this play');
     },
   );
 
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the scout (fictional_ai) disclosure in %s',
-    (lang) => {
-      const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'scout' }));
-      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
-    },
-  );
-
-  it('never leaks the curator wording into a scout watching prompt', () => {
+  it('uses the same watching disclosure for scout watching prompts', () => {
     const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'scout' }));
+    expect(prompt).toContain(watchingDisclosureFor('en'));
     expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
   });
 });
@@ -127,7 +122,7 @@ describe('buildNewsPosts', () => {
     expect(posts).toHaveLength(4);
 
     expect(posts[0]).toMatchObject({
-      type: 'news',
+      type: 'analysis',
       slug: 'news-mexico-vs-south-africa-2026-06-11',
       lang: 'en',
       title: 'Mexico vs South Africa Preview - World Cup 2026',
@@ -140,22 +135,55 @@ describe('buildNewsPosts', () => {
     expect(posts[0].body_md).toContain('Mexico host South Africa');
     expect(posts[0].published_at).toBeTruthy();
 
-    expect(posts[1]).toMatchObject({ lang: 'vi', type: 'news' });
-    expect(posts[2]).toMatchObject({ lang: 'th', type: 'news' });
-    expect(posts[3]).toMatchObject({ lang: 'es', type: 'news' });
+    expect(posts[1]).toMatchObject({ lang: 'vi', type: 'analysis' });
+    expect(posts[2]).toMatchObject({ lang: 'th', type: 'analysis' });
+    expect(posts[3]).toMatchObject({ lang: 'es', type: 'analysis' });
   });
 
   it('falls back to a single en row when the split fails', () => {
     const posts = buildNewsPosts(activeWatching(), '  no flags here  ');
     expect(posts).toHaveLength(1);
     expect(posts[0]).toMatchObject({
-      type: 'news',
+      type: 'analysis',
       lang: 'en',
       body_md: 'no flags here',
       meta_title: null,
       meta_description: null,
       target_keyword: null,
     });
+  });
+});
+
+describe('buildPresencePosts (Req 1: watch-lite minimal render)', () => {
+  it('builds 4 posts with the note verbatim and watching disclosure', () => {
+    const posts = buildPresencePosts(activeWatching({ presence: true }));
+    expect(posts).toHaveLength(4);
+    expect(posts[0]).toMatchObject({
+      type: 'analysis',
+      lang: 'en',
+      slug: 'news-mexico-vs-south-africa-2026-06-11',
+      pick_ids: [],
+      status: 'published',
+    });
+    expect(posts[0].body_md).toContain('Mexico dominant at home');
+    expect(posts[0].body_md).toContain(watchingDisclosureFor('en'));
+    // Must NOT contain full-preview sections
+    expect(posts[0].body_md).not.toContain('Tactical');
+    expect(posts[0].body_md).not.toContain('Key Players');
+  });
+
+  it('uses fallback when note is empty', () => {
+    const posts = buildPresencePosts(activeWatching({ presence: true, note: null }));
+    expect(posts[0].body_md).toContain('On our watch list for audience coverage.');
+  });
+
+  it('uses translated note when available', () => {
+    const posts = buildPresencePosts(activeWatching({
+      presence: true,
+      note_translations: { en: 'EN note', vi: 'VI note', th: 'TH note', es: 'ES note' },
+    }));
+    expect(posts[1].body_md).toContain('VI note');
+    expect(posts[3].body_md).toContain('ES note');
   });
 });
 
@@ -174,7 +202,7 @@ describe('publishWatchingNews', () => {
 
     expect(store.posts).toHaveLength(4);
     expect(store.posts[0]).toMatchObject({
-      type: 'news',
+      type: 'analysis',
       slug: 'news-mexico-vs-south-africa-2026-06-11',
       lang: 'en',
     });
@@ -184,9 +212,9 @@ describe('publishWatchingNews', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     const store = new MemoryStore();
-    // Pre-populate with existing news slug
+    // Pre-populate with existing slug (type must match 'analysis' — the slug lookup checks this type)
     await store.insertPost({
-      type: 'news',
+      type: 'analysis',
       slug: 'news-mexico-vs-south-africa-2026-06-11',
       lang: 'en',
       title: 'Existing',
@@ -201,6 +229,33 @@ describe('publishWatchingNews', () => {
 
     // Should not call Claude at all
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('presence cards skip AI and publish minimal posts', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const store = new MemoryStore();
+
+    await publishWatchingNews(
+      { store, env: { apiKey: 'k' } },
+      activeWatching({ presence: true }),
+    );
+
+    // Should NOT call Claude
+    expect(fetchMock).not.toHaveBeenCalled();
+    // Should still publish 4 posts
+    expect(store.posts).toHaveLength(4);
+    expect(store.posts[0].body_md).toContain('Mexico dominant at home');
+    expect(store.posts[0].body_md).toContain(watchingDisclosureFor('en'));
+  });
+
+  it('presence cards work even without an API key', async () => {
+    const store = new MemoryStore();
+    await publishWatchingNews(
+      { store, env: { apiKey: undefined } },
+      activeWatching({ presence: true }),
+    );
+    expect(store.posts).toHaveLength(4);
   });
 
   it('does nothing without an api key', async () => {

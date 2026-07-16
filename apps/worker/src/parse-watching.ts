@@ -14,6 +14,8 @@ export interface ParsedWatching {
   reason: string | null;
   /** Tiered Picks firewall (§12): who this watching entry belongs to. Default 'curator'. */
   author: PickAuthor;
+  /** Watch-lite: presence-only card (no full preview, no pick intent). Default false. */
+  presence: boolean;
 }
 
 const AUTHOR_VALUES: readonly string[] = ['curator', 'scout'];
@@ -22,7 +24,7 @@ export type ParseWatchingResult =
   | { ok: true; watching: ParsedWatching }
   | { ok: false; errors: string[] };
 
-const KNOWN_KEYS = new Set(['match', 'league', 'kickoff', 'reason', 'note', 'author']);
+const KNOWN_KEYS = new Set(['match', 'league', 'kickoff', 'reason', 'note', 'author', 'presence']);
 
 export function parseWatching(text: string, now: Date = new Date()): ParseWatchingResult {
   const errors: string[] = [];
@@ -91,6 +93,10 @@ export function parseWatching(text: string, now: Date = new Date()): ParseWatchi
 
   const reason = fields.get('reason')?.trim() || null;
 
+  // presence (optional) — watch-lite: presence-only card, no full preview.
+  const presenceRaw = fields.get('presence');
+  const presence = presenceRaw === 'true' || presenceRaw === '1';
+
   // author (optional) — Tiered Picks firewall (§12): curator (default) or scout.
   let author: PickAuthor = 'curator';
   const authorRaw = fields.get('author');
@@ -103,6 +109,6 @@ export function parseWatching(text: string, now: Date = new Date()): ParseWatchi
   if (errors.length > 0) return { ok: false, errors };
   return {
     ok: true,
-    watching: { homeTeam, awayTeam, league, kickoffUtc, note: note || null, reason, author },
+    watching: { homeTeam, awayTeam, league, kickoffUtc, note: note || null, reason, author, presence },
   };
 }

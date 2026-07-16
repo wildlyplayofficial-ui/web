@@ -58,6 +58,26 @@ export function disclosureFor(authorType: AuthorType, lang: PostLang): string {
   return DISCLOSURE[authorType][lang];
 }
 
+/** Watching/no-play footer (Req 2): state-accurate — does NOT claim "chose this play". */
+const WATCHING_DISCLOSURE: Record<PostLang, string> = {
+  en: 'AI-written coverage. No play taken \u2014 we\u2019re watching this match, not betting it.',
+  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng xu\u1ed1ng k\u00e8o \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.',
+  th: '\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u0e44\u0e21\u0e48\u0e21\u0e35\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u2014 \u0e40\u0e23\u0e32\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49 \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19',
+  es: 'Cobertura escrita por IA. No se ha tomado ninguna apuesta \u2014 seguimos este partido, no apostamos.',
+};
+
+/** Watching disclosure for a single language. */
+export function watchingDisclosureFor(lang: PostLang): string {
+  return WATCHING_DISCLOSURE[lang];
+}
+
+/** Multi-line watching disclosure block for AI prompts. */
+export function watchingDisclosureBlock(): string {
+  return (Object.keys(POST_FLAGS) as PostLang[])
+    .map((lang) => `  ${lang.toUpperCase()}: "${watchingDisclosureFor(lang)}"`)
+    .join('\n');
+}
+
 /** Multi-line instruction block, one line per language, for insertion into a prompt's
  *  <rules> section — the model must match each section's own language to the line below. */
 export function disclosureBlock(authorType: AuthorType): string {

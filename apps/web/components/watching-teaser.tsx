@@ -67,6 +67,10 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
 
   return (
     <div className={isScout ? "rounded-card border border-scout/20 bg-scout-dim/30 p-4 shadow-card" : "rounded-card border border-brand/20 bg-brand-dim/30 p-4 shadow-card"}>
+      {/* Req 3: watching badge — renders before the title */}
+      <span className="mb-2 inline-block rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-display text-[0.65rem] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+        {dict.watching.badge}
+      </span>
       <div className="mb-2 flex items-center gap-2">
         {!isPast && (
           <span className="relative flex h-2 w-2">
@@ -107,8 +111,10 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
         </p>
       )}
 
+      {/* Req 2: state-accurate footer — watching cards never claim "chose this play". Scout gets both. */}
+      <p className="mt-2 text-xs text-muted/80">{dict.watching.disclosureWatching}</p>
       {item.author === "scout" && (
-        <p className="mt-2 text-xs text-muted/80">{dict.watching.disclosureScout}</p>
+        <p className="mt-1 text-xs text-muted/80">{dict.watching.disclosureScout}</p>
       )}
 
       {buzz && (
