@@ -47,6 +47,14 @@ const COMP_TIER_WEIGHT: Record<number, number> = {
 };
 const COMP_TIER_WEIGHT_DEFAULT = 15;
 
+/** Hardcoded slug→tier fallback when DB tier column is NULL. */
+const SLUG_TIER_FALLBACK: Record<string, number> = {
+  'world-cup-2026': 1, 'champions-league': 2,
+  'premier-league': 3, 'la-liga': 3,
+  'serie-a': 4, 'bundesliga': 4,
+  'ligue-1': 5, 'mls': 5, 'liga-mx': 5,
+};
+
 /** Normalize team name for matching against TOP_TEAMS / RIVALRIES. */
 function normTeamKey(n: string): string {
   return n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
@@ -91,6 +99,7 @@ export function scoreFixture(opts: {
   hasPick: boolean;
   hasWatching: boolean;
   nowMs?: number;
+  round?: string; // e.g. "Round of 16", "Quarter-final", "Semi-final", "Final", "Playoff"
 }): ScoreBreakdown {
   // 1. Competition weight (0-40)
   const competition = COMP_TIER_WEIGHT[opts.compTier] ?? COMP_TIER_WEIGHT_DEFAULT;
@@ -103,9 +112,17 @@ export function scoreFixture(opts: {
   // Both teams tier 1 or 2 → +5 bonus
   if (homeTier <= 2 && awayTier <= 2) team += 5;
 
-  // 3. Matchup bonus (0-20)
+  // 3. Matchup bonus (0-35)
   let matchup = 0;
   if (isDerby(opts.homeTeam, opts.awayTeam)) matchup += 20;
+  // Knockout/playoff bonus
+  if (opts.round) {
+    const r = opts.round.toLowerCase();
+    if (/final$/.test(r) && !/semi|quarter/.test(r)) matchup += 20; // Final
+    else if (/semi/i.test(r)) matchup += 18;
+    else if (/quarter/i.test(r)) matchup += 15;
+    else if (/playoff|round of|knock/i.test(r)) matchup += 15;
+  }
 
   // 4. Recency bonus (0-10)
   const nowMs = opts.nowMs ?? Date.now();
@@ -194,9 +211,12 @@ interface Comp { id: string; name: string; livescore_id: number; tier: number }
 
 async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   const { data } = await sb.from('competitions')
-    .select('id, name, livescore_id, tier').eq('status', 'active').order('id');
-  return ((data ?? []) as { id: string; name: string; livescore_id: number; tier?: number | null }[])
-    .map((r, i) => ({ id: r.id, name: r.name, livescore_id: Number(r.livescore_id), tier: r.tier ?? (i + 1) }));
+    .select('id, name, slug, livescore_id, tier').eq('status', 'active').order('id');
+  return ((data ?? []) as { id: string; name: string; slug?: string; livescore_id: number; tier?: number | null }[])
+    .map((r) => ({
+      id: r.id, name: r.name, livescore_id: Number(r.livescore_id),
+      tier: r.tier ?? SLUG_TIER_FALLBACK[r.slug ?? ''] ?? 99,
+    }));
 }
 
 async function countTodayByType(sb: SupabaseClient, type: GenNewsType): Promise<number> {
