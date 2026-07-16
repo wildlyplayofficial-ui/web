@@ -9,6 +9,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { getBoothForPick } from "@/lib/booth-data";
 import { getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
+import { teamBadge } from "@/lib/team-badges";
 import { formatKickoff } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import type { MatchData } from "@/lib/types";
@@ -79,13 +80,14 @@ export default async function MatchPage({ params }: Props) {
     const deslug = (s: string) => s.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const homeName = deslug(homePart); const awayName = deslug(awayPart);
     const hf = teamFlag(homeName); const af = teamFlag(awayName);
+    const hb = teamBadge(homeName); const ab = teamBadge(awayName);
     return (
       <article className="mx-auto max-w-[720px] px-5 py-12">
         <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">&larr; {dict.match.backToMatches}</Link>
         <header className="mt-6">
           <p className="text-sm text-muted">{formatKickoff(datePart + "T00:00:00Z", lang)}</p>
           <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-            {hf && <span className="mr-1.5">{hf}</span>}{homeName}<span className="mx-2 text-muted">vs</span>{af && <span className="mr-1.5">{af}</span>}{awayName}
+            {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName}<span className="mx-2 text-muted">vs</span>{ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
         </header>
         <div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>
@@ -101,6 +103,7 @@ export default async function MatchPage({ params }: Props) {
     match.picks.length > 0 ? getBoothForPick(match.picks[0].id) : Promise.resolve([]),
   ]);
   const homeFlag = teamFlag(match.homeTeam); const awayFlag = teamFlag(match.awayTeam);
+  const homeBadge = teamBadge(match.homeTeam); const awayBadge = teamBadge(match.awayTeam);
   const schema = JSON.stringify(buildSportsEventSchema(match)).replace(/</g, "\\u003c");
 
   const postsBySlug = new Map<string, (typeof match.posts)[number]>();
@@ -122,7 +125,7 @@ export default async function MatchPage({ params }: Props) {
       <header className="mt-6">
         <p className="text-sm text-muted">{match.league}{match.league ? " \u00b7 " : ""}{formatKickoff(match.kickoffUtc, lang)}</p>
         <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-          {homeFlag && <span className="mr-1.5">{homeFlag}</span>}{match.homeTeam}<span className="mx-2 text-muted">vs</span>{awayFlag && <span className="mr-1.5">{awayFlag}</span>}{match.awayTeam}
+          {homeBadge ? <img src={homeBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}{match.homeTeam}<span className="mx-2 text-muted">vs</span>{awayBadge ? <img src={awayBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}{match.awayTeam}
         </h1>
         {match.picks.some((p) => p.home_score !== null) && (() => {
           const pick = match.picks.find((p) => p.home_score !== null)!;
