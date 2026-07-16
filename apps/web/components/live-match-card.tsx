@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { teamFlag } from "@/lib/flags";
+import { teamBadge } from "@/lib/team-badges";
 
 interface LiveMatch {
   id: string;
@@ -72,6 +73,8 @@ export function LiveMatchCard({
 
   const homeFlag = teamFlag(homeTeam);
   const awayFlag = teamFlag(awayTeam);
+  const homeBadge = teamBadge(homeTeam);
+  const awayBadge = teamBadge(awayTeam);
   const display = minute != null ? `${minute}'` : liveLabel;
 
   return (
@@ -90,15 +93,23 @@ export function LiveMatchCard({
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="truncate font-display text-sm font-semibold">
-              {homeFlag && <span className="mr-1.5">{homeFlag}</span>}
+            <span className="flex items-center truncate font-display text-sm font-semibold">
+              {homeBadge ? (
+                <img src={homeBadge} alt="" width={18} height={18} className="mr-1.5 h-[18px] w-[18px] shrink-0 object-contain" />
+              ) : homeFlag ? (
+                <span className="mr-1.5">{homeFlag}</span>
+              ) : null}
               {homeTeam}
             </span>
             <span className="font-display text-sm font-bold tabular-nums">{homeScore ?? 0}</span>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="truncate font-display text-sm font-semibold">
-              {awayFlag && <span className="mr-1.5">{awayFlag}</span>}
+            <span className="flex items-center truncate font-display text-sm font-semibold">
+              {awayBadge ? (
+                <img src={awayBadge} alt="" width={18} height={18} className="mr-1.5 h-[18px] w-[18px] shrink-0 object-contain" />
+              ) : awayFlag ? (
+                <span className="mr-1.5">{awayFlag}</span>
+              ) : null}
               {awayTeam}
             </span>
             <span className="font-display text-sm font-bold tabular-nums">{awayScore ?? 0}</span>

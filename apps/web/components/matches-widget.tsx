@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { teamFlag } from "@/lib/flags";
+import { teamBadge } from "@/lib/team-badges";
 import { buildMatchSlug } from "@/lib/data";
 import { getTodaysMatches, type Match } from "@/lib/matches";
 import { getDict, type Lang, withLang } from "@/lib/i18n";
@@ -95,10 +96,16 @@ function MatchCard({ match, lang }: { match: Match; lang: Lang }) {
 }
 
 function TeamRow({ name, flag, score, showScore }: { name: string; flag: string; score: number | null; showScore: boolean }) {
+  const badge = teamBadge(name);
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="truncate font-display text-sm font-semibold">
-        {flag && <span className="mr-1.5">{flag}</span>}
+      <span className="flex items-center truncate font-display text-sm font-semibold">
+        {badge ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={badge} alt="" width={18} height={18} loading="lazy" className="mr-1.5 h-[18px] w-[18px] shrink-0 object-contain" />
+        ) : flag ? (
+          <span className="mr-1.5">{flag}</span>
+        ) : null}
         {name}
       </span>
       {showScore && (
