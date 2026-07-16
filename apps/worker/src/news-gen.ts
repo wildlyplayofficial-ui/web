@@ -320,6 +320,7 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
     .gte('kickoff_utc', new Date(now).toISOString())
     .lte('kickoff_utc', new Date(now + 24 * 3_600_000).toISOString());
   const fixtures = (data ?? []) as FixtureRow[];
+  log.info(`news-gen preview: ${fixtures.length} fixtures in 24h window`);
   if (fixtures.length === 0) return 0;
 
   const cands = fixtures
@@ -328,9 +329,11 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
     .filter((c) => c.f.kickoff_utc && isSlugSafe(c.slug));
   const existing = await existingSlugs(sb, cands.map((c) => c.slug));
   const fresh = cands.filter((c) => !existing.has(c.slug));
+  log.info(`news-gen preview: ${cands.length} candidates, ${existing.size} existing, ${fresh.length} fresh`);
   if (fresh.length === 0) return 0;
 
   const budget = DAILY_CAPS.preview - await countTodayByType(sb, 'preview');
+  log.info(`news-gen preview: budget=${budget} (cap=${DAILY_CAPS.preview})`);
   if (budget <= 0) return 0;
 
   const comps = await getActiveComps(sb);
