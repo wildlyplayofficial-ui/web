@@ -1,7 +1,8 @@
 /**
  * P1: /news auto-gen pipeline — preview/result/standings from structured Supabase data.
- * Spec: /tmp/spec-news-worker-pipeline.md (FINAL 13/7 — D1=A templates, D2=A livescore table,
- * D3 caps 6/6/3 pick-first, D5 football-data deferred).
+ * Scoring: each fixture scored (competition + team + matchup + recency); score >= 45 → generate.
+ * P2 enriched pipeline triggered when score >= 60 (replaces P2_COMPETITION_SET check).
+ * Pick/watching is a +10 bonus, not a requirement.
  * Deterministic templates only (news-gen-templates.ts) — no LLM, no speculation.
  * Idempotency: slug is the unique key; insert ON CONFLICT DO NOTHING → re-runs never dupe
  * and never downgrade published→draft.
@@ -14,15 +15,112 @@ import {
   NEWS_LANGS, renderPreview, renderResult, renderStandings,
   type PreviewData, type ResultData, type StandingsData, type Rendered,
 } from './news-gen-templates';
-import { P2_COMPETITION_SET, enrichPreviewP2, buildP2Row, type P2Deps, type P2EnrichInput } from './news-gen-p2';
+import { enrichPreviewP2, buildP2Row, type P2Deps, type P2EnrichInput } from './news-gen-p2';
+import topTeamsJson from './data/top-teams.json';
+import rivalriesJson from './data/rivalries.json';
 
 /** Values copied from apps/web/lib/news.ts NEWS_TYPES (by-convention contract — worker
  *  cannot import apps/web). Unit test asserts this stays a subset of the canonical list. */
 export const GEN_NEWS_TYPES = ['preview', 'result', 'standings'] as const;
 export type GenNewsType = (typeof GEN_NEWS_TYPES)[number];
 
-/** D3 (Nick 13/7): per-type daily caps; overflow skipped for good, no backfill. */
-export const DAILY_CAPS: Record<GenNewsType, number> = { preview: 6, result: 6, standings: 3 };
+/** Safety-net daily caps (raised from 6 → 20 for previews; scoring handles selection). */
+export const DAILY_CAPS: Record<GenNewsType, number> = { preview: 20, result: 6, standings: 3 };
+
+/** Score threshold: only fixtures scoring >= this get a preview generated. */
+export const SCORE_THRESHOLD = 45;
+/** Score threshold for P2 enriched pipeline. */
+export const SCORE_P2_THRESHOLD = 60;
+
+// ── Scoring data ────────────────────────────────────────────────────────────
+
+const TOP_TEAMS: Record<string, number> = topTeamsJson;
+const RIVALRIES: [string, string][] = rivalriesJson as [string, string][];
+
+/** Competition tier → weight mapping. Tier comes from the competitions DB table. */
+const COMP_TIER_WEIGHT: Record<number, number> = {
+  1: 40, // WC
+  2: 35, // Champions League
+  3: 30, // EPL, La Liga
+  4: 28, // Serie A, Bundesliga
+  5: 25, // Ligue 1, MLS, Liga MX
+};
+const COMP_TIER_WEIGHT_DEFAULT = 15;
+
+/** Normalize team name for matching against TOP_TEAMS / RIVALRIES. */
+function normTeamKey(n: string): string {
+  return n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function getTeamTier(team: string): number {
+  const exact = TOP_TEAMS[team] ?? TOP_TEAMS[normTeamKey(team)];
+  if (exact) return exact;
+  // Try case-insensitive match
+  const lower = normTeamKey(team).toLowerCase();
+  for (const [k, v] of Object.entries(TOP_TEAMS)) {
+    if (normTeamKey(k).toLowerCase() === lower) return v;
+  }
+  return 3; // default tier for any team in active competition
+}
+
+function isDerby(home: string, away: string): boolean {
+  const hNorm = normTeamKey(home).toLowerCase();
+  const aNorm = normTeamKey(away).toLowerCase();
+  return RIVALRIES.some(([a, b]) => {
+    const aN = normTeamKey(a).toLowerCase();
+    const bN = normTeamKey(b).toLowerCase();
+    return (aN === hNorm && bN === aNorm) || (aN === aNorm && bN === hNorm);
+  });
+}
+
+export interface ScoreBreakdown {
+  competition: number;
+  team: number;
+  matchup: number;
+  recency: number;
+  pickBonus: number;
+  total: number;
+}
+
+/** Score a fixture for news priority. Exported for testing. */
+export function scoreFixture(opts: {
+  compTier: number;
+  homeTeam: string;
+  awayTeam: string;
+  kickoffUtc: string;
+  hasPick: boolean;
+  hasWatching: boolean;
+  nowMs?: number;
+}): ScoreBreakdown {
+  // 1. Competition weight (0-40)
+  const competition = COMP_TIER_WEIGHT[opts.compTier] ?? COMP_TIER_WEIGHT_DEFAULT;
+
+  // 2. Team weight (0-30)
+  const homeTier = getTeamTier(opts.homeTeam);
+  const awayTier = getTeamTier(opts.awayTeam);
+  const tierToWeight = (t: number) => t === 1 ? 15 : t === 2 ? 10 : 5;
+  let team = Math.max(tierToWeight(homeTier), tierToWeight(awayTier));
+  // Both teams tier 1 or 2 → +5 bonus
+  if (homeTier <= 2 && awayTier <= 2) team += 5;
+
+  // 3. Matchup bonus (0-20)
+  let matchup = 0;
+  if (isDerby(opts.homeTeam, opts.awayTeam)) matchup += 20;
+
+  // 4. Recency bonus (0-10)
+  const nowMs = opts.nowMs ?? Date.now();
+  const kickoffMs = new Date(opts.kickoffUtc).getTime();
+  const hoursUntil = (kickoffMs - nowMs) / 3_600_000;
+  let recency = 0;
+  if (hoursUntil < 6) recency = 10;
+  else if (hoursUntil < 12) recency = 5;
+
+  // Pick/watching bonus (+10, not a requirement)
+  const pickBonus = (opts.hasPick || opts.hasWatching) ? 10 : 0;
+
+  const total = competition + team + matchup + recency + pickBonus;
+  return { competition, team, matchup, recency, pickBonus, total };
+}
 
 /** Quality gate: auto-publish only if EN body meets minimum length. Thin bodies stay draft. */
 const MIN_PUBLISH_BODY_LEN = 800;
@@ -76,15 +174,16 @@ export function computeForm(team: string, finished: FinishedMatch[]): string | n
   }).join('-');
 }
 
-// ── D3 priority: pick > watching > comp tier (competitions row order) ────────
+// ── Score-based priority (replaces pick-first D3) ───────────────────────────
 
-export interface Candidate { hasPick: boolean; hasWatching: boolean; tier: number; kickoffUtc: string }
+export interface Candidate { hasPick: boolean; hasWatching: boolean; tier: number; kickoffUtc: string; score?: number }
 
+/** Sort by score descending, then by earlier kickoff. Apply cap as safety net. */
 export function prioritize<T extends Candidate>(items: T[], cap: number): T[] {
   return [...items].sort((a, b) => {
-    if (a.hasPick !== b.hasPick) return a.hasPick ? -1 : 1;
-    if (a.hasWatching !== b.hasWatching) return a.hasWatching ? -1 : 1;
-    if (a.tier !== b.tier) return a.tier - b.tier;
+    const sa = a.score ?? 0;
+    const sb = b.score ?? 0;
+    if (sa !== sb) return sb - sa; // higher score first
     return a.kickoffUtc.localeCompare(b.kickoffUtc);
   }).slice(0, Math.max(0, cap));
 }
@@ -95,9 +194,9 @@ interface Comp { id: string; name: string; livescore_id: number; tier: number }
 
 async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   const { data } = await sb.from('competitions')
-    .select('id, name, livescore_id').eq('status', 'active').order('id');
-  return ((data ?? []) as { id: string; name: string; livescore_id: number }[])
-    .map((r, i) => ({ id: r.id, name: r.name, livescore_id: Number(r.livescore_id), tier: i }));
+    .select('id, name, livescore_id, tier').eq('status', 'active').order('id');
+  return ((data ?? []) as { id: string; name: string; livescore_id: number; tier?: number | null }[])
+    .map((r, i) => ({ id: r.id, name: r.name, livescore_id: Number(r.livescore_id), tier: r.tier ?? (i + 1) }));
 }
 
 async function countTodayByType(sb: SupabaseClient, type: GenNewsType): Promise<number> {
@@ -219,11 +318,24 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
   const nameOf = new Map(comps.map((c) => [c.id, c.name]));
   const { pickBy, pickAuthorBy, watchSet } = await pickWatchLookup(sb, fresh.map((c) => c.f.id));
 
-  const chosen = prioritize(fresh.map((c) => ({
-    ...c,
-    hasPick: pickBy.has(c.f.id), hasWatching: watchSet.has(c.f.id),
-    tier: tierOf.get(c.f.competition_id) ?? 99, kickoffUtc: c.f.kickoff_utc,
-  })), budget);
+  // Score every fixture and filter by threshold
+  const scored = fresh.map((c) => {
+    const compTier = tierOf.get(c.f.competition_id) ?? 99;
+    const hasPick = pickBy.has(c.f.id);
+    const hasWatching = watchSet.has(c.f.id);
+    const breakdown = scoreFixture({
+      compTier, homeTeam: c.f.home_team_name, awayTeam: c.f.away_team_name,
+      kickoffUtc: c.f.kickoff_utc, hasPick, hasWatching, nowMs: now,
+    });
+    log.info(`news-score: ${c.f.home_team_name} vs ${c.f.away_team_name} → ${breakdown.total} (comp=${breakdown.competition} team=${breakdown.team} matchup=${breakdown.matchup} recency=${breakdown.recency} pick=${breakdown.pickBonus})`);
+    return {
+      ...c, hasPick, hasWatching,
+      tier: compTier, kickoffUtc: c.f.kickoff_utc,
+      score: breakdown.total, breakdown,
+    };
+  }).filter((c) => c.score >= SCORE_THRESHOLD);
+
+  const chosen = prioritize(scored, budget);
 
   const { data: fin } = await sb.from('match_live_state')
     .select('home_team, away_team, home_score, away_score, kickoff_utc')
@@ -231,11 +343,11 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
     .gte('kickoff_utc', new Date(now - 60 * 86_400_000).toISOString());
   const hist = (fin ?? []) as FinishedMatch[];
 
-  // Split into P1 (template) and P2 (enriched) candidates
+  // Split into P1 (template) and P2 (enriched) candidates based on score
   const p1Chosen: typeof chosen = [];
   const p2Chosen: typeof chosen = [];
   for (const c of chosen) {
-    if (deps.p2 && P2_COMPETITION_SET.has(c.f.competition_id)) {
+    if (deps.p2 && c.score >= SCORE_P2_THRESHOLD) {
       p2Chosen.push(c);
     } else {
       p1Chosen.push(c);

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   GEN_NEWS_TYPES, buildMatchNewsSlug, buildStandingsSlug, isSlugSafe,
-  computeForm, prioritize, type FinishedMatch,
+  computeForm, prioritize, scoreFixture, SCORE_THRESHOLD, SCORE_P2_THRESHOLD,
+  type FinishedMatch,
 } from './news-gen';
 import { NEWS_LANGS, formatDateUtc, renderPreview, renderResult, renderStandings } from './news-gen-templates';
 
@@ -78,31 +79,95 @@ describe('computeForm (Jane #1 form-degrade)', () => {
   });
 });
 
-describe('prioritize (D3: pick > watching > tier, then kickoff)', () => {
-  const c = (id: string, hasPick: boolean, hasWatching: boolean, tier: number, k = '2026-07-20T15:00:00Z') =>
-    ({ id, hasPick, hasWatching, tier, kickoffUtc: k });
+describe('scoreFixture', () => {
+  const NOW = new Date('2026-07-20T10:00:00Z').getTime();
 
-  it('orders pick > watching > tier and applies cap', () => {
-    const items = [
-      c('tier0', false, false, 0),
-      c('watch', false, true, 5),
-      c('pick', true, false, 9),
-      c('tier2', false, false, 2),
-    ];
+  it('WC tier-1 match with two tier-1 teams scores high', () => {
+    const s = scoreFixture({
+      compTier: 1, homeTeam: 'Argentina', awayTeam: 'Brazil',
+      kickoffUtc: '2026-07-20T14:00:00Z', hasPick: false, hasWatching: false, nowMs: NOW,
+    });
+    // comp=40 + team=max(15,15)+5=20 + matchup=20 (derby) + recency=5 (<6h? 4h=yes → 10) = 90
+    expect(s.competition).toBe(40);
+    expect(s.team).toBe(20); // both tier 1 → 15 + 5
+    expect(s.matchup).toBe(20); // Argentina vs Brazil is a rivalry
+    expect(s.recency).toBe(10); // 14:00-10:00=4h → <6h → 10
+  });
+
+  it('recency: <6h gives 10, <12h gives 5, >=12h gives 0', () => {
+    const base = { compTier: 3, homeTeam: 'SomeTeam', awayTeam: 'OtherTeam', hasPick: false, hasWatching: false, nowMs: NOW };
+    expect(scoreFixture({ ...base, kickoffUtc: '2026-07-20T14:00:00Z' }).recency).toBe(10); // 4h
+    expect(scoreFixture({ ...base, kickoffUtc: '2026-07-20T20:00:00Z' }).recency).toBe(5);  // 10h
+    expect(scoreFixture({ ...base, kickoffUtc: '2026-07-21T02:00:00Z' }).recency).toBe(0);  // 16h
+  });
+
+  it('pick/watching adds +10 bonus', () => {
+    const base = { compTier: 3, homeTeam: 'SomeTeam', awayTeam: 'OtherTeam', kickoffUtc: '2026-07-21T02:00:00Z', nowMs: NOW };
+    const withoutPick = scoreFixture({ ...base, hasPick: false, hasWatching: false });
+    const withPick = scoreFixture({ ...base, hasPick: true, hasWatching: false });
+    expect(withPick.total - withoutPick.total).toBe(10);
+    expect(withPick.pickBonus).toBe(10);
+  });
+
+  it('derby match gets +20 matchup bonus', () => {
+    const s = scoreFixture({
+      compTier: 3, homeTeam: 'Real Madrid', awayTeam: 'Barcelona',
+      kickoffUtc: '2026-07-21T02:00:00Z', hasPick: false, hasWatching: false, nowMs: NOW,
+    });
+    expect(s.matchup).toBe(20);
+  });
+
+  it('non-derby match gets 0 matchup bonus', () => {
+    const s = scoreFixture({
+      compTier: 3, homeTeam: 'Real Madrid', awayTeam: 'Getafe',
+      kickoffUtc: '2026-07-21T02:00:00Z', hasPick: false, hasWatching: false, nowMs: NOW,
+    });
+    expect(s.matchup).toBe(0);
+  });
+
+  it('unknown comp tier defaults to 15', () => {
+    const s = scoreFixture({
+      compTier: 99, homeTeam: 'SomeTeam', awayTeam: 'OtherTeam',
+      kickoffUtc: '2026-07-21T02:00:00Z', hasPick: false, hasWatching: false, nowMs: NOW,
+    });
+    expect(s.competition).toBe(15);
+  });
+
+  it('both teams tier 1/2 gets +5 team bonus', () => {
+    const s = scoreFixture({
+      compTier: 3, homeTeam: 'Liverpool', awayTeam: 'Arsenal',
+      kickoffUtc: '2026-07-21T02:00:00Z', hasPick: false, hasWatching: false, nowMs: NOW,
+    });
+    // Liverpool=tier1(15), Arsenal=tier2(10) → max=15 + both<=2 bonus=5 → 20
+    expect(s.team).toBe(20);
+  });
+
+  it('thresholds are sensible constants', () => {
+    expect(SCORE_THRESHOLD).toBe(45);
+    expect(SCORE_P2_THRESHOLD).toBe(60);
+  });
+});
+
+describe('prioritize (score-based, then kickoff)', () => {
+  const c = (id: string, score: number, k = '2026-07-20T15:00:00Z') =>
+    ({ id, hasPick: false, hasWatching: false, tier: 1, kickoffUtc: k, score });
+
+  it('orders by score descending and applies cap', () => {
+    const items = [c('low', 30), c('mid', 55), c('high', 80), c('med', 50)];
     const out = prioritize(items, 3).map((i) => i.id);
-    expect(out).toEqual(['pick', 'watch', 'tier0']);
+    expect(out).toEqual(['high', 'mid', 'med']);
   });
 
   it('breaks ties by earlier kickoff', () => {
     const items = [
-      c('later', false, false, 1, '2026-07-20T20:00:00Z'),
-      c('sooner', false, false, 1, '2026-07-20T12:00:00Z'),
+      c('later', 50, '2026-07-20T20:00:00Z'),
+      c('sooner', 50, '2026-07-20T12:00:00Z'),
     ];
     expect(prioritize(items, 2)[0].id).toBe('sooner');
   });
 
   it('cap 0 returns empty', () => {
-    expect(prioritize([c('a', true, true, 0)], 0)).toEqual([]);
+    expect(prioritize([c('a', 80)], 0)).toEqual([]);
   });
 });
 
