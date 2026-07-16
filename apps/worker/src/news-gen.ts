@@ -229,8 +229,14 @@ async function countTodayByType(sb: SupabaseClient, type: GenNewsType): Promise<
 
 async function existingSlugs(sb: SupabaseClient, slugs: string[]): Promise<Set<string>> {
   if (slugs.length === 0) return new Set();
-  const { data } = await sb.from('news_items').select('slug').in('slug', slugs);
-  return new Set(((data ?? []) as { slug: string }[]).map((r) => r.slug));
+  const { data } = await sb.from('news_items').select('slug, created_at').in('slug', slugs);
+  const rows = (data ?? []) as { slug: string; created_at: string }[];
+  // One-shot debug: log created_at of existing slugs to verify scoring gen vs old system
+  if (rows.length > 0) {
+    const deploy = '2026-07-16T09:16:00Z';
+    rows.forEach((r) => log.info(`news-gen existing: ${r.created_at > deploy ? 'AFTER' : 'BEFORE'} deploy | ${r.created_at} | ${r.slug.slice(0, 50)}`));
+  }
+  return new Set(rows.map((r) => r.slug));
 }
 
 /** Nick firewall review 13/7: pick line must use dynamic author label, never hardcode "The Curator". */
