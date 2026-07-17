@@ -233,6 +233,55 @@ async function existingSlugs(sb: SupabaseClient, slugs: string[]): Promise<Set<s
   return new Set(((data ?? []) as { slug: string }[]).map((r) => r.slug));
 }
 
+/** Nick firewall review 13/7: pick line must use dynamic author label, never hardcode "The Curator". */
+const AUTHOR_LABELS: Record<string, string> = { curator: 'The Curator', scout: 'The Scout' };
+
+async function pickWatchLookup(sb: SupabaseClient, fxIds: string[]) {
+  if (fxIds.length === 0) return { pickBy: new Map<string, string>(), pickAuthorBy: new Map<string, string>(), watchSet: new Set<string>() };
+  const [p, w] = await Promise.all([
+    sb.from('picks').select('id, unified_fixture_id, author')
+      .in('unified_fixture_id', fxIds).in('status', ['published', 'won', 'lost', 'push']),
+    sb.from('watching').select('id, unified_fixture_id').in('unified_fixture_id', fxIds),
+  ]);
+  type Link = { id: string; unified_fixture_id: string; author?: string };
+  const picks = (p.data ?? []) as Link[];
+  return {
+    pickBy: new Map(picks.map((r) => [r.unified_fixture_id, r.id])),
+    pickAuthorBy: new Map(picks.map((r) => [r.unified_fixture_id, AUTHOR_LABELS[r.author ?? ''] ?? null])),
+    watchSet: new Set(((w.data ?? []) as Link[]).map((r) => r.unified_fixture_id)),
+  };
+}
+
+function buildRow(
+  type: GenNewsType, slug: string, render: (lang: (typeof NEWS_LANGS)[number]) => Rendered,
+  opts: { competitionId: string | null; matchId: string | null; pickId: string | null; publish: boolean },
+): Record<string, unknown> {
+  const now = new Date().toISOString();
+  const row: Record<string, unknown> = {
+    slug, type, source: SOURCE, source_url: SOURCE_URL, byline: BYLINE,
+    competition_id: opts.competitionId, match_id: opts.matchId, pick_id: opts.pickId,
+    status: opts.publish ? 'published' : 'draft',
+    published_at: opts.publish ? now : null,
+    updated_at: now,
+  };
+  for (const lang of NEWS_LANGS) {
+    try {
+      const r = render(lang);
+      row[`headline_${lang}`] = r.headline; row[`body_${lang}`] = r.body;
+    } catch (err) {
+      if (lang === 'en') throw err;
+      log.warn(`news-gen: ${lang} render failed for ${slug}:`, err);
+      row[`headline_${lang}`] = null; row[`body_${lang}`] = null;
+    }
+  }
+  if (opts.publish && typeof row.body_en === 'string' && row.body_en.length < MIN_PUBLISH_BODY_LEN) {
+    log.warn(`news-gen: quality gate — body too short (${row.body_en.length} chars) for ${slug}, keeping draft`);
+    row.status = 'draft';
+    row.published_at = null;
+  }
+  return row;
+}
+
 // ── Preview scanner (T-24h window) ───────────────────────────────────────────
 
 interface FixtureRow {
