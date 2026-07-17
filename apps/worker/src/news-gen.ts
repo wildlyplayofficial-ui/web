@@ -28,7 +28,7 @@ export type GenNewsType = (typeof GEN_NEWS_TYPES)[number];
 export const DAILY_CAPS: Record<GenNewsType, number> = { preview: 20, result: 6, standings: 3 };
 
 /** Score threshold: only fixtures scoring >= this get a preview generated. */
-export const SCORE_THRESHOLD = 30;
+export const SCORE_THRESHOLD = 45;
 /** Score threshold for P2 enriched pipeline. */
 export const SCORE_P2_THRESHOLD = 60;
 
@@ -231,78 +231,6 @@ async function existingSlugs(sb: SupabaseClient, slugs: string[]): Promise<Set<s
   if (slugs.length === 0) return new Set();
   const { data } = await sb.from('news_items').select('slug, created_at').in('slug', slugs);
   const rows = (data ?? []) as { slug: string; created_at: string }[];
-  // One-shot debug: log created_at of existing slugs to verify scoring gen vs old system
-  if (rows.length > 0) {
-    const deploy = '2026-07-16T09:16:00Z';
-    rows.forEach((r) => log.info(`news-gen existing: ${r.created_at > deploy ? 'AFTER' : 'BEFORE'} deploy | ${r.created_at} | ${r.slug.slice(0, 50)}`));
-  }
-  return new Set(rows.map((r) => r.slug));
-}
-
-/** Nick firewall review 13/7: pick line must use dynamic author label, never hardcode "The Curator". */
-const AUTHOR_LABELS: Record<string, string> = { curator: 'The Curator', scout: 'The Scout' };
-
-async function pickWatchLookup(sb: SupabaseClient, fxIds: string[]) {
-  if (fxIds.length === 0) return { pickBy: new Map<string, string>(), pickAuthorBy: new Map<string, string>(), watchSet: new Set<string>() };
-  const [p, w] = await Promise.all([
-    sb.from('picks').select('id, unified_fixture_id, author')
-      .in('unified_fixture_id', fxIds).in('status', ['published', 'won', 'lost', 'push']),
-    sb.from('watching').select('id, unified_fixture_id').in('unified_fixture_id', fxIds),
-  ]);
-  type Link = { id: string; unified_fixture_id: string; author?: string };
-  const picks = (p.data ?? []) as Link[];
-  return {
-    pickBy: new Map(picks.map((r) => [r.unified_fixture_id, r.id])),
-    pickAuthorBy: new Map(picks.map((r) => [r.unified_fixture_id, AUTHOR_LABELS[r.author ?? ''] ?? null])),
-    watchSet: new Set(((w.data ?? []) as Link[]).map((r) => r.unified_fixture_id)),
-  };
-}
-
-function buildRow(
-  type: GenNewsType, slug: string, render: (lang: (typeof NEWS_LANGS)[number]) => Rendered,
-  opts: { competitionId: string | null; matchId: string | null; pickId: string | null; publish: boolean },
-): Record<string, unknown> {
-  const now = new Date().toISOString();
-  const row: Record<string, unknown> = {
-    slug, type, source: SOURCE, source_url: SOURCE_URL, byline: BYLINE,
-    competition_id: opts.competitionId, match_id: opts.matchId, pick_id: opts.pickId,
-    status: opts.publish ? 'published' : 'draft',
-    published_at: opts.publish ? now : null, // Jane #3: null while draft
-    updated_at: now, // review-standards: worker sets updated_at manually
-  };
-  for (const lang of NEWS_LANGS) {
-    try {
-      const r = render(lang);
-      row[`headline_${lang}`] = r.headline; row[`body_${lang}`] = r.body;
-    } catch (err) {
-      if (lang === 'en') throw err; // EN required — abort this item
-      log.warn(`news-gen: ${lang} render failed for ${slug}:`, err);
-      row[`headline_${lang}`] = null; row[`body_${lang}`] = null;
-    }
-  }
-  // Quality gate: downgrade to draft if EN body is too thin (P2 failure / empty template)
-  if (opts.publish && typeof row.body_en === 'string' && row.body_en.length < MIN_PUBLISH_BODY_LEN) {
-    log.warn(`news-gen: quality gate — body too short (${row.body_en.length} chars) for ${slug}, keeping draft`);
-    row.status = 'draft';
-    row.published_at = null;
-  }
-  return row;
-}
-
-export interface NewsGenDeps {
-  sb: SupabaseClient;
-  siteUrl: string;
-  autopublish: boolean;
-  revalidate: (tags: string[]) => Promise<void>;
-  pingIndexNow: (urls: string[]) => Promise<void>;
-  /** P2 deps — null when Guardian/Anthropic keys unavailable → all previews stay P1. */
-  p2: P2Deps | null;
-}
-
-async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
-  if (rows.length === 0) return 0;
-  const { error } = await deps.sb.from('news_items')
-    .upsert(rows, { onConflict: 'slug', ignoreDuplicates: true });
   if (error) { log.warn('news-gen: insert failed:', error.message); return 0; }
   if (deps.autopublish) {
     void deps.revalidate(['news']);

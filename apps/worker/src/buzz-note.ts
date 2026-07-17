@@ -12,7 +12,7 @@ import { log } from './log';
 type NoteLang = 'en' | 'vi' | 'th' | 'es';
 
 export function buildNoteTranslationPrompt(w: WatchingRow): string {
-  return `Translate this football note into 4 languages. Output EXACTLY this format — each section starts with the flag emoji ALONE on its own line, then the text below it:
+  return `Translate this football note for the match ${w.home_team} vs ${w.away_team} into 4 languages. Output EXACTLY this format — each section starts with the flag emoji ALONE on its own line, then the text below it:
 
 ${POST_FLAGS.en}
 ${w.note}
