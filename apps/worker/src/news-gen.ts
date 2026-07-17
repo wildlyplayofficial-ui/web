@@ -47,14 +47,6 @@ const COMP_TIER_WEIGHT: Record<number, number> = {
 };
 const COMP_TIER_WEIGHT_DEFAULT = 15;
 
-/** Hardcoded slug→tier fallback when DB tier column is NULL. */
-const SLUG_TIER_FALLBACK: Record<string, number> = {
-  'world-cup-2026': 1, 'champions-league': 2,
-  'premier-league': 3, 'la-liga': 3,
-  'serie-a': 4, 'bundesliga': 4,
-  'ligue-1': 5, 'mls': 5, 'liga-mx': 5,
-};
-
 /** Normalize team name for matching against TOP_TEAMS / RIVALRIES. */
 function normTeamKey(n: string): string {
   return n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
@@ -99,7 +91,6 @@ export function scoreFixture(opts: {
   hasPick: boolean;
   hasWatching: boolean;
   nowMs?: number;
-  round?: string; // e.g. "Round of 16", "Quarter-final", "Semi-final", "Final", "Playoff"
 }): ScoreBreakdown {
   // 1. Competition weight (0-40)
   const competition = COMP_TIER_WEIGHT[opts.compTier] ?? COMP_TIER_WEIGHT_DEFAULT;
@@ -112,17 +103,9 @@ export function scoreFixture(opts: {
   // Both teams tier 1 or 2 → +5 bonus
   if (homeTier <= 2 && awayTier <= 2) team += 5;
 
-  // 3. Matchup bonus (0-35)
+  // 3. Matchup bonus (0-20)
   let matchup = 0;
   if (isDerby(opts.homeTeam, opts.awayTeam)) matchup += 20;
-  // Knockout/playoff bonus
-  if (opts.round) {
-    const r = opts.round.toLowerCase();
-    if (/final$/.test(r) && !/semi|quarter/.test(r)) matchup += 20; // Final
-    else if (/semi/i.test(r)) matchup += 18;
-    else if (/quarter/i.test(r)) matchup += 15;
-    else if (/playoff|round of|knock/i.test(r)) matchup += 15;
-  }
 
   // 4. Recency bonus (0-10)
   const nowMs = opts.nowMs ?? Date.now();
@@ -209,6 +192,14 @@ export function prioritize<T extends Candidate>(items: T[], cap: number): T[] {
 
 interface Comp { id: string; name: string; livescore_id: number; tier: number }
 
+/** Hardcoded slug→tier fallback when DB tier column is NULL. */
+const SLUG_TIER_FALLBACK: Record<string, number> = {
+  'world-cup-2026': 1, 'champions-league': 2,
+  'premier-league': 3, 'la-liga': 3,
+  'serie-a': 4, 'bundesliga': 4,
+  'ligue-1': 5, 'mls': 5, 'liga-mx': 5,
+};
+
 async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   const { data } = await sb.from('competitions')
     .select('id, name, slug, livescore_id, tier').eq('status', 'active').order('id');
@@ -261,25 +252,48 @@ function buildRow(
     slug, type, source: SOURCE, source_url: SOURCE_URL, byline: BYLINE,
     competition_id: opts.competitionId, match_id: opts.matchId, pick_id: opts.pickId,
     status: opts.publish ? 'published' : 'draft',
-    published_at: opts.publish ? now : null,
-    updated_at: now,
+    published_at: opts.publish ? now : null, // Jane #3: null while draft
+    updated_at: now, // review-standards: worker sets updated_at manually
   };
   for (const lang of NEWS_LANGS) {
     try {
       const r = render(lang);
       row[`headline_${lang}`] = r.headline; row[`body_${lang}`] = r.body;
     } catch (err) {
-      if (lang === 'en') throw err;
+      if (lang === 'en') throw err; // EN required — abort this item
       log.warn(`news-gen: ${lang} render failed for ${slug}:`, err);
       row[`headline_${lang}`] = null; row[`body_${lang}`] = null;
     }
   }
+  // Quality gate: downgrade to draft if EN body is too thin (P2 failure / empty template)
   if (opts.publish && typeof row.body_en === 'string' && row.body_en.length < MIN_PUBLISH_BODY_LEN) {
     log.warn(`news-gen: quality gate — body too short (${row.body_en.length} chars) for ${slug}, keeping draft`);
     row.status = 'draft';
     row.published_at = null;
   }
   return row;
+}
+
+export interface NewsGenDeps {
+  sb: SupabaseClient;
+  siteUrl: string;
+  autopublish: boolean;
+  revalidate: (tags: string[]) => Promise<void>;
+  pingIndexNow: (urls: string[]) => Promise<void>;
+  /** P2 deps — null when Guardian/Anthropic keys unavailable → all previews stay P1. */
+  p2: P2Deps | null;
+}
+
+async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
+  if (rows.length === 0) return 0;
+  const { error } = await deps.sb.from('news_items')
+    .upsert(rows, { onConflict: 'slug', ignoreDuplicates: true });
+  if (error) { log.warn('news-gen: insert failed:', error.message); return 0; }
+  if (deps.autopublish) {
+    void deps.revalidate(['news']);
+    void deps.pingIndexNow(rows.map((r) => `/news/${r.slug}`));
+  }
+  return rows.length;
 }
 
 // ── Preview scanner (T-24h window) ───────────────────────────────────────────
@@ -297,7 +311,6 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
     .gte('kickoff_utc', new Date(now).toISOString())
     .lte('kickoff_utc', new Date(now + 24 * 3_600_000).toISOString());
   const fixtures = (data ?? []) as FixtureRow[];
-  log.info(`news-gen preview: ${fixtures.length} fixtures in 24h window`);
   if (fixtures.length === 0) return 0;
 
   const cands = fixtures
@@ -306,11 +319,9 @@ export async function scanPreviews(deps: NewsGenDeps): Promise<number> {
     .filter((c) => c.f.kickoff_utc && isSlugSafe(c.slug));
   const existing = await existingSlugs(sb, cands.map((c) => c.slug));
   const fresh = cands.filter((c) => !existing.has(c.slug));
-  log.info(`news-gen preview: ${cands.length} candidates, ${existing.size} existing, ${fresh.length} fresh`);
   if (fresh.length === 0) return 0;
 
   const budget = DAILY_CAPS.preview - await countTodayByType(sb, 'preview');
-  log.info(`news-gen preview: budget=${budget} (cap=${DAILY_CAPS.preview})`);
   if (budget <= 0) return 0;
 
   const comps = await getActiveComps(sb);
