@@ -314,7 +314,7 @@ export async function publishWatchingNews(
       return;
     }
     if (failedLangs.length) log.warn(`watching-news: published ${published}/${posts.length} for ${watching.home_team} vs ${watching.away_team}, failed langs [${failedLangs.join(',')}]`);
-    else log.info(`watching-news: published ${published}${watching.presence ? ' presence' : ''} posts for ${watching.home_team} vs ${watching.away_team}`);
+    else log.info(`watching-news: ✅ published ${published}${watching.presence ? ' PRESENCE (minimal)' : ''} posts for ${watching.home_team} vs ${watching.away_team} → /analysis/${slug}`);
     if (deps.card) await sendWatchingCard(deps.card, watching, slug, reason);
 
     if (deps.revalidateUrl) {
