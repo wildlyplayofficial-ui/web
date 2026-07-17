@@ -49,10 +49,10 @@ const COMP_TIER_WEIGHT_DEFAULT = 15;
 
 /** Hardcoded slug→tier fallback when DB tier column is NULL. */
 const SLUG_TIER_FALLBACK: Record<string, number> = {
-  'world-cup-2026': 1, 'champions-league': 2,
-  'premier-league': 3, 'la-liga': 3,
-  'serie-a': 4, 'bundesliga': 4,
-  'ligue-1': 5, 'mls': 5, 'liga-mx': 5,
+  'world-cup-2026': 1, 'wc': 1, 'champions-league': 2, 'ucl': 2,
+  'premier-league': 3, 'epl': 3, 'la-liga': 3, 'laliga': 3,
+  'serie-a': 4, 'seriea': 4, 'bundesliga': 4,
+  'ligue-1': 5, 'ligue1': 5, 'mls': 5, 'liga-mx': 5, 'ligamx': 5,
 };
 
 /** Look up slug tier, stripping year suffixes (e.g. 'mls-2026' → 'mls'). */
@@ -220,10 +220,11 @@ async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   const { data } = await sb.from('competitions')
     .select('id, name, slug, livescore_id, tier').eq('status', 'active').order('id');
   return ((data ?? []) as { id: string; name: string; slug?: string; livescore_id: number; tier?: number | null }[])
-    .map((r) => ({
-      id: r.id, name: r.name, livescore_id: Number(r.livescore_id),
-      tier: r.tier ?? slugTierLookup(r.slug ?? '') ?? 99,
-    }));
+    .map((r) => {
+      const resolvedTier = r.tier ?? slugTierLookup(r.slug ?? '') ?? 99;
+      if (!r.tier && r.slug) log.info(`news-gen: comp "${r.name}" slug="${r.slug}" → tier=${resolvedTier}`);
+      return { id: r.id, name: r.name, livescore_id: Number(r.livescore_id), tier: resolvedTier };
+    });
 }
 
 async function countTodayByType(sb: SupabaseClient, type: GenNewsType): Promise<number> {
