@@ -288,7 +288,7 @@ export async function unwatchAction(
     const date = new Date(row.kickoff_utc).toISOString().slice(0, 10);
     const slug = `news-${slugify(row.home_team)}-vs-${slugify(row.away_team)}-${date}`;
     await sb.from("posts").delete().eq("slug", slug);
-    revalidateTag("posts");
+    revalidateTag("posts", "max");
   }
 
   revalidateTag("watching", "max");
