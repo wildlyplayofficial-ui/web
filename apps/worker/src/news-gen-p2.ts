@@ -20,7 +20,7 @@ const GUARDIAN_BASE = 'https://content.guardianapis.com/search';
 const GNEWS_RSS_BASE = 'https://news.google.com/rss/search';
 const P2_SOURCE = 'Guardian API + Google News';
 const P2_BYLINE = 'WildlyPlay News';
-const P2_MAX_TOKENS = 8000;
+const P2_MAX_TOKENS = 6000;
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -219,7 +219,7 @@ ${photoCtx !== '(No player photos available)' ? `=== PLAYER PHOTOS ===\n${photoC
 Write a pre-match preview with exactly FOUR language sections, in this order:
 English under # English, Vietnamese under # Vietnamese, Thai under # Thai, Spanish under # Spanish.
 
-Each section: 400-600 words, markdown (## for subsections, no H1).
+Each section: 250-400 words, markdown (## for subsections, no H1).
 
 ATOMIC ANSWER: The very first sentence MUST be a self-contained factual statement — e.g. "${input.home} face ${input.away} in ${input.competition} on ${input.dateUtc}, with both teams looking to build momentum."
 
@@ -449,7 +449,7 @@ ${formCtx}
 Write a match report with exactly FOUR language sections, in this order:
 English under # English, Vietnamese under # Vietnamese, Thai under # Thai, Spanish under # Spanish.
 
-Each section: 300-500 words, markdown (## for subsections, no H1).
+Each section: 200-350 words, markdown (## for subsections, no H1).
 
 ATOMIC ANSWER: First sentence MUST be a self-contained fact — e.g. "${scoreline} — ${winner ?? 'both teams shared the points'} in ${input.competition} on ${input.dateUtc}."
 
