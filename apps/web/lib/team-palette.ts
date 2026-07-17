@@ -104,7 +104,6 @@ const PALETTE: Record<string, string> = {
   Mazatlán: "#5a2d82",
   Puebla: "#1f2937",
   "Santos Laguna": "#00843d",
-  Atlante: "#003da5",
 
   // ── MLS clubs (crest-dominant) ──
   "Nashville SC": "#ece83a",
