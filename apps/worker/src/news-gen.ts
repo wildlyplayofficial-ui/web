@@ -229,14 +229,8 @@ async function countTodayByType(sb: SupabaseClient, type: GenNewsType): Promise<
 
 async function existingSlugs(sb: SupabaseClient, slugs: string[]): Promise<Set<string>> {
   if (slugs.length === 0) return new Set();
-  const { data } = await sb.from('news_items').select('slug, created_at').in('slug', slugs);
-  const rows = (data ?? []) as { slug: string; created_at: string }[];
-  if (error) { log.warn('news-gen: insert failed:', error.message); return 0; }
-  if (deps.autopublish) {
-    void deps.revalidate(['news']);
-    void deps.pingIndexNow(rows.map((r) => `/news/${r.slug}`));
-  }
-  return rows.length;
+  const { data } = await sb.from('news_items').select('slug').in('slug', slugs);
+  return new Set(((data ?? []) as { slug: string }[]).map((r) => r.slug));
 }
 
 // ── Preview scanner (T-24h window) ───────────────────────────────────────────
