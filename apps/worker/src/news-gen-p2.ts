@@ -153,10 +153,11 @@ async function fetchPlayerPhotos(
   away: string,
 ): Promise<PlayerPhoto[]> {
   const { data } = await sb.from('player_photos')
-    .select('player_name, team_name, photo_url, credit, license')
-    .or(`team_name.ilike.%${home}%,team_name.ilike.%${away}%`)
+    .select('player_name, team, image_url, credit, license')
+    .or(`team.ilike.%${home}%,team.ilike.%${away}%`)
     .limit(10);
-  return (data ?? []) as PlayerPhoto[];
+  return ((data ?? []) as { player_name: string; team: string; image_url: string; credit: string; license: string }[])
+    .map((r) => ({ player_name: r.player_name, team_name: r.team, photo_url: r.image_url, credit: r.credit, license: r.license }));
 }
 
 // ── LLM Prompt ──────────────────────────────────────────────────────────────
