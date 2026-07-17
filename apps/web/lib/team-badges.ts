@@ -94,8 +94,10 @@ export function teamsFromSlug(slug: string): { home: string; away: string } | nu
 
   // Left may carry an editorial prefix; right may carry a prose suffix.
   // Try all suffix substrings of left, all prefix substrings of right.
+  // Away also tries suffix substrings as fallback — handles "cf-cruz-azul" where
+  // canonical name is "Cruz Azul" (prefix "cf-" not in canonical slug).
   const home = findTeamInToken(left);
-  const away = findTeamFromStart(right);
+  const away = findTeamFromStart(right) ?? findTeamInToken(right);
   if (!home || !away) return null;
   return { home, away };
 }
