@@ -146,6 +146,7 @@ export function buildPresencePosts(w: WatchingRow): NewPost[] {
       meta_title: `${NEWS_TITLES[lang]}: ${matchup}`,
       meta_description: body.slice(0, 155),
       target_keyword: null,
+      skipLint: true, // Presence cards are intentionally minimal — bypass thin-content gate
     };
   });
 }

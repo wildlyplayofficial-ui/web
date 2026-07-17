@@ -91,6 +91,8 @@ export interface NewPost {
   source_refs?: Record<string, unknown> | null;
   /** Tiered Picks firewall (§12): who this article belongs to (no-play per-author tracking, item 3). */
   author: PickAuthor;
+  /** Skip SEO-lint for intentionally minimal content (watch-lite presence cards). */
+  skipLint?: boolean;
 }
 
 /** Per-language pick analysis row (`pick_content`). Thesis translations:
@@ -382,10 +384,13 @@ class SupabaseStore implements Store {
     // (AI translate occasionally leaks 1-2 chars from other scripts — don't let it block publish)
     post.body_md = post.body_md.replace(/[\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7A3\u0370-\u03FF\u0400-\u04FF]/g, '');
     // SEO uniqueness gate — lint before publish (deterministic, code not prompt)
-    const { lintSeoArticle } = await import('./seo-lint');
-    const lint = lintSeoArticle(post.body_md, post.slug, post.lang);
-    if (!lint.passed) {
-      throw new Error(`seo-lint BLOCK for ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
+    // Skip for presence/watch-lite cards: intentionally minimal (≤2 sentences by design).
+    if (!post.skipLint) {
+      const { lintSeoArticle } = await import('./seo-lint');
+      const lint = lintSeoArticle(post.body_md, post.slug, post.lang);
+      if (!lint.passed) {
+        throw new Error(`seo-lint BLOCK for ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
+      }
     }
     const { error } = await this.db.from('posts').insert(post);
     if (error) throw new Error(`insertPost failed: ${error.message}`);
