@@ -30,7 +30,7 @@ export const DAILY_CAPS: Record<GenNewsType, number> = { preview: 20, result: 6,
 /** Score threshold: only fixtures scoring >= this get a preview generated. */
 export const SCORE_THRESHOLD = 30;
 /** Score threshold for P2 enriched pipeline. */
-export const SCORE_P2_THRESHOLD = 60;
+export const SCORE_P2_THRESHOLD = 30;
 
 // ── Scoring data ────────────────────────────────────────────────────────────
 
