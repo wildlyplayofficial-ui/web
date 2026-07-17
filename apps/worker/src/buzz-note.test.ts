@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildNoteTranslationPrompt, parseNoteTranslations, translateWatchingNote } from './buzz-note';
+import { buildNoteTranslationPrompt, parseNoteTranslations, translateWatchingNote, propagateNoteToPresencePosts } from './buzz-note';
+import { watchingDisclosureFor } from './recap';
+import { buildPresencePosts } from './watching-news';
 import { MemoryStore, type WatchingRow } from './store';
 
 function activeWatching(overrides: Partial<WatchingRow> = {}): WatchingRow {
@@ -136,5 +138,62 @@ describe('translateWatchingNote', () => {
     await expect(
       translateWatchingNote({ store, env: { apiKey: 'k' } }, row),
     ).resolves.toBeUndefined();
+  });
+
+  it('REQ 5: propagates translations into presence posts', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
+    })));
+    const store = new MemoryStore();
+    const row = await store.insertWatching({
+      home_team: 'Mexico',
+      away_team: 'South Africa',
+      league: 'FIFA World Cup 2026',
+      kickoff_utc: '2026-06-11T19:00:00.000Z',
+      note: 'Mexico dominant at home, visitors missing key players',
+      status: 'active',
+      pick_id: null,
+      presence: true,
+    });
+
+    // Simulate: presence posts already published with verbatim EN note
+    const presencePosts = buildPresencePosts(row as unknown as WatchingRow);
+    for (const post of presencePosts) await store.insertPost(post);
+    expect(store.posts[1].body_md).toContain('Mexico dominant at home'); // VI has EN note verbatim
+
+    await translateWatchingNote({ store, env: { apiKey: 'k' } }, row as unknown as WatchingRow);
+
+    // After translation, VI post should now have Vietnamese text
+    const viPost = store.posts.find(p => p.lang === 'vi');
+    expect(viPost!.body_md).toContain('áp đảo');
+    expect(viPost!.body_md).toContain(watchingDisclosureFor('vi'));
+  });
+});
+
+describe('propagateNoteToPresencePosts (REQ 5)', () => {
+  it('updates all 4 langs with translated note + footer', async () => {
+    const store = new MemoryStore();
+    const w = activeWatching({ presence: true });
+
+    // Pre-populate presence posts
+    const posts = buildPresencePosts(w);
+    for (const p of posts) await store.insertPost(p);
+
+    const translations = {
+      en: 'English note',
+      vi: 'Ghi chú tiếng Việt',
+      th: 'หมายเหตุภาษาไทย',
+      es: 'Nota en español',
+    };
+
+    await propagateNoteToPresencePosts(store, w, translations);
+
+    for (const lang of ['en', 'vi', 'th', 'es'] as const) {
+      const post = store.posts.find(p => p.lang === lang);
+      expect(post!.body_md).toContain(translations[lang]);
+      expect(post!.body_md).toContain(watchingDisclosureFor(lang));
+    }
   });
 });

@@ -121,6 +121,41 @@ describe('MemoryStore.countNoPlayByAuthor (§12.A item 3)', () => {
   });
 });
 
+describe('MemoryStore.deletePostsBySlug (REQ 4: unwatch removes articles)', () => {
+  it('deletes all posts matching the slug', async () => {
+    const store = new MemoryStore();
+    await store.insertPost(noPlayPost('curator', { slug: 'news-abc-vs-def-2026-07-17', lang: 'en' }));
+    await store.insertPost(noPlayPost('curator', { slug: 'news-abc-vs-def-2026-07-17', lang: 'vi' }));
+    await store.insertPost(noPlayPost('curator', { slug: 'news-abc-vs-def-2026-07-17', lang: 'th' }));
+    await store.insertPost(noPlayPost('curator', { slug: 'news-abc-vs-def-2026-07-17', lang: 'es' }));
+    await store.insertPost(noPlayPost('curator', { slug: 'other-slug', lang: 'en' }));
+
+    const deleted = await store.deletePostsBySlug('news-abc-vs-def-2026-07-17');
+    expect(deleted).toBe(4);
+    expect(store.posts).toHaveLength(1);
+    expect(store.posts[0].slug).toBe('other-slug');
+  });
+
+  it('returns 0 when no posts match', async () => {
+    const store = new MemoryStore();
+    const deleted = await store.deletePostsBySlug('nonexistent');
+    expect(deleted).toBe(0);
+  });
+});
+
+describe('MemoryStore.updatePostBody (REQ 5: note localization)', () => {
+  it('updates body_md for matching slug+lang', async () => {
+    const store = new MemoryStore();
+    await store.insertPost(noPlayPost('curator', { slug: 'news-a-vs-b-2026-07-17', lang: 'en', body_md: 'old EN' }));
+    await store.insertPost(noPlayPost('curator', { slug: 'news-a-vs-b-2026-07-17', lang: 'vi', body_md: 'old VI' }));
+
+    const updated = await store.updatePostBody('news-a-vs-b-2026-07-17', 'vi', 'new VI body');
+    expect(updated).toBe(1);
+    expect(store.posts[1].body_md).toBe('new VI body');
+    expect(store.posts[0].body_md).toBe('old EN'); // EN unchanged
+  });
+});
+
 describe('MemoryStore.expireWatching — closing note (Nick 4/7 item ①)', () => {
   it('expires without a note by default', async () => {
     const store = new MemoryStore();

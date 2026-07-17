@@ -11,7 +11,7 @@ import { parseNoPlay } from './parse-noplay';
 import { publishNoPlayArticle } from './noplay-article';
 import { translateWatchingNote } from './buzz-note';
 import { generateBuzz, type BuzzDeps } from './buzz';
-import { publishWatchingNews } from './watching-news';
+import { publishWatchingNews, buildNewsSlug } from './watching-news';
 import { settlePick } from './settle';
 import { announceResult } from './announce';
 import { announcePick, announceVoid } from './announce-pick';
@@ -395,6 +395,10 @@ export function createBot(deps: BotDeps): Bot {
     try {
       const row = await deps.store.expireWatching(id);
       log.info(`expired watching ${row.id}`);
+      // REQ 4: presence cards → also remove the orphan article from public views
+      if (row.presence) {
+        void removePresenceArticle(deps.store, row, deps.revalidate);
+      }
       if (deps.revalidate) void deps.revalidate(['watching']);
       await ctx.reply(`\u274C Stopped watching ${row.home_team} vs ${row.away_team}`);
     } catch {
@@ -521,6 +525,25 @@ function confirmationCard(row: PickRow): string {
 function boardLine(p: PickRow): string {
   return `${p.home_team} vs ${p.away_team} (${p.kickoff_utc.slice(11, 16)} UTC)\n` +
     `${p.market} ${p.selection} @ ${p.odds_publish} | ${p.stake_units}u\nid: ${p.id}`;
+}
+
+/** REQ 4: remove the orphan article when a presence (watch-lite) card is unwatched.
+ *  Scope guard: only presence cards — deep-gate watching and settled no-play records are never touched. */
+async function removePresenceArticle(
+  store: Store,
+  row: import('./store').WatchingRow,
+  revalidate?: (tags: string[]) => Promise<void>,
+): Promise<void> {
+  try {
+    const slug = buildNewsSlug(row.home_team, row.away_team, row.kickoff_utc);
+    const deleted = await store.deletePostsBySlug(slug);
+    if (deleted > 0) {
+      log.info(`unwatch: removed ${deleted} presence article post(s) for slug "${slug}"`);
+      if (revalidate) void revalidate(['posts']);
+    }
+  } catch (err) {
+    log.warn(`unwatch: failed to remove presence article for ${row.home_team} vs ${row.away_team}:`, err);
+  }
 }
 
 /** Fuzzy-match active watching entries against a freshly published pick.

@@ -177,6 +177,10 @@ export interface Store {
   linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow>;
   /** Partial update on a watching row (buzz_history, note_translations, etc). */
   updateWatching(id: string, patch: Partial<WatchingRow>): Promise<WatchingRow>;
+  /** Delete all post rows for a given slug (all langs). Used by unwatch to remove orphan articles. */
+  deletePostsBySlug(slug: string): Promise<number>;
+  /** Update body_md for existing posts matching slug+lang. Returns count of updated rows. */
+  updatePostBody(slug: string, lang: PostLang, body_md: string): Promise<number>;
   /** Check if a channel_log entry exists for a pick+channel combo (dedup guard). */
   hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean>;
   /** Upsert a Telegram group into gl_groups (Daily Line TMA). */
@@ -291,6 +295,25 @@ export class MemoryStore implements Store {
     const next = { ...row, ...patch, id: row.id };
     this.watchings.set(id, next);
     return next;
+  }
+
+  async deletePostsBySlug(slug: string): Promise<number> {
+    const before = this.posts.length;
+    const kept = this.posts.filter((p) => p.slug !== slug);
+    this.posts.length = 0;
+    this.posts.push(...kept);
+    return before - kept.length;
+  }
+
+  async updatePostBody(slug: string, lang: PostLang, body_md: string): Promise<number> {
+    let count = 0;
+    for (const p of this.posts) {
+      if (p.slug === slug && p.lang === lang) {
+        p.body_md = body_md;
+        count++;
+      }
+    }
+    return count;
   }
 
   async hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean> {
@@ -449,6 +472,27 @@ class SupabaseStore implements Store {
       .from('watching').update(patch).eq('id', id).select().single();
     if (error) throw new Error(`updateWatching failed: ${error.message}`);
     return data as WatchingRow;
+  }
+
+  async deletePostsBySlug(slug: string): Promise<number> {
+    const { data, error } = await this.db
+      .from('posts')
+      .delete()
+      .eq('slug', slug)
+      .select('id');
+    if (error) throw new Error(`deletePostsBySlug failed: ${error.message}`);
+    return data?.length ?? 0;
+  }
+
+  async updatePostBody(slug: string, lang: PostLang, body_md: string): Promise<number> {
+    const { data, error } = await this.db
+      .from('posts')
+      .update({ body_md })
+      .eq('slug', slug)
+      .eq('lang', lang)
+      .select('id');
+    if (error) throw new Error(`updatePostBody failed: ${error.message}`);
+    return data?.length ?? 0;
   }
 
   async hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean> {

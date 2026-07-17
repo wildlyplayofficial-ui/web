@@ -9,7 +9,7 @@ import { parseNoPlay } from './parse-noplay';
 import { publishNoPlayArticle } from './noplay-article';
 import { translateWatchingNote } from './buzz-note';
 import { generateBuzz } from './buzz';
-import { publishWatchingNews } from './watching-news';
+import { publishWatchingNews, buildNewsSlug } from './watching-news';
 import { settlePick } from './settle';
 import { announceResult } from './announce';
 import { announcePick, announceVoid } from './announce-pick';
@@ -294,7 +294,17 @@ export async function handleApiRoute(
     try {
       const row = await deps.store.expireWatching(watchingId, note);
       log.info(`api: expired watching ${row.id}`);
-      void deps.revalidate(['watching']);
+      // REQ 4: presence cards → also remove the orphan article from public views
+      if (row.presence) {
+        try {
+          const slug = buildNewsSlug(row.home_team, row.away_team, row.kickoff_utc);
+          const deleted = await deps.store.deletePostsBySlug(slug);
+          if (deleted > 0) log.info(`api unwatch: removed ${deleted} presence article post(s) for slug "${slug}"`);
+        } catch (err) {
+          log.warn(`api unwatch: failed to remove presence article:`, err);
+        }
+      }
+      void deps.revalidate(['watching', 'posts']);
       json(res, 200, { ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}` });
     } catch {
       json(res, 404, { ok: false, error: 'watching not found or already expired' });

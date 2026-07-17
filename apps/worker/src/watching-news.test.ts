@@ -320,6 +320,51 @@ describe('publishWatchingNews', () => {
     expect(sendPhoto).toHaveBeenCalledWith('-100', expect.stringContaining('wildlyplay_watching'), expect.anything());
   });
 
+  it('REQ 4: presence posts can be deleted by slug on unwatch', async () => {
+    const store = new MemoryStore();
+
+    await publishWatchingNews(
+      { store, env: { apiKey: undefined } },
+      activeWatching({ presence: true }),
+    );
+    expect(store.posts).toHaveLength(4);
+
+    // Simulate unwatch: delete posts by slug
+    const slug = buildNewsSlug('Mexico', 'South Africa', '2026-06-11T19:00:00.000Z');
+    const deleted = await store.deletePostsBySlug(slug);
+    expect(deleted).toBe(4);
+    expect(store.posts).toHaveLength(0);
+  });
+
+  it('REQ 4: deep-gate watching posts are NOT deleted (scope guard)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true, status: 200,
+      json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
+    })));
+    const store = new MemoryStore();
+
+    // Publish a deep-gate (presence=false) watching article
+    await publishWatchingNews(
+      { store, env: { apiKey: 'k' } },
+      activeWatching({ presence: false }),
+    );
+    expect(store.posts).toHaveLength(4);
+
+    // Expire the watching — since presence=false, posts should NOT be deleted
+    const row = await store.insertWatching({
+      home_team: 'Mexico', away_team: 'South Africa',
+      league: 'FIFA World Cup 2026 — Group A',
+      kickoff_utc: '2026-06-11T19:00:00.000Z',
+      note: 'note', status: 'active', pick_id: null,
+      presence: false,
+    });
+    const expired = await store.expireWatching(row.id);
+
+    // The scope guard: NOT a presence card → do NOT delete posts
+    expect(expired.presence).toBe(false);
+    expect(store.posts).toHaveLength(4); // posts still intact
+  });
+
   it('skips the card when EVERY lang is blocked', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true, status: 200,

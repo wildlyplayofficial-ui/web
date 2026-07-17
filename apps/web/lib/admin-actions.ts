@@ -268,6 +268,13 @@ export async function unwatchAction(
   const sb = getServiceSupabase();
   if (!sb) return { error: "Database not configured" };
 
+  // Fetch the row first to check presence flag and get team/kickoff for slug
+  const { data: row } = await sb
+    .from("watching")
+    .select("home_team, away_team, kickoff_utc, presence")
+    .eq("id", watchingId)
+    .single();
+
   const { error } = await sb
     .from("watching")
     .update({ status: "expired" })
@@ -275,6 +282,14 @@ export async function unwatchAction(
     .eq("status", "active");
 
   if (error) return { error: error.message };
+
+  // REQ 4: presence cards → also remove the orphan article from public views
+  if (row?.presence) {
+    const date = new Date(row.kickoff_utc).toISOString().slice(0, 10);
+    const slug = `news-${slugify(row.home_team)}-vs-${slugify(row.away_team)}-${date}`;
+    await sb.from("posts").delete().eq("slug", slug);
+    revalidateTag("posts");
+  }
 
   revalidateTag("watching", "max");
   return {};
