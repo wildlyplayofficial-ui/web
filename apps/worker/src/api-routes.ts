@@ -156,18 +156,21 @@ export async function handleApiRoute(
     const result = parseWatching('/watching ' + text);
     if (!result.ok) { json(res, 422, { ok: false, error: 'parse_failed', errors: result.errors }); return true; }
     const { watching } = result;
+    // REQ 1: accept presence from JSON payload field OR text parse (spec: "add a field to payload")
+    const presenceFromPayload = payload.presence === true || payload.presence === 'true' || payload.presence === 1;
+    const presence = presenceFromPayload || watching.presence;
     const row = await deps.store.insertWatching({
       home_team: watching.homeTeam, away_team: watching.awayTeam,
       league: watching.league, kickoff_utc: watching.kickoffUtc,
       note: watching.note, status: 'active', pick_id: null,
       author: watching.author,
-      presence: watching.presence,
+      presence,
     });
     log.info(`api: watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     void deps.revalidate(['watching']);
     if (row.note && deps.aiEnv?.apiKey && deps.persistDb) {
       void enqueueJob(deps.persistDb, 'note-translate', { watchingId: row.id }).catch(e => log.warn('enqueue note-translate:', e));
-      void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id, reason: watching.reason, presence: watching.presence }).catch(e => log.warn('enqueue watching-news:', e));
+      void enqueueJob(deps.persistDb, 'watching-news', { watchingId: row.id, reason: watching.reason, presence }).catch(e => log.warn('enqueue watching-news:', e));
     } else if (row.note && deps.aiEnv?.apiKey) {
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row);
       void publishWatchingNews({
