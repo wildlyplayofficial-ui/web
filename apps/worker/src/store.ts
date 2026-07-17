@@ -392,7 +392,9 @@ class SupabaseStore implements Store {
         throw new Error(`seo-lint BLOCK for ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
       }
     }
-    const { error } = await this.db.from('posts').insert(post);
+    // Strip skipLint before DB insert — it's a TypeScript-only flag, not a DB column
+    const { skipLint: _, ...dbPost } = post;
+    const { error } = await this.db.from('posts').insert(dbPost);
     if (error) throw new Error(`insertPost failed: ${error.message}`);
   }
 
