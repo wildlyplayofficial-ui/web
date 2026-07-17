@@ -218,11 +218,11 @@ interface Comp { id: string; name: string; livescore_id: number; tier: number }
 
 async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   const { data } = await sb.from('competitions')
-    .select('id, name, slug, livescore_id, tier').eq('status', 'active').order('id');
-  return ((data ?? []) as { id: string; name: string; slug?: string; livescore_id: number; tier?: number | null }[])
+    .select('id, name, slug, livescore_id').eq('status', 'active').order('id');
+  return ((data ?? []) as { id: string; name: string; slug?: string; livescore_id: number }[])
     .map((r) => {
-      const resolvedTier = r.tier ?? slugTierLookup(r.slug ?? '') ?? 99;
-      if (!r.tier && r.slug) log.info(`news-gen: comp "${r.name}" slug="${r.slug}" → tier=${resolvedTier}`);
+      const resolvedTier = slugTierLookup(r.slug ?? '') ?? 99;
+      log.info(`news-gen: comp "${r.name}" slug="${r.slug}" → tier=${resolvedTier}`);
       return { id: r.id, name: r.name, livescore_id: Number(r.livescore_id), tier: resolvedTier };
     });
 }
