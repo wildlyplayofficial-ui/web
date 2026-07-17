@@ -403,12 +403,158 @@ function buildP2Headline(lang: NewsLang, input: P2EnrichInput): string {
   return P2_HEADLINES[lang](input.home, input.away, input.competition);
 }
 
+// ── P2 Result enrichment ────────────────────────────────────────────────────
+
+export interface P2ResultInput {
+  home: string;
+  away: string;
+  homeScore: number;
+  awayScore: number;
+  competition: string;
+  dateUtc: string;
+  formHome: string | null;
+  formAway: string | null;
+  pickUrl: string | null;
+  pickAuthor: string | null;
+  siteUrl: string;
+}
+
+function buildP2ResultPrompt(
+  input: P2ResultInput,
+  guardianArticles: GuardianArticle[],
+  newsSnippets: string[],
+  h2h: H2HMatch[],
+): string {
+  const guardianCtx = guardianArticles.length > 0
+    ? guardianArticles.map((a) => {
+        const body = (a.fields?.bodyText ?? '').slice(0, 2000);
+        return `[Guardian: ${a.webTitle}] (${a.webUrl}, ${a.webPublicationDate})\n${body}`;
+      }).join('\n\n---\n\n')
+    : '(No Guardian articles found)';
+
+  const newsCtx = newsSnippets.length > 0
+    ? newsSnippets.map((t, i) => `${i + 1}. ${t}`).join('\n')
+    : '(No recent Google News headlines)';
+
+  const h2hCtx = h2h.length > 0
+    ? h2h.map((m) => `${m.date}: ${m.home} ${m.homeScore}-${m.awayScore} ${m.away} (${m.competition})`).join('\n')
+    : '(No head-to-head data available)';
+
+  const formCtx = [
+    input.formHome ? `${input.home} recent form: ${input.formHome}` : null,
+    input.formAway ? `${input.away} recent form: ${input.formAway}` : null,
+  ].filter(Boolean).join('\n') || '(Form data unavailable)';
+
+  const winner = input.homeScore > input.awayScore ? input.home
+    : input.awayScore > input.homeScore ? input.away : null;
+  const scoreline = `${input.home} ${input.homeScore}-${input.awayScore} ${input.away}`;
+
+  return `<role>
+You are a senior football journalist writing a concise match report for WildlyPlay (wildlyplay.com/news). Factual, well-sourced — never speculative.
+</role>
+
+<context>
+Result: ${scoreline}
+Competition: ${input.competition}
+Date: ${input.dateUtc}
+Winner: ${winner ?? 'Draw'}
+</context>
+
+<grounding_sources>
+=== GUARDIAN ARTICLES ===
+${guardianCtx}
+
+=== RECENT NEWS HEADLINES ===
+${newsCtx}
+
+=== HEAD-TO-HEAD RECORD ===
+${h2hCtx}
+
+=== TEAM FORM ===
+${formCtx}
+</grounding_sources>
+
+<rules>
+1. ONLY use facts from <grounding_sources>. Do NOT add training data knowledge.
+2. Every claim MUST cite [Source: Guardian/Google News]. No citation = omit.
+3. Do NOT copy Guardian text verbatim — extract facts and rewrite with citation.
+4. H2H data is from our verified database. Use exact numbers.
+5. Responsible language: no "deserved", "dominated" unless source says so.
+6. If no Guardian articles found, write a factual summary using only the score, form, and H2H data.
+</rules>
+
+<output_format>
+Write FOUR language versions. Each should include:
+- **Result**: Score, competition, date
+- **Match Summary**: 2-3 sentences on the result significance (from sources)
+- **Form Update**: How this result affects both teams' form
+- **What's Next**: Brief mention of what lies ahead for both teams (from sources only, or "to be confirmed" if unknown)
+
+Languages (in order): EN, VI, TH, ES
+Each language: 100-200 words.
+Use markdown (## for sections, no H1).
+End each with: "---\\nWildlyPlay News | AI-assisted match report | ${input.dateUtc}"
+</output_format>`;
+}
+
+/** Generate P2 enriched result for a single match. Null on failure → P1 fallback. */
+export async function enrichResultP2(
+  deps: P2Deps,
+  input: P2ResultInput,
+): Promise<Map<NewsLang, Rendered> | null> {
+  const { sb, anthropicApiKey, guardianApiKey } = deps;
+
+  const [guardianArticles, homeNews, awayNews, h2h] = await Promise.all([
+    fetchGuardianArticles(guardianApiKey, input.home, input.away).catch(() => [] as GuardianArticle[]),
+    fetchGoogleNewsSnippets(input.home).catch(() => [] as string[]),
+    fetchGoogleNewsSnippets(input.away).catch(() => [] as string[]),
+    fetchH2H(sb, input.home, input.away).catch(() => [] as H2HMatch[]),
+  ]);
+
+  // Unlike preview, result can proceed without Guardian (score is the main fact)
+  const newsSnippets = [...homeNews, ...awayNews];
+  const prompt = buildP2ResultPrompt(input, guardianArticles, newsSnippets, h2h);
+
+  const rawText = await callClaude(
+    { apiKey: anthropicApiKey, model: SONNET_MODEL },
+    prompt,
+    `news-p2-result ${slugify(input.home)}-vs-${slugify(input.away)}`,
+    P2_MAX_TOKENS,
+  );
+
+  if (!rawText) {
+    log.warn(`news-p2: result LLM returned null for ${input.home} vs ${input.away}`);
+    return null;
+  }
+
+  const result = parseP2Output(rawText, input as unknown as P2EnrichInput, []);
+  if (!result) {
+    log.warn(`news-p2: failed to parse result output for ${input.home} vs ${input.away}`);
+    return null;
+  }
+
+  // Fix headlines to say "Result" not "Preview"
+  for (const [lang, rendered] of result) {
+    const scoreline = `${input.home} ${input.homeScore}-${input.awayScore} ${input.away}`;
+    const headlines: Record<NewsLang, string> = {
+      en: `Result: ${scoreline}`,
+      vi: `Kết quả: ${scoreline}`,
+      th: `ผลบอล: ${scoreline}`,
+      es: `Resultado: ${scoreline}`,
+    };
+    result.set(lang, { headline: headlines[lang], body: rendered.body });
+  }
+
+  return result;
+}
+
 // ── Row builder for P2 (matches news_items schema) ──────────────────────────
 
 export function buildP2Row(
   slug: string,
   renderedLangs: Map<NewsLang, Rendered>,
   opts: {
+    type?: string;
     competitionId: string | null;
     matchId: string | null;
     pickId: string | null;
@@ -423,7 +569,7 @@ export function buildP2Row(
 
   const row: Record<string, unknown> = {
     slug,
-    type: 'preview',
+    type: opts.type ?? 'preview',
     source: P2_SOURCE,
     source_url: 'https://www.theguardian.com/football',
     byline: P2_BYLINE,

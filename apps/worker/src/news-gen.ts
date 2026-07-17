@@ -15,7 +15,7 @@ import {
   NEWS_LANGS, renderPreview, renderResult, renderStandings,
   type PreviewData, type ResultData, type StandingsData, type Rendered,
 } from './news-gen-templates';
-import { enrichPreviewP2, buildP2Row, type P2Deps, type P2EnrichInput } from './news-gen-p2';
+import { enrichPreviewP2, enrichResultP2, buildP2Row, type P2Deps, type P2EnrichInput, type P2ResultInput } from './news-gen-p2';
 import topTeamsJson from './data/top-teams.json';
 import rivalriesJson from './data/rivalries.json';
 
@@ -289,6 +289,15 @@ function buildRow(
   return row;
 }
 
+interface NewsGenDeps {
+  sb: SupabaseClient;
+  siteUrl: string;
+  autopublish: boolean;
+  revalidate: (tags: string[]) => Promise<void>;
+  pingIndexNow: (paths: string[]) => Promise<void>;
+  p2: P2Deps | null;
+}
+
 async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
   if (rows.length === 0) return 0;
   const { error } = await deps.sb.from('news_items')
@@ -488,22 +497,46 @@ export async function scanResults(deps: NewsGenDeps): Promise<number> {
   const tierOf = new Map(comps.map((c) => [c.id, c.tier]));
   const { pickBy, pickAuthorBy, watchSet } = await pickWatchLookup(sb, fxs.map((f) => f.id));
 
-  const chosen = prioritize(fresh.map((c) => {
-    const fx = fxByLs.get(c.m.id) ?? null;
-    return {
-      ...c, fx,
-      hasPick: fx ? pickBy.has(fx.id) : false, hasWatching: fx ? watchSet.has(fx.id) : false,
-      tier: fx ? (tierOf.get(fx.competition_id) ?? 99) : 99, kickoffUtc: c.m.kickoff_utc,
-    };
-  }), budget).filter((c) => c.hasPick || c.hasWatching || c.tier < 99);
+  const nameOf = new Map(comps.map((c) => [c.id, c.name]));
+  const now = Date.now();
 
-  const rows = chosen.map((c) => {
+  // Score results the same way as previews
+  const scored = fresh.map((c) => {
+    const fx = fxByLs.get(c.m.id) ?? null;
+    const compTier = fx ? (tierOf.get(fx.competition_id) ?? 99) : 99;
+    const hasPick = fx ? pickBy.has(fx.id) : false;
+    const hasWatching = fx ? watchSet.has(fx.id) : false;
+    const breakdown = scoreFixture({
+      compTier, homeTeam: c.m.home_team, awayTeam: c.m.away_team,
+      kickoffUtc: c.m.kickoff_utc, hasPick, hasWatching, nowMs: now,
+    });
+    return { ...c, fx, hasPick, hasWatching, tier: compTier, kickoffUtc: c.m.kickoff_utc, score: breakdown.total, breakdown };
+  }).filter((c) => c.score >= SCORE_THRESHOLD);
+
+  const chosen = prioritize(scored, budget);
+
+  // Fetch recent finished matches for form computation
+  const { data: fin } = await sb.from('match_live_state')
+    .select('home_team, away_team, home_score, away_score, kickoff_utc')
+    .eq('status', 'finished').gte('kickoff_utc', new Date(now - 60 * 86_400_000).toISOString());
+  const hist = (fin ?? []) as FinishedMatch[];
+
+  // Split P1 / P2
+  const p1Chosen: typeof chosen = [];
+  const p2Chosen: typeof chosen = [];
+  for (const c of chosen) {
+    if (deps.p2 && c.score >= SCORE_P2_THRESHOLD) p2Chosen.push(c);
+    else p1Chosen.push(c);
+  }
+
+  // P1 rows (deterministic template)
+  const p1Rows = p1Chosen.map((c) => {
     const pickId = c.fx ? (pickBy.get(c.fx.id) ?? null) : null;
+    const compName = c.fx ? (nameOf.get(c.fx.competition_id) ?? c.m.competition ?? 'football') : (c.m.competition || 'football');
     const d: ResultData = {
       home: c.m.home_team, away: c.m.away_team,
       homeScore: c.m.home_score, awayScore: c.m.away_score,
-      competition: c.m.competition || 'football',
-      dateUtc: c.m.kickoff_utc.slice(0, 10),
+      competition: compName, dateUtc: c.m.kickoff_utc.slice(0, 10),
       pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
       pickAuthor: c.fx ? (pickAuthorBy.get(c.fx.id) ?? null) : null,
     };
@@ -511,7 +544,48 @@ export async function scanResults(deps: NewsGenDeps): Promise<number> {
       competitionId: c.fx?.competition_id ?? null, matchId: c.m.id, pickId, publish: deps.autopublish,
     });
   });
-  return insertRows(deps, rows);
+
+  // P2 rows (Guardian + Sonnet enriched)
+  const p2Rows: Record<string, unknown>[] = [];
+  for (const c of p2Chosen) {
+    const pickId = c.fx ? (pickBy.get(c.fx.id) ?? null) : null;
+    const compName = c.fx ? (nameOf.get(c.fx.competition_id) ?? c.m.competition ?? 'football') : (c.m.competition || 'football');
+    const p2Input: P2ResultInput = {
+      home: c.m.home_team, away: c.m.away_team,
+      homeScore: c.m.home_score, awayScore: c.m.away_score,
+      competition: compName, dateUtc: c.m.kickoff_utc.slice(0, 10),
+      formHome: computeForm(c.m.home_team, hist),
+      formAway: computeForm(c.m.away_team, hist),
+      pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
+      pickAuthor: c.fx ? (pickAuthorBy.get(c.fx.id) ?? null) : null,
+      siteUrl: deps.siteUrl,
+    };
+    try {
+      const enriched = await enrichResultP2(deps.p2!, p2Input);
+      if (enriched) {
+        p2Rows.push(buildP2Row(c.slug, enriched, {
+          type: 'result', competitionId: c.fx?.competition_id ?? null,
+          matchId: c.m.id, pickId, publish: deps.autopublish, photos: [],
+        }));
+        continue;
+      }
+    } catch (err) {
+      log.warn(`news-p2: result enrichment failed for ${c.slug}:`, err);
+    }
+    // P2 fallback → P1 template
+    const d: ResultData = {
+      home: c.m.home_team, away: c.m.away_team,
+      homeScore: c.m.home_score, awayScore: c.m.away_score,
+      competition: compName, dateUtc: c.m.kickoff_utc.slice(0, 10),
+      pickUrl: pickId ? `${deps.siteUrl}/play/${pickId}` : null,
+      pickAuthor: c.fx ? (pickAuthorBy.get(c.fx.id) ?? null) : null,
+    };
+    p2Rows.push(buildRow('result', c.slug, (lang) => renderResult(lang, d), {
+      competitionId: c.fx?.competition_id ?? null, matchId: c.m.id, pickId, publish: deps.autopublish,
+    }));
+  }
+
+  return insertRows(deps, [...p1Rows, ...p2Rows]);
 }
 
 // ── Standings (daily, comps with FT yesterday; D2-A: ≤1 lsFetch/comp) ────────
