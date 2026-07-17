@@ -193,75 +193,47 @@ function buildP2Prompt(
     input.formAway ? `${input.away} recent form: ${input.formAway}` : null,
   ].filter(Boolean).join('\n') || '(Form data unavailable)';
 
-  return `<role>
-You are a senior football journalist writing an ESPN-level pre-match preview for WildlyPlay (wildlyplay.com/news). Grounded, factual, well-sourced — never speculative.
-</role>
+  return `You write neutral, informative pre-match preview articles for the WildlyPlay newsroom (wildlyplay.com/news).
 
-<context>
-Match: ${input.home} vs ${input.away}
-Competition: ${input.competition}
-Date: ${input.dateUtc}
-</context>
+Match:
+- ${input.home} vs ${input.away}
+- Competition: ${input.competition}
+- Date: ${input.dateUtc}
 
-<grounding_sources>
-=== GUARDIAN ARTICLES ===
+Sources available (use these + your general football knowledge):
+
+=== NEWS ARTICLES ===
 ${guardianCtx}
 
-=== RECENT NEWS HEADLINES ===
+=== RECENT HEADLINES ===
 ${newsCtx}
 
-=== HEAD-TO-HEAD RECORD (from database — verified) ===
+=== HEAD-TO-HEAD RECORD (from our database — use exact numbers) ===
 ${h2hCtx}
 
 === TEAM FORM ===
 ${formCtx}
 
-=== PLAYER PHOTOS AVAILABLE ===
-${photoCtx}
-</grounding_sources>
+${photoCtx !== '(No player photos available)' ? `=== PLAYER PHOTOS ===\n${photoCtx}` : ''}
 
-<rules>
-CRITICAL GROUNDING RULES — violation = article rejected:
-1. ONLY write facts from the <grounding_sources> above. Do NOT add knowledge from your training data. If something is not in the sources, do NOT include it.
-2. REPORT-DOUBT-AS-IS: If a source says a player is "doubtful", "a doubt", "uncertain" — write EXACTLY that doubt level (e.g. "according to [source], X is doubtful for the match"). NEVER upgrade doubt to a definitive "X will miss" or "X will start". NEVER downgrade "doubtful" to "fit". This is the single most important rule.
-3. Every injury, transfer, or quote MUST include a citation: [Source: Guardian/Google News headline]. If you cannot cite a source for a claim, omit it entirely.
-4. Do NOT use any Guardian article text verbatim — extract facts and rewrite in your own words with citation.
-5. H2H data above is from our verified database. Use these exact numbers. Do NOT recall different H2H results from memory.
-6. Responsible language: NEVER use "sure win", "guaranteed", "can't lose", or promise outcomes.
-7. Do NOT invent lineups, formations, or tactical setups unless explicitly stated in the sources.
-8. If player photos are listed above, reference the player name naturally in a "Key Players" section. The photo will be displayed by the system — just mention the player.
-</rules>
+Write a pre-match preview with exactly FOUR language sections, in this order:
+English under # English, Vietnamese under # Vietnamese, Thai under # Thai, Spanish under # Spanish.
 
-<output_format>
-Write FOUR language versions, each with these sections:
-- **Match Info**: Teams, competition, date
-- **The Story**: What makes this match significant (from sources only)
-- **Form**: Recent form using the data provided
-- **Head-to-Head**: Using the H2H data above (exact scores)
-- **Key Players**: Notable players mentioned in sources (with photo credit if photo available — format: "Photo: [credit], [license]")
-- **Team News**: Injuries/lineup news FROM SOURCES ONLY (cite each). If no injury news in sources, write "No confirmed team news at time of writing."
-- **What to Watch**: Key tactical/narrative angle from the sources
+Each section: 400-600 words, markdown (## for subsections, no H1).
 
-Languages (in order):
-1. English (EN header)
-2. Vietnamese (VI header)
-3. Thai (TH header)
-4. Spanish (ES header)
+ATOMIC ANSWER: The very first sentence MUST be a self-contained factual statement — e.g. "${input.home} face ${input.away} in ${input.competition} on ${input.dateUtc}, with both teams looking to build momentum."
 
-Each language section: 200-350 words.
-Use markdown (## for sections within each language, no H1).
-End each language version with: "---\\nWildlyPlay News | AI-assisted summary from Guardian, Google News | ${input.dateUtc}"
-</output_format>
+Cover: team form, key players to watch, tactical outlook, and what to watch for.
 
-<self_critique>
-Before outputting, verify:
-1. Every injury/transfer claim has a [Source: ...] citation
-2. No "doubtful" upgraded to "will miss" or "will start"
-3. H2H numbers match exactly what was provided
-4. No facts from training data — only from grounding_sources
-5. All 4 languages present and correct
-6. Disclosure label at end of each section
-</self_critique>`;
+Rules:
+- Use the sources above PLUS your general football knowledge about these teams. Do NOT invent specific injuries, quotes, or match events you cannot verify.
+- If a source reports a player as "doubtful" — write exactly that. Never upgrade to "will miss" or "will start".
+- H2H data above is verified — use those exact numbers.
+- Neutral, informative tone — editorial journalism, NOT a betting recommendation.
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose".
+- End each language section with:
+---
+WildlyPlay News | AI-assisted coverage | ${input.dateUtc}`;
 }
 
 // ── P2 Enrichment pipeline ──────────────────────────────────────────────────
@@ -453,52 +425,46 @@ function buildP2ResultPrompt(
     : input.awayScore > input.homeScore ? input.away : null;
   const scoreline = `${input.home} ${input.homeScore}-${input.awayScore} ${input.away}`;
 
-  return `<role>
-You are a senior football journalist writing a concise match report for WildlyPlay (wildlyplay.com/news). Factual, well-sourced — never speculative.
-</role>
+  return `You write neutral, informative match reports for the WildlyPlay newsroom (wildlyplay.com/news).
 
-<context>
 Result: ${scoreline}
 Competition: ${input.competition}
 Date: ${input.dateUtc}
 Winner: ${winner ?? 'Draw'}
-</context>
 
-<grounding_sources>
-=== GUARDIAN ARTICLES ===
+Sources available:
+
+=== NEWS ARTICLES ===
 ${guardianCtx}
 
-=== RECENT NEWS HEADLINES ===
+=== RECENT HEADLINES ===
 ${newsCtx}
 
-=== HEAD-TO-HEAD RECORD ===
+=== HEAD-TO-HEAD RECORD (from our database — use exact numbers) ===
 ${h2hCtx}
 
 === TEAM FORM ===
 ${formCtx}
-</grounding_sources>
 
-<rules>
-1. ONLY use facts from <grounding_sources>. Do NOT add training data knowledge.
-2. Every claim MUST cite [Source: Guardian/Google News]. No citation = omit.
-3. Do NOT copy Guardian text verbatim — extract facts and rewrite with citation.
-4. H2H data is from our verified database. Use exact numbers.
-5. Responsible language: no "deserved", "dominated" unless source says so.
-6. If no Guardian articles found, write a factual summary using only the score, form, and H2H data.
-</rules>
+Write a match report with exactly FOUR language sections, in this order:
+English under # English, Vietnamese under # Vietnamese, Thai under # Thai, Spanish under # Spanish.
 
-<output_format>
-Write FOUR language versions. Each should include:
-- **Result**: Score, competition, date
-- **Match Summary**: 2-3 sentences on the result significance (from sources)
-- **Form Update**: How this result affects both teams' form
-- **What's Next**: Brief mention of what lies ahead for both teams (from sources only, or "to be confirmed" if unknown)
+Each section: 300-500 words, markdown (## for subsections, no H1).
 
-Languages (in order): EN, VI, TH, ES
-Each language: 100-200 words.
-Use markdown (## for sections, no H1).
-End each with: "---\\nWildlyPlay News | AI-assisted match report | ${input.dateUtc}"
-</output_format>`;
+ATOMIC ANSWER: First sentence MUST be a self-contained fact — e.g. "${scoreline} — ${winner ?? 'both teams shared the points'} in ${input.competition} on ${input.dateUtc}."
+
+Cover: match summary with key moments from sources, how this result affects standings/form, tactical observations from sources, and what's next for both teams.
+
+Rules:
+- Use the news sources above for specific match details (goals, incidents, quotes). For general context about the teams and competition, you may use your football knowledge.
+- Do NOT invent specific goals, scorers, red cards, or match events unless confirmed in the sources above. The scoreline ${scoreline} is verified — use it. Anything else about the match must come from sources.
+- If a source mentions a goalscorer or key incident, cite it: [Source: Guardian/headline].
+- H2H data above is verified — use those exact numbers.
+- Neutral, informative tone — editorial journalism, NOT a betting recommendation.
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose".
+- End each language section with:
+---
+WildlyPlay News | AI-assisted match report | ${input.dateUtc}`;
 }
 
 /** Generate P2 enriched result for a single match. Null on failure → P1 fallback. */
