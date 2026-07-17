@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
+  getActiveWatching,
   getPosts,
   getSettledPicks,
   getTodaysNoPlays,
@@ -53,11 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, posts] = await Promise.all([
+  const [allPicks, record, settledPicks, noPlays, watching, posts] = await Promise.all([
     getTodaysPicks(),
     getTrackRecordForAuthor("curator"),
     getSettledPicks(),
     getTodaysNoPlays(),
+    getActiveWatching(),
     getPosts(lang),
   ]);
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
@@ -177,6 +179,8 @@ export default async function Home({ params }: Props) {
               {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
               <span className="mx-2">·</span>
               {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
+              <span className="mx-2">·</span>
+              {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
             </p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
