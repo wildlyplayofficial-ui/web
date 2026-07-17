@@ -28,7 +28,7 @@ export type GenNewsType = (typeof GEN_NEWS_TYPES)[number];
 export const DAILY_CAPS: Record<GenNewsType, number> = { preview: 20, result: 6, standings: 3 };
 
 /** Score threshold: only fixtures scoring >= this get a preview generated. */
-export const SCORE_THRESHOLD = 45;
+export const SCORE_THRESHOLD = 30;
 /** Score threshold for P2 enriched pipeline. */
 export const SCORE_P2_THRESHOLD = 60;
 
@@ -54,6 +54,13 @@ const SLUG_TIER_FALLBACK: Record<string, number> = {
   'serie-a': 4, 'bundesliga': 4,
   'ligue-1': 5, 'mls': 5, 'liga-mx': 5,
 };
+
+/** Look up slug tier, stripping year suffixes (e.g. 'mls-2026' → 'mls'). */
+function slugTierLookup(slug: string): number | undefined {
+  if (SLUG_TIER_FALLBACK[slug] !== undefined) return SLUG_TIER_FALLBACK[slug];
+  const base = slug.replace(/-(?:ap|cl)?20\d{2}(?:-\d{2})?$/, '');
+  return SLUG_TIER_FALLBACK[base];
+}
 
 /** Normalize team name for matching against TOP_TEAMS / RIVALRIES. */
 function normTeamKey(n: string): string {
@@ -215,7 +222,7 @@ async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   return ((data ?? []) as { id: string; name: string; slug?: string; livescore_id: number; tier?: number | null }[])
     .map((r) => ({
       id: r.id, name: r.name, livescore_id: Number(r.livescore_id),
-      tier: r.tier ?? SLUG_TIER_FALLBACK[r.slug ?? ''] ?? 99,
+      tier: r.tier ?? slugTierLookup(r.slug ?? '') ?? 99,
     }));
 }
 
