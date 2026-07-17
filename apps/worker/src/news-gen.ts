@@ -289,6 +289,18 @@ function buildRow(
   return row;
 }
 
+async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
+  if (rows.length === 0) return 0;
+  const { error } = await deps.sb.from('news_items')
+    .upsert(rows, { onConflict: 'slug', ignoreDuplicates: true });
+  if (error) { log.warn('news-gen: insert failed:', error.message); return 0; }
+  if (deps.autopublish) {
+    void deps.revalidate(['news']);
+    void deps.pingIndexNow(rows.map((r) => `/news/${r.slug}`));
+  }
+  return rows.length;
+}
+
 // ── Preview scanner (T-24h window) ───────────────────────────────────────────
 
 interface FixtureRow {
