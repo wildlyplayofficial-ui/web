@@ -20,7 +20,7 @@ const GUARDIAN_BASE = 'https://content.guardianapis.com/search';
 const GNEWS_RSS_BASE = 'https://news.google.com/rss/search';
 const P2_SOURCE = 'Guardian API + Google News';
 const P2_BYLINE = 'WildlyPlay News';
-const P2_MAX_TOKENS = 4000;
+const P2_MAX_TOKENS = 8000;
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
