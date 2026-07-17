@@ -324,10 +324,10 @@ export async function enrichPreviewP2(
 // ── Output parser ───────────────────────────────────────────────────────────
 
 const LANG_HEADERS: Record<NewsLang, RegExp> = {
-  en: /^#+\s*(?:EN|English)/im,
-  vi: /^#+\s*(?:VI|Vietnamese)/im,
-  th: /^#+\s*(?:TH|Thai)/im,
-  es: /^#+\s*(?:ES|Spanish)/im,
+  en: /^#+\s*(?:EN\b|English|🇬🇧|🇺🇸|\*\*EN\*\*|\*\*English\*\*)/im,
+  vi: /^#+\s*(?:VI\b|Vietnamese|Tiếng Việt|🇻🇳|\*\*VI\*\*|\*\*Vietnamese\*\*)/im,
+  th: /^#+\s*(?:TH\b|Thai|ไทย|🇹🇭|\*\*TH\*\*|\*\*Thai\*\*)/im,
+  es: /^#+\s*(?:ES\b|Spanish|Español|🇪🇸|\*\*ES\*\*|\*\*Spanish\*\*)/im,
 };
 
 function parseP2Output(
@@ -344,6 +344,10 @@ function parseP2Output(
   }
 
   positions.sort((a, b) => a.idx - b.idx);
+
+  if (positions.length === 0) {
+    log.warn(`news-p2: no lang headers found. First 200 chars: ${text.slice(0, 200)}`);
+  }
 
   // Must have at least EN
   if (!positions.some((p) => p.lang === 'en')) return null;
