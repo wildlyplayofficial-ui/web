@@ -147,7 +147,7 @@ export function scoreFixture(opts: {
 }
 
 /** Quality gate: auto-publish only if EN body meets minimum length. Thin bodies stay draft. */
-const MIN_PUBLISH_BODY_LEN = 800;
+const MIN_PUBLISH_BODY_LEN = 80;
 
 const SOURCE = 'LiveScore API';
 const SOURCE_URL = 'https://livescore-api.com/';
@@ -220,11 +220,10 @@ async function getActiveComps(sb: SupabaseClient): Promise<Comp[]> {
   const { data } = await sb.from('competitions')
     .select('id, name, slug, livescore_id').eq('status', 'active').order('id');
   return ((data ?? []) as { id: string; name: string; slug?: string; livescore_id: number }[])
-    .map((r) => {
-      const resolvedTier = slugTierLookup(r.slug ?? '') ?? 99;
-      log.info(`news-gen: comp "${r.name}" slug="${r.slug}" → tier=${resolvedTier}`);
-      return { id: r.id, name: r.name, livescore_id: Number(r.livescore_id), tier: resolvedTier };
-    });
+    .map((r) => ({
+      id: r.id, name: r.name, livescore_id: Number(r.livescore_id),
+      tier: slugTierLookup(r.slug ?? '') ?? 99,
+    }));
 }
 
 async function countTodayByType(sb: SupabaseClient, type: GenNewsType): Promise<number> {
