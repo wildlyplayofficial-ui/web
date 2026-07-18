@@ -50,6 +50,10 @@ const SLUG_ALIASES: Record<string, string> = {
   "congo-dr": "dr-congo",
   "bosnia-herzegovina": "bosnia-and-herzegovina",
   "cura-ao": "curacao",
+  // MLS teams: full name slug → badge key slug
+  "los-angeles-galaxy": "la-galaxy",
+  "los-angeles-fc": "los-angeles-fc",
+  "montreal-impact": "cf-montreal",
 };
 
 /** Resolve a slug token (e.g. "france", "united-states") back to a display name. */
