@@ -32,10 +32,24 @@ const nextConfig: NextConfig = {
       { source: "/standings/:path*", destination: "/competitions/:path*", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/standings", destination: "/:lang/competitions", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/standings/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
-      // 301 redirect old news-* articles to /analysis (moved 10/7/2026, IA rebuild).
-      // Only matches slugs starting with "news-" (old articles); /news landing + new slugs render normally.
+      // 301 redirect old articles from /news/ to /analysis/ (moved 10/7/2026, IA rebuild).
+      // Only redirect prefixes that belong EXCLUSIVELY to old posts (posts table).
+      // DO NOT redirect preview-*/result-*/standings-* — those are live news_items.
       { source: "/news/news-:slug", destination: "/analysis/news-:slug", statusCode: 301 },
+      { source: "/news/no-play-:slug", destination: "/analysis/no-play-:slug", statusCode: 301 },
+      { source: "/news/recap-:slug", destination: "/analysis/recap-:slug", statusCode: 301 },
+      { source: "/news/analysis-:slug", destination: "/analysis/analysis-:slug", statusCode: 301 },
+      { source: "/news/post-mortem-:slug", destination: "/analysis/post-mortem-:slug", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/news/news-:slug", destination: "/:lang/analysis/news-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/no-play-:slug", destination: "/:lang/analysis/no-play-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/recap-:slug", destination: "/:lang/analysis/recap-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/analysis-:slug", destination: "/:lang/analysis/analysis-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/post-mortem-:slug", destination: "/:lang/analysis/post-mortem-:slug", statusCode: 301 },
+      // Guide slugs (specific, no prefix pattern)
+      { source: "/news/how-de-vigging-works", destination: "/guides/what-is-devigging", permanent: true },
+      { source: "/news/kelly-criterion-betting", destination: "/guides/what-is-asian-handicap", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/:lang/guides/what-is-devigging", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/what-is-asian-handicap", permanent: true },
     ];
   },
 };
