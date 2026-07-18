@@ -80,12 +80,15 @@ function recordLine(author: Author, r: TrackRecord): string {
   return `${who} ${r.wins}-${r.losses}-${r.pushes} \u00b7 ${pl} \u00b7 ${asOf}`;
 }
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.wildlyplay.com";
+
 function TeamColumn({ name, badge }: { name: string; badge: string | null }) {
+  const src = badge?.startsWith("/") ? `${SITE}${badge}` : badge;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 320 }}>
-      {badge ? (
+      {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={badge} width={88} height={88} style={{ objectFit: "contain" }} alt="" />
+        <img src={src} width={88} height={88} style={{ objectFit: "contain" }} alt="" />
       ) : (
         <div style={{ display: "flex", width: 88, height: 88 }} />
       )}
