@@ -1,3 +1,5 @@
+*Last updated: 2026-07-21*
+
 # WildlyPlay Curator API
 
 Internal API for automating all Curator workflows. Every endpoint uses the same pipelines as the Telegram bot — 4-lang articles, TG+FB announcements, web cache revalidation.
@@ -31,13 +33,13 @@ Create a new pick and trigger the full pipeline (preview article, thesis transla
 }
 ```
 
-**Required fields in text:** match, league, kickoff, market (enum: `ah`/`ou`/`1x2`/`btts`/`other`), line (required for ah/ou), selection, odds, stake, thesis, confidence, edge
+**Required fields in text:** match, league, kickoff, market (enum: `ah`/`ou`/`1x2`/`btts`/`other`), line (required for ah/ou), selection, odds, stake, thesis, confidence (LOW/MEDIUM/HIGH), edge (PRICE_VALUE/TACTICAL_MATCHUP/TEAM_NEWS/SCHEDULE_FATIGUE/MOTIVATION/LIVE_STATE/MARKET_MOVEMENT)
 
-**Optional:** evidence (max 2, comma-separated), event (odds-api event ID), edge_pct (signed consensus pricing figure vs market, e.g. `-5` for a disclosed disadvantage or `5` for an edge — feeds the analysis generator's polarity guard)
+**Optional:** evidence (max 2, comma-separated: RECENT_FORM, HISTORICAL_DATA, EXPECTED_GOALS, CONFIRMED_LINEUP, HOME_AWAY_SPLIT, SET_PIECES, DEFENSIVE_WEAKNESS, PUBLIC_SENTIMENT, SHOT_CHANCE_QUALITY, INJURY_SUSPENSION), event (odds-api event ID), edge_pct (signed consensus pricing figure vs market), hook (hand-written one-line card text), against_market (yes/no — shows warning cue on card), score (e.g. `1-0` for running in-play picks), author (`curator` or `scout`, default `curator`)
 
 **Response 200:**
 ```json
-{ "ok": true, "id": "uuid", "match": "Argentina vs Austria", "selection": "Argentina -1.25" }
+{ "ok": true, "id": "uuid", "match": "Argentina vs Austria", "selection": "Argentina -1.25", "author": "curator", "author_type": "real_human" }
 ```
 
 **Response 422:**
@@ -58,12 +60,12 @@ Start watching a match. Triggers: note translation (4 langs), watching news arti
 }
 ```
 
-**Required:** match, league, kickoff  
-**Optional:** note
+**Required:** match, kickoff  
+**Optional:** league (default: `FIFA World Cup 2026`), note, reason (hand-written card hook), author (`curator`/`scout`, default `curator`), presence (`true`/`false` — watch-lite presence-only card, can also be set as a top-level JSON field)
 
 **Response 200:**
 ```json
-{ "ok": true, "id": "uuid", "match": "France vs Iraq" }
+{ "ok": true, "id": "uuid", "match": "France vs Iraq", "author": "curator", "author_type": "real_human" }
 ```
 
 ---
@@ -79,14 +81,14 @@ Log a no-play decision. Triggers: no-play article (4 langs), TG+FB announce.
 }
 ```
 
-**Required:** match, league, reason  
-**Optional:** watching, note
+**Required:** match, reason  
+**Optional:** league (default: `FIFA World Cup 2026`), watching, note, verdict (short TG card line), author (`curator`/`scout`, default `curator`)
 
 **Reason values:** `NO_EDGE` · `PRICE_TOO_SHORT` · `VARIANCE_TOO_HIGH` · `TEAM_NEWS_UNCLEAR` · `MARKET_EFFICIENT` · `SIGNAL_UNSTABLE` · `VALUE_GONE`
 
 **Response 200:**
 ```json
-{ "ok": true, "match": "Argentina vs Austria", "reason": "MARKET_EFFICIENT" }
+{ "ok": true, "match": "Argentina vs Austria", "reason": "MARKET_EFFICIENT", "author": "curator", "author_type": "real_human" }
 ```
 
 ---
@@ -137,7 +139,7 @@ Approve a post-mortem review. Triggers: post-mortem article (4 langs), TG+FB ann
 
 ### POST /api/void
 
-Void a pick before kickoff.
+Void a pick before kickoff. Rejects if past kickoff or pick is not `published`.
 
 **Payload:**
 ```json
@@ -146,19 +148,22 @@ Void a pick before kickoff.
 
 **Response 200:**
 ```json
-{ "ok": true, "id": "uuid", "match": "Argentina vs Austria" }
+{ "ok": true, "id": "uuid", "match": "Argentina vs Austria", "author": "curator", "author_type": "real_human" }
 ```
 
 ---
 
 ### POST /api/unwatch
 
-Stop watching a match.
+Stop watching a match. If the watching entry was a presence card, also removes the associated article posts.
 
 **Payload:**
 ```json
-{ "watchingId": "uuid" }
+{ "watchingId": "uuid", "note": "optional closing note" }
 ```
+
+**Required:** watchingId  
+**Optional:** note (public closing line when a thread resolves without a pick)
 
 **Response 200:**
 ```json
@@ -171,9 +176,14 @@ Stop watching a match.
 
 ### POST /api/board
 
-Today's active picks.
+Today's active picks. Filterable by author.
 
-**Payload:** `{}`
+**Payload:**
+```json
+{ "author": "curator" }
+```
+
+**Optional:** author (`curator`/`scout`, default `curator`)
 
 **Response:**
 ```json
@@ -181,7 +191,7 @@ Today's active picks.
   "ok": true,
   "count": 2,
   "picks": [
-    { "id": "uuid", "match": "Argentina vs Austria", "selection": "Argentina -1.25", "odds": 1.95, "stake": 1.5, "kickoff": "2026-06-22T17:00:00Z" }
+    { "id": "uuid", "match": "Argentina vs Austria", "selection": "Argentina -1.25", "odds": 1.95, "stake": 1.5, "kickoff": "2026-06-22T17:00:00Z", "author": "curator", "author_type": "real_human" }
   ]
 }
 ```
@@ -190,13 +200,18 @@ Today's active picks.
 
 ### POST /api/record
 
-Season track record.
+Season track record. Filterable by author.
 
-**Payload:** `{}`
+**Payload:**
+```json
+{ "author": "curator" }
+```
+
+**Optional:** author (`curator`/`scout`, default `curator`)
 
 **Response:**
 ```json
-{ "ok": true, "wins": 12, "losses": 8, "pushes": 2, "units": 4.35, "total": 22 }
+{ "ok": true, "author": "curator", "wins": 12, "losses": 8, "pushes": 2, "units": 4.35, "total": 22, "no_play_count": 5 }
 ```
 
 ---
@@ -215,7 +230,8 @@ View post-mortem details for a settled pick.
 {
   "ok": true, "id": "uuid", "match": "Argentina vs Austria",
   "status": "lost", "postmortem_status": "approved",
-  "draft": "AI-generated review...", "approved": "Curator-approved review..."
+  "draft": "AI-generated review...", "approved": "Curator-approved review...",
+  "author": "curator", "author_type": "real_human"
 }
 ```
 
@@ -236,6 +252,40 @@ List post-mortems pending >24h.
   ]
 }
 ```
+
+---
+
+### POST /api/fixtures/finished
+
+List finished fixtures from the livescore API.
+
+**Payload:**
+```json
+{ "days": 10 }
+```
+
+**Optional:** days (number, default 10)
+
+**Response 200:** Raw livescore fixture array.
+
+**Response 503:** Livescore not configured.
+
+---
+
+### POST /api/fixtures/upcoming
+
+List upcoming fixtures from the livescore API.
+
+**Payload:**
+```json
+{ "days": 14 }
+```
+
+**Optional:** days (number, default 14)
+
+**Response 200:** Raw livescore fixture array.
+
+**Response 503:** Livescore not configured.
 
 ---
 
@@ -265,6 +315,7 @@ Trigger pipelines for rows already in the database. Use when data is created ext
 | 404 | Resource not found |
 | 422 | Validation failed (parse errors, wrong status, etc.) |
 | 500 | Server error |
+| 503 | Service unavailable (e.g. livescore not configured) |
 
 ---
 
