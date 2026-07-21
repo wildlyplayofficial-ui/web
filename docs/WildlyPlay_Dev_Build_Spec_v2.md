@@ -1,3 +1,5 @@
+*Last updated: 2026-07-21*
+
 # WildlyPlay — Build Spec for Dev (Consolidated, v2)
 
 **Based on:** Product Execution Playbook v2 + Trust-Anchor & Reputation Spec v1 + Product Review Adjustments + Fen 2-bot review (21 June 2026)  
@@ -28,7 +30,7 @@
 
 > Stabilize production + complete SEO + capture trust now → establish the minimum EPL launch backbone → unify Match Hub → surface trust and improve retention → add intelligence and community → build reputation and scale.
 
-- **Daily Line** = daily engagement engine
+- **Daily Line** = daily engagement engine (codebase name: **GoalLine** — `apps/goalline/`, tables `gl_*`)
 - **Curator** = trust anchor
 - **Match Hub** = structural center
 
@@ -67,14 +69,14 @@ Predictor profiles, reputation, broader leagues, personalization, Forum, and mon
 |---|---|---|---|---|---|
 | R1 | Admin first login | Create Curator Supabase Auth user and verify all Admin Phase 1 flows | S | Nick + Gwen | TODO |
 | R2 | Facebook Newsroom verification | Verify image, caption, link, UTM, and fallback on a live `/watching` post | S | Nick + Gwen | TODO |
-| R3 | Persistent live match state | Persist last-known score, minute, HT/FT state, and finished state | M | Gwen | TODO |
+| R3 | Persistent live match state | Persist last-known score, minute, HT/FT state, and finished state | M | Gwen | DONE — `persist-state.ts`: adaptive 3min/15min, auto-FT detection, multi-competition |
 | R4 | Daily Line Livescore sync fix | Fix `external_match_id` mismatches and verify automatic settlement | S | Gwen | TODO |
-| R5 | Settlement monitoring | Alert on failed settlement, API timeout, missing score, and cron failure | M | Gwen | TODO |
-| R6 | Daily Line lifecycle monitoring | Alert on missed create, lock, live transition, settlement, or inconsistent totals | M | Gwen | TODO |
-| R7 | Fixture and slug deduplication | Fix provider-name, timezone, and slug duplicates | S | Gwen | TODO |
+| R5 | Settlement monitoring | Alert on failed settlement, API timeout, missing score, and cron failure | M | Gwen | DONE — `dl-monitor.ts` alerts TG group, `job-tracker.ts` tracks failures |
+| R6 | Daily Line lifecycle monitoring | Alert on missed create, lock, live transition, settlement, or inconsistent totals | M | Gwen | DONE — `dl-monitor.ts` (every 15 min) |
+| R7 | Fixture and slug deduplication | Fix provider-name, timezone, and slug duplicates | S | Gwen | DONE — `provider-matcher.ts` + `fixture-ingest.ts` handle cross-provider mapping |
 | R8 | Today’s Matches timezone fix | Use `(now − 6h) → end of local day` | S | Gwen | TODO |
-| R9 | AI/social failure visibility | Surface failed article, translation, TG, FB, and revalidation jobs | M | Gwen | TODO |
-| R10 | Production fallback procedures | Document manual settlement, correction, void, unpublish, and repost flows | S | Gwen + Nick | TODO |
+| R9 | AI/social failure visibility | Surface failed article, translation, TG, FB, and revalidation jobs | M | Gwen | DONE — `job-tracker.ts` pipes warn logs to failure tracker, durable job queue with retry |
+| R10 | Production fallback procedures | Document manual settlement, correction, void, unpublish, and repost flows | S | Gwen + Nick | DONE — `production-runbook.md` |
 
 ---
 
@@ -84,15 +86,15 @@ Trust data must start now because it cannot be accurately backfilled.
 
 | # | Task | Scope | Effort | Owner | Status |
 |---|---|---|---|---|---|
-| T1 | Structured confidence | Add immutable confidence enum to Curator Picks — **exact values `LOW` / `MEDIUM` / `HIGH` (uppercase, schema-validated; "med"/title-case REJECTED)**, pre-registered + locked at publish. **Already partially live at /pick (schema enforces this today).** | S | Gwen + Nick | PARTIAL |
+| T1 | Structured confidence | Add immutable confidence enum to Curator Picks — **exact values `LOW` / `MEDIUM` / `HIGH` (uppercase, schema-validated; "med"/title-case REJECTED)**, pre-registered + locked at publish. | S | Gwen + Nick | DONE — stored as lowercase in DB (`low`/`medium`/`high`), parser accepts case-insensitive, required field |
 | T2 | Confidence/stake warning | Warn on unusual combinations; do not block publishing | S | Gwen | TODO |
-| T3 | Primary Edge taxonomy | Require exactly one primary reason | S | Gwen + Nick | TODO |
-| T4 | Supporting Evidence taxonomy | Allow up to two supporting evidence tags | S | Gwen + Nick | TODO |
-| T5 | Post-mortem workflow | Settle immediately, generate AI draft, Curator reviews, then publish | M | Gwen + Nick | TODO |
-| T6 | Post-mortem SLA | Track Pending, Approved, Overdue; target 24 hours | S | Gwen | TODO |
-| T7 | CLV closing-line capture | Snapshot price-at-pick + closing line at KO per pick (event-ID), store immutably — feeds D3/D5/§9 CLV-by-bucket. **Cannot be backfilled — must be live at launch, same tier as T1-T6.** | M | Gwen | TODO |
-| T8 | Post-mortem loss-type field | Tag every settled loss {variance / thesis-error / price-error / model-error}, immutable. Moat-builder: separates "process-right, variance loss" from "bad read" so reliability isn't understated. Cannot be backfilled. | S | Gwen + Nick | TODO |
-| T9 | Sub-dimension calibration tags | On each pick, log market-side (Over/Under) + favored/dog at the DATA layer alongside confidence/result. Enables later calibration slicing ("is MED-favored-Over over-confident?"). **DATA-layer capture now (cannot be backfilled); DISPLAY stays gated by per-bucket n (do NOT surface sub-buckets until each has sample — see §9 per-bucket gate).** | S | Gwen | TODO |
+| T3 | Primary Edge taxonomy | Require exactly one primary reason | S | Gwen + Nick | DONE — `primary_edge` field, 7 values enforced in `parse-pick.ts`, required at publish |
+| T4 | Supporting Evidence taxonomy | Allow up to two supporting evidence tags | S | Gwen + Nick | DONE — `supporting_evidence` array, 10 values, max 2 enforced in `parse-pick.ts` |
+| T5 | Post-mortem workflow | Settle immediately, generate AI draft, Curator reviews, then publish | M | Gwen + Nick | DONE — `postmortem.ts` generates AI draft on settle, `/api/approve` for curator review, durable job queue |
+| T6 | Post-mortem SLA | Track Pending, Approved, Overdue; target 24 hours | S | Gwen | DONE — `listOverdue()` in `postmortem.ts` (24h SLA), `/api/overdue` endpoint |
+| T7 | CLV closing-line capture | Snapshot price-at-pick + closing line at KO per pick (event-ID), store immutably — feeds D3/D5/§9 CLV-by-bucket. **Cannot be backfilled — must be live at launch, same tier as T1-T6.** | M | Gwen | DONE — `odds_close` column on picks, `clv.ts` fetches from odds-api poller |
+| T8 | Post-mortem loss-type field | Tag every settled loss {variance / thesis-error / price-error / model-error}, immutable. Moat-builder: separates "process-right, variance loss" from "bad read" so reliability isn't understated. Cannot be backfilled. | S | Gwen + Nick | DONE — `loss_type` on PickRow, required for losses at `/api/approve`, 4 valid values enforced |
+| T9 | Sub-dimension calibration tags | On each pick, log market-side (Over/Under) + favored/dog at the DATA layer alongside confidence/result. Enables later calibration slicing ("is MED-favored-Over over-confident?"). **DATA-layer capture now (cannot be backfilled); DISPLAY stays gated by per-bucket n (do NOT surface sub-buckets until each has sample — see §9 per-bucket gate).** | S | Gwen | DONE — `market_side` + `favored_dog` fields on PickRow, auto-derived at pick creation |
 
 ## Confidence Definition
 
@@ -100,7 +102,7 @@ Trust data must start now because it cannot be accurately backfilled.
 
 Confidence is not automatically inferred from stake.
 
-> **⚠️ Canonical enum (read once, applies doc-wide):** the confidence field is the UPPERCASE enum `LOW` / `MEDIUM` / `HIGH` (schema-validated — see T1). Any `L/M/H` or title-case `Low/Medium/High` written elsewhere in this doc is **descriptive shorthand only** — implement the uppercase enum, never title-case, in every component (input, storage, display).
+> **⚠️ Canonical enum (read once, applies doc-wide):** the confidence field accepts `LOW` / `MEDIUM` / `HIGH` (case-insensitive at input). **Implementation note:** stored as lowercase (`low`/`medium`/`high`) in the TypeScript type and database. The parser normalizes any case variant to lowercase. Any `L/M/H` or title-case `Low/Medium/High` written elsewhere in this doc is **descriptive shorthand only**.
 
 ## Primary Edge — Choose One
 
@@ -151,11 +153,11 @@ Rules:
 
 | # | Task | Scope | Effort | Owner | Status |
 |---|---|---|---|---|---|
-| S1 | `<html lang>` | Set locale correctly for EN/VI/TH/ES | S | Gwen | TODO |
-| S2 | Hreflang clusters | Add EN/VI/TH/ES + x-default | S | Gwen | TODO |
+| S1 | `<html lang>` | Set locale correctly for EN/VI/TH/ES | S | Gwen | DONE — `html-lang.tsx` component syncs on client navigation |
+| S2 | Hreflang clusters | Add EN/VI/TH/ES + x-default | S | Gwen | DONE — `sitemap.ts` generates alternates for all 4 langs |
 | S3 | Canonical coverage | Home, Daily Line, cards, matches, plays, newsroom | S | Gwen | TODO |
 | S4 | Structured data | WebSite, Organization, SportsEvent, NewsArticle, FAQPage | M | Gwen + Jane | TODO |
-| S5 | Daily Line in sitemap | Add relevant Daily Line routes | S | Gwen | TODO |
+| S5 | Daily Line in sitemap | Add relevant Daily Line routes | S | Gwen | DONE — `/daily-line`, `/daily-line/leaderboard`, `/daily-line/archive` in sitemap |
 | S6 | Crawlable pagination | `/matches?page=`, ItemList, navigable pagination | S | Gwen | TODO |
 | S7 | Locale duplicate validation | Confirm query-language pages do not create duplicate-content problems | S | Gwen | TODO |
 
@@ -167,10 +169,10 @@ This is a launch dependency, not a Month 6+ scale feature.
 
 | # | Task | Scope | Effort | Owner | Status |
 |---|---|---|---|---|---|
-| E1 | EPL competition configuration | League, season, provider IDs, timezone, names, slugs | S | Gwen | TODO |
-| E2 | EPL team registry | Teams, canonical names, logos, provider IDs, aliases | M | Gwen | TODO |
-| E3 | EPL fixture ingestion | Sync fixtures and support manual correction | M | Gwen | TODO |
-| E4 | EPL provider mapping | Map odds-api and livescore identities | M | Gwen | TODO |
+| E1 | EPL competition configuration | League, season, provider IDs, timezone, names, slugs | S | Gwen | PARTIAL — `competitions` table exists with `livescore_id`, `odds_api_key`, `status`; multi-comp support in persist-state |
+| E2 | EPL team registry | Teams, canonical names, logos, provider IDs, aliases | M | Gwen | PARTIAL — `teams` table with `canonical_name`, `aliases`, `odds_api_name`, `livescore_name`; used by fixture-ingest |
+| E3 | EPL fixture ingestion | Sync fixtures and support manual correction | M | Gwen | DONE — `fixture-ingest.ts` populates `fixtures` table from provider_mappings |
+| E4 | EPL provider mapping | Map odds-api and livescore identities | M | Gwen | DONE — `provider-matcher.ts` auto-matches fixtures, runs boot + every 6h |
 | E5 | EPL Pick and Watching support | Validate publish, link, settle, CLV, Match Hub | M | Gwen + Nick | TODO |
 | E6 | EPL Daily Line eligibility | Generate EPL Daily Line cards and verify odds | M | Gwen | TODO |
 | E7 | Basic EPL standings | Add only if provider reliability is sufficient | M | Gwen | CONDITIONAL |
@@ -194,8 +196,8 @@ Not included yet:
 
 | # | Task | Scope | Effort | Owner | Status |
 |---|---|---|---|---|---|
-| DL1 | Daily Line in main nav | Add a top-level `Daily Line` nav item (distinct from `Daily Board` = Curator). Findability fix: the retention engine currently has no nav link. | S | Gwen | TODO |
-| DL2 | **Always-on Daily Line strip (v1)** | A thin strip placed directly BELOW Recent Form and ABOVE Daily Board: shows today's line + countdown + a `Play` CTA. Present EVERY day (pick-day and no-play day). Must NOT split the Curator block (Daily Board → Curator Watch stays contiguous below it). | S | Gwen | TODO |
+| DL1 | Daily Line in main nav | Add a top-level `Daily Line` nav item (distinct from `Daily Board` = Curator). Findability fix: the retention engine currently has no nav link. | S | Gwen | DONE — `header.tsx` has Daily Line nav item |
+| DL2 | **Always-on Daily Line strip (v1)** | A thin strip placed directly BELOW Recent Form and ABOVE Daily Board: shows today's line + countdown + a `Play` CTA. Present EVERY day (pick-day and no-play day). Must NOT split the Curator block (Daily Board → Curator Watch stays contiguous below it). | S | Gwen | DONE — `daily-line-strip.tsx` component |
 | DL3 | **State-aware no-play promotion (v1.1)** | When the Curator has NO pick, the Daily Board slot itself promotes a fuller Daily Line card (line + countdown + Play). When the Curator HAS a pick, Daily Board shows the pick (Curator stays the hero). Layer this AFTER DL2. | M | Gwen | TODO |
 | DL4 | Brand-separation styling | Daily Line surfaces use game/play styling + an `Entertainment only` label, visually distinct from Curator credibility blocks (record, de-vig, CLV). Curator = trust/credibility; Daily Line = habit-game. Do not blur the two. | S | Gwen + Jane | TODO |
 
@@ -211,9 +213,9 @@ Not included yet:
 
 | # | Task | Scope | Effort | Owner | Status |
 |---|---|---|---|---|---|
-| M1 | Unified internal fixture ID | One match identity across all product objects and providers | L | Gwen | TODO ⚠️ **CRITICAL-PATH BOTTLENECK (effort L) — watch for slip; serial dependency for Match Hub + homepage** |
-| M2 | Provider mapping tables | Event/team IDs, aliases, kickoff, slug, mapping confidence | M | Gwen | TODO |
-| M3 | Managed team aliases | Move hardcoded aliases into DB/admin | M | Gwen | TODO |
+| M1 | Unified internal fixture ID | One match identity across all product objects and providers | L | Gwen | PARTIAL — `fixtures` table exists, `fixture-ingest.ts` populates from provider_mappings, `fixture-link.ts` resolves at pick/watching creation |
+| M2 | Provider mapping tables | Event/team IDs, aliases, kickoff, slug, mapping confidence | M | Gwen | DONE — `provider-matcher.ts` runs on boot + every 6h, populates `provider_mappings` table |
+| M3 | Managed team aliases | Move hardcoded aliases into DB/admin | M | Gwen | PARTIAL — `teams` table has `canonical_name`, `aliases`, `odds_api_name`, `livescore_name`; `provider-matcher.ts` still has some hardcoded ALIASES |
 | M4 | Duplicate prevention | Block duplicates from naming, timezone, or provider differences | M | Gwen | TODO |
 | M5 | Match-level admin view | Picks, Watching, Daily Line, articles, provider data, errors | M | Gwen | TODO |
 | M6 | Article-to-match association | Attach match-related articles to one internal fixture | M | Gwen | TODO |
@@ -468,7 +470,7 @@ Next-step measurement (instrument, don't guess): track what US traffic lands on,
 
 | # | Decision | Recommendation | Blocks | Status |
 |---|---|---|---|---|
-| 1 | Confidence scale | L/M/H | T1 | ✅ RESOLVED — L/M/H locked, schema-enforced live at /pick |
+| 1 | Confidence scale | L/M/H | T1 | ✅ RESOLVED — L/M/H locked, parser-validated + persisted in prod (note: /pick is bot command, not web route; schema.sql needs sync) |
 | 2 | Primary Edge taxonomy | Use proposed 7 values | T3 | ✅ CONFIRMED |
 | 3 | Supporting Evidence | Max 2 per Pick | T4 | ✅ CONFIRMED |
 | 4 | Post-mortem SLA | 24 hours | T5/T6 | ✅ CONFIRMED |
