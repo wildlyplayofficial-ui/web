@@ -18,6 +18,8 @@ x-webhook-secret: <REVALIDATE_SECRET>
 
 All requests: `POST`, `Content-Type: application/json`.
 
+> **⚠️ Fail-open caveat:** Auth is only enforced when `REVALIDATE_SECRET` is set. Code checks `if (WEBHOOK_SECRET && header !== secret)` (`apps/worker/src/index.ts`), so if `REVALIDATE_SECRET` is **unset**, the check is skipped — all requests pass without auth. Always set `REVALIDATE_SECRET` in production.
+
 ---
 
 ## Create Commands

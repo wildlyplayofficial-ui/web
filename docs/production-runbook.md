@@ -26,7 +26,7 @@
 | Bot Allowlist | Railway env vars | CURATOR_USER_IDS (comma-separated Telegram user IDs) |
 | TG Channel | Railway env vars | CHANNEL_CHAT_ID |
 | Site URL | Railway env vars | SITE_URL (default: https://www.wildlyplay.com) |
-| AI Models | Railway env vars | RECAP_MODEL (recap/buzz, Haiku) + ANALYSIS_MODEL (analysis articles, Sonnet) |
+| AI Models | Railway env vars | RECAP_MODEL (recap/buzz, Haiku) + ANALYSIS_MODEL (analysis; Sonnet-tier intended, currently Haiku fallback per news.ts until key upgraded) |
 | Webhook Port | Railway env vars | WEBHOOK_PORT or PORT (default: 8080) |
 
 ## Health Checks
