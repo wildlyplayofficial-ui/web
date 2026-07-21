@@ -30,7 +30,7 @@
 
 > Stabilize production + complete SEO + capture trust now → establish the minimum EPL launch backbone → unify Match Hub → surface trust and improve retention → add intelligence and community → build reputation and scale.
 
-- **Daily Line** = daily engagement engine
+- **Daily Line** = daily engagement engine (codebase name: **GoalLine** — `apps/goalline/`, tables `gl_*`)
 - **Curator** = trust anchor
 - **Match Hub** = structural center
 
@@ -470,7 +470,7 @@ Next-step measurement (instrument, don't guess): track what US traffic lands on,
 
 | # | Decision | Recommendation | Blocks | Status |
 |---|---|---|---|---|
-| 1 | Confidence scale | L/M/H | T1 | ✅ RESOLVED — L/M/H locked, schema-enforced live at /pick |
+| 1 | Confidence scale | L/M/H | T1 | ✅ RESOLVED — L/M/H locked, parser-validated + persisted in prod (note: /pick is bot command, not web route; schema.sql needs sync) |
 | 2 | Primary Edge taxonomy | Use proposed 7 values | T3 | ✅ CONFIRMED |
 | 3 | Supporting Evidence | Max 2 per Pick | T4 | ✅ CONFIRMED |
 | 4 | Post-mortem SLA | 24 hours | T5/T6 | ✅ CONFIRMED |
