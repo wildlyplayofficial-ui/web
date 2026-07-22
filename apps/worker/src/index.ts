@@ -217,10 +217,15 @@ const stopBooth = persistDb && anthropicApiKey
 if (!persistDb || !anthropicApiKey) log.warn('booth-shadow: disabled (missing SUPABASE_URL or ANTHROPIC_API_KEY)');
 
 // ── News pipeline P1: deterministic preview/result/standings generators ──
-const stopNewsGen = persistDb
+// DISABLED (20 Jul 2026): /news retired → /analysis (Desk-authored only).
+// Set NEWS_GEN_ENABLED=true to re-enable the fixture-based auto-scraper.
+// See: /analysis migration spec — watching-news.ts is NOT affected.
+const newsGenEnabled = process.env.NEWS_GEN_ENABLED === 'true';
+const stopNewsGen = persistDb && newsGenEnabled
   ? startNewsGenCron({ sb: persistDb, env: process.env, siteUrl, revalidate, pingIndexNow })
   : () => {};
 if (!persistDb) log.warn('news-gen: disabled (missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY)');
+if (persistDb && !newsGenEnabled) log.info('news-gen: disabled (NEWS_GEN_ENABLED !== "true") — /news retired, see /analysis migration');
 
 // ── Durable job queue: recover stale + process every 60s ──
 const jobHandlers: HandlerMap = {};
