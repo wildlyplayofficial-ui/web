@@ -50,6 +50,8 @@ const nextConfig: NextConfig = {
       { source: "/news/kelly-criterion-betting", destination: "/guides/what-is-asian-handicap", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/:lang/guides/what-is-devigging", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/what-is-asian-handicap", permanent: true },
+      // RSS feed redirect — must come before the catch-all /news/:slug* below
+      { source: "/news/rss.xml", destination: "/api/analysis/rss", statusCode: 301 },
       // 301 retire /news entirely → /analysis (spec §2E). Catch-all after specific rules above.
       { source: "/news", destination: "/analysis", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/news", destination: "/:lang/analysis", statusCode: 301 },
