@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { buildAlternates, resolveLang, type Lang } from "@/lib/i18n";
+import { buildPerson } from "@/lib/jsonld";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
@@ -192,6 +193,8 @@ export default async function AboutPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-[800px] px-5 py-12">
       <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"About",url:"/about"}]} />
+      {/* Person schema for E-E-A-T — same pattern as BreadcrumbJsonLd; JSON.stringify is safe, input is hardcoded constants */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildPerson()) }} />
       <h1 className="gradient-text text-center font-display text-4xl font-bold">{c.title}</h1>
       <p className="mx-auto mt-6 max-w-[680px] text-center leading-relaxed text-ink/90">
         {c.intro}
