@@ -311,7 +311,7 @@ const en: Dict = {
     analysis: "Analysis",
     learn: "Learn",
   },
-  tagline: "Handpicked plays for the global crowd",
+  tagline: "Free Football Picks, Analysis & Betting Guides",
   footerDisclaimer: "Entertainment only. Play responsibly.",
   board: {
     title: "Daily Board",
@@ -333,7 +333,7 @@ const en: Dict = {
     asOf: "as of",
   },
   home: {
-    seoDescription: "Free daily football picks by a human curator. Every play public forever — wins and losses. Match analysis, odds tools and betting guides across Premier League, La Liga, Serie A, Bundesliga and World Cup.",
+    seoDescription: "Free daily football picks by a human curator. Every play public forever — wins and losses. Match analysis, odds tools and betting guides across Premier League, La Liga, Serie A, Bundesliga and more.",
     latestAnalysis: "Latest analysis",
     viewBoard: "View the Daily Board",
     trustCurator: "The Curator — real human, hand-picked plays",
@@ -558,7 +558,7 @@ const vi: Dict = {
     analysis: "Phân Tích",
     learn: "Học Hỏi",
   },
-  tagline: "Kèo tuyển chọn cho cộng đồng toàn cầu",
+  tagline: "Kèo Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn Cá Cược",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
   board: {
     title: "Bảng Kèo Hôm Nay",
@@ -580,7 +580,7 @@ const vi: Dict = {
     asOf: "tính đến",
   },
   home: {
-    seoDescription: "Kèo bóng đá miễn phí mỗi ngày do người thật chọn. Mọi kèo công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ cược và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và World Cup.",
+    seoDescription: "Kèo bóng đá miễn phí mỗi ngày do người thật chọn. Mọi kèo công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ cược và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
     latestAnalysis: "Phân tích mới nhất",
     viewBoard: "Xem Bảng Kèo Hôm Nay",
     trustCurator: "The Curator — người thật, tự tay chọn kèo",
@@ -805,7 +805,7 @@ const th: Dict = {
     analysis: "บทวิเคราะห์",
     learn: "เรียนรู้",
   },
-  tagline: "ทีเด็ดคัดมากับมือ เพื่อคอบอลทั่วโลก",
+  tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
   footerDisclaimer: "เพื่อความบันเทิงเท่านั้น โปรดเล่นอย่างมีความรับผิดชอบ",
   board: {
     title: "บอร์ดประจำวัน",
@@ -827,7 +827,7 @@ const th: Dict = {
     asOf: "ณ วันที่",
   },
   home: {
-    seoDescription: "ทีเด็ดบอลฟรีรายวันโดยคิวเรเตอร์มนุษย์ ทุกทีเด็ดเปิดเผยต่อสาธารณะตลอดไป ทั้งชนะและแพ้ วิเคราะห์แมตช์ เครื่องมืออัตราต่อรอง และคู่มือสำหรับพรีเมียร์ลีก ลาลีกา เซเรียอา บุนเดสลีกา และฟุตบอลโลก",
+    seoDescription: "ทีเด็ดบอลฟรีรายวันโดยคิวเรเตอร์มนุษย์ ทุกทีเด็ดเปิดเผยต่อสาธารณะตลอดไป ทั้งชนะและแพ้ วิเคราะห์แมตช์ เครื่องมืออัตราต่อรอง และคู่มือสำหรับพรีเมียร์ลีก ลาลีกา เซเรียอา บุนเดสลีกา และอีกมากมาย",
     latestAnalysis: "บทวิเคราะห์ล่าสุด",
     viewBoard: "ดูบอร์ดประจำวัน",
     trustCurator: "The Curator — คนจริง เลือกทีเด็ดด้วยมือ",
@@ -1052,7 +1052,7 @@ const es: Dict = {
     analysis: "Análisis",
     learn: "Aprender",
   },
-  tagline: "Jugadas seleccionadas a mano para la afición global",
+  tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
   footerDisclaimer: "Solo entretenimiento. Juega con responsabilidad.",
   board: {
     title: "Pizarra Diaria",
@@ -1074,7 +1074,7 @@ const es: Dict = {
     asOf: "al",
   },
   home: {
-    seoDescription: "Pronósticos de fútbol gratuitos diarios por un curador humano. Cada jugada pública para siempre — aciertos y fallos. Análisis de partidos, herramientas de cuotas y guías para Premier League, La Liga, Serie A, Bundesliga y Copa del Mundo.",
+    seoDescription: "Pronósticos de fútbol gratuitos diarios por un curador humano. Cada jugada pública para siempre — aciertos y fallos. Análisis de partidos, herramientas de cuotas y guías para Premier League, La Liga, Serie A, Bundesliga y más.",
     latestAnalysis: "Análisis recientes",
     viewBoard: "Ver la Pizarra Diaria",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",

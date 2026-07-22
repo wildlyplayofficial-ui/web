@@ -105,6 +105,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: dict.analysis.seoDescription,
       images: [{ url: "/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${dict.analysis.title} | WildlyPlay`,
+      description: dict.analysis.seoDescription,
+    },
   };
 }
 
