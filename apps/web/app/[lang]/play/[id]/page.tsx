@@ -63,6 +63,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function buildSportsEventSchema(pick: Awaited<ReturnType<typeof getPick>>) {
+  if (!pick) return null;
+  const statusMap: Record<string, string> = {
+    published: "EventScheduled",
+    won: "EventRescheduled",
+    lost: "EventRescheduled",
+    push: "EventRescheduled",
+    void: "EventCancelled",
+  };
+  return {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: `${pick.home_team} vs ${pick.away_team}`,
+    startDate: pick.kickoff_utc,
+    sport: "Football",
+    location: { "@type": "Place", name: pick.league || "Football" },
+    competitor: [
+      { "@type": "SportsTeam", name: pick.home_team },
+      { "@type": "SportsTeam", name: pick.away_team },
+    ],
+    eventStatus: `https://schema.org/${statusMap[pick.status] ?? "EventScheduled"}`,
+    organizer: { "@type": "Organization", name: "WildlyPlay", url: "https://www.wildlyplay.com" },
+  };
+}
+
 export default async function PlayDetail({ params }: Props) {
   const { id, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
@@ -88,9 +113,11 @@ export default async function PlayDetail({ params }: Props) {
   const homeFlag = teamFlag(pick.home_team);
   const awayFlag = teamFlag(pick.away_team);
   const clv = pick.odds_close !== null ? (pick.odds_publish / pick.odds_close - 1) * 100 : null;
+  const schema = JSON.stringify(buildSportsEventSchema(pick)).replace(/</g, "\u003c");
 
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
       <TrackPageView event="pick_view" params={{ pick_id: pick.id, matchup: `${pick.home_team} vs ${pick.away_team}` }} />
       <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">
         &larr; {dict.play.backToBoard}
