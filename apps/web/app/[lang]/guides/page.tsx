@@ -26,6 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: dict.guides.seoDescription,
       images: [{ url: "/api/og/editorial?title=Learn%20%E2%80%94%20Betting%20Guides&subtitle=Free%20guides%20to%20sharpen%20your%20edge", width: 1200, height: 630 }],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${dict.guides.title} | WildlyPlay`,
+      description: dict.guides.seoDescription,
+    },
   };
 }
 

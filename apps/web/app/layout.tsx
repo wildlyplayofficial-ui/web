@@ -22,7 +22,7 @@ const notoSansThai = Noto_Sans_Thai({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.wildlyplay.com"),
   title: {
-    default: "WildlyPlay — Handpicked plays for the global crowd",
+    default: "WildlyPlay — Free Football Picks, Analysis & Betting Guides",
     template: "%s | WildlyPlay",
   },
   description:
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
     siteName: "WildlyPlay",
     type: "website",
     locale: "en_US",
-    title: "WildlyPlay — Handpicked plays for the global crowd",
+    title: "WildlyPlay — Free Football Picks, Analysis & Betting Guides",
     description:
       "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis and odds tools.",
     images: [{ url: "/og-home.png", width: 1200, height: 630, type: "image/png" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "WildlyPlay — Handpicked plays for the global crowd",
+    title: "WildlyPlay — Free Football Picks, Analysis & Betting Guides",
     images: [{ url: "/og-home.png", width: 1200, height: 630 }],
   },
 };
