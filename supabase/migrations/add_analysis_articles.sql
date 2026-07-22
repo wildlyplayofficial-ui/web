@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS analysis_articles (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Row Level Security: anon key can only read published articles; service_role bypasses RLS.
+ALTER TABLE analysis_articles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_read_published" ON analysis_articles FOR SELECT USING (status = 'published');
+CREATE POLICY "service_role_all" ON analysis_articles FOR ALL USING (true);
+
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_analysis_articles_status ON analysis_articles (status);
 CREATE INDEX IF NOT EXISTS idx_analysis_articles_league ON analysis_articles (league);

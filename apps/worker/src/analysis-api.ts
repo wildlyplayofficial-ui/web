@@ -136,6 +136,10 @@ export async function handleAnalysisRoute(
       json(res, 422, { ok: false, error: validation.error });
       return true;
     }
+    if (!/^[a-z0-9-]+$/.test(validation.data.slug)) {
+      json(res, 400, { ok: false, error: 'slug must match /^[a-z0-9-]+$/' });
+      return true;
+    }
     const row = {
       ...validation.data,
       author_type: 'desk_ai' as const, // server-enforced — ignore client value
@@ -220,7 +224,7 @@ export async function handleAnalysisRoute(
         .update(patch)
         .eq('slug', slug)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw new Error(error.message);
       if (!data) {
         json(res, 404, { ok: false, error: 'article not found' });
@@ -231,12 +235,8 @@ export async function handleAnalysisRoute(
       json(res, 200, { ok: true, slug: data.slug, status: data.status });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('0 rows')) {
-        json(res, 404, { ok: false, error: 'article not found' });
-      } else {
-        log.warn(`analysis-api PUT failed: ${msg}`);
-        json(res, 500, { ok: false, error: msg });
-      }
+      log.warn(`analysis-api PUT failed: ${msg}`);
+      json(res, 500, { ok: false, error: msg });
     }
     return true;
   }
@@ -249,7 +249,7 @@ export async function handleAnalysisRoute(
         .update({ status: 'draft', updated_at: new Date().toISOString() })
         .eq('slug', slug)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw new Error(error.message);
       if (!data) {
         json(res, 404, { ok: false, error: 'article not found' });
@@ -260,12 +260,8 @@ export async function handleAnalysisRoute(
       json(res, 200, { ok: true, slug: data.slug, status: 'draft' });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('0 rows')) {
-        json(res, 404, { ok: false, error: 'article not found' });
-      } else {
-        log.warn(`analysis-api DELETE failed: ${msg}`);
-        json(res, 500, { ok: false, error: msg });
-      }
+      log.warn(`analysis-api DELETE failed: ${msg}`);
+      json(res, 500, { ok: false, error: msg });
     }
     return true;
   }
