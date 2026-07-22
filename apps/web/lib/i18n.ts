@@ -69,6 +69,7 @@ export interface Dict {
   board: {
     title: string;
     subtitle: string;
+    seoDescription: string;
     formTitle: string;
     last30: string;
     emptyTitle: string;
@@ -313,6 +314,7 @@ const en: Dict = {
   board: {
     title: "Daily Board",
     subtitle: "One match. One take. Only when there's an edge.",
+    seoDescription: "Free daily football picks with a public track record — every win and loss posted forever. The Curator only plays when there's a real edge. Follow today's picks, no-plays and watchlist across Premier League, La Liga, Serie A and more.",
     formTitle: "Recent form",
     last30: "Last 30 days",
     emptyTitle: "No play today.",
@@ -557,6 +559,7 @@ const vi: Dict = {
   board: {
     title: "Bảng Kèo Hôm Nay",
     subtitle: "Một trận. Một góc nhìn. Chỉ khi thật sự có lợi thế.",
+    seoDescription: "Kèo bóng đá miễn phí hằng ngày với thành tích công khai — mọi kèo thắng lẫn thua đều đăng vĩnh viễn. The Curator chỉ xuống kèo khi có lợi thế thật sự. Theo dõi kèo hôm nay, trận bỏ qua và danh sách theo dõi trên Premier League, La Liga, Serie A và nhiều giải khác.",
     formTitle: "Phong độ gần đây",
     last30: "30 ngày qua",
     emptyTitle: "Hôm nay không có kèo.",
@@ -801,6 +804,7 @@ const th: Dict = {
   board: {
     title: "บอร์ดประจำวัน",
     subtitle: "หนึ่งแมตช์ หนึ่งมุมมอง เฉพาะวันที่เห็นความได้เปรียบจริงเท่านั้น",
+    seoDescription: "ทีเด็ดบอลฟรีรายวันพร้อมสถิติสาธารณะ — ทุกชนะและแพ้โพสต์ถาวร The Curator เล่นเฉพาะเมื่อมีความได้เปรียบจริงเท่านั้น ติดตามทีเด็ดวันนี้ แมตช์ที่ไม่เล่น และรายการจับตาใน Premier League, La Liga, Serie A และอีกมากมาย",
     formTitle: "ฟอร์มล่าสุด",
     last30: "30 วันที่ผ่านมา",
     emptyTitle: "วันนี้ไม่มีทีเด็ด",
@@ -1045,6 +1049,7 @@ const es: Dict = {
   board: {
     title: "Pizarra Diaria",
     subtitle: "Un partido. Una lectura. Solo cuando de verdad hay ventaja.",
+    seoDescription: "Pronósticos de fútbol gratuitos diarios con historial público — cada acierto y fallo publicado para siempre. The Curator solo juega cuando hay una ventaja real. Sigue los picks de hoy, los descartados y la lista de seguimiento en Premier League, La Liga, Serie A y más.",
     formTitle: "Racha reciente",
     last30: "Últimos 30 días",
     emptyTitle: "Hoy no hay jugada.",
