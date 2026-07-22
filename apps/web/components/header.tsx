@@ -175,7 +175,6 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
       ],
     },
     { label: nav.analysis, href: "/analysis" },
-    { label: nav.news, href: "/news" },
     {
       label: nav.matches,
       items: [

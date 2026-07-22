@@ -4,9 +4,11 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost, getPostLangs, getMatchBySlug } from "@/lib/data";
+import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
-import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import type { AnalysisArticle } from "@/lib/types";
 
 export const revalidate = 300;
 
@@ -17,12 +19,48 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+/** Try Desk article first, then fall back to posts table. */
+async function resolveArticle(slug: string, lang: Lang) {
+  const deskArticle = await getAnalysisArticleBySlug(slug);
+  if (deskArticle) return { kind: "desk" as const, desk: deskArticle };
+  const post = await getPost(slug, lang);
+  if (post) return { kind: "post" as const, post };
+  return null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
-  const post = await getPost(slug, lang);
-  if (!post) return { title: "Not found" };
+  const resolved = await resolveArticle(slug, lang);
+  if (!resolved) return { title: "Not found" };
 
+  if (resolved.kind === "desk") {
+    const { desk } = resolved;
+    const description = desk.body
+      .replace(/[#*_>`\[\]()!]/g, "")
+      .replace(/\n+/g, " ")
+      .trim()
+      .slice(0, 160);
+    const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
+    const alternates = buildAlternates(`/analysis/${slug}`, lang);
+    return {
+      title: desk.title,
+      description,
+      alternates: { canonical, languages: alternates.languages },
+      openGraph: {
+        title: desk.title,
+        description,
+        type: "article",
+        publishedTime: desk.published_at,
+        images: desk.hero_image
+          ? [{ url: desk.hero_image, width: 1200, height: 630 }]
+          : [{ url: `/api/og/editorial?title=${encodeURIComponent(desk.title)}`, width: 1200, height: 630 }],
+      },
+      twitter: { card: "summary_large_image", title: desk.title, description },
+    };
+  }
+
+  const { post } = resolved;
   const title = post.meta_title ?? post.title;
   const description = post.meta_description
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
@@ -61,34 +99,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /** Byline for a post: neutral "WildlyPlay" for general news coverage (no position),
  *  persona-specific for pick-driven content. */
 function postByline(post: { type: string; author?: string }): string {
-  // General news/guides have no persona position — use neutral byline
   if (post.type === "news" || post.type === "guide") return "WildlyPlay";
   if (post.author === "scout") return "The Scout @ WildlyPlay";
   return "The Curator @ WildlyPlay";
 }
 
-function buildArticleSchema(post: {
-  title: string;
-  meta_title?: string | null;
-  meta_description?: string | null;
-  published_at: string | null;
-  lang: string;
-  type: string;
-  author?: string;
-}, slug: string, lang: Lang) {
+function buildArticleSchema(
+  title: string,
+  description: string | undefined,
+  publishedAt: string | null,
+  authorName: string,
+  slug: string,
+  lang: Lang,
+  imageUrl?: string,
+) {
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: post.meta_title ?? post.title,
-    description: post.meta_description ?? undefined,
-    datePublished: post.published_at ?? undefined,
-    dateModified: post.published_at ?? undefined,
-    inLanguage: post.lang,
+    headline: title,
+    description,
+    datePublished: publishedAt ?? undefined,
+    dateModified: publishedAt ?? undefined,
     mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
-    image: `${BASE}/api/og/news/${slug}`,
+    image: imageUrl ?? `${BASE}/api/og/news/${slug}`,
     author: {
       "@type": "Organization",
-      name: postByline(post),
+      name: authorName,
       url: BASE,
     },
     publisher: {
@@ -100,10 +136,153 @@ function buildArticleSchema(post: {
   };
 }
 
-export default async function NewsPost({ params }: Props) {
+/** Safely embed JSON-LD — escapes < to prevent script injection. */
+function JsonLd({ data }: { data: object }) {
+  const json = JSON.stringify(data).replace(/</g, "\\u003c");
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: json }}
+    />
+  );
+}
+
+/** Render a Desk-authored article (spec sections 2B-C). */
+function DeskArticleView({
+  article,
+  lang,
+  dict,
+}: {
+  article: AnalysisArticle;
+  lang: Lang;
+  dict: ReturnType<typeof getDict>;
+}) {
+  const published = new Intl.DateTimeFormat(locales[lang], {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(article.published_at));
+
+  const schemaData = buildArticleSchema(
+    article.title,
+    article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
+    article.published_at,
+    "WildlyPlay Desk",
+    article.slug,
+    lang,
+    article.hero_image ?? undefined,
+  );
+
+  return (
+    <article className="mx-auto max-w-[720px] px-5 py-12">
+      <JsonLd data={schemaData} />
+
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.analysis.title, url: "/analysis" }, { name: article.title, url: `/analysis/${article.slug}` }]} />
+
+      <Link
+        href={withLang("/analysis", lang)}
+        className="text-sm text-muted transition-colors hover:text-brand"
+      >
+        &larr; {dict.analysis.backTo}
+      </Link>
+
+      {/* Standing disclaimer (spec section 2B) */}
+      <p className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-center text-xs text-muted">
+        Analysis is coverage &amp; analysis, NOT betting advice.
+      </p>
+
+      <header className="mt-6">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="inline-block rounded-md border border-brand/30 bg-brand/10 px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-brand">
+            {article.kind}
+          </span>
+          <span className="text-xs text-muted">{article.league}</span>
+        </div>
+        <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">
+          {article.title}
+        </h1>
+        <p className="mt-3 text-sm text-muted">
+          <time dateTime={article.published_at}>{published}</time>
+          {" \u00b7 "}{article.byline}
+        </p>
+        {/* AI disclosure (spec section 2C) */}
+        <p className="mt-1 text-xs text-muted/70 italic">
+          Phân tích do WildlyPlay Desk (AI) thực hiện
+        </p>
+      </header>
+
+      {/* Hero image */}
+      {article.hero_image && (
+        <div className="mt-6 overflow-hidden rounded-card">
+          <img
+            src={article.hero_image}
+            alt={article.title}
+            width={1200}
+            height={630}
+            className="w-full"
+            loading="eager"
+          />
+        </div>
+      )}
+
+      <hr className="my-6 border-line" />
+
+      <div className="prose-md mt-8">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            table: ({ children }) => (
+              <div className="table-wrap"><table>{children}</table></div>
+            ),
+          }}
+        >
+          {article.body.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
+        </ReactMarkdown>
+      </div>
+
+      {/* Linked pick funnel-card (spec section 2C): link TO the pick, not embed record */}
+      {article.linked_pick_id && (
+        <div className="mt-8">
+          <Link
+            href={withLang(`/play/${article.linked_pick_id}`, lang)}
+            className="inline-flex items-center gap-2 rounded-card border border-brand/30 bg-brand/5 px-4 py-3 font-display text-sm font-semibold text-brand transition-colors hover:bg-brand/10"
+          >
+            {dict.pick.viewPlay} &rarr;
+          </Link>
+        </div>
+      )}
+
+      {/* Internal links */}
+      <nav className="mt-8 flex flex-wrap gap-3 text-xs">
+        <Link href={withLang("/analysis", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.analysis} &rarr;
+        </Link>
+        <Link href={withLang("/competitions", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
+          {dict.nav.matches} &rarr;
+        </Link>
+      </nav>
+
+      {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
+      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
+        Phân tích do WildlyPlay Desk (AI) thực hiện. Analysis is coverage &amp; analysis, NOT betting advice.
+      </p>
+    </article>
+  );
+}
+
+export default async function AnalysisArticlePage({ params }: Props) {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
   const dict = getDict(lang);
+
+  // Try Desk article first
+  const deskArticle = await getAnalysisArticleBySlug(slug);
+  if (deskArticle) {
+    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} />;
+  }
+
+  // Fall back to posts table (existing behavior)
   const post = await getPost(slug, lang);
   if (!post) notFound();
 
@@ -116,14 +295,18 @@ export default async function NewsPost({ params }: Props) {
       }).format(new Date(post.published_at))
     : null;
 
-  const schema = JSON.stringify(buildArticleSchema(post, slug, lang)).replace(/</g, '\\u003c');
+  const schemaData = buildArticleSchema(
+    post.meta_title ?? post.title,
+    post.meta_description ?? undefined,
+    post.published_at,
+    postByline(post),
+    slug,
+    lang,
+  );
 
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: schema }}
-      />
+      <JsonLd data={schemaData} />
 
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.analysis.title, url: "/analysis" }, { name: post.title, url: `/analysis/${slug}` }]} />
 
@@ -133,6 +316,11 @@ export default async function NewsPost({ params }: Props) {
       >
         &larr; {dict.analysis.backTo}
       </Link>
+
+      {/* Standing disclaimer (spec section 2B) */}
+      <p className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-center text-xs text-muted">
+        Analysis is coverage &amp; analysis, NOT betting advice.
+      </p>
 
       <header className="mt-6">
         {post.pick_ids.length === 0 && (
@@ -149,7 +337,7 @@ export default async function NewsPost({ params }: Props) {
         )}
       </header>
 
-      {/* Hero card: branded auto-gen image (same asset as og:image) */}
+      {/* Hero card */}
       <div className="mt-6 overflow-hidden rounded-card">
         <img
           src={`/api/og/news/${slug}`}
@@ -191,7 +379,7 @@ export default async function NewsPost({ params }: Props) {
 
       <RelatedArticles slug={slug} lang={lang} currentType={post.type} pickIds={post.pick_ids} />
 
-      {/* A4: Internal-linking hub→spoke */}
+      {/* Internal links */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
         <Link href={withLang("/track-record", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
           {dict.nav.trackRecord} &rarr;
@@ -242,7 +430,6 @@ async function RelatedArticles({
   );
   if (others.length === 0) return null;
 
-  const dict = getDict(lang);
   const typeLabels: Record<string, string> = {
     preview: "Pre-match Preview",
     recap: "Match Recap",

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs } from "@/lib/data";
+import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
 /** SEO: every settled play + published post + all 4 language variants. */
@@ -21,7 +22,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches, guides, reports, competitions] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions()]);
+  const [picks, posts, matches, guides, reports, competitions, deskArticles] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -86,6 +87,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/transparency/${r.slug}`),
   }));
 
+  const deskRoutes: MetadataRoute.Sitemap = deskArticles.map((a) => ({
+    url: `${BASE}/analysis/${a.slug}`,
+    lastModified: new Date(a.updated),
+    changeFrequency: "weekly",
+    priority: 0.7,
+    alternates: alternates(`/analysis/${a.slug}`),
+  }));
+
   const standingsRoutes: MetadataRoute.Sitemap = competitions
     .filter((c) => c.slug)
     .map((c) => ({
@@ -95,5 +104,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       alternates: alternates(`/competitions/${c.slug}`),
     }));
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
