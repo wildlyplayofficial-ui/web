@@ -107,6 +107,26 @@ export function buildFAQPage(faqs: Array<{ question: string; answer: string }>) 
   };
 }
 
+export function buildPerson() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "The Curator",
+    url: `${BASE}/about`,
+    description:
+      "The human behind WildlyPlay's football picks. Every play is hand-researched and only posted when there's a genuine edge. Full public track record — wins and losses, from day one. Entertainment only.",
+    sameAs: [
+      "https://t.me/wildlyplay",
+      "https://x.com/WildlyPlayGlob",
+    ],
+    worksFor: {
+      "@type": "Organization",
+      name: "WildlyPlay",
+      url: BASE,
+    },
+  };
+}
+
 /** Helper: render JSON-LD as a string for Next.js metadata script injection. */
 export function jsonLdScript(data: Record<string, unknown>): string {
   return JSON.stringify(data);
