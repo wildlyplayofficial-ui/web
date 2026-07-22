@@ -8,6 +8,30 @@ export type PickStatus = "published" | "won" | "lost" | "push" | "void";
 export type RawOutcome = "win" | "half_win" | "push" | "half_loss" | "loss" | "void";
 export type PostType = "recap" | "preview" | "news" | "analysis" | "no-play" | "post-mortem" | "guide";
 
+/** Desk-authored analysis article kind (spec §2A). */
+export type AnalysisKind = "preview" | "recap" | "roundup";
+
+/** Desk-authored analysis article tier (spec §2A). */
+export type AnalysisTier = "T1_covered" | "T2_marquee";
+
+/** Desk-authored analysis article from analysis_articles table (spec §2A-C). */
+export interface AnalysisArticle {
+  id: string;
+  slug: string;
+  kind: AnalysisKind;
+  tier: AnalysisTier;
+  title: string;
+  league: string;
+  body: string;
+  byline: "WildlyPlay Desk";
+  author_type: "desk_ai";
+  match_id: string | null;
+  linked_pick_id: string | null;
+  hero_image: string | null;
+  published_at: string;
+  status: "draft" | "published";
+}
+
 /** Tiered Picks firewall (§12): Curator (real human) vs Scout (fictional AI persona).
  *  Optional — legacy/mock rows predate Scout and default to "curator" at call sites. */
 export type Author = "curator" | "scout";

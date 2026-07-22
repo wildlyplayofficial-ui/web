@@ -1,9 +1,10 @@
 import { getAllPostSlugs } from "@/lib/data";
+import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 
 /**
  * GET /news-sitemap.xml — Google News sitemap for recent articles.
  * Only includes articles from the last 48 hours (Google News requirement).
- * Auto-generated, zero maintenance.
+ * Now points to /analysis/ URLs (retired /news, spec §2E).
  */
 
 const BASE = "https://www.wildlyplay.com";
@@ -12,17 +13,24 @@ export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 export async function GET(): Promise<Response> {
-  const posts = await getAllPostSlugs();
+  const [posts, deskArticles] = await Promise.all([
+    getAllPostSlugs(),
+    getAllAnalysisArticleSlugs(),
+  ]);
 
   // Google News: only articles from last 48 hours
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
-  const recent = posts.filter(
-    (p) => new Date(p.updated) >= cutoff,
-  );
+
+  const allItems = [
+    ...posts.map((p) => ({ slug: p.slug, title: p.title, updated: p.updated })),
+    ...deskArticles.map((a) => ({ slug: a.slug, title: a.title, updated: a.updated })),
+  ];
+
+  const recent = allItems.filter((p) => new Date(p.updated) >= cutoff);
 
   const urls = recent.map(
     (p) => `  <url>
-    <loc>${BASE}/news/${p.slug}</loc>
+    <loc>${BASE}/analysis/${p.slug}</loc>
     <news:news>
       <news:publication>
         <news:name>WildlyPlay</news:name>
