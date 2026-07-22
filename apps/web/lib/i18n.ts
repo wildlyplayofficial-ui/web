@@ -122,12 +122,14 @@ export interface Dict {
   analysis: {
     title: string;
     subtitle: string;
+    seoDescription: string;
     empty: string;
     backTo: string;
   };
   guides: {
     title: string;
     subtitle: string;
+    seoDescription: string;
     empty: string;
     backToGuides: string;
   };
@@ -369,12 +371,14 @@ const en: Dict = {
   analysis: {
     title: "Analysis",
     subtitle: "Recaps and match notes, published automatically after every play.",
+    seoDescription: "Free football match recaps, previews and betting analysis published after every play. Honest breakdowns of what worked, what didn't, and why — open to everyone, no paywall.",
     empty: "No posts yet.",
     backTo: "Back to Analysis",
   },
   guides: {
     title: "Guides",
     subtitle: "Evergreen guides on how we think about betting — calibration, discipline, and honest analysis.",
+    seoDescription: "Free betting guides covering bankroll management, Asian handicap, Kelly criterion, closing line value and more. Educational resources to sharpen your edge — written by humans, no paywall.",
     empty: "No guides yet.",
     backToGuides: "Back to Guides",
   },
@@ -614,12 +618,14 @@ const vi: Dict = {
   analysis: {
     title: "Phân Tích",
     subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi kèo.",
+    seoDescription: "Recap trận đấu, nhận định trước trận và phân tích cá cược bóng đá miễn phí, xuất bản sau mỗi kèo. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
     empty: "Chưa có bài viết.",
     backTo: "Quay lại Phân Tích",
   },
   guides: {
     title: "Hướng Dẫn",
     subtitle: "Các bài hướng dẫn chuyên sâu về tư duy cá cược — hiệu chuẩn, kỷ luật và phân tích trung thực.",
+    seoDescription: "Hướng dẫn cá cược miễn phí về quản lý vốn, kèo châu Á, tiêu chí Kelly, giá trị đường đóng kèo và nhiều hơn nữa. Tài liệu giáo dục giúp nâng cao lợi thế — viết bởi người thật, không tính phí.",
     empty: "Chưa có bài hướng dẫn.",
     backToGuides: "Quay lại Hướng Dẫn",
   },
@@ -859,12 +865,14 @@ const th: Dict = {
   analysis: {
     title: "บทวิเคราะห์",
     subtitle: "สรุปผลและบันทึกแมตช์ เผยแพร่อัตโนมัติหลังจบทุกทีเด็ด",
+    seoDescription: "สรุปผลแมตช์ฟุตบอล พรีวิวก่อนเกม และบทวิเคราะห์เดิมพันฟรี เผยแพร่หลังจบทุกทีเด็ด วิเคราะห์ตรงไปตรงมา — อะไรเวิร์ก อะไรไม่เวิร์ก และเพราะอะไร — เปิดให้ทุกคน ไม่มีค่าใช้จ่าย",
     empty: "ยังไม่มีบทความ",
     backTo: "กลับไปหน้าบทวิเคราะห์",
   },
   guides: {
     title: "คู่มือ",
     subtitle: "คู่มือเชิงลึกเกี่ยวกับแนวคิดการเดิมพัน — การสอบเทียบ วินัย และการวิเคราะห์ตรงไปตรงมา",
+    seoDescription: "คู่มือเดิมพันฟรีครอบคลุมการจัดการเงินทุน บอลเอเชีย เกณฑ์ Kelly มูลค่าราคาปิด และอื่นๆ สื่อการเรียนรู้เพื่อเพิ่มความได้เปรียบ — เขียนโดยคน ไม่มีค่าใช้จ่าย",
     empty: "ยังไม่มีคู่มือ",
     backToGuides: "กลับไปหน้าคู่มือ",
   },
@@ -1104,12 +1112,14 @@ const es: Dict = {
   analysis: {
     title: "Análisis",
     subtitle: "Resúmenes y notas de partido, publicados automáticamente después de cada jugada.",
+    seoDescription: "Resúmenes de partidos de fútbol, previas y análisis de apuestas gratuitos publicados después de cada jugada. Análisis honesto — qué funcionó, qué no y por qué — abierto a todos, sin muro de pago.",
     empty: "Aún no hay publicaciones.",
     backTo: "Volver a Análisis",
   },
   guides: {
     title: "Guías",
     subtitle: "Guías atemporales sobre cómo pensamos las apuestas — calibración, disciplina y análisis honesto.",
+    seoDescription: "Guías de apuestas gratuitas sobre gestión de bankroll, hándicap asiático, criterio Kelly, valor de línea de cierre y más. Recursos educativos para afilar tu ventaja — escritos por humanos, sin muro de pago.",
     empty: "Aún no hay guías.",
     backToGuides: "Volver a Guías",
   },
