@@ -361,6 +361,13 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
           )}
         </>
       ) : null}
+
+      <p className="pb-10 pt-2 text-center text-sm text-muted">
+        Want to crunch the numbers yourself?{" "}
+        <Link href={withLang("/calculators", lang)} className="font-semibold text-brand hover:underline">
+          Try our free calculators &rarr;
+        </Link>
+      </p>
     </div>
   );
 }

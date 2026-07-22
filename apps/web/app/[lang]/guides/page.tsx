@@ -94,6 +94,12 @@ export default async function GuidesPage({ params }: Props) {
           {guides.map((post) => (
             <GuideCard key={post.id} post={post} lang={lang} />
           ))}
+          <p className="pt-2 text-center text-sm text-muted">
+            Put it into practice with our{" "}
+            <Link href={withLang("/calculators", lang)} className="font-semibold text-brand hover:underline">
+              free calculators &rarr;
+            </Link>
+          </p>
         </div>
       )}
     </div>
