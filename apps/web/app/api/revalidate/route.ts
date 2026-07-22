@@ -9,7 +9,7 @@ import { revalidateTag } from "next/cache";
  * unstable_cache tags in lib/data.ts.
  */
 
-const ALLOWED_TAGS = ["picks", "posts", "votes", "matches", "watching"] as const;
+const ALLOWED_TAGS = ["picks", "posts", "votes", "matches", "watching", "analysis-articles"] as const;
 
 function secretMatches(given: string | null): boolean {
   const expected = process.env.REVALIDATE_SECRET;
