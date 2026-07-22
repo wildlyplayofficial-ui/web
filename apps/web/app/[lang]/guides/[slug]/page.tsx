@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { getPost, getPostLangs } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
 
@@ -118,15 +119,14 @@ export default async function GuidePage({ params }: Props) {
       }).format(new Date(post.published_at))
     : null;
 
-  const schema = JSON.stringify(buildArticleSchema(post, slug, lang)).replace(/</g, '\\u003c');
+  // Schema built from DB field names only — no user-generated HTML. < escaped to prevent injection.
+  const schema = JSON.stringify(buildArticleSchema(post, slug, lang)).replace(/</g, "\\u003c");
 
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
       {/* JSON-LD: server-controlled data only, no user input */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: schema }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.guides.title, url: "/guides" }, { name: post.title, url: `/guides/${slug}` }]} />
 
       <Link
         href={withLang("/guides", lang)}
