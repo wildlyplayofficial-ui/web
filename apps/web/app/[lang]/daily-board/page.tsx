@@ -19,6 +19,7 @@ import {
 } from "@/lib/data";
 import { formatBoardDate, formatUnits } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
 
@@ -31,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   return {
     title: dict.board.title,
-    description: dict.board.subtitle,
+    description: dict.board.seoDescription,
     alternates: buildAlternates("/daily-board", lang),
     openGraph: {
       title: `${dict.board.title} | WildlyPlay`,
-      description: dict.board.subtitle,
+      description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
   };
