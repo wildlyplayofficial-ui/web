@@ -278,12 +278,17 @@ import { generateBuzz } from './buzz';
 import { publishWatchingNews } from './watching-news';
 import { announcePick } from './announce-pick';
 import { handleApiRoute } from './api-routes';
+import { handleAnalysisRoute } from './analysis-api';
 
 const WEBHOOK_SECRET = process.env.REVALIDATE_SECRET ?? '';
 const webhookPort = Number(process.env.WEBHOOK_PORT ?? process.env.PORT ?? '8080');
 
 const server = createServer(async (req, res) => {
-  if (req.method !== 'POST') {
+  const reqUrl = req.url ?? '';
+  const isAnalysisRoute = reqUrl.startsWith('/api/analysis');
+
+  // Analysis routes accept GET/POST/PUT/DELETE; everything else is POST-only
+  if (!isAnalysisRoute && req.method !== 'POST') {
     res.writeHead(405).end('Method not allowed');
     return;
   }
@@ -298,6 +303,26 @@ const server = createServer(async (req, res) => {
     req.on('data', (chunk: Buffer) => { data += chunk; });
     req.on('end', () => resolve(data));
   });
+
+  // ── Analysis article routes (Desk-authored content, §2A) ──
+  if (isAnalysisRoute && persistDb) {
+    try {
+      const handled = await handleAnalysisRoute(req, res, body, {
+        db: persistDb,
+        revalidate,
+      });
+      if (handled) return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log.warn(`analysis-api error: ${msg}`);
+      if (!res.headersSent) res.writeHead(500).end(JSON.stringify({ error: msg }));
+      return;
+    }
+  }
+  if (isAnalysisRoute && !persistDb) {
+    res.writeHead(503).end(JSON.stringify({ ok: false, error: 'database not configured' }));
+    return;
+  }
 
   try {
     const payload = JSON.parse(body);
