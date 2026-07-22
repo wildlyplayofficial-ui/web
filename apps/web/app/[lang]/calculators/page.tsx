@@ -75,6 +75,12 @@ export default async function CalculatorsPage({ params }: Props) {
             Over/Under, BTTS, most-likely score, and 1X2 fair probabilities from expected goals.
           </p>
         </Link>
+        <p className="pt-2 text-center text-sm text-muted">
+          Not sure which tool to use?{" "}
+          <Link href={withLang("/guides", lang)} className="font-semibold text-brand hover:underline">
+            Read our betting guides &rarr;
+          </Link>
+        </p>
       </div>
     </div>
   );

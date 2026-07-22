@@ -72,6 +72,7 @@ export default async function DailyBoard({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.board.title, url: "/daily-board" }]} />
       {/* 1. Header: title + date-stamp + one-line summary */}
       <section className="pt-10 pb-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -251,7 +252,7 @@ export default async function DailyBoard({ params }: Props) {
       <MatchesWidget lang={lang} />
 
       {/* 8. Footer: Track Record CTA + Telegram */}
-      <section className="flex flex-wrap items-center justify-center gap-4 pb-14 pt-4">
+      <section className="flex flex-wrap items-center justify-center gap-4 pb-6 pt-4">
         <Link
           href={withLang("/archive", lang)}
           className="inline-flex items-center gap-2 rounded-full border border-brand px-7 py-3 font-display font-semibold text-brand transition-transform hover:-translate-y-0.5"
@@ -267,6 +268,15 @@ export default async function DailyBoard({ params }: Props) {
           Telegram &rarr;
         </a>
       </section>
+      <p className="pb-14 text-center text-sm text-muted">
+        <Link href={withLang("/analysis", lang)} className="font-semibold text-brand hover:underline">
+          Deep-dive analysis &rarr;
+        </Link>
+        <span className="mx-3 text-line">·</span>
+        <Link href={withLang("/guides", lang)} className="font-semibold text-brand hover:underline">
+          Betting guides &rarr;
+        </Link>
+      </p>
     </div>
   );
 }
