@@ -54,11 +54,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!comp) return { title: dict.standings.title };
 
   const title = dict.standings.titleFor.replace("{name}", comp.name);
+  const description = dict.standings.descriptionFor
+    .replace("{name}", comp.name)
+    .replace("{season}", comp.season ?? "");
   return {
     title,
+    description,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
       title: `${title} | WildlyPlay`,
+      description,
       images: [{ url: `/api/og/editorial?title=${encodeURIComponent(comp.name)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
     },
   };
