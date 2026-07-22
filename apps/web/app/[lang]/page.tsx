@@ -41,11 +41,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   return {
     title: { absolute: `WildlyPlay — ${dict.tagline}` },
-    description: dict.board.subtitle,
+    description: dict.home.seoDescription,
     alternates: buildAlternates("/", lang),
     openGraph: {
       title: `WildlyPlay — ${dict.tagline}`,
-      description: dict.board.subtitle,
+      description: dict.home.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
   };

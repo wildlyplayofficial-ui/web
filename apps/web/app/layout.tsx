@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     template: "%s | WildlyPlay",
   },
   description:
-    "Curator-led football picks, AI-operated. Every pick public forever — wins and losses. Entertainment only.",
+    "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis, odds tools and guides across Premier League, La Liga, Serie A and more.",
   openGraph: {
     siteName: "WildlyPlay",
     type: "website",
     locale: "en_US",
     title: "WildlyPlay — Handpicked plays for the global crowd",
     description:
-      "Curator-led football picks, AI-operated. Every pick public forever — wins and losses.",
+      "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis and odds tools.",
     images: [{ url: "/og-home.png", width: 1200, height: 630, type: "image/png" }],
   },
   twitter: {

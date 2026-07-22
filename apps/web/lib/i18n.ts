@@ -84,6 +84,7 @@ export interface Dict {
     asOf: string;
   };
   home: {
+    seoDescription: string;
     latestAnalysis: string;
     viewBoard: string;
     trustCurator: string;
@@ -328,6 +329,7 @@ const en: Dict = {
     asOf: "as of",
   },
   home: {
+    seoDescription: "Free daily football picks by a human curator. Every play public forever — wins and losses. Match analysis, odds tools and betting guides across Premier League, La Liga, Serie A, Bundesliga and World Cup.",
     latestAnalysis: "Latest analysis",
     viewBoard: "View the Daily Board",
     trustCurator: "The Curator — real human, hand-picked plays",
@@ -571,6 +573,7 @@ const vi: Dict = {
     asOf: "tính đến",
   },
   home: {
+    seoDescription: "Kèo bóng đá miễn phí mỗi ngày do người thật chọn. Mọi kèo công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ cược và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và World Cup.",
     latestAnalysis: "Phân tích mới nhất",
     viewBoard: "Xem Bảng Kèo Hôm Nay",
     trustCurator: "The Curator — người thật, tự tay chọn kèo",
@@ -814,6 +817,7 @@ const th: Dict = {
     asOf: "ณ วันที่",
   },
   home: {
+    seoDescription: "ทีเด็ดบอลฟรีรายวันโดยคิวเรเตอร์มนุษย์ ทุกทีเด็ดเปิดเผยต่อสาธารณะตลอดไป ทั้งชนะและแพ้ วิเคราะห์แมตช์ เครื่องมืออัตราต่อรอง และคู่มือสำหรับพรีเมียร์ลีก ลาลีกา เซเรียอา บุนเดสลีกา และฟุตบอลโลก",
     latestAnalysis: "บทวิเคราะห์ล่าสุด",
     viewBoard: "ดูบอร์ดประจำวัน",
     trustCurator: "The Curator — คนจริง เลือกทีเด็ดด้วยมือ",
@@ -1057,6 +1061,7 @@ const es: Dict = {
     asOf: "al",
   },
   home: {
+    seoDescription: "Pronósticos de fútbol gratuitos diarios por un curador humano. Cada jugada pública para siempre — aciertos y fallos. Análisis de partidos, herramientas de cuotas y guías para Premier League, La Liga, Serie A, Bundesliga y Copa del Mundo.",
     latestAnalysis: "Análisis recientes",
     viewBoard: "Ver la Pizarra Diaria",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
