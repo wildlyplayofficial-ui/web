@@ -1,5 +1,5 @@
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
-import { teamsFromSlug } from "@/lib/team-badges";
+import { teamsFromSlug, teamsFromSlugLoose } from "@/lib/team-badges";
 import { renderDeskCard } from "../../_desk-card";
 
 /**
@@ -49,7 +49,7 @@ export async function GET(
   // Roundups (and matchups we can't resolve) fall back to the brand-band card.
   const teams = article.kind === "roundup"
     ? null
-    : teamsFromSlug(slug) ?? teamsFromTitle(article.title);
+    : teamsFromSlug(slug) ?? teamsFromTitle(article.title) ?? teamsFromSlugLoose(slug);
 
   return renderDeskCard({
     home: teams?.home ?? null,
