@@ -60,6 +60,35 @@ export function TmaCountdown({
   );
 }
 
+/* ── D8: Urgency Banner (cutoff <1h, unpicked) ───────────────────────── */
+
+export function CutoffUrgencyBanner({ cutoffUtc }: { cutoffUtc: string }) {
+  const [minsLeft, setMinsLeft] = useState(() => {
+    const diff = new Date(cutoffUtc).getTime() - Date.now();
+    return Math.max(0, Math.floor(diff / 60_000));
+  });
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const diff = new Date(cutoffUtc).getTime() - Date.now();
+      const m = Math.max(0, Math.floor(diff / 60_000));
+      setMinsLeft(m);
+      if (m <= 0) clearInterval(id);
+    }, 10_000); // update every 10s is enough for "X min left"
+    return () => clearInterval(id);
+  }, [cutoffUtc]);
+
+  if (minsLeft > 60 || minsLeft <= 0) return null;
+
+  return (
+    <div className="mb-4 rounded-lg border border-loss/40 bg-loss-dim px-4 py-3 text-center">
+      <p className="font-display text-sm font-bold text-loss">
+        ⏰ {minsLeft} min left — lock your pick!
+      </p>
+    </div>
+  );
+}
+
 /* ── Share Button ──────────────────────────────────────────────────────── */
 
 export function ShareButton({

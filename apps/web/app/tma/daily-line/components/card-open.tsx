@@ -9,7 +9,7 @@ import type {
 } from "@/lib/goalline/types";
 import type { DailyLineDict } from "@/lib/goalline/strings";
 import { TmaMatchList } from "./match-list";
-import { TmaCountdown, ShareButton } from "./ui";
+import { CutoffUrgencyBanner, TmaCountdown, ShareButton } from "./ui";
 
 /* ── Open Unpicked ─────────────────────────────────────────────────────── */
 
@@ -124,6 +124,9 @@ export function CardOpenUnpicked({
         </p>
         <TmaMatchList matches={matches} />
       </div>
+
+      {/* D8: Urgency banner when cutoff <1h */}
+      <CutoffUrgencyBanner cutoffUtc={card.cutoff_time_utc} />
 
       {/* Countdown to cut-off */}
       <TmaCountdown targetUtc={card.cutoff_time_utc} label={S.CUTOFF_LABEL} />

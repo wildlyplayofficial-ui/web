@@ -132,6 +132,22 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
       await handleLeaderboard(chatId);
       return;
     }
+
+    // D7: /alerts on|off — toggle Daily Line DM notifications
+    const alertsMatch = text.match(/^\/alerts(?:@\w+)?\s+(on|off)$/i);
+    if (alertsMatch && !isGroup) {
+      const wantOn = alertsMatch[1].toLowerCase() === 'on';
+      const fromId = String(message.from?.id ?? '');
+      if (fromId) {
+        const sb = getSupabase();
+        if (sb) await sb.from('gl_users').update({ tg_alerts: wantOn }).eq('auth_provider', 'telegram').eq('auth_ref', fromId);
+      }
+      await tgApi("sendMessage", {
+        chat_id: chatId,
+        text: wantOn ? "🔔 Daily Line alerts ON — you'll get notified when a card opens." : "🔕 Daily Line alerts OFF — no more DMs about cards.",
+      });
+      return;
+    }
   }
 
   // --- Bot added to a group ---
