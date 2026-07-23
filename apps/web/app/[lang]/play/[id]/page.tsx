@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ConfidenceBadge } from "@/components/confidence-badge";
 import { CrowdPoll } from "@/components/crowd-poll";
 import { TrackPageView } from "@/components/track-event";
 import { MatchEvents } from "@/components/match-events";
@@ -13,7 +14,7 @@ import { buildMatchSlug, buildPlaySlug, getPick, getPickBySlug, getPost, getThes
 import { getBoothForPick } from "@/lib/booth-data";
 import { BoothSection } from "@/components/booth-section";
 import { teamFlag } from "@/lib/flags";
-import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
+import { badgeFor, formatKickoff, formatOdds, formatPostedAt, formatUnits, marketLabels } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -128,7 +129,8 @@ export default async function PlayDetail({ params }: Props) {
           <p className="text-sm text-muted">
             {pick.league} &middot; {formatKickoff(pick.kickoff_utc, lang)}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {pick.confidence && <ConfidenceBadge level={pick.confidence} dict={dict} />}
             <StatusBadge kind={badgeFor(pick)} dict={dict} />
             {badgeFor(pick) === "live" && pick.fixture_id > 0 && (
               <LiveClock eventId={String(pick.fixture_id)} showScore />
@@ -262,6 +264,10 @@ export default async function PlayDetail({ params }: Props) {
       </nav>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
+        {/* D1 (§9): immutable publish timestamp — proof the pick pre-dates kickoff. */}
+        {pick.published_at && (
+          <>{dict.pick.postedAt} {formatPostedAt(pick.published_at, lang)} &middot; </>
+        )}
         {pick.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
       </p>
     </article>

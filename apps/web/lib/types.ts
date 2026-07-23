@@ -38,6 +38,10 @@ export interface AnalysisArticle {
  *  Optional — legacy/mock rows predate Scout and default to "curator" at call sites. */
 export type Author = "curator" | "scout";
 
+/** Pre-registered confidence (§12 T1): set at publish, immutable, no numeric probability.
+ *  Values mirror apps/worker parse-pick.ts (lowercase in DB). */
+export type Confidence = "low" | "medium" | "high";
+
 export interface Pick {
   id: string;
   fixture_id: number;
@@ -69,6 +73,8 @@ export interface Pick {
   sources: string[] | null;
   /** Tiered Picks firewall (§12): who this pick belongs to. Optional — defaults to "curator". */
   author?: Author;
+  /** Pre-registered confidence (§12 T1). Null for picks published before the field existed. */
+  confidence?: Confidence | null;
 }
 
 export interface Post {

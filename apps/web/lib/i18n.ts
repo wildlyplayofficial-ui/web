@@ -163,6 +163,11 @@ export interface Dict {
     scoutLabel: string;
     halfWin: string;
     halfLoss: string;
+    confidence: string;
+    confLow: string;
+    confMedium: string;
+    confHigh: string;
+    postedAt: string;
   };
   play: {
     backToBoard: string;
@@ -413,6 +418,11 @@ const en: Dict = {
     scoutLabel: "The Scout",
     halfWin: "half-win",
     halfLoss: "half-loss",
+    confidence: "Confidence",
+    confLow: "Low",
+    confMedium: "Medium",
+    confHigh: "High",
+    postedAt: "Posted",
   },
   play: {
     backToBoard: "Back to the Board",
@@ -661,6 +671,11 @@ const vi: Dict = {
     scoutLabel: "The Scout",
     halfWin: "thắng nửa",
     halfLoss: "thua nửa",
+    confidence: "Độ tự tin",
+    confLow: "Thấp",
+    confMedium: "Trung bình",
+    confHigh: "Cao",
+    postedAt: "Đăng lúc",
   },
   play: {
     backToBoard: "Quay lại Bảng Kèo",
@@ -909,6 +924,11 @@ const th: Dict = {
     scoutLabel: "The Scout",
     halfWin: "ชนะครึ่ง",
     halfLoss: "แพ้ครึ่ง",
+    confidence: "ความมั่นใจ",
+    confLow: "ต่ำ",
+    confMedium: "ปานกลาง",
+    confHigh: "สูง",
+    postedAt: "เผยแพร่เมื่อ",
   },
   play: {
     backToBoard: "กลับไปหน้าบอร์ด",
@@ -1159,6 +1179,11 @@ const es: Dict = {
     scoutLabel: "The Scout",
     halfWin: "media ganancia",
     halfLoss: "media pérdida",
+    confidence: "Confianza",
+    confLow: "Baja",
+    confMedium: "Media",
+    confHigh: "Alta",
+    postedAt: "Publicado",
   },
   play: {
     backToBoard: "Volver a la Pizarra",
