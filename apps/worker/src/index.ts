@@ -29,6 +29,7 @@ import { createClient } from '@supabase/supabase-js';
 import { persistMatchState, fetchLivescoreForPersist, seedFromGlMatches, detectFinishedMatches, getActiveCompetitionIds } from './persist-state';
 import { startBoothShadow } from './booth-shadow';
 import { createIndexNowPinger } from './indexnow';
+import { runDailyLineAlerts } from './dl-alerts';
 import { checkDailyLineHealth } from './dl-monitor';
 import { generatePostmortemDraft } from './postmortem';
 import { runProviderMatcher } from './provider-matcher';
@@ -472,9 +473,24 @@ const dlMonitorTimer = persistDb
 if (dlMonitorTimer) log.info('dl-monitor started (every 15 min)');
 else log.warn('dl-monitor disabled — no Supabase client');
 
+// ── D7: Daily Line Telegram alerts (every 5 min) ──
+const DL_ALERTS_INTERVAL = 5 * 60 * 1000;
+const tmaBotToken = process.env.TMA_BOT_TOKEN;
+const dlAlertsTimer = persistDb && tmaBotToken
+  ? setInterval(() => void runDailyLineAlerts({
+      db: persistDb,
+      tmaBotToken,
+      siteUrl,
+    }), DL_ALERTS_INTERVAL)
+  : null;
+if (dlAlertsTimer) log.info('dl-alerts started (every 5 min)');
+else if (!tmaBotToken) log.warn('dl-alerts disabled — TMA_BOT_TOKEN missing');
+else log.warn('dl-alerts disabled — no Supabase client');
+
 async function shutdown(signal: string): Promise<void> {
   log.info(`${signal} received — shutting down`);
   clearInterval(glCronTimer);
+  if (dlAlertsTimer) clearInterval(dlAlertsTimer);
   if (dlMonitorTimer) clearInterval(dlMonitorTimer);
   clearInterval(persistTimer);
   if (jobQueueTimer) clearInterval(jobQueueTimer);
