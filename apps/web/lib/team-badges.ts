@@ -54,6 +54,7 @@ const SLUG_ALIASES: Record<string, string> = {
   "los-angeles-galaxy": "la-galaxy",
   "los-angeles-fc": "los-angeles-fc",
   "montreal-impact": "cf-montreal",
+  chicago: "chicago-fire",
 };
 
 /** Resolve a slug token (e.g. "france", "united-states") back to a display name. */
@@ -104,4 +105,18 @@ export function teamsFromSlug(slug: string): { home: string; away: string } | nu
   const away = findTeamFromStart(right) ?? findTeamInToken(right);
   if (!home || !away) return null;
   return { home, away };
+}
+
+/** Fallback for Desk slugs without "-vs-", e.g. "inter-miami-chicago-thi-truong-…".
+ *  Longest team prefix from the start → home; team prefix of the remainder → away.
+ *  Requires home at position 0, so prose-only slugs stay unresolved (roundup card). */
+export function teamsFromSlugLoose(slug: string): { home: string; away: string } | null {
+  const parts = slug.split("-");
+  for (let i = parts.length; i > 0; i--) {
+    const home = teamNameFromSlug(parts.slice(0, i).join("-"));
+    if (!home) continue;
+    const away = findTeamFromStart(parts.slice(i).join("-"));
+    if (away) return { home, away };
+  }
+  return null;
 }

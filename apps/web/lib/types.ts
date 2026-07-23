@@ -29,6 +29,8 @@ export interface AnalysisArticle {
   linked_pick_id: string | null;
   hero_image: string | null;
   published_at: string;
+  /** Row-update timestamp — used as the OG-card cache-bust token. */
+  updated_at?: string;
   status: "draft" | "published";
 }
 

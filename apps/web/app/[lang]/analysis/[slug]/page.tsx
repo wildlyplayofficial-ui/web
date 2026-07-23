@@ -19,6 +19,12 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+/** Branded Desk OG card URL — `v` busts the CDN cache when the row updates. */
+function deskOgCard(desk: AnalysisArticle, lang: Lang): string {
+  const v = Date.parse(desk.updated_at ?? desk.published_at) || 0;
+  return `/api/og/analysis/${desk.slug}?locale=${lang}&v=${v}`;
+}
+
 /** Try Desk article first, then fall back to posts table. */
 async function resolveArticle(slug: string, lang: Lang) {
   const deskArticle = await getAnalysisArticleBySlug(slug);
@@ -43,6 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .slice(0, 160);
     const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
     const alternates = buildAlternates(`/analysis/${slug}`, lang);
+    // og:image is always the branded Desk card (consistent 1200x630), even
+    // when a hero_image exists.
+    const ogCard = deskOgCard(desk, lang);
     return {
       title: desk.title,
       description,
@@ -52,11 +61,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         type: "article",
         publishedTime: desk.published_at,
-        images: desk.hero_image
-          ? [{ url: desk.hero_image, width: 1200, height: 630 }]
-          : [{ url: `/api/og/editorial?title=${encodeURIComponent(desk.title)}`, width: 1200, height: 630 }],
+        images: [{ url: ogCard, width: 1200, height: 630 }],
       },
-      twitter: { card: "summary_large_image", title: desk.title, description },
+      twitter: {
+        card: "summary_large_image",
+        title: desk.title,
+        description,
+        images: [{ url: ogCard, width: 1200, height: 630 }],
+      },
     };
   }
 
@@ -212,19 +224,17 @@ function DeskArticleView({
         </p>
       </header>
 
-      {/* Hero image */}
-      {article.hero_image && (
-        <div className="mt-6 overflow-hidden rounded-card">
-          <img
-            src={article.hero_image}
-            alt={article.title}
-            width={1200}
-            height={630}
-            className="w-full"
-            loading="eager"
-          />
-        </div>
-      )}
+      {/* Hero image — branded Desk OG card when no hero_image is set */}
+      <div className="mt-6 overflow-hidden rounded-card">
+        <img
+          src={article.hero_image ?? deskOgCard(article, lang)}
+          alt={article.title}
+          width={1200}
+          height={630}
+          className="w-full"
+          loading="eager"
+        />
+      </div>
 
       <hr className="my-6 border-line" />
 
