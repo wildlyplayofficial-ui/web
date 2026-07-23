@@ -673,7 +673,7 @@ const vi: Dict = {
     halfLoss: "thua nửa",
     confidence: "Độ tự tin",
     confLow: "Thấp",
-    confMedium: "Vừa",
+    confMedium: "Trung bình",
     confHigh: "Cao",
     postedAt: "Đăng lúc",
   },

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { buildPlaySlug } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
-import { badgeFor, formatKickoff, formatOdds, formatUnits, marketLabels } from "@/lib/format";
+import { badgeFor, formatKickoff, formatOdds, formatPostedAt, formatUnits, marketLabels } from "@/lib/format";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
 import type { Pick, VoteCounts } from "@/lib/types";
 import { ConfidenceBadge } from "./confidence-badge";
@@ -40,7 +40,7 @@ export function PickCard({
         <p className="text-sm text-muted">
           {pick.league} · {formatKickoff(pick.kickoff_utc, lang)}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {pick.confidence && <ConfidenceBadge level={pick.confidence} dict={dict} />}
           {badge === "live" ? (
             <LiveClock eventId={String(pick.fixture_id)} showScore homeTeam={pick.home_team} awayTeam={pick.away_team} />
@@ -123,7 +123,7 @@ export function PickCard({
       <p className="mt-4 border-t border-line-muted pt-3 text-xs text-muted">
         {/* D1 (§9): immutable publish timestamp — proof the pick pre-dates kickoff. */}
         {pick.published_at && (
-          <>{dict.pick.postedAt} {formatKickoff(pick.published_at, lang)} &middot; </>
+          <>{dict.pick.postedAt} {formatPostedAt(pick.published_at, lang)} &middot; </>
         )}
         {pick.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
       </p>
