@@ -43,7 +43,7 @@ async function sendDM(
   chatId: string,
   text: string,
   replyMarkup?: object,
-): Promise<boolean> {
+): Promise<'ok' | 'blocked' | 'error'> {
   try {
     const body: Record<string, unknown> = {
       chat_id: chatId,
@@ -58,14 +58,14 @@ async function sendDM(
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({})) as { description?: string };
-      // 403 = bot blocked by user → disable alerts
-      if (res.status === 403) return false;
+      if (res.status === 403) return 'blocked';
       log.warn(`dl-alerts: sendDM ${chatId} HTTP ${res.status}: ${data.description ?? ''}`);
+      return 'error';
     }
-    return res.ok;
+    return 'ok';
   } catch (err) {
     log.warn('dl-alerts: sendDM failed', err);
-    return false;
+    return 'error';
   }
 }
 
@@ -93,12 +93,10 @@ async function alreadySent(db: SupabaseClient, cardId: string, userId: string, k
 
 async function markSent(db: SupabaseClient, cardId: string, userId: string, kind: AlertKind) {
   await db.from('gl_alerts_sent').upsert(
-    { card_id: cardId, user_id: visibleId(userId), kind },
+    { card_id: cardId, user_id: userId, kind },
     { onConflict: 'card_id,user_id,kind' },
   );
 }
-
-function visibleId(id: string) { return id; }
 
 // ── Eligible users ──────────────────────────────────────────────────────────
 
@@ -131,8 +129,9 @@ async function alertCardLive(deps: Deps, card: GlCard) {
   let sent = 0;
   for (const user of users) {
     if (await alreadySent(deps.db, card.id, user.id, 'card_live')) continue;
-    const ok = await sendDM(deps.tmaBotToken, user.auth_ref, text, tmaButton(deps.siteUrl));
-    if (!ok) { await disableAlerts(deps.db, user.id); continue; }
+    const result = await sendDM(deps.tmaBotToken, user.auth_ref, text, tmaButton(deps.siteUrl));
+    if (result === 'blocked') { await disableAlerts(deps.db, user.id); continue; }
+    if (result === 'error') continue;
     await markSent(deps.db, card.id, user.id, 'card_live');
     sent++;
   }
@@ -146,7 +145,7 @@ async function alertNudge(deps: Deps, card: GlCard) {
   const now = Date.now();
   const minsLeft = (cutoff - now) / 60_000;
   // Fire between 55-65 min before cutoff (5-min interval tolerance)
-  if (minsLeft > 65 || minsLeft < 0) return;
+  if (minsLeft > 65 || minsLeft < 55) return;
 
   const users = await getTgUsers(deps.db);
   if (!users.length) return;
@@ -164,8 +163,9 @@ async function alertNudge(deps: Deps, card: GlCard) {
   for (const user of users) {
     if (pickedUserIds.has(user.id)) continue;
     if (await alreadySent(deps.db, card.id, user.id, 'nudge')) continue;
-    const ok = await sendDM(deps.tmaBotToken, user.auth_ref, text, tmaButton(deps.siteUrl));
-    if (!ok) { await disableAlerts(deps.db, user.id); continue; }
+    const result = await sendDM(deps.tmaBotToken, user.auth_ref, text, tmaButton(deps.siteUrl));
+    if (result === 'blocked') { await disableAlerts(deps.db, user.id); continue; }
+    if (result === 'error') continue;
     await markSent(deps.db, card.id, user.id, 'nudge');
     sent++;
   }
@@ -200,8 +200,9 @@ async function alertSettled(deps: Deps, card: GlCard) {
     const emoji = won ? '🎉' : '😤';
     const text = `${emoji} <b>Card #${card.card_number} settled: ${card.settlement_result!.toUpperCase()}</b>\n\nYou picked <b>${pick.side.toUpperCase()}</b> — ${won ? 'WIN' : 'LOSS'} (${ptsStr} pts)`;
 
-    const ok = await sendDM(deps.tmaBotToken, user.auth_ref, text, tmaButton(deps.siteUrl));
-    if (!ok) { await disableAlerts(deps.db, user.id); continue; }
+    const result = await sendDM(deps.tmaBotToken, user.auth_ref, text, tmaButton(deps.siteUrl));
+    if (result === 'blocked') { await disableAlerts(deps.db, user.id); continue; }
+    if (result === 'error') continue;
     await markSent(deps.db, card.id, user.id, 'settled');
     sent++;
   }
