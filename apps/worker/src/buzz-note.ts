@@ -4,7 +4,7 @@
  * REQ 5: also propagates translations into published presence posts.
  * A translation failure must NEVER break the watching pipeline — every path logs and returns.
  */
-import { callClaude, POST_FLAGS, splitLangSections, watchingDisclosureFor } from './recap';
+import { callClaude, POST_FLAGS, splitLangSections, VI_LEXICON_RULE, watchingDisclosureFor } from './recap';
 import { buildNewsSlug } from './watching-news';
 import type { PostLang, Store, WatchingRow } from './store';
 import { log } from './log';
@@ -30,6 +30,7 @@ Rules:
 - English section = original note verbatim.
 - Other sections = faithful translations, same meaning, nothing added.
 - Use each language's natural football terminology.
+${VI_LEXICON_RULE}
 - Output ONLY the 4 flag-headed sections, nothing else.`;
 }
 

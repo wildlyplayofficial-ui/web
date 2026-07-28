@@ -119,6 +119,12 @@ export function clvContextLine(pick: PickRow): string {
 export const CLV_RULE =
   '- Closing line: ONLY if a "Closing odds" figure is given above may you note how the price moved from publish to close — a lower closing number means the market moved toward this selection, a higher one means it moved away. State it as a neutral market-movement fact, never as proof the read was clever, and never with the banned vocabulary. If no closing odds are given, do NOT mention the closing line at all.';
 
+/** Bản VI phải hợp pháp thị trường VN (Route A, 28/7). Nguồn duy nhất — inject vào
+ *  MỌI prompt sinh section tiếng Việt (recap, preview, analysis, post-mortem, no-play,
+ *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
+export const VI_LEXICON_RULE =
+  '${VI_LEXICON_RULE}';
+
 /** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
  *  football language ("closing stages", "closed out the win") never matches. */
 const CLOSING_LINE_MENTION = /\bclosing (?:odds|line|price)\b|\bclosed at \d/i;
@@ -159,7 +165,7 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 ${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
-- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định", "dự đoán", "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)
+${VI_LEXICON_RULE}
 - No emoji spam.
 - End each section with the updated record line.
 - Output plain text only — no markdown headers other than the four flag headers.
@@ -318,7 +324,7 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 ${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
-- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định", "dự đoán", "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)
+${VI_LEXICON_RULE}
 - Lead with thesis evaluation — never a generic scoreline summary.
 - End each section with the updated record line, followed by this disclosure as plain text, matching that section's own language exactly:
 ${disclosureBlock(authorTypeOf(pick.author))}

@@ -250,7 +250,7 @@ function parseLines(raw: string): BoothLine[] | null {
 }
 
 const TRANSLATE_GLOSSARY: Record<string, string> = {
-  Vietnamese: 'thesis/read=nhận định/đọc kèo (NOT luận án/luận văn), board=nhà cái, coin-flip=may rủi/5-5, Glass half-full=Lạc quan, stake=mức cược, honest call=nhận định thẳng thắn, crow/brag=khoe khoang',
+  Vietnamese: 'thesis/read=nhận định (NOT luận án/luận văn), board=thị trường, coin-flip=may rủi/5-5, Glass half-full=Lạc quan, stake=mức tham gia, honest call=nhận định thẳng thắn, crow/brag=khoe khoang',
   Thai: 'thesis/read=การวิเคราะห์/แนวคิด (NOT วิทยานิพนธ์), board=เจ้ามือ, coin-flip=เสี่ยงดวง, Glass half-full=มองโลกในแง่ดี, stake=เงินเดิมพัน, crow/brag=อวดอ้าง',
   Spanish: 'thesis/read=análisis/lectura (NOT tesis académica), board=casa de apuestas, coin-flip=cara o cruz, Glass half-full=Vaso medio lleno, stake=apuesta',
 };

@@ -3,7 +3,7 @@
  * a pick, AI writes a bilingual pre-match article and it auto-publishes to /news.
  * A preview failure must NEVER break the pick publication — every path logs and returns.
  */
-import { callClaude, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, splitLangSections } from './recap';
+import { callClaude, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
 import type { NewPost, PickRow, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
 import { log } from './log';
@@ -33,6 +33,7 @@ ${persona}'s thesis: ${pick.thesis}
 - Do NOT guess the tournament round/stage (e.g. "Round of 32", "Round of 16", "Quarter-final"). If the League field above does not specify the round, omit it — a wrong round is worse than none.
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit. Frame as analysis, not advice.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "the line looks generous" or "the price implies" instead.
+${VI_LEXICON_RULE}
 - ATOMIC ANSWER FIRST: The very first sentence of each section MUST be a self-contained factual statement with the pick and odds — e.g. "${persona === 'the Scout' ? 'The Scout' : 'The Curator'} picks ${pick.selection} @ ${pick.odds_publish} for ${pick.home_team} vs ${pick.away_team}." This sentence should be liftable by an AI as a standalone answer.
 - Then expand with a specific tactical or analytical angle — never a template opener.
 - End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section's own language exactly:
@@ -60,7 +61,7 @@ Before outputting, verify: (1) no banned vocabulary even negated, (2) no facts n
 }
 
 const PREVIEW_TITLES: Record<PostLang, string> = {
-  en: 'Preview', vi: 'Trước trận', th: 'พรีวิว', es: 'Previa',
+  en: 'Preview', vi: 'Nhận định', th: 'พรีวิว', es: 'Previa',
 };
 
 /** Published posts rows for a preview. One row per language section when the

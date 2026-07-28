@@ -112,7 +112,7 @@ describe('buildPreviewPosts', () => {
     expect(posts[1]).toMatchObject({
       slug: 'preview-mexico-vs-south-africa',
       lang: 'vi',
-      title: 'Trước trận: Mexico vs South Africa',
+      title: 'Nhận định: Mexico vs South Africa',
       body_md: 'Mexico mở màn sân nhà.',
       status: 'published',
     });

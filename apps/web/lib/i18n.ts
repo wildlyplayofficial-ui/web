@@ -565,7 +565,7 @@ const vi: Dict = {
   board: {
     title: "Bảng Nhận Định Hôm Nay",
     subtitle: "Một trận. Một góc nhìn. Chỉ khi thật sự có lợi thế.",
-    seoDescription: "Nhận định bóng đá miễn phí hằng ngày với thành tích công khai — mọi nhận định thắng lẫn thua đều đăng vĩnh viễn. Admin chỉ xuống kèo khi có lợi thế thật sự. Theo dõi kèo hôm nay, trận bỏ qua và danh sách theo dõi trên Premier League, La Liga, Serie A và nhiều giải khác.",
+    seoDescription: "Nhận định bóng đá miễn phí hằng ngày với thành tích công khai — mọi nhận định thắng lẫn thua đều đăng vĩnh viễn. Admin chỉ đưa nhận định khi có lợi thế thật sự. Theo dõi nhận định hôm nay, trận bỏ qua và danh sách theo dõi trên Premier League, La Liga, Serie A và nhiều giải khác.",
     formTitle: "Phong độ gần đây",
     last30: "30 ngày qua",
     emptyTitle: "Hôm nay không có nhận định.",
@@ -582,7 +582,7 @@ const vi: Dict = {
     asOf: "tính đến",
   },
   home: {
-    seoDescription: "Nhận định bóng đá miễn phí mỗi ngày do người thật chọn. Mọi kèo công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ cược và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
+    seoDescription: "Nhận định bóng đá miễn phí mỗi ngày do người thật chọn. Mọi nhận định công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
     latestAnalysis: "Phân tích mới nhất",
     viewBoard: "Xem Bảng Nhận Định Hôm Nay",
     trustCurator: "Admin — người thật, tự tay chọn trận",
@@ -620,7 +620,7 @@ const vi: Dict = {
   analysis: {
     title: "Phân Tích",
     subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi trận.",
-    seoDescription: "Recap trận đấu, nhận định trước trận và phân tích bóng đá miễn phí, xuất bản sau mỗi kèo. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
+    seoDescription: "Recap trận đấu, nhận định trước trận và phân tích bóng đá miễn phí, xuất bản sau mỗi trận. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
     empty: "Chưa có bài viết.",
     backTo: "Quay lại Phân Tích",
   },
@@ -654,7 +654,7 @@ const vi: Dict = {
     disclosure: "Người chọn trận, AI vận hành. Con người chọn trận này; AI viết, đăng và kết sổ.",
     disclosureScout: "AI chọn trận, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.",
     odds: "Odds lúc đăng",
-    stake: "Mức cược",
+    stake: "Mức tham gia",
     finalScore: "FT",
     viewPlay: "Xem chi tiết kèo",
     curator: "Admin",
@@ -684,7 +684,7 @@ const vi: Dict = {
     void: "Hủy",
   },
   poll: {
-    title: "Bạn nghĩ sao về kèo này?",
+    title: "Bạn nghĩ sao về nhận định này?",
     follow: "Theo kèo",
     fade: "Ngược kèo",
     skip: "Bỏ qua",

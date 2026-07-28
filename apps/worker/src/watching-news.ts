@@ -5,7 +5,7 @@
  */
 import type { Api } from 'grammy';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang, VI_LEXICON_RULE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import { postToFacebook } from './announce-pick';
@@ -56,6 +56,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     '- Do NOT guess the tournament round/stage (e.g. "Round of 32", "Round of 16", "Quarter-final"). If the League field above does not specify the round, omit it entirely — a wrong round is worse than none.',
     '- Neutral and informative tone — this is editorial journalism, NOT a betting recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
+    VI_LEXICON_RULE,
     '- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section\'s own language exactly:',
     watchingDisclosureBlock(),
     '- Do NOT copy any external source verbatim.',
@@ -65,7 +66,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
 // ── Build Posts ──────────────────────────────────────────────────────────────
 
 const NEWS_TITLES: Record<PostLang, string> = {
-  en: 'Preview', vi: 'Trước trận', th: 'พรีวิว', es: 'Previa',
+  en: 'Preview', vi: 'Nhận định', th: 'พรีวิว', es: 'Previa',
 };
 
 export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
