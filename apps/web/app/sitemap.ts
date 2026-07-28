@@ -11,6 +11,10 @@ export const revalidate = 3600;
 const BASE = "https://www.wildlyplay.com";
 const LANGS = ["en", "vi", "th", "es"] as const;
 
+// Ngày reposition VI-legal (28/7/2026) — set lastModified cho trang static/hub để
+// Google biết nội dung vừa đổi và re-crawl bản VI mới sớm (trước chỉ có changeFrequency).
+const VI_REPOSITION = new Date("2026-07-28");
+
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
 function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
   const clean = path === "/" ? "" : path;
@@ -24,7 +28,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [picks, posts, matches, guides, reports, competitions, deskArticles] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs()]);
 
-  const staticRoutes: MetadataRoute.Sitemap = [
+  const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
     { url: `${BASE}/daily-board`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-board") },
     { url: `${BASE}/daily-line`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-line") },
@@ -45,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/transparency`, changeFrequency: "monthly", priority: 0.7, alternates: alternates("/transparency") },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.8, alternates: alternates("/about") },
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
-  ];
+  ] as MetadataRoute.Sitemap).map((r) => ({ ...r, lastModified: VI_REPOSITION }));
 
   const playRoutes: MetadataRoute.Sitemap = picks.map((p) => ({
     url: `${BASE}/play/${p.slug}`,
@@ -99,7 +103,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((c) => c.slug)
     .map((c) => ({
       url: `${BASE}/competitions/${c.slug}`,
-      changeFrequency: "daily",
+      lastModified: VI_REPOSITION,
+      changeFrequency: "daily" as const,
       priority: 0.7,
       alternates: alternates(`/competitions/${c.slug}`),
     }));
