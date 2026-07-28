@@ -131,7 +131,7 @@ export const copy: Record<Lang, AboutCopy> = {
     metaDescription:
       "WildlyPlay là trang phân tích bóng đá do con người tuyển chọn. Mỗi trận được nghiên cứu và lập luận; AI viết nhận định, lưu trữ công khai mọi dự đoán, minh bạch từ ngày đầu.",
     intro:
-      "WildlyPlay là trang nhận định bóng đá do con người tuyển chọn. Một con người — Admin — chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn. Người chọn trận, AI vận hành — công khai trên từng nhận định.",
+      "WildlyPlay là trang nhận định bóng đá do con người thực hiện. Admin là người chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn.",
     cards: [
       {
         heading: "Nhận định có lập luận, không đoán mò",
