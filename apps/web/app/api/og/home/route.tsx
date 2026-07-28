@@ -13,7 +13,9 @@ const MUTED = "#5b6572";
 const PANEL = "#f4f6f8";
 const LINE = "#e2e6ea";
 
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
+  // Bản VI khớp định vị legal (28/7): text nhận định + "Admin" thay "Curator".
+  const vi = new URL(request.url).searchParams.get("lang") === "vi";
   const record = await getTrackRecordForAuthor("curator");
   const asOf = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -52,7 +54,7 @@ export async function GET(): Promise<Response> {
             <span style={{ color: "#a8ffcf" }}>Play</span>
           </div>
           <div style={{ display: "flex", fontSize: 30, color: "rgba(255,255,255,0.85)" }}>
-            Handpicked plays for the global crowd
+            {vi ? "Dự đoán tuyển chọn cho cộng đồng bóng đá" : "Handpicked plays for the global crowd"}
           </div>
         </div>
 
@@ -69,7 +71,7 @@ export async function GET(): Promise<Response> {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, fontSize: 36 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ display: "flex", width: 14, height: 14, borderRadius: 7, backgroundColor: BRAND_GREEN }} />
-              <span style={{ fontWeight: 700, color: MUTED, fontSize: 24 }}>Curator</span>
+              <span style={{ fontWeight: 700, color: MUTED, fontSize: 24 }}>{vi ? "Admin" : "Curator"}</span>
             </div>
             <span style={{ fontWeight: 800 }}>
               {record.wins}-{record.losses}-{record.pushes}
@@ -96,7 +98,7 @@ export async function GET(): Promise<Response> {
               www.wildlyplay.com
             </div>
             <div style={{ display: "flex", fontSize: 18, color: MUTED }}>
-              Human-picked. Not financial advice.
+              {vi ? "Do người tuyển chọn · Chỉ mang tính tham khảo" : "Human-picked. Not financial advice."}
             </div>
           </div>
         </div>
