@@ -57,10 +57,10 @@ const PREVIEW = {
     outro: 'Follow live scores and updates on WildlyPlay.',
   },
   vi: {
-    headline: (d: PreviewData) => `Trước trận: ${d.home} vs ${d.away} — ${d.competition}`,
+    headline: (d: PreviewData) => `Nhận định: ${d.home} vs ${d.away} — ${d.competition}`,
     intro: (d: PreviewData) => `${d.home} gặp ${d.away} tại ${d.competition} vào ngày ${d.dateUtc}.`,
     form: (team: string, form: string) => `Phong độ gần đây — ${team}: ${form}.`,
-    pick: (author: string, url: string) => `${author} đã đăng kèo cho trận này: ${url}`,
+    pick: (author: string, url: string) => `${author} đã đăng nhận định cho trận này: ${url}`,
     outro: 'Theo dõi tỷ số trực tiếp và cập nhật trên WildlyPlay.',
   },
   th: {
@@ -105,7 +105,7 @@ const RESULT = {
     intro: (d: ResultData) => `${d.home} ${d.homeScore}-${d.awayScore} ${d.away} — trận đấu tại ${d.competition} ngày ${d.dateUtc} đã kết thúc.`,
     win: (winner: string) => `${winner} giành chiến thắng.`,
     draw: 'Trận đấu kết thúc với tỷ số hòa.',
-    pick: (author: string, url: string) => `${author} đã đăng kèo cho trận này: ${url}`,
+    pick: (author: string, url: string) => `${author} đã đăng nhận định cho trận này: ${url}`,
   },
   th: {
     headline: (d: ResultData) => `ผลบอล: ${d.home} ${d.homeScore}-${d.awayScore} ${d.away}`,

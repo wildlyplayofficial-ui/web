@@ -4,7 +4,7 @@
  * A failure must NEVER break the /noplay reply — every path logs and returns.
  */
 import type { Api } from 'grammy';
-import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL } from './recap';
+import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL, VI_LEXICON_RULE } from './recap';
 import { parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import { postPhotoToFacebook } from './announce';
@@ -60,6 +60,7 @@ Reason for passing: ${REASON_LABELS[np.reason]} (${np.reason})${watchingLine}${n
 ${disclosureBlock(authorTypeOf(np.author))}
 - Responsible language: NEVER use "sure win", "guaranteed", "lock" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "nothing worth backing" or "no reason to play" instead.
+${VI_LEXICON_RULE}
 - Do NOT copy any external source verbatim.
 - Lead with tension, a specific insight, or a surprising angle — never a template opener.
 </rules>

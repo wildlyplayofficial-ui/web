@@ -41,13 +41,13 @@ export const POST_FLAGS: Record<PostLang, string> = {
 const DISCLOSURE: Record<AuthorType, Record<PostLang, string>> = {
   real_human: {
     en: 'Human-picked, AI-written.',
-    vi: 'Con người chọn kèo, AI viết bài.',
+    vi: 'Con người chọn trận, AI viết bài.',
     th: 'มนุษย์เลือกเดิมพัน เขียนโดย AI',
     es: 'Elegido por un humano, escrito por IA.',
   },
   fictional_ai: {
     en: 'AI-picked, AI-written — Scout is an experimental AI persona, not a real person.',
-    vi: 'AI chọn kèo, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.',
+    vi: 'AI chọn trận, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.',
     th: 'AI เลือกเดิมพัน เขียนโดย AI — Scout เป็นตัวละคร AI ทดลอง ไม่ใช่บุคคลจริง',
     es: 'Elegido por IA, escrito por IA — Scout es un personaje de IA experimental, no una persona real.',
   },
@@ -61,7 +61,7 @@ export function disclosureFor(authorType: AuthorType, lang: PostLang): string {
 /** Watching/no-play footer (Req 2): state-accurate — does NOT claim "chose this play". */
 const WATCHING_DISCLOSURE: Record<PostLang, string> = {
   en: 'AI-written coverage. No play taken \u2014 we\u2019re watching this match, not betting it.',
-  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng xu\u1ed1ng k\u00e8o \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.',
+  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng \u0111\u01b0a ra nh\u1eadn \u0111\u1ecbnh \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.',
   th: '\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u0e44\u0e21\u0e48\u0e21\u0e35\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u2014 \u0e40\u0e23\u0e32\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49 \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19',
   es: 'Cobertura escrita por IA. No se ha tomado ninguna apuesta \u2014 seguimos este partido, no apostamos.',
 };
@@ -119,6 +119,12 @@ export function clvContextLine(pick: PickRow): string {
 export const CLV_RULE =
   '- Closing line: ONLY if a "Closing odds" figure is given above may you note how the price moved from publish to close — a lower closing number means the market moved toward this selection, a higher one means it moved away. State it as a neutral market-movement fact, never as proof the read was clever, and never with the banned vocabulary. If no closing odds are given, do NOT mention the closing line at all.';
 
+/** Bản VI phải hợp pháp thị trường VN (Route A, 28/7). Nguồn duy nhất — inject vào
+ *  MỌI prompt sinh section tiếng Việt (recap, preview, analysis, post-mortem, no-play,
+ *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
+export const VI_LEXICON_RULE =
+  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)';
+
 /** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
  *  football language ("closing stages", "closed out the win") never matches. */
 const CLOSING_LINE_MENTION = /\bclosing (?:odds|line|price)\b|\bclosed at \d/i;
@@ -159,6 +165,7 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 ${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
+${VI_LEXICON_RULE}
 - No emoji spam.
 - End each section with the updated record line.
 - Output plain text only — no markdown headers other than the four flag headers.
@@ -317,6 +324,7 @@ Updated channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${u
 ${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
+${VI_LEXICON_RULE}
 - Lead with thesis evaluation — never a generic scoreline summary.
 - End each section with the updated record line, followed by this disclosure as plain text, matching that section's own language exactly:
 ${disclosureBlock(authorTypeOf(pick.author))}

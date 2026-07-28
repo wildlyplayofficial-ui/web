@@ -2,7 +2,7 @@
  * Post-mortem newsroom article: when Curator /approve a pick,
  * generate a public post-mortem article (4 languages) + distribute.
  */
-import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, splitLangSections } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
 import { parseAnalysisSection } from './news';
 import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PostLang, PickRow, Store } from './store';
@@ -40,6 +40,7 @@ Thesis: ${pick.thesis}
 - BANNED VOCABULARY — applies IDENTICALLY to every language section, including Thai and Spanish. Do not let a local idiom or "softer" translation smuggle back in the banned meaning:
   - Win-hype: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
   - Loss-excuse: unlucky, deserved to win, deserved better, hard luck, bad break, wrong call, robbed, harsh result.
+${VI_LEXICON_RULE}
 - Do NOT invent stats or events not in the data above.
 - End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section's own language exactly:
 ${disclosureBlock(authorTypeOf(pick.author))}
