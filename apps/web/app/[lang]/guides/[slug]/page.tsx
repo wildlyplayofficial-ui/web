@@ -55,6 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    // Bản VI của guide = bài dạy cá cược (value betting/de-vig/Kelly/AH...) → noindex
+    // để không lộ trên search VN. Giữ EN/TH/ES index bình thường. (Nick+Peter chốt 28/7)
+    robots: lang === "vi" ? { index: false, follow: true } : undefined,
     alternates: { canonical, languages },
     openGraph: {
       title,

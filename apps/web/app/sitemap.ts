@@ -16,11 +16,11 @@ const LANGS = ["en", "vi", "th", "es"] as const;
 const VI_REPOSITION = new Date("2026-07-28");
 
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
-function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
+function alternates(path: string, langs: readonly string[] = LANGS): MetadataRoute.Sitemap[number]["alternates"] {
   const clean = path === "/" ? "" : path;
   return {
     languages: Object.fromEntries(
-      LANGS.map((l) => [l, l === "en" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
+      langs.map((l) => [l, l === "en" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
     ),
   };
 }
@@ -75,12 +75,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/match/${m.slug}`),
   }));
 
+  // Guide: bản VI noindex (bài dạy cá cược) → loại 'vi' khỏi hreflang sitemap, giữ EN/TH/ES.
+  const guideLangs = LANGS.filter((l) => l !== "vi");
   const guideRoutes: MetadataRoute.Sitemap = guides.map((g) => ({
     url: `${BASE}/guides/${g.slug}`,
     lastModified: new Date(g.updated),
     changeFrequency: "monthly",
     priority: 0.7,
-    alternates: alternates(`/guides/${g.slug}`),
+    alternates: alternates(`/guides/${g.slug}`, guideLangs),
   }));
 
   const reportRoutes: MetadataRoute.Sitemap = reports.map((r) => ({
