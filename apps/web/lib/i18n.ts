@@ -630,8 +630,8 @@ const vi: Dict = {
     backToNews: "Quay lại Tin Tức",
   },
   analysis: {
-    title: "Phân Tích",
-    subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi trận.",
+    title: "Nhận Định & Phân Tích Bóng Đá",
+    subtitle: "Nhận định, dự đoán tỷ số và phân tích các trận đấu — cập nhật liên tục, thành tích công khai.",
     seoDescription: "Recap trận đấu, nhận định trước trận và phân tích bóng đá miễn phí, xuất bản sau mỗi trận. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
     empty: "Chưa có bài viết.",
     backTo: "Quay lại Phân Tích",
@@ -708,8 +708,8 @@ const vi: Dict = {
   },
   matches: {
     title: "Trận Đấu Hôm Nay",
-    allMatches: "Trận Của Chúng Ta",
-    matchesSubtitle: "Mọi trận đấu chúng tôi đã phân tích — dự đoán, nhận định và theo dõi.",
+    allMatches: "Lịch Thi Đấu Bóng Đá Hôm Nay",
+    matchesSubtitle: "Lịch thi đấu và kết quả các trận hôm nay, ngày mai — cập nhật trực tiếp.",
     empty: "Hôm nay không có trận",
     kicksOff: "Còn",
     live: "ĐANG ĐÁ",
