@@ -12,3 +12,21 @@ export const COMPETITION_LOGOS: Record<string, string> = {
   'champions-league': `${BASE}/champions-league.png`,
   'world-cup-2026':   `${BASE}/world-cup-2026.png`,
 };
+
+/**
+ * Tên giải theo tiếng Việt — CHỈ ghi đè khi tên VN khác tên gốc, để bắt đúng cầu
+ * tìm kiếm (Route A, 28/7). Ví dụ dân VN gõ "ngoại hạng anh"/"cúp c1", KHÔNG gõ
+ * "premier league"/"champions league" → phải hiển thị tên VN ở H1/title bản VI.
+ * Slug không có trong map thì dùng tên gốc (La Liga, Serie A... giữ nguyên).
+ */
+const COMPETITION_NAMES_VI: Record<string, string> = {
+  'premier-league':   'Ngoại hạng Anh',
+  'champions-league': 'Cúp C1',
+  // TH: các giải trên cần tên Thái do người bản ngữ soi → CHƯA thêm (giữ tên gốc).
+};
+
+/** Tên giải đã bản địa hoá cho `lang`. Không có bản dịch thì trả tên gốc. */
+export function localizedCompetitionName(slug: string, fallback: string, lang: string): string {
+  if (lang === 'vi') return COMPETITION_NAMES_VI[slug] ?? fallback;
+  return fallback;
+}

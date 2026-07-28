@@ -24,6 +24,10 @@ interface Helpline {
 
 export interface AboutCopy {
   title: string;
+  /** SEO <title> — có từ khoá, khác `title` (là H1 trên trang). */
+  metaTitle: string;
+  /** Meta description viết đủ ý 150-160 ký tự — KHÔNG cắt `intro`. */
+  metaDescription: string;
   intro: string;
   cards: ReadonlyArray<{ heading: string; body: string }>;
   personas: [Persona, Persona];
@@ -51,6 +55,9 @@ export interface AboutCopy {
 export const copy: Record<Lang, AboutCopy> = {
   en: {
     title: "About WildlyPlay",
+    metaTitle: "About WildlyPlay — Curator-Led Football Picks, Public Track Record",
+    metaDescription:
+      "WildlyPlay is a curator-led football picks site. A human picks every match; AI writes the analysis, settles results, and archives every pick publicly, forever.",
     intro:
       "WildlyPlay is a curator-led football picks site. A human \u2014 The Curator \u2014 picks the matches and the angles. AI operates everything else: it writes the analysis, publishes, settles the result and archives every pick publicly, forever. Human picks, AI operates \u2014 disclosed on every single play.",
     cards: [
@@ -119,78 +126,85 @@ export const copy: Record<Lang, AboutCopy> = {
     contactBody: "Follow us or drop a message on any of these channels.",
   },
   vi: {
-    title: "V\u1ec1 WildlyPlay",
+    title: "Về WildlyPlay",
+    metaTitle: "Về WildlyPlay — Nhận định bóng đá do người tuyển chọn, thành tích công khai",
+    metaDescription:
+      "WildlyPlay là trang phân tích bóng đá do con người tuyển chọn. Mỗi trận được nghiên cứu và lập luận; AI viết nhận định, lưu trữ công khai mọi dự đoán, minh bạch từ ngày đầu.",
     intro:
-      "WildlyPlay l\u00e0 trang k\u00e8o b\u00f3ng \u0111\u00e1 do con ng\u01b0\u1eddi tuy\u1ec3n ch\u1ecdn. M\u1ed9t con ng\u01b0\u1eddi \u2014 The Curator \u2014 ch\u1ecdn tr\u1eadn v\u00e0 g\u00f3c nh\u00ecn. AI v\u1eadn h\u00e0nh m\u1ecdi th\u1ee9 c\u00f2n l\u1ea1i: vi\u1ebft ph\u00e2n t\u00edch, xu\u1ea5t b\u1ea3n, k\u1ebft s\u1ed5 v\u00e0 l\u01b0u tr\u1eef c\u00f4ng khai m\u1ecdi k\u00e8o, v\u0129nh vi\u1ec5n. Ng\u01b0\u1eddi ch\u1ecdn k\u00e8o, AI v\u1eadn h\u00e0nh \u2014 c\u00f4ng khai tr\u00ean t\u1eebng k\u00e8o.",
+      "WildlyPlay là trang nhận định bóng đá do con người tuyển chọn. Một con người — Admin — chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn. Người chọn trận, AI vận hành — công khai trên từng nhận định.",
     cards: [
       {
-        heading: "Tuy\u1ec3n ch\u1ecdn, kh\u00f4ng ph\u1ea3i d\u1ef1 \u0111o\u00e1n",
-        body: "M\u1ed7i k\u00e8o \u0111\u1ec1u \u0111\u01b0\u1ee3c nghi\u00ean c\u1ee9u v\u00e0 l\u1eadp lu\u1eadn \u2014 kh\u00f4ng ng\u1eabu nhi\u00ean, kh\u00f4ng cam k\u1ebft ch\u1eafc th\u1eafng. Ch\u00fang t\u00f4i chia s\u1ebb g\u00f3c nh\u00ecn, kh\u00f4ng ph\u1ea3i l\u1eddi ti\u00ean tri.",
+        heading: "Nhận định có lập luận, không đoán mò",
+        body: "Mỗi nhận định đều được nghiên cứu và lập luận — không ngẫu nhiên, không cam kết chắc chắn. Chúng tôi chia sẻ góc nhìn, không phải lời tiên tri.",
       },
       {
-        heading: "M\u1ecdi k\u00e8o c\u00f4ng khai v\u0129nh vi\u1ec5n",
-        body: "T\u1ef7 l\u1ec7 k\u00e8o \u0111\u01b0\u1ee3c ch\u1ed1t ngay l\u00fac \u0111\u0103ng v\u00e0 kh\u00f4ng bao gi\u1edd ch\u1ec9nh s\u1eeda. Th\u1eafng, thua, h\u00f2a k\u00e8o \u2014 to\u00e0n b\u1ed9 th\u00e0nh t\u00edch lu\u00f4n hi\u1ec3n th\u1ecb, b\u1eaft \u0111\u1ea7u t\u1eeb s\u1ed1 0.",
+        heading: "Mọi nhận định công khai vĩnh viễn",
+        body: "Tỷ lệ tham chiếu được ghi lại ngay lúc đăng và không bao giờ chỉnh sửa. Đúng, trượt, hòa — toàn bộ thành tích luôn hiển thị, bắt đầu từ số 0.",
       },
       {
-        heading: "Mi\u1ec5n ph\u00ed, cho c\u1ed9ng \u0111\u1ed3ng to\u00e0n c\u1ea7u",
-        body: "Kh\u00f4ng g\u00f3i VIP, kh\u00f4ng thu ph\u00ed, kh\u00f4ng affiliate nh\u00e0 c\u00e1i. Ng\u01b0\u1eddi ch\u01a1i t\u1eeb m\u1ecdi m\u00fai gi\u1edd, g\u1eafn k\u1ebft b\u1edfi t\u00ecnh y\u00eau b\u00f3ng \u0111\u00e1.",
+        heading: "Miễn phí, cho cộng đồng toàn cầu",
+        body: "Không gói VIP, không thu phí, không quảng cáo trá hình. Người hâm mộ từ mọi múi giờ, gắn kết bởi tình yêu bóng đá.",
       },
     ],
     personas: [
       {
-        name: "The Curator",
-        role: "Ng\u01b0\u1eddi th\u1eadt ch\u1ecdn k\u00e8o",
-        description: "M\u1ed9t con ng\u01b0\u1eddi th\u1eadt nghi\u00ean c\u1ee9u m\u1ed7i tr\u1eadn, t\u00ecm g\u00f3c nh\u00ecn v\u00e0 g\u1eedi k\u00e8o. The Curator l\u00e0 c\u1ed5ng con ng\u01b0\u1eddi \u2014 m\u1ecdi k\u00e8o b\u1eaft \u0111\u1ea7u t\u1eeb quy\u1ebft \u0111\u1ecbnh c\u1ee7a con ng\u01b0\u1eddi. Th\u00e0nh t\u00edch theo d\u00f5i ri\u00eang, minh b\u1ea1ch t\u1eeb ng\u00e0y \u0111\u1ea7u.",
+        name: "Admin",
+        role: "Người thật chọn trận",
+        description: "Một con người thật nghiên cứu mỗi trận, tìm góc nhìn và gửi nhận định. Admin là cổng con người — mọi nhận định bắt đầu từ quyết định của con người. Thành tích theo dõi riêng, minh bạch từ ngày đầu.",
       },
       {
         name: "The Scout",
-        role: "AI v\u1eadn h\u00e0nh \u00b7 \u0110\u1ed9 tin c\u1eady th\u1ea5p h\u01a1n",
-        description: "Persona do AI v\u1eadn h\u00e0nh c\u00f4ng khai, ch\u1ea1y ph\u00e2n t\u00edch ri\u00eang. The Scout c\u00f3 s\u1ed5 theo d\u00f5i ri\u00eang, huy hi\u1ec7u \u0111\u1ed9 tin c\u1eady th\u1ea5p h\u01a1n, v\u00e0 c\u00f4ng b\u1ed1 AI tr\u00ean m\u1ecdi k\u00e8o. Kh\u00f4ng bao gi\u1edd tr\u1ed9n v\u1edbi th\u00e0nh t\u00edch c\u1ee7a The Curator.",
+        role: "AI vận hành · Độ tin cậy thấp hơn",
+        description: "Persona do AI vận hành công khai, chạy phân tích riêng. The Scout có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Admin.",
       },
     ],
-    promiseTitle: "Cam k\u1ebft",
+    promiseTitle: "Cam kết",
     promises: [
-      "Ch\u1ec9 m\u1ed9t c\u1ed5ng con ng\u01b0\u1eddi: The Curator g\u1eedi k\u00e8o. M\u1ecdi b\u01b0\u1edbc sau \u0111\u00f3 \u0111\u1ec1u t\u1ef1 \u0111\u1ed9ng v\u00e0 kh\u00f4ng th\u1ec3 can thi\u1ec7p.",
-      "Huy hi\u1ec7u t\u00ednh th\u1eafng n\u1eeda l\u00e0 TH\u1eaeNG, thua n\u1eeda l\u00e0 THUA \u2014 nh\u01b0ng l\u00e3i/l\u1ed7 \u0111\u01a1n v\u1ecb theo k\u00e8o ch\u00e2u \u00c1 th\u1ef1c t\u1ebf lu\u00f4n hi\u1ec3n th\u1ecb c\u1ea1nh th\u00e0nh t\u00edch.",
-      "Thua ch\u00fang t\u00f4i c\u0169ng \u0111\u0103ng. Ch\u1ec9 mang t\u00ednh gi\u1ea3i tr\u00ed \u2014 kh\u00f4ng ph\u1ea3i l\u1eddi khuy\u00ean t\u00e0i ch\u00ednh.",
+      "Admin là người đứng ra lựa chọn trận đấu có cơ sở, góc nhìn để phân tích. Thành tích của Admin được theo dõi riêng, minh bạch từ ngày đầu.",
+      "Huy hiệu tính đúng-một-nửa là ĐÚNG, sai-một-nửa là SAI — nhưng chỉ số đơn vị được/mất theo chấp châu Á thực tế luôn hiển thị cạnh thành tích, không tô hồng.",
+      "Nhận định trượt chúng tôi cũng đăng. Chỉ mang tính tham khảo, giải trí — không phải lời khuyên tài chính.",
     ],
-    methodTitle: "C\u00e1ch ch\u1ecdn k\u00e8o",
-    methodIntro: "M\u1ed7i k\u00e8o tr\u1ea3i qua n\u0103m b\u01b0\u1edbc tr\u01b0\u1edbc khi \u0111\u01b0\u1ee3c xu\u1ea5t b\u1ea3n.",
+    methodTitle: "Cách chọn trận",
+    methodIntro: "Mỗi nhận định trải qua năm bước trước khi được xuất bản.",
     methodSteps: [
-      { title: "Nghi\u00ean c\u1ee9u tr\u01b0\u1edbc tr\u1eadn", body: "B\u1ea3ng phong \u0111\u1ed9, l\u1ecbch s\u1eed \u0111\u1ed1i \u0111\u1ea7u, t\u00ecnh h\u00ecnh ch\u1ea5n th\u01b0\u01a1ng, \u0111\u1ed9i h\u00ecnh d\u1ef1 ki\u1ebfn \u2014 t\u1ea5t c\u1ea3 \u0111\u01b0\u1ee3c ki\u1ec3m tra tr\u01b0\u1edbc khi x\u00e9t b\u1ea5t k\u1ef3 th\u1ecb tr\u01b0\u1eddng n\u00e0o." },
-      { title: "R\u00e0 so\u00e1t t\u1ef7 l\u1ec7 k\u00e8o", body: "So s\u00e1nh t\u1ef7 l\u1ec7 t\u1eeb nhi\u1ec1u nh\u00e0 c\u00e1i. Ch\u1ec9 quan t\u00e2m nh\u1eefng th\u1ecb tr\u01b0\u1eddng m\u00e0 gi\u00e1 l\u1ec7ch so v\u1edbi x\u00e1c su\u1ea5t th\u1ef1c t\u1ebf." },
-      { title: "Ki\u1ec3m tra l\u1ee3i th\u1ebf", body: "K\u00e8o ch\u1ec9 \u0111\u01b0\u1ee3c \u0111\u0103ng khi ch\u00fang t\u00f4i k\u1ef3 v\u1ecdng gi\u00e1 \u0111\u00f3ng c\u1eeda s\u1ebd d\u1ecbch chuy\u1ec3n theo h\u01b0\u1edbng c\u1ee7a m\u00ecnh \u2014 ngh\u0129a l\u00e0 th\u1ecb tr\u01b0\u1eddng \u0111\u1ed3ng \u00fd v\u1edbi g\u00f3c nh\u00ecn c\u1ee7a ch\u00fang t\u00f4i." },
-      { title: "K\u00e8o ch\u00e2u \u00c1 c\u1ed1 \u0111\u1ecbnh", body: "Lu\u00f4n m\u1ed9t \u0111\u01a1n v\u1ecb m\u1ed7i k\u00e8o. Kh\u00f4ng g\u1ea5p \u0111\u00f4i, kh\u00f4ng g\u1ee1 thua. C\u01b0\u1ee3c ph\u1eb3ng, ghi ch\u00e9p m\u1ecdi l\u1ea7n." },
-      { title: "Ph\u00e2n t\u00edch b\u1eb1ng AI", body: "B\u00e0i ph\u00e2n t\u00edch tr\u01b0\u1edbc tr\u1eadn v\u00e0 t\u1ed5ng k\u1ebft sau tr\u1eadn \u0111\u01b0\u1ee3c AI vi\u1ebft v\u00e0 xu\u1ea5t b\u1ea3n c\u00f9ng m\u1ed7i k\u00e8o \u2014 c\u00f4ng khai ngu\u1ed3n AI." },
+      { title: "Nghiên cứu trước trận", body: "Bảng phong độ, lịch sử đối đầu, tình hình chấn thương, đội hình dự kiến — tất cả được kiểm tra trước khi xét bất kỳ chỉ số nào." },
+      { title: "Đối chiếu tỷ lệ", body: "Chúng tôi so sánh tỷ lệ từ nhiều nguồn dữ liệu thị trường. Chỉ quan tâm những chỉ số mà giá lệch so với xác suất thực tế." },
+      { title: "Kiểm tra lợi thế", body: "Nhận định chỉ được đăng khi chúng tôi kỳ vọng giá đóng cửa sẽ dịch chuyển theo hướng của mình — nghĩa là thị trường đồng ý với góc nhìn của chúng tôi." },
+      { title: "Chuẩn hoá cách đo", body: "Mỗi nhận định tính một đơn vị quy ước để đo hiệu quả thống kê. Không nhân đôi, không gỡ, ghi chép mọi lần." },
+      { title: "Phân tích bằng AI", body: "Bài phân tích trước trận và tổng kết sau trận được AI viết và xuất bản cùng mỗi nhận định — công khai nguồn AI." },
     ],
-    trackTitle: "Th\u00e0nh t\u00edch",
-    trackBody: "M\u1ecdi k\u00e8o t\u1eeb ng\u00e0y \u0111\u1ea7u \u0111\u01b0\u1ee3c l\u01b0u tr\u1eef c\u00f4ng khai. Kh\u00f4ng ch\u1ee5p m\u00e0n h\u00ecnh, kh\u00f4ng ch\u1ecdn l\u1ecdc \u2014 to\u00e0n b\u1ed9 s\u1ed5 s\u00e1ch, c\u1eadp nh\u1eadt sau m\u1ed7i tr\u1eadn.",
-    trackCta: "Xem to\u00e0n b\u1ed9 th\u00e0nh t\u00edch \u2192",
-    leaguesTitle: "Gi\u1ea3i \u0111\u1ea5u theo d\u00f5i",
-    leaguesIntro: "Ch\u00fang t\u00f4i theo d\u00f5i c\u00e1c gi\u1ea3i l\u1edbn v\u00e0 c\u00e1c gi\u1ea3i \u0111\u1ea5u qu\u1ed1c t\u1ebf. B\u1ea3ng x\u1ebfp h\u1ea1ng, l\u1ecbch thi \u0111\u1ea5u v\u00e0 k\u00e8o c\u00f3 s\u1eb5n cho m\u1ed7i gi\u1ea3i.",
-    leaguesSeason: "M\u00f9a gi\u1ea3i",
-    toolsTitle: "C\u00f4ng c\u1ee5 mi\u1ec5n ph\u00ed",
-    toolsIntro: "N\u00e2ng cao ph\u00e2n t\u00edch c\u1ee7a b\u1ea1n v\u1edbi c\u00e1c m\u00e1y t\u00ednh n\u00e0y \u2014 kh\u00f4ng c\u1ea7n \u0111\u0103ng k\u00fd.",
+    trackTitle: "Thành tích",
+    trackBody: "Mọi nhận định từ ngày đầu được lưu trữ công khai. Không chụp màn hình, không chọn lọc — toàn bộ sổ sách, cập nhật sau mỗi trận.",
+    trackCta: "Xem toàn bộ thành tích \u2192",
+    leaguesTitle: "Giải đấu theo dõi",
+    leaguesIntro: "Chúng tôi theo dõi các giải lớn và các giải đấu quốc tế. Bảng xếp hạng, lịch thi đấu và nhận định có sẵn cho mỗi giải.",
+    leaguesSeason: "Mùa giải",
+    toolsTitle: "Công cụ miễn phí",
+    toolsIntro: "Nâng cao phân tích của bạn với các công cụ thống kê này — không cần đăng ký.",
+    // Bản VI ẩn de-vig + Kelly (công cụ đặt cược thuần) theo Route A — giữ công cụ
+    // thống kê trung tính. EN/ES vẫn đủ 4 công cụ.
     tools: [
-      { name: "T\u00ednh de-vig", emoji: "\u2696\ufe0f", href: "/calculators/de-vig" },
-      { name: "Ti\u00eau chu\u1ea9n Kelly", emoji: "\ud83d\udcca", href: "/calculators/kelly" },
-      { name: "Chuy\u1ec3n \u0111\u1ed5i t\u1ef7 l\u1ec7", emoji: "\ud83d\udd04", href: "/calculators/odds-converter" },
-      { name: "M\u00f4 h\u00ecnh Poisson", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
+      { name: "Chuyển đổi tỷ lệ", emoji: "\ud83d\udd04", href: "/calculators/odds-converter" },
+      { name: "Mô hình Poisson", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
     ],
-    responsibleTitle: "Ch\u01a1i c\u00f3 tr\u00e1ch nhi\u1ec7m",
-    responsibleBody: "WildlyPlay mang t\u00ednh gi\u1ea3i tr\u00ed. Ch\u00fang t\u00f4i chia s\u1ebb g\u00f3c nh\u00ecn \u2014 kh\u00f4ng ph\u1ea3i l\u1eddi khuy\u00ean t\u00e0i ch\u00ednh. N\u1ebfu c\u00e1 c\u01b0\u1ee3c kh\u00f4ng c\u00f2n vui, h\u00e3y t\u00ecm h\u1ed7 tr\u1ee3.",
+    responsibleTitle: "Theo dõi có trách nhiệm",
+    responsibleBody: "WildlyPlay mang tính phân tích thể thao và giải trí. Chúng tôi chia sẻ góc nhìn — không phải lời mời hay hướng dẫn cá cược, không phải lời khuyên tài chính. Nếu việc theo dõi không còn lành mạnh, hãy tìm hỗ trợ.",
     helplines: [
       { name: "BeGambleAware", detail: "begambleaware.org (UK)" },
       { name: "NCPG", detail: "1-800-522-4700 (US)" },
       { name: "Gamblers Help", detail: "1800 858 858 (AU)" },
     ],
-    contactTitle: "Li\u00ean h\u1ec7",
-    contactBody: "Theo d\u00f5i ho\u1eb7c nh\u1eafn tin tr\u00ean c\u00e1c k\u00eanh sau.",
+    contactTitle: "Liên hệ",
+    contactBody: "Theo dõi hoặc nhắn tin trên các kênh sau.",
   },
   th: {
     title: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a WildlyPlay",
+    // TH gi\u1ecdng ph\u00e2n t\u00edch (Route A). \u26a0\ufe0f C\u1ea6N native Thai review tr\u01b0\u1edbc production.
+    metaTitle: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a WildlyPlay \u2014 \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e42\u0e14\u0e22\u0e19\u0e31\u0e01\u0e04\u0e31\u0e14\u0e40\u0e25\u0e37\u0e2d\u0e01 \u0e2a\u0e16\u0e34\u0e15\u0e34\u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a",
+    metaDescription:
+      "WildlyPlay \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e17\u0e38\u0e01\u0e01\u0e32\u0e23\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1c\u0e48\u0e32\u0e19\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 AI \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e01\u0e32\u0e23\u0e04\u0e32\u0e14\u0e01\u0e32\u0e23\u0e13\u0e4c\u0e44\u0e27\u0e49\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b",
     intro:
-      "WildlyPlay \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e04\u0e19\u0e2b\u0e19\u0e36\u0e48\u0e07\u0e04\u0e19 \u2014 The Curator \u2014 \u0e40\u0e1b\u0e47\u0e19\u0e1c\u0e39\u0e49\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e41\u0e25\u0e30\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e2a\u0e48\u0e27\u0e19 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e17\u0e38\u0e01\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e17\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e37\u0e2d: \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e1c\u0e22\u0e41\u0e1e\u0e23\u0e48 \u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e1c\u0e25 \u0e41\u0e25\u0e30\u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e44\u0e27\u0e49\u0e15\u0e48\u0e2d\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b \u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e40\u0e25\u0e37\u0e2d\u0e01 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 \u2014 \u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22\u0e44\u0e27\u0e49\u0e43\u0e19\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14",
+      "WildlyPlay \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e04\u0e19\u0e2b\u0e19\u0e36\u0e48\u0e07\u0e04\u0e19 \u2014 Admin \u2014 \u0e40\u0e1b\u0e47\u0e19\u0e1c\u0e39\u0e49\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e41\u0e25\u0e30\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e2a\u0e48\u0e27\u0e19 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e17\u0e38\u0e01\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e17\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e37\u0e2d: \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e1c\u0e22\u0e41\u0e1e\u0e23\u0e48 \u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e1c\u0e25 \u0e41\u0e25\u0e30\u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e44\u0e27\u0e49\u0e15\u0e48\u0e2d\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b \u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e40\u0e25\u0e37\u0e2d\u0e01 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 \u2014 \u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22\u0e44\u0e27\u0e49\u0e43\u0e19\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14",
     cards: [
       {
         heading: "\u0e04\u0e31\u0e14\u0e2a\u0e23\u0e23 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e17\u0e33\u0e19\u0e32\u0e22",
@@ -207,19 +221,19 @@ export const copy: Record<Lang, AboutCopy> = {
     ],
     personas: [
       {
-        name: "The Curator",
+        name: "Admin",
         role: "\u0e04\u0e31\u0e14\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c",
-        description: "\u0e04\u0e19\u0e08\u0e23\u0e34\u0e07\u0e17\u0e35\u0e48\u0e04\u0e49\u0e19\u0e04\u0e27\u0e49\u0e32\u0e17\u0e38\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c \u0e2b\u0e32\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e41\u0e25\u0e30\u0e2a\u0e48\u0e07\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 The Curator \u0e04\u0e37\u0e2d\u0e14\u0e48\u0e32\u0e19\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u2014 \u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01\u0e01\u0e32\u0e23\u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e43\u0e08\u0e02\u0e2d\u0e07\u0e04\u0e19 \u0e2a\u0e16\u0e34\u0e15\u0e34\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e22\u0e01 \u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a\u0e15\u0e31\u0e49\u0e07\u0e41\u0e15\u0e48\u0e27\u0e31\u0e19\u0e41\u0e23\u0e01",
+        description: "\u0e04\u0e19\u0e08\u0e23\u0e34\u0e07\u0e17\u0e35\u0e48\u0e04\u0e49\u0e19\u0e04\u0e27\u0e49\u0e32\u0e17\u0e38\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c \u0e2b\u0e32\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e41\u0e25\u0e30\u0e2a\u0e48\u0e07\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 Admin \u0e04\u0e37\u0e2d\u0e14\u0e48\u0e32\u0e19\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u2014 \u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01\u0e01\u0e32\u0e23\u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e43\u0e08\u0e02\u0e2d\u0e07\u0e04\u0e19 \u0e2a\u0e16\u0e34\u0e15\u0e34\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e22\u0e01 \u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a\u0e15\u0e31\u0e49\u0e07\u0e41\u0e15\u0e48\u0e27\u0e31\u0e19\u0e41\u0e23\u0e01",
       },
       {
         name: "The Scout",
         role: "AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32",
-        description: "Persona \u0e17\u0e35\u0e48\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22 \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e41\u0e22\u0e01\u0e2a\u0e48\u0e27\u0e19 The Scout \u0e21\u0e35\u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01 \u0e1b\u0e49\u0e32\u0e22\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u0e41\u0e25\u0e30\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22 AI \u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 \u0e44\u0e21\u0e48\u0e1c\u0e2a\u0e21\u0e01\u0e31\u0e1a The Curator",
+        description: "Persona \u0e17\u0e35\u0e48\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22 \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e41\u0e22\u0e01\u0e2a\u0e48\u0e27\u0e19 The Scout \u0e21\u0e35\u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01 \u0e1b\u0e49\u0e32\u0e22\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u0e41\u0e25\u0e30\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22 AI \u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 \u0e44\u0e21\u0e48\u0e1c\u0e2a\u0e21\u0e01\u0e31\u0e1a Admin",
       },
     ],
     promiseTitle: "\u0e04\u0e33\u0e21\u0e31\u0e48\u0e19\u0e2a\u0e31\u0e0d\u0e0d\u0e32",
     promises: [
-      "\u0e21\u0e35\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e40\u0e1e\u0e35\u0e22\u0e07\u0e14\u0e48\u0e32\u0e19\u0e40\u0e14\u0e35\u0e22\u0e27: The Curator \u0e40\u0e1b\u0e47\u0e19\u0e1c\u0e39\u0e49\u0e2a\u0e48\u0e07\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 \u0e17\u0e38\u0e01\u0e02\u0e31\u0e49\u0e19\u0e15\u0e2d\u0e19\u0e2b\u0e25\u0e31\u0e07\u0e08\u0e32\u0e01\u0e19\u0e31\u0e49\u0e19\u0e40\u0e1b\u0e47\u0e19\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34\u0e41\u0e25\u0e30\u0e41\u0e17\u0e23\u0e01\u0e41\u0e0b\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
+      "\u0e21\u0e35\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e40\u0e1e\u0e35\u0e22\u0e07\u0e14\u0e48\u0e32\u0e19\u0e40\u0e14\u0e35\u0e22\u0e27: Admin \u0e40\u0e1b\u0e47\u0e19\u0e1c\u0e39\u0e49\u0e2a\u0e48\u0e07\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 \u0e17\u0e38\u0e01\u0e02\u0e31\u0e49\u0e19\u0e15\u0e2d\u0e19\u0e2b\u0e25\u0e31\u0e07\u0e08\u0e32\u0e01\u0e19\u0e31\u0e49\u0e19\u0e40\u0e1b\u0e47\u0e19\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34\u0e41\u0e25\u0e30\u0e41\u0e17\u0e23\u0e01\u0e41\u0e0b\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
       "\u0e1b\u0e49\u0e32\u0e22\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e19\u0e31\u0e1a\u0e0a\u0e19\u0e30\u0e04\u0e23\u0e36\u0e48\u0e07\u0e40\u0e1b\u0e47\u0e19 \u0e0a\u0e19\u0e30 \u0e41\u0e25\u0e30\u0e41\u0e1e\u0e49\u0e04\u0e23\u0e36\u0e48\u0e07\u0e40\u0e1b\u0e47\u0e19 \u0e41\u0e1e\u0e49 \u2014 \u0e41\u0e15\u0e48\u0e01\u0e33\u0e44\u0e23/\u0e02\u0e32\u0e14\u0e17\u0e38\u0e19\u0e22\u0e39\u0e19\u0e34\u0e15\u0e15\u0e32\u0e21\u0e23\u0e32\u0e04\u0e32\u0e15\u0e48\u0e2d\u0e23\u0e2d\u0e07\u0e1a\u0e2d\u0e25\u0e40\u0e2d\u0e40\u0e0a\u0e35\u0e22\u0e08\u0e23\u0e34\u0e07\u0e08\u0e30\u0e41\u0e2a\u0e14\u0e07\u0e04\u0e39\u0e48\u0e01\u0e31\u0e1a\u0e2a\u0e16\u0e34\u0e15\u0e34\u0e40\u0e2a\u0e21\u0e2d",
       "\u0e41\u0e1e\u0e49\u0e40\u0e23\u0e32\u0e01\u0e47\u0e25\u0e07\u0e43\u0e2b\u0e49\u0e14\u0e39 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e1a\u0e31\u0e19\u0e40\u0e17\u0e34\u0e07\u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19 \u2014 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e17\u0e32\u0e07\u0e01\u0e32\u0e23\u0e40\u0e07\u0e34\u0e19",
     ],
@@ -258,6 +272,9 @@ export const copy: Record<Lang, AboutCopy> = {
   },
   es: {
     title: "Acerca de WildlyPlay",
+    metaTitle: "Acerca de WildlyPlay — Picks de fútbol de un curador, historial público",
+    metaDescription:
+      "WildlyPlay es un sitio de picks de fútbol dirigido por un curador. Un humano elige cada partido; la IA escribe el análisis, liquida resultados y archiva cada pick públicamente, para siempre.",
     intro:
       "WildlyPlay es un sitio de picks de f\u00fatbol dirigido por un curador. Un humano \u2014 The Curator \u2014 elige los partidos y los \u00e1ngulos. La IA opera todo lo dem\u00e1s: escribe el an\u00e1lisis, publica, liquida el resultado y archiva cada pick p\u00fablicamente, para siempre. Picks humanos, operaci\u00f3n por IA \u2014 declarado en cada jugada.",
     cards: [

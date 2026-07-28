@@ -10,7 +10,7 @@ import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
 import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { COMPETITION_LOGOS } from "@/lib/competition-logos";
+import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 
 export const revalidate = 3600;
 
@@ -53,13 +53,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const comp = await resolveCompetition(slug);
   if (!comp) return { title: dict.standings.title };
 
-  const title = dict.standings.titleFor.replace("{name}", comp.name);
+  // Tên bản địa hoá: bản VI dùng "Ngoại hạng Anh"/"Cúp C1" để bắt cầu tìm kiếm VN.
+  const compName = localizedCompetitionName(slug, comp.name, lang);
+  const title = dict.standings.titleFor.replace("{name}", compName);
   return {
     title,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
       title: `${title} | WildlyPlay`,
-      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(comp.name)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(compName)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -71,6 +73,8 @@ export default async function StandingSlugPage({ params }: Props) {
 
   const comp = await resolveCompetition(slug);
   if (!comp) notFound();
+  // Tên bản địa hoá (bản VI: "Ngoại hạng Anh"/"Cúp C1") — dùng cho H1 + breadcrumb.
+  const compName = localizedCompetitionName(slug, comp.name, lang);
 
   // Visibility: active OR feature flag standings_<slug_underscored>
   const flagKey = `standings_${slug.replace(/-/g, "_")}`;
@@ -131,7 +135,7 @@ export default async function StandingSlugPage({ params }: Props) {
         items={[
           { name: "Home", url: "/" },
           { name: dict.standings.title, url: "/competitions" },
-          { name: comp.name, url: `/competitions/${slug}` },
+          { name: compName, url: `/competitions/${slug}` },
         ]}
       />
       <section className="py-12 text-center">
@@ -144,26 +148,34 @@ export default async function StandingSlugPage({ params }: Props) {
               className="h-16 w-16 flex-shrink-0 object-contain"
             />
           )}
-          <h1 className="gradient-text font-display text-4xl font-bold">{comp.name}</h1>
+          <h1 className="gradient-text font-display text-4xl font-bold">{compName}</h1>
         </div>
         {comp.season && (
           <p className="mt-3 text-muted">
             {dict.standings.seasonNote.replace("{season}", comp.season)}
           </p>
         )}
+        {/* Intro hub SEO: đoạn giới thiệu chứa từ khoá "nhận định [giải]" (bản VI).
+            TH để trống nên tự bỏ qua (chờ người Thái soi). */}
+        {dict.standings.hubIntro && (
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted">
+            {dict.standings.hubIntro.replace("{name}", compName)}
+          </p>
+        )}
       </section>
 
-      {/* Tabs — hidden for WC (single page with bracket + groups) */}
+      {/* Tabs — hidden for WC. Label localize qua dict (trước hardcode tiếng Anh —
+          Jane flag 28/7). Tái dùng key sẵn cho cả 4 lang: nav.standings/schedule/form. */}
       {!isWorldCup && (
         <nav className="mb-8 flex justify-center gap-2">
           <span className="rounded-full border border-brand/40 bg-brand-dim px-4 py-1.5 text-sm font-semibold text-brand">
-            Standings
+            {dict.nav.standings}
           </span>
           <Link href={withLang(`/competitions/${slug}/fixtures`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
-            Fixtures
+            {dict.standings.schedule}
           </Link>
           <Link href={withLang(`/competitions/${slug}/form`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
-            Form
+            {dict.standings.form}
           </Link>
         </nav>
       )}

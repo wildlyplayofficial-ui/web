@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
-import { buildPerson } from "@/lib/jsonld";
+import { buildPerson, buildOrganization, buildWebSite } from "@/lib/jsonld";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { copy } from "./copy";
@@ -15,10 +15,13 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
+  const c = copy[lang];
   return {
-    title: copy[lang].title,
-    description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: [{ url: "/api/og/editorial?title=About%20WildlyPlay&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.", width: 1200, height: 630 }] },
+    // metaTitle có từ khoá (khác H1). metaDescription viết đủ ý, KHÔNG cắt intro
+    // giữa câu như trước (intro.slice(0,160)).
+    title: c.metaTitle,
+    description: c.metaDescription,
+    openGraph: { title: `${c.title} | WildlyPlay`, description: c.metaDescription, images: [{ url: "/api/og/editorial?title=About%20WildlyPlay&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.", width: 1200, height: 630 }] },
     alternates: buildAlternates("/about", lang),
   };
 }
@@ -33,6 +36,19 @@ export default async function AboutPage({ params }: Props) {
       <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"About",url:"/about"}]} />
       {/* Person schema for E-E-A-T */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildPerson()) }} />
+      {/* Organization + WebSite + AboutPage: giúp Google/AI hiểu đây là trang
+          thực thể chính → dễ index + dễ được trích dẫn (thiếu trước 28/7). */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganization()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSite()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        name: c.metaTitle,
+        description: c.metaDescription,
+        url: `https://www.wildlyplay.com${lang === "en" ? "" : `/${lang}`}/about`,
+        inLanguage: lang,
+        isPartOf: { "@type": "WebSite", name: "WildlyPlay", url: "https://www.wildlyplay.com" },
+      }) }} />
       <h1 className="gradient-text text-center font-display text-4xl font-bold">{c.title}</h1>
       <p className="mx-auto mt-6 max-w-[680px] text-center leading-relaxed text-ink/90">
         {c.intro}

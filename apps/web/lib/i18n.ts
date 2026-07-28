@@ -286,6 +286,7 @@ export interface Dict {
     seasonNote: string;
     titleFor: string;
     schedule: string;
+    hubIntro: string;
   };
 }
 
@@ -533,12 +534,13 @@ const en: Dict = {
     seasonNote: "{season} season",
     titleFor: "{name} Standings",
     schedule: "Schedule",
+    hubIntro: "Predictions, score forecasts and analysis for every {name} match \u2014 with live standings, fixtures and form.",
   },
 };
 
 const vi: Dict = {
   nav: {
-    board: "Bảng Kèo",
+    board: "Bảng Nhận Định",
     dailyLine: "Daily Line",
     archive: "Lưu Trữ",
     stats: "Thống Kê",
@@ -553,47 +555,47 @@ const vi: Dict = {
     guides: "Hướng Dẫn",
     transparency: "Minh Bạch",
     calculators: "Công Cụ",
-    todaysPick: "Kèo Hôm Nay",
+    todaysPick: "Nhận Định Hôm Nay",
     trackRecord: "Thành Tích",
     analysis: "Phân Tích",
     learn: "Học Hỏi",
   },
-  tagline: "Kèo Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn Cá Cược",
+  tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
   board: {
-    title: "Bảng Kèo Hôm Nay",
+    title: "Bảng Nhận Định Hôm Nay",
     subtitle: "Một trận. Một góc nhìn. Chỉ khi thật sự có lợi thế.",
-    seoDescription: "Kèo bóng đá miễn phí hằng ngày với thành tích công khai — mọi kèo thắng lẫn thua đều đăng vĩnh viễn. The Curator chỉ xuống kèo khi có lợi thế thật sự. Theo dõi kèo hôm nay, trận bỏ qua và danh sách theo dõi trên Premier League, La Liga, Serie A và nhiều giải khác.",
+    seoDescription: "Nhận định bóng đá miễn phí hằng ngày với thành tích công khai — mọi nhận định thắng lẫn thua đều đăng vĩnh viễn. Admin chỉ xuống kèo khi có lợi thế thật sự. Theo dõi kèo hôm nay, trận bỏ qua và danh sách theo dõi trên Premier League, La Liga, Serie A và nhiều giải khác.",
     formTitle: "Phong độ gần đây",
     last30: "30 ngày qua",
-    emptyTitle: "Hôm nay không có kèo.",
+    emptyTitle: "Hôm nay không có nhận định.",
     emptyBody:
-      "The Curator chỉ chơi khi thấy lợi thế thật sự. Không kèo gượng ép, không câu kéo — quay lại ngày mai hoặc theo dõi Telegram để nhận kèo tiếp theo.",
-    picksLabel: "Kèo chọn",
+      "Admin chỉ chơi khi thấy lợi thế thật sự. Không nhận định gượng ép, không câu kéo — quay lại ngày mai hoặc theo dõi Telegram để nhận kèo tiếp theo.",
+    picksLabel: "Nhận định chọn",
     noPlaysLabel: "Bỏ qua",
     watchingLabel: "Đang theo dõi",
     noPlaysTitle: "Trận bỏ qua hôm nay",
-    noPlaysBody: "Đã phân tích nhưng không xuống kèo — không có lợi thế thì không chơi.",
+    noPlaysBody: "Đã phân tích nhưng không đưa ra nhận định — không có lợi thế thì không chơi.",
     resultsTitle: "Kết quả hôm nay",
     watchingTitle: "Đang theo dõi",
     trackRecordCta: "Xem toàn bộ thành tích",
     asOf: "tính đến",
   },
   home: {
-    seoDescription: "Kèo bóng đá miễn phí mỗi ngày do người thật chọn. Mọi kèo công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ cược và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
+    seoDescription: "Nhận định bóng đá miễn phí mỗi ngày do người thật chọn. Mọi kèo công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ cược và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
     latestAnalysis: "Phân tích mới nhất",
-    viewBoard: "Xem Bảng Kèo Hôm Nay",
-    trustCurator: "The Curator — người thật, tự tay chọn kèo",
+    viewBoard: "Xem Bảng Nhận Định Hôm Nay",
+    trustCurator: "Admin — người thật, tự tay chọn trận",
     trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
   },
   archive: {
-    title: "Lưu Trữ Kèo",
-    subtitle: "Mọi kèo đều công khai vĩnh viễn. Thua chúng tôi cũng đăng.",
+    title: "Lưu Trữ Nhận Định",
+    subtitle: "Mọi nhận định đều công khai vĩnh viễn. Nhận định trượt chúng tôi cũng đăng.",
     record: "Thành tích",
     unitsPl: "Lãi/Lỗ (unit)",
-    settledPlays: "kèo đã kết sổ",
+    settledPlays: "nhận định đã kết sổ",
     allMonths: "Tất cả các tháng",
-    empty: "Chưa có kèo nào kết sổ. Thành tích bắt đầu từ con số 0 — theo dõi tại đây.",
+    empty: "Chưa có nhận định nào kết sổ. Thành tích bắt đầu từ con số 0 — theo dõi tại đây.",
     unitsNote:
       "Huy hiệu tính thắng nửa là THẮNG, thua nửa là THUA. Lãi/Lỗ unit giữ nguyên cách tính kèo châu Á thực tế.",
   },
@@ -617,29 +619,29 @@ const vi: Dict = {
   },
   analysis: {
     title: "Phân Tích",
-    subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi kèo.",
-    seoDescription: "Recap trận đấu, nhận định trước trận và phân tích cá cược bóng đá miễn phí, xuất bản sau mỗi kèo. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
+    subtitle: "Recap và ghi chú trận đấu, tự động xuất bản sau mỗi trận.",
+    seoDescription: "Recap trận đấu, nhận định trước trận và phân tích bóng đá miễn phí, xuất bản sau mỗi kèo. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
     empty: "Chưa có bài viết.",
     backTo: "Quay lại Phân Tích",
   },
   guides: {
     title: "Hướng Dẫn",
-    subtitle: "Các bài hướng dẫn chuyên sâu về tư duy cá cược — hiệu chuẩn, kỷ luật và phân tích trung thực.",
-    seoDescription: "Hướng dẫn cá cược miễn phí về quản lý vốn, kèo châu Á, tiêu chí Kelly, giá trị đường đóng kèo và nhiều hơn nữa. Tài liệu giáo dục giúp nâng cao lợi thế — viết bởi người thật, không tính phí.",
+    subtitle: "Các bài hướng dẫn chuyên sâu về tư duy phân tích — hiệu chuẩn, kỷ luật và phân tích trung thực.",
+    seoDescription: "Hướng dẫn phân tích miễn phí về quản lý vốn, kèo châu Á, tiêu chí Kelly, giá trị đường đóng kèo và nhiều hơn nữa. Tài liệu giáo dục giúp nâng cao lợi thế — viết bởi người thật, không tính phí.",
     empty: "Chưa có bài hướng dẫn.",
     backToGuides: "Quay lại Hướng Dẫn",
   },
   transparency: {
     title: "Minh Bạch",
-    subtitle: "Toàn bộ lịch sử kèo — mọi pick, mọi tháng, thắng lẫn thua. Không chọn lọc ảnh chụp màn hình.",
+    subtitle: "Toàn bộ lịch sử nhận định — mọi pick, mọi tháng, thắng lẫn thua. Không chọn lọc ảnh chụp màn hình.",
     empty: "Chưa có báo cáo.",
     backToReports: "Quay lại Minh Bạch",
   },
   calculators: {
     title: "Công Cụ Tính",
-    subtitle: "Công cụ toán cá cược miễn phí — loại margin nhà cái, chuyển đổi tỷ lệ cược, và tính mức đặt Kelly.",
+    subtitle: "Công cụ toán phân tích miễn phí — loại margin thị trường, chuyển đổi tỷ lệ cược, và tính mức đặt Kelly.",
     deVig: "Loại Margin (De-Vig)",
-    deVigDesc: "Loại bỏ margin nhà cái để tìm tỷ lệ thực. Hỗ trợ phương pháp nhân, cộng, Shin, và lũy thừa.",
+    deVigDesc: "Loại bỏ margin thị trường để tìm tỷ lệ thực. Hỗ trợ phương pháp nhân, cộng, Shin, và lũy thừa.",
     oddsConverter: "Chuyển Đổi Cược",
     oddsConverterDesc: "Chuyển đổi giữa Thập phân, Phân số, Mỹ, Malay, Hồng Kông, Indonesia và Xác suất ngầm định.",
     kelly: "Tiêu Chí Kelly",
@@ -649,19 +651,19 @@ const vi: Dict = {
     kellyCta: "Tìm hiểu lý thuyết đằng sau Kelly Criterion",
   },
   pick: {
-    disclosure: "Người chọn kèo, AI vận hành. Con người chọn kèo này; AI viết, đăng và kết sổ.",
-    disclosureScout: "AI chọn kèo, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.",
+    disclosure: "Người chọn trận, AI vận hành. Con người chọn trận này; AI viết, đăng và kết sổ.",
+    disclosureScout: "AI chọn trận, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.",
     odds: "Odds lúc đăng",
     stake: "Mức cược",
     finalScore: "FT",
     viewPlay: "Xem chi tiết kèo",
-    curator: "The Curator",
+    curator: "Admin",
     scoutLabel: "The Scout",
     halfWin: "thắng nửa",
     halfLoss: "thua nửa",
   },
   play: {
-    backToBoard: "Quay lại Bảng Kèo",
+    backToBoard: "Quay lại Bảng Nhận Định",
     pickedAt: "Vào kèo khi tỉ số",
     market: "Loại kèo",
     line: "Mốc kèo",
@@ -703,7 +705,7 @@ const vi: Dict = {
     more: "Khác…",
   },
   crowd: {
-    title: "Cộng đồng vs The Curator",
+    title: "Cộng đồng vs Admin",
     followersWon: "Người theo kèo thắng ({units} mỗi 1u)",
     followersLost: "Người theo kèo thua",
   },
@@ -738,9 +740,9 @@ const vi: Dict = {
     disclosure: "The Scout \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a WildlyPlay \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
   },
   watching: {
-    title: "Curator \u0111ang theo d\u00f5i",
-    titlePast: "Curator \u0111\u00e3 theo d\u00f5i",
-    note: "Ghi ch\u00fa t\u1eeb Curator",
+    title: "Admin \u0111ang theo d\u00f5i",
+    titlePast: "Admin \u0111\u00e3 theo d\u00f5i",
+    note: "Ghi ch\u00fa t\u1eeb Admin",
     titleScout: "Scout \u0111ang theo d\u00f5i",
     titlePastScout: "Scout \u0111\u00e3 theo d\u00f5i",
     noteScout: "Ghi ch\u00fa t\u1eeb Scout",
@@ -750,8 +752,8 @@ const vi: Dict = {
   },
   match: {
     backToMatches: "Quay l\u1ea1i",
-    curatorWatch: "Curator \u0111ang theo d\u00f5i",
-    curatorPick: "K\u00e8o c\u1ee7a Curator",
+    curatorWatch: "Admin \u0111ang theo d\u00f5i",
+    curatorPick: "K\u00e8o c\u1ee7a Admin",
     scoutWatch: "Scout \u0111ang theo d\u00f5i",
     scoutPick: "K\u00e8o c\u1ee7a Scout",
     articles: "B\u00e0i vi\u1ebft v\u1ec1 tr\u1eadn",
@@ -780,6 +782,7 @@ const vi: Dict = {
     seasonNote: "M\u00f9a {season}",
     titleFor: "B\u1ea3ng x\u1ebfp h\u1ea1ng {name}",
     schedule: "L\u1ecbch thi \u0111\u1ea5u",
+    hubIntro: "Nh\u1eadn \u0111\u1ecbnh, d\u1ef1 \u0111o\u00e1n t\u1ef7 s\u1ed1 v\u00e0 ph\u00e2n t\u00edch m\u1ecdi tr\u1eadn {name} \u2014 k\u00e8m b\u1ea3ng x\u1ebfp h\u1ea1ng, l\u1ecbch thi \u0111\u1ea5u v\u00e0 phong \u0111\u1ed9 c\u1eadp nh\u1eadt.",
   },
 };
 
@@ -810,12 +813,12 @@ const th: Dict = {
   board: {
     title: "บอร์ดประจำวัน",
     subtitle: "หนึ่งแมตช์ หนึ่งมุมมอง เฉพาะวันที่เห็นความได้เปรียบจริงเท่านั้น",
-    seoDescription: "ทีเด็ดบอลฟรีรายวันพร้อมสถิติสาธารณะ — ทุกชนะและแพ้โพสต์ถาวร The Curator เล่นเฉพาะเมื่อมีความได้เปรียบจริงเท่านั้น ติดตามทีเด็ดวันนี้ แมตช์ที่ไม่เล่น และรายการจับตาใน Premier League, La Liga, Serie A และอีกมากมาย",
+    seoDescription: "ทีเด็ดบอลฟรีรายวันพร้อมสถิติสาธารณะ — ทุกชนะและแพ้โพสต์ถาวร Admin เล่นเฉพาะเมื่อมีความได้เปรียบจริงเท่านั้น ติดตามทีเด็ดวันนี้ แมตช์ที่ไม่เล่น และรายการจับตาใน Premier League, La Liga, Serie A และอีกมากมาย",
     formTitle: "ฟอร์มล่าสุด",
     last30: "30 วันที่ผ่านมา",
     emptyTitle: "วันนี้ไม่มีทีเด็ด",
     emptyBody:
-      "The Curator จะเล่นเฉพาะเมื่อเห็นความได้เปรียบจริงเท่านั้น ไม่มีทีเด็ดยัดเยียด ไม่มีของแถม — กลับมาดูใหม่พรุ่งนี้ หรือติดตาม Telegram เพื่อรอทีเด็ดถัดไป",
+      "Admin จะเล่นเฉพาะเมื่อเห็นความได้เปรียบจริงเท่านั้น ไม่มีทีเด็ดยัดเยียด ไม่มีของแถม — กลับมาดูใหม่พรุ่งนี้ หรือติดตาม Telegram เพื่อรอทีเด็ดถัดไป",
     picksLabel: "ทีเด็ด",
     noPlaysLabel: "ไม่เล่น",
     watchingLabel: "กำลังจับตา",
@@ -830,7 +833,7 @@ const th: Dict = {
     seoDescription: "ทีเด็ดบอลฟรีรายวันโดยคิวเรเตอร์มนุษย์ ทุกทีเด็ดเปิดเผยต่อสาธารณะตลอดไป ทั้งชนะและแพ้ วิเคราะห์แมตช์ เครื่องมืออัตราต่อรอง และคู่มือสำหรับพรีเมียร์ลีก ลาลีกา เซเรียอา บุนเดสลีกา และอีกมากมาย",
     latestAnalysis: "บทวิเคราะห์ล่าสุด",
     viewBoard: "ดูบอร์ดประจำวัน",
-    trustCurator: "The Curator — คนจริง เลือกทีเด็ดด้วยมือ",
+    trustCurator: "Admin — คนจริง เลือกทีเด็ดด้วยมือ",
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
   },
   archive: {
@@ -902,7 +905,7 @@ const th: Dict = {
     stake: "เดิมพัน",
     finalScore: "FT",
     viewPlay: "ดูรายละเอียดทีเด็ด",
-    curator: "The Curator",
+    curator: "Admin",
     scoutLabel: "The Scout",
     halfWin: "ชนะครึ่ง",
     halfLoss: "แพ้ครึ่ง",
@@ -950,7 +953,7 @@ const th: Dict = {
     more: "อื่นๆ…",
   },
   crowd: {
-    title: "คอมมูนิตี้ vs The Curator",
+    title: "คอมมูนิตี้ vs Admin",
     followersWon: "คนที่ตามชนะ ({units} ต่อ 1u)",
     followersLost: "คนที่ตามแพ้",
   },
@@ -987,7 +990,7 @@ const th: Dict = {
   watching: {
     title: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
     titlePast: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e08\u0e31\u0e1a\u0e15\u0e32\u0e41\u0e25\u0e49\u0e27",
-    note: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Curator",
+    note: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Admin",
     titleScout: "Scout \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
     titlePastScout: "Scout \u0e08\u0e31\u0e1a\u0e15\u0e32\u0e41\u0e25\u0e49\u0e27",
     noteScout: "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e08\u0e32\u0e01 Scout",
@@ -997,8 +1000,8 @@ const th: Dict = {
   },
   match: {
     backToMatches: "\u0e01\u0e25\u0e31\u0e1a",
-    curatorWatch: "Curator \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
-    curatorPick: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07 Curator",
+    curatorWatch: "Admin \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
+    curatorPick: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07 Admin",
     scoutWatch: "Scout \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
     scoutPick: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07 Scout",
     articles: "\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c",
@@ -1027,6 +1030,7 @@ const th: Dict = {
     seasonNote: "\u0e24\u0e14\u0e39\u0e01\u0e32\u0e25 {season}",
     titleFor: "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19 {name}",
     schedule: "\u0e42\u0e1b\u0e23\u0e41\u0e01\u0e23\u0e21\u0e01\u0e32\u0e23\u0e41\u0e02\u0e48\u0e07\u0e02\u0e31\u0e19",
+    hubIntro: "",
   },
 };
 
@@ -1276,6 +1280,7 @@ const es: Dict = {
     seasonNote: "Temporada {season}",
     titleFor: "Clasificaci\u00f3n de {name}",
     schedule: "Calendario",
+    hubIntro: "Pron\u00f3sticos, an\u00e1lisis y marcadores previstos de cada partido de {name} \u2014 con clasificaci\u00f3n, calendario y forma.",
   },
 };
 
