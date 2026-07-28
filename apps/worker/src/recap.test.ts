@@ -9,7 +9,19 @@ import {
   disclosureFor,
   generateRecap,
   splitLangSections,
+  VI_LEXICON_RULE,
 } from './recap';
+
+// Guard: const này từng bị hỏng thành literal "${VI_LEXICON_RULE}" (28/7) khi
+// replace_all vô tình thay text bên trong chính định nghĩa → 6 generator inject
+// placeholder rỗng. Test chốt nội dung thật để không tái diễn.
+describe('VI_LEXICON_RULE', () => {
+  it('holds the real ban text, not a broken placeholder', () => {
+    expect(VI_LEXICON_RULE).not.toContain('${');
+    expect(VI_LEXICON_RULE).toContain('kèo');
+    expect(VI_LEXICON_RULE).toContain('TUYỆT ĐỐI KHÔNG');
+  });
+});
 import type { PickRow } from './store';
 
 function settledPick(overrides: Partial<PickRow> = {}): PickRow {

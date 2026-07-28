@@ -123,7 +123,7 @@ export const CLV_RULE =
  *  MỌI prompt sinh section tiếng Việt (recap, preview, analysis, post-mortem, no-play,
  *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
 export const VI_LEXICON_RULE =
-  '${VI_LEXICON_RULE}';
+  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)';
 
 /** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
  *  football language ("closing stages", "closed out the win") never matches. */
