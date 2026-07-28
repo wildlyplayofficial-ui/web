@@ -16,7 +16,7 @@ const BETTING_GLOSSARY: Record<string, Record<string, string>> = {
     favourite: "cửa trên",
     underdog: "cửa dưới",
     handicap: "chấp trái",
-    "over/under": "tài xỉu",
+    "over/under": "tổng bàn thắng",
     total: "tổng bàn",
     stake: "mức tham gia",
     odds: "tỷ lệ",
