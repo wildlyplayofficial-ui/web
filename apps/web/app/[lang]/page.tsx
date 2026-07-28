@@ -46,13 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `WildlyPlay — ${dict.tagline}`,
       description: dict.home.seoDescription,
-      images: [{ url: "/api/og/home", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: `WildlyPlay — ${dict.tagline}`,
       description: dict.home.seoDescription,
-      images: [{ url: "/api/og/home", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
   };
 }
