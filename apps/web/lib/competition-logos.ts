@@ -22,6 +22,10 @@ export const COMPETITION_LOGOS: Record<string, string> = {
 const COMPETITION_NAMES_VI: Record<string, string> = {
   'premier-league':   'Ngoại hạng Anh',
   'champions-league': 'Cúp C1',
+  // Giải đội tuyển VN (28/7) — dùng tên dân VN quen gõ, KHÔNG dịch formal ít search.
+  'wc-afc-qualifiers': 'Vòng loại World Cup',
+  'aff-cup':           'AFF Cup',
+  'asian-cup':         'Asian Cup',
   // TH: các giải trên cần tên Thái do người bản ngữ soi → CHƯA thêm (giữ tên gốc).
 };
 
