@@ -187,16 +187,14 @@ function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
       href={withLang(`/analysis/${article.slug}`, lang)}
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
-      {article.hero_image && (
-        <img
-          src={article.hero_image}
-          alt=""
-          width={1200}
-          height={630}
-          className="w-full"
-          loading="lazy"
-        />
-      )}
+      <img
+        src={article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}`}
+        alt=""
+        width={1200}
+        height={630}
+        className="w-full"
+        loading="lazy"
+      />
       <div className="p-5">
         <div className="flex items-center gap-3 text-xs text-muted">
           <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${badgeColor}`}>

@@ -29,12 +29,18 @@ export interface AnalysisArticle {
   linked_pick_id: string | null;
   hero_image: string | null;
   published_at: string;
+  /** Row-update timestamp — used as the OG-card cache-bust token. */
+  updated_at?: string;
   status: "draft" | "published";
 }
 
 /** Tiered Picks firewall (§12): Curator (real human) vs Scout (fictional AI persona).
  *  Optional — legacy/mock rows predate Scout and default to "curator" at call sites. */
 export type Author = "curator" | "scout";
+
+/** Pre-registered confidence (§12 T1): set at publish, immutable, no numeric probability.
+ *  Values mirror apps/worker parse-pick.ts (lowercase in DB). */
+export type Confidence = "low" | "medium" | "high";
 
 export interface Pick {
   id: string;
@@ -67,6 +73,8 @@ export interface Pick {
   sources: string[] | null;
   /** Tiered Picks firewall (§12): who this pick belongs to. Optional — defaults to "curator". */
   author?: Author;
+  /** Pre-registered confidence (§12 T1). Null for picks published before the field existed. */
+  confidence?: Confidence | null;
 }
 
 export interface Post {

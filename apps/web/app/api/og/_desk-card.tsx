@@ -1,88 +1,27 @@
 import { ImageResponse } from "next/og";
-import type { Author, Pick, TrackRecord } from "@/lib/types";
+import { teamBadge } from "@/lib/team-badges";
 import { teamColor, BRAND_GREEN } from "@/lib/team-palette";
-
-const LOSS = "#e5484d";
-const SCOUT_TEAL = "#5f9c99";
-
-/** Persona accent: Scout teal vs Curator green. */
-export function accentFor(author: Author): string {
-  return author === "scout" ? SCOUT_TEAL : BRAND_GREEN;
-}
-
-/** CLV (closing-line value) — proprietary anchor number. Only when the close is
- *  known (settled picks); never fabricated for upcoming picks. */
-function clvMetric(pick: Pick): Metric | null {
-  if (pick.odds_close == null || pick.odds_close <= 0) return null;
-  const pct = (pick.odds_publish / pick.odds_close - 1) * 100;
-  return { label: "CLV", value: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%` };
-}
-
-/** Status badge + info line + metric derived from a real pick record. */
-export function pickFields(
-  pick: Pick,
-  accent: string,
-): { status: { label: string; color: string }; infoLine: string; metric: Metric | null } {
-  if (pick.status === "won" || pick.status === "lost" || pick.status === "push") {
-    const color = pick.status === "won" ? BRAND_GREEN : pick.status === "lost" ? LOSS : MUTED;
-    const pl = pick.units_pl !== null ? ` \u00b7 ${pick.units_pl > 0 ? "+" : ""}${pick.units_pl}u` : "";
-    return {
-      status: { label: pick.status.toUpperCase(), color },
-      infoLine: `FT ${pick.home_score}\u2013${pick.away_score}${pl}`,
-      metric: clvMetric(pick),
-    };
-  }
-  return {
-    status: { label: "OUR PICK", color: accent },
-    infoLine: `${pick.selection} @ ${pick.odds_publish} \u00b7 ${pick.stake_units}u`,
-    metric: clvMetric(pick),
-  };
-}
+import { INK, MUTED, PANEL, LINE, SITE } from "./_share-card";
 
 /**
- * Shared vibrant OG share card (1200x630) for news + match pages.
- * Nick 09/07: kill the dark template — cards are colored by the two teams
- * (nation flag colors / club crest colors), premium "The Athletic" matchday
- * tone. Layout is fixed; only the header colors change per fixture.
+ * Desk-variant OG share card (1200x630) for AI-authored analysis articles.
+ * Reuses the vibrant team-colored layout language of _share-card but stays
+ * strictly on the Desk side of the picks firewall: kind badge (PREVIEW / RECAP /
+ * ROUNDUP), "WildlyPlay Desk (AI)" byline, and NO track record, CLV, persona
+ * or betting-lean copy anywhere on the card.
  */
 
-export const INK = "#0d1117";
-export const MUTED = "#5b6572";
-export const PANEL = "#f4f6f8";
-export const LINE = "#e2e6ea";
-
-export type Metric = { label: string; value: string };
-
-export type ShareCardProps = {
-  /** Team display names (exact feed names) — null when unknown (no linked pick). */
-  home: string | null;
-  away: string | null;
-  homeBadge: string | null;
-  awayBadge: string | null;
-  league: string | null;
-  status: { label: string; color: string };
-  /** Used as the hero only when teams are unknown (e.g. an article with no pick). */
-  headline: string;
-  /** Article title shown in the body when teams are known but there is no pick. */
-  subhead?: string | null;
-  /** Primary info line: the pick, the result, or the coverage state. */
-  infoLine: string | null;
-  /** Proprietary anchor number (CLV / board edge) — omitted when data can't support it. */
-  metric: Metric | null;
-  record: TrackRecord;
-  author: Author;
-};
-
-function recordLine(author: Author, r: TrackRecord): string {
-  const who = author === "scout" ? "Scout" : "Curator";
-  const pl = r.units_pl > 0 ? `+${r.units_pl}u` : `${r.units_pl}u`;
-  const asOf = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  return `${who} ${r.wins}-${r.losses}-${r.pushes} \u00b7 ${pl} \u00b7 ${asOf}`;
+/** 2-3 letter monogram for teams without a crest/flag asset. */
+function initials(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+  }
+  return name.slice(0, 3).toUpperCase();
 }
 
-export const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.wildlyplay.com";
-
-function TeamColumn({ name, badge }: { name: string; badge: string | null }) {
+function DeskTeamColumn({ name }: { name: string }) {
+  const badge = teamBadge(name);
   const src = badge?.startsWith("/") ? `${SITE}${badge}` : badge;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 320 }}>
@@ -90,7 +29,23 @@ function TeamColumn({ name, badge }: { name: string; badge: string | null }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} width={88} height={88} style={{ objectFit: "contain" }} alt="" />
       ) : (
-        <div style={{ display: "flex", width: 88, height: 88 }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 88,
+            height: 88,
+            borderRadius: 44,
+            backgroundColor: "rgba(255,255,255,0.18)",
+            border: "2px solid rgba(255,255,255,0.55)",
+            fontSize: 30,
+            fontWeight: 800,
+            color: "#ffffff",
+          }}
+        >
+          {initials(name)}
+        </div>
       )}
       <div
         style={{
@@ -109,8 +64,19 @@ function TeamColumn({ name, badge }: { name: string; badge: string | null }) {
   );
 }
 
-export function renderShareCard(props: ShareCardProps): ImageResponse {
-  const { home, away, homeBadge, awayBadge, league, status, headline, subhead, infoLine, metric, record, author } = props;
+export type DeskCardProps = {
+  home: string | null;
+  away: string | null;
+  badgeLabel: string;
+  /** Article title — panel subhead when teams are known, header hero otherwise. */
+  headline: string;
+  league: string | null;
+  /** en-GB formatted publish date, e.g. "23 Jul 2026". */
+  dateLine: string;
+};
+
+export function renderDeskCard(props: DeskCardProps): ImageResponse {
+  const { home, away, badgeLabel, headline, league, dateLine } = props;
   const hasTeams = Boolean(home && away);
   const homeColor = teamColor(home ?? "");
   const awayColor = teamColor(away ?? "");
@@ -130,7 +96,7 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
           color: INK,
         }}
       >
-        {/* ── Vibrant team-colored header ── */}
+        {/* ── Vibrant header (team colors, or brand band for roundups) ── */}
         <div style={{ position: "relative", display: "flex", width: "100%", height: 288 }}>
           <div
             style={{
@@ -165,7 +131,7 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
               justifyContent: "space-between",
             }}
           >
-            {/* top: logo + status */}
+            {/* top: logo + kind badge */}
             <div style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", fontSize: 32, fontWeight: 800, color: "#ffffff" }}>
                 <span>Wildly</span>
@@ -178,19 +144,19 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
                   fontWeight: 800,
                   letterSpacing: 3,
                   color: "#ffffff",
-                  backgroundColor: status.color,
+                  backgroundColor: BRAND_GREEN,
                   borderRadius: 8,
                   padding: "7px 18px",
                 }}
               >
-                {status.label}
+                {badgeLabel}
               </div>
             </div>
 
-            {/* hero: crests + names, or headline when no teams */}
+            {/* hero: crests + names, or the title when no matchup */}
             {hasTeams ? (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
-                <TeamColumn name={home as string} badge={homeBadge} />
+                <DeskTeamColumn name={home as string} />
                 <div
                   style={{
                     display: "flex",
@@ -203,7 +169,7 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
                 >
                   VS
                 </div>
-                <TeamColumn name={away as string} badge={awayBadge} />
+                <DeskTeamColumn name={away as string} />
               </div>
             ) : (
               <div
@@ -247,33 +213,9 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
                 {league}
               </div>
             ) : null}
-            {subhead ? (
+            {hasTeams ? (
               <div style={{ display: "flex", marginTop: 14, fontSize: 34, fontWeight: 800, color: INK, lineHeight: 1.2 }}>
-                {subhead}
-              </div>
-            ) : null}
-            {infoLine ? (
-              <div style={{ display: "flex", marginTop: 12, fontSize: 40, fontWeight: 800, color: INK }}>
-                {infoLine}
-              </div>
-            ) : null}
-            {metric ? (
-              <div style={{ display: "flex", marginTop: 18 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    border: `2px solid ${BRAND_GREEN}`,
-                    borderRadius: 10,
-                    padding: "8px 18px",
-                    fontSize: 24,
-                    fontWeight: 800,
-                    color: INK,
-                  }}
-                >
-                  <span style={{ color: MUTED, fontWeight: 700, marginRight: 10 }}>{metric.label}</span>
-                  <span>{metric.value}</span>
-                </div>
+                {headline}
               </div>
             ) : null}
           </div>
@@ -289,10 +231,10 @@ export function renderShareCard(props: ShareCardProps): ImageResponse {
             }}
           >
             <div style={{ display: "flex", fontSize: 22, fontWeight: 700, color: INK }}>
-              {recordLine(author, record)}
+              {`WildlyPlay Desk (AI) \u00b7 ${dateLine}`}
             </div>
             <div style={{ display: "flex", fontSize: 18, color: MUTED }}>
-              {author === "scout" ? "The Scout \u00b7 AI-picked, not a real person" : "The Curator \u00b7 Human-picked"}
+              {league ?? "AI-authored coverage"}
             </div>
           </div>
         </div>

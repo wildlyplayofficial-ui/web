@@ -142,6 +142,25 @@ function TmaHome() {
     window.location.href = shareUrl;
   }, [card, pick]);
 
+  // D8: Poll for new card every 5 min when on no_card or settled state
+  const [newCardAvailable, setNewCardAvailable] = useState(false);
+  useEffect(() => {
+    if (!userId) return;
+    const vs = deriveViewState(card, pick);
+    // Only poll when there's nothing actionable (no_card, settled, voided)
+    if (vs !== "no_card" && vs !== "settled" && vs !== "voided") return;
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/goalline/card/today?userId=${userId}`);
+        const data = await res.json();
+        if (data.card && data.card.id !== card?.id && (data.card.status === "open" || data.card.status === "locked")) {
+          setNewCardAvailable(true);
+        }
+      } catch { /* swallow */ }
+    }, 5 * 60 * 1000); // 5 min
+    return () => clearInterval(id);
+  }, [userId, card, pick]);
+
   const viewState = deriveViewState(card, pick);
 
   if (authError) {
@@ -176,6 +195,16 @@ function TmaHome() {
             }).format(new Date(card.utc_date + "T00:00:00Z"))}
           </h1>
         </header>
+      )}
+
+      {/* D8: New card available banner */}
+      {newCardAvailable && (
+        <button
+          onClick={() => window.location.reload()}
+          className="mb-4 w-full rounded-lg border border-brand/40 bg-brand-dim px-4 py-3 text-center font-display text-sm font-bold text-brand transition-colors hover:bg-brand/20"
+        >
+          🎯 New card available — tap to refresh!
+        </button>
       )}
 
       {/* How it works (collapsible) */}

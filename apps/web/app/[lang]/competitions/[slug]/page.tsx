@@ -56,11 +56,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Tên bản địa hoá: bản VI dùng "Ngoại hạng Anh"/"Cúp C1" để bắt cầu tìm kiếm VN.
   const compName = localizedCompetitionName(slug, comp.name, lang);
   const title = dict.standings.titleFor.replace("{name}", compName);
+  const description = dict.standings.descriptionFor
+    .replace("{name}", compName)
+    .replace("{season}", comp.season ?? "");
   return {
     title,
+    description,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
       title: `${title} | WildlyPlay`,
+      description,
       images: [{ url: `/api/og/editorial?title=${encodeURIComponent(compName)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
     },
   };

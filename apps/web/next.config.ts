@@ -47,9 +47,9 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/news/post-mortem-:slug", destination: "/:lang/analysis/post-mortem-:slug", statusCode: 301 },
       // Guide slugs (specific, no prefix pattern)
       { source: "/news/how-de-vigging-works", destination: "/guides/what-is-devigging", permanent: true },
-      { source: "/news/kelly-criterion-betting", destination: "/guides/what-is-asian-handicap", permanent: true },
+      { source: "/news/kelly-criterion-betting", destination: "/guides/kelly-criterion-betting", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/:lang/guides/what-is-devigging", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/what-is-asian-handicap", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/kelly-criterion-betting", permanent: true },
       // RSS feed redirect — must come before the catch-all /news/:slug* below
       { source: "/news/rss.xml", destination: "/api/analysis/rss", statusCode: 301 },
       // 301 retire /news entirely → /analysis (spec §2E). Catch-all after specific rules above.

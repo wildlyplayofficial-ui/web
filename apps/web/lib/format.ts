@@ -46,6 +46,24 @@ export function formatKickoff(iso: string, lang: Lang): string {
   return `${day} · ${time} UTC`;
 }
 
+/** D1 (§9): publish-proof timestamp — always includes the year so archive picks stay unambiguous. */
+export function formatPostedAt(iso: string, lang: Lang): string {
+  const date = new Date(iso);
+  const day = new Intl.DateTimeFormat(locales[lang], {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+  const time = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+  }).format(date);
+  return `${day} · ${time} UTC`;
+}
+
 export function formatBoardDate(date: Date, lang: Lang): string {
   return new Intl.DateTimeFormat(locales[lang], {
     weekday: "long",

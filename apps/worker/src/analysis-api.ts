@@ -153,7 +153,7 @@ export async function handleAnalysisRoute(
         .single();
       if (error) throw new Error(error.message);
       log.info(`analysis-api: created "${row.slug}" (${row.kind}/${row.tier})`);
-      void deps.revalidate(['analysis']);
+      void deps.revalidate(['analysis-articles']);
       json(res, 201, { ok: true, slug: data.slug, status: data.status });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -231,7 +231,7 @@ export async function handleAnalysisRoute(
         return true;
       }
       log.info(`analysis-api: updated "${slug}"`);
-      void deps.revalidate(['analysis']);
+      void deps.revalidate(['analysis-articles']);
       json(res, 200, { ok: true, slug: data.slug, status: data.status });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -256,7 +256,7 @@ export async function handleAnalysisRoute(
         return true;
       }
       log.info(`analysis-api: retracted "${slug}"`);
-      void deps.revalidate(['analysis']);
+      void deps.revalidate(['analysis-articles']);
       json(res, 200, { ok: true, slug: data.slug, status: 'draft' });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
