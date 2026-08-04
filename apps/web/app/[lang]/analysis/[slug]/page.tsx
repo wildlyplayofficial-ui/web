@@ -9,6 +9,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { AnalysisArticle } from "@/lib/types";
+import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 
 export const revalidate = 300;
 
@@ -90,7 +91,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    ...(post.type === "preview" ? { robots: { index: false, follow: true } } : {}),
+    // preview = noindex như cũ. Thêm: bản VI của 6 guide bị chặn cũng phải noindex ở
+    // đường dẫn /analysis — trước đây chỉ chặn ở /guides nên nội dung vẫn lọt qua đây.
+    ...(post.type === "preview" || isViBlockedGuide(lang, slug)
+      ? { robots: { index: false, follow: true } }
+      : {}),
     alternates: { canonical, languages },
     openGraph: {
       title,

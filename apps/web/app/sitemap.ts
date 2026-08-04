@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
 import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
@@ -75,14 +76,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/match/${m.slug}`),
   }));
 
-  // Guide: bản VI noindex (bài dạy cá cược) → loại 'vi' khỏi hreflang sitemap, giữ EN/TH/ES.
-  const guideLangs = LANGS.filter((l) => l !== "vi");
+  // Guide: chỉ 6 bài nặng thuật ngữ cá cược mới loại 'vi' khỏi hreflang sitemap.
+  // Các guide còn lại khai đủ 4 ngôn ngữ. (Nick chốt danh sách 4/8)
+  const langsWithoutVi = LANGS.filter((l) => l !== "vi");
   const guideRoutes: MetadataRoute.Sitemap = guides.map((g) => ({
     url: `${BASE}/guides/${g.slug}`,
     lastModified: new Date(g.updated),
     changeFrequency: "monthly",
     priority: 0.7,
-    alternates: alternates(`/guides/${g.slug}`, guideLangs),
+    alternates: alternates(
+      `/guides/${g.slug}`,
+      VI_BLOCKED_GUIDE_SLUGS.has(g.slug) ? langsWithoutVi : LANGS,
+    ),
   }));
 
   const reportRoutes: MetadataRoute.Sitemap = reports.map((r) => ({

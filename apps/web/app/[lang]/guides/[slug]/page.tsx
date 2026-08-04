@@ -7,6 +7,7 @@ import { getPost, getPostLangs } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 
 export const revalidate = 300;
 
@@ -55,9 +56,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    // Bản VI của guide = bài dạy cá cược (value betting/de-vig/Kelly/AH...) → noindex
-    // để không lộ trên search VN. Giữ EN/TH/ES index bình thường. (Nick+Peter chốt 28/7)
-    robots: lang === "vi" ? { index: false, follow: true } : undefined,
+    // Bản VI của 6 guide nặng thuật ngữ cá cược → noindex để không lộ trên search VN.
+    // 5 guide còn lại + mọi ngôn ngữ khác index bình thường. (Nick chốt danh sách 4/8)
+    robots: isViBlockedGuide(lang, slug) ? { index: false, follow: true } : undefined,
     alternates: { canonical, languages },
     openGraph: {
       title,
