@@ -6,7 +6,7 @@ import { isFeatureEnabled } from "@/lib/data";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { COMPETITION_LOGOS } from "@/lib/competition-logos";
+import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 
 export const revalidate = 3600;
 
@@ -23,9 +23,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   const comp = await resolveCompetition(slug);
   if (!comp) return { title: dict.standings.title };
-  const title = `${comp.name} — Fixtures`;
+  const compName = localizedCompetitionName(slug, comp.name, lang);
+  const title = dict.standings.scheduleTitleFor
+    .replace("{name}", compName)
+    .replace("{season}", comp.season);
   return {
     title,
+    description: dict.standings.scheduleDescriptionFor
+      .replace("{name}", compName)
+      .replace("{season}", comp.season),
     alternates: buildAlternates(`/competitions/${slug}/fixtures`, lang),
     openGraph: { title: `${title} | WildlyPlay` },
   };
@@ -42,10 +48,11 @@ export default async function FixturesPage({ params }: Props) {
   if (comp.status !== "active" && !flagEnabled) notFound();
 
   const fixtureDays = await getCompetitionFixtures(comp.livescoreId);
+  const compName = localizedCompetitionName(slug, comp.name, lang);
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.standings.title, url: "/competitions" }, { name: comp.name, url: `/competitions/${slug}` }, { name: "Fixtures", url: `/competitions/${slug}/fixtures` }]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.standings.title, url: "/competitions" }, { name: compName, url: `/competitions/${slug}` }, { name: dict.standings.schedule, url: `/competitions/${slug}/fixtures` }]} />
       <section className="py-12 text-center">
         <div className="flex items-center justify-center gap-4">
           {COMPETITION_LOGOS[slug] && (
@@ -56,26 +63,26 @@ export default async function FixturesPage({ params }: Props) {
               className="h-16 w-16 flex-shrink-0 object-contain"
             />
           )}
-          <h1 className="gradient-text font-display text-4xl font-bold">{comp.name}</h1>
+          <h1 className="gradient-text font-display text-4xl font-bold">{compName}</h1>
         </div>
-        <p className="mt-2 text-muted">Fixtures</p>
+        <p className="mt-2 text-muted">{dict.standings.schedule}</p>
       </section>
 
-      {/* Tabs */}
+      {/* Tabs — label localize qua dict, tái dùng key nav.standings/schedule/form. */}
       <nav className="mb-8 flex justify-center gap-2">
         <Link href={withLang(`/competitions/${slug}`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
-          Standings
+          {dict.nav.standings}
         </Link>
         <span className="rounded-full border border-brand/40 bg-brand-dim px-4 py-1.5 text-sm font-semibold text-brand">
-          Fixtures
+          {dict.standings.schedule}
         </span>
         <Link href={withLang(`/competitions/${slug}/form`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
-          Form
+          {dict.standings.form}
         </Link>
       </nav>
 
       {fixtureDays.length === 0 ? (
-        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">No fixtures available.</div>
+        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">{dict.standings.empty}</div>
       ) : (
         <LeagueFixtures days={fixtureDays} label="" />
       )}

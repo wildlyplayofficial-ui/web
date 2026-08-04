@@ -106,15 +106,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/analysis/${a.slug}`),
   }));
 
+  // Trang giải + 2 trang con (lịch thi đấu, phong độ). Trước chỉ phát trang gốc nên
+  // 2 trang con đã dựng xong mà Google không biết chúng tồn tại (4/8).
+  // Chỉ phát trang con khi giải đang active — trang giải notFound() nếu không active,
+  // và aff-cup/asian-cup/euro-qualifiers hiện đã 404 (bug cũ, chưa sửa ở đây).
+  // World Cup (362) cũng bỏ: trang giải ẩn tab cho WC nên trang con thành mồ côi.
+  const subPages = (c: { livescoreId: number; status: string }) =>
+    c.status === "active" && c.livescoreId !== 362 ? ["", "/fixtures", "/form"] : [""];
   const standingsRoutes: MetadataRoute.Sitemap = competitions
     .filter((c) => c.slug)
-    .map((c) => ({
-      url: `${BASE}/competitions/${c.slug}`,
-      lastModified: VI_REPOSITION,
-      changeFrequency: "daily" as const,
-      priority: 0.7,
-      alternates: alternates(`/competitions/${c.slug}`),
-    }));
+    .flatMap((c) =>
+      subPages(c).map((sub) => ({
+        url: `${BASE}/competitions/${c.slug}${sub}`,
+        lastModified: VI_REPOSITION,
+        changeFrequency: "daily" as const,
+        priority: sub === "" ? 0.7 : 0.6,
+        alternates: alternates(`/competitions/${c.slug}${sub}`),
+      })),
+    );
 
   return [...staticRoutes, ...playRoutes, ...newsRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }

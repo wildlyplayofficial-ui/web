@@ -7,7 +7,7 @@ import { fetchCompetitionTable } from "@/lib/standings";
 import { getCompetitionForm, getStandingsCompetitions } from "@/lib/standings-extra";
 import { teamBadge } from "@/lib/team-badges";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { COMPETITION_LOGOS } from "@/lib/competition-logos";
+import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 
 export const revalidate = 3600;
 
@@ -24,9 +24,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   const comp = await resolveCompetition(slug);
   if (!comp) return { title: dict.standings.title };
-  const title = `${comp.name} — Form Guide`;
+  const compName = localizedCompetitionName(slug, comp.name, lang);
+  const title = dict.standings.formTitleFor
+    .replace("{name}", compName)
+    .replace("{season}", comp.season);
   return {
     title,
+    description: dict.standings.formDescriptionFor
+      .replace("{name}", compName)
+      .replace("{season}", comp.season),
     alternates: buildAlternates(`/competitions/${slug}/form`, lang),
     openGraph: { title: `${title} | WildlyPlay` },
   };
@@ -57,10 +63,11 @@ export default async function FormPage({ params }: Props) {
     .map((r) => ({ ...r, form: r.form || formMap[r.name] || "" }))
     .filter((r) => r.form)
     .sort((a, b) => a.rank - b.rank);
+  const compName = localizedCompetitionName(slug, comp.name, lang);
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.standings.title, url: "/competitions" }, { name: comp.name, url: `/competitions/${slug}` }, { name: "Form", url: `/competitions/${slug}/form` }]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.standings.title, url: "/competitions" }, { name: compName, url: `/competitions/${slug}` }, { name: dict.standings.form, url: `/competitions/${slug}/form` }]} />
       <section className="py-12 text-center">
         <div className="flex items-center justify-center gap-4">
           {COMPETITION_LOGOS[slug] && (
@@ -71,26 +78,26 @@ export default async function FormPage({ params }: Props) {
               className="h-16 w-16 flex-shrink-0 object-contain"
             />
           )}
-          <h1 className="gradient-text font-display text-4xl font-bold">{comp.name}</h1>
+          <h1 className="gradient-text font-display text-4xl font-bold">{compName}</h1>
         </div>
-        <p className="mt-2 text-muted">Form Guide — Last 5 Matches</p>
+        <p className="mt-2 text-muted">{dict.standings.form}</p>
       </section>
 
-      {/* Tabs */}
+      {/* Tabs — label localize qua dict, tái dùng key nav.standings/schedule/form. */}
       <nav className="mb-8 flex justify-center gap-2">
         <Link href={withLang(`/competitions/${slug}`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
-          Standings
+          {dict.nav.standings}
         </Link>
         <Link href={withLang(`/competitions/${slug}/fixtures`, lang)} className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink">
-          Fixtures
+          {dict.standings.schedule}
         </Link>
         <span className="rounded-full border border-brand/40 bg-brand-dim px-4 py-1.5 text-sm font-semibold text-brand">
-          Form
+          {dict.standings.form}
         </span>
       </nav>
 
       {rows.length === 0 ? (
-        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">No form data available.</div>
+        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">{dict.standings.empty}</div>
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map((r) => (
