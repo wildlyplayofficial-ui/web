@@ -28,6 +28,9 @@ export interface AnalysisArticle {
   match_id: string | null;
   linked_pick_id: string | null;
   hero_image: string | null;
+  /** Mô tả cho Google, viết tay. Bỏ trống thì trang tự cắt 160 ký tự đầu body —
+   *  cách đó hay đứt giữa từ ("…kéo dài tới rạng sá"), nên bài quan trọng thì viết tay. */
+  meta_description?: string | null;
   published_at: string;
   /** Row-update timestamp — used as the OG-card cache-bust token. */
   updated_at?: string;
