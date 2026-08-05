@@ -43,7 +43,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (resolved.kind === "desk") {
     const { desk } = resolved;
-    const description = desk.body
+    // Ưu tiên mô tả viết tay; không có thì mới cắt 160 ký tự đầu body — cách cắt
+    // này hay đứt giữa từ nên chỉ dùng làm phương án dự phòng.
+    const description = desk.meta_description?.trim() || desk.body
       .replace(/[#*_>`\[\]()!]/g, "")
       .replace(/\n+/g, " ")
       .trim()
@@ -250,6 +252,13 @@ function DeskArticleView({
             table: ({ children }) => (
               <div className="table-wrap"><table>{children}</table></div>
             ),
+            // Logo đội trong bảng lịch: markdown không tự đặt lazy-load hay kích
+            // thước, nên ảnh tải hết ngay và nhảy layout khi tải xong. Đặt sẵn ở
+            // đây để bảng vài chục dòng logo không ăn vào tốc độ trang.
+            img: ({ src, alt }) => (
+              <img src={typeof src === "string" ? src : ""} alt={alt ?? ""}
+                   loading="lazy" decoding="async" width={20} height={20} />
+            ),
           }}
         >
           {article.body.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
@@ -372,6 +381,13 @@ export default async function AnalysisArticlePage({ params }: Props) {
           components={{
             table: ({ children }) => (
               <div className="table-wrap"><table>{children}</table></div>
+            ),
+            // Logo đội trong bảng lịch: markdown không tự đặt lazy-load hay kích
+            // thước, nên ảnh tải hết ngay và nhảy layout khi tải xong. Đặt sẵn ở
+            // đây để bảng vài chục dòng logo không ăn vào tốc độ trang.
+            img: ({ src, alt }) => (
+              <img src={typeof src === "string" ? src : ""} alt={alt ?? ""}
+                   loading="lazy" decoding="async" width={20} height={20} />
             ),
           }}
         >
