@@ -185,7 +185,10 @@ function DeskArticleView({
 
   const schemaData = buildArticleSchema(
     article.title,
-    article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
+    // Cùng nguồn với thẻ meta và og:description — nếu chỗ này tự cắt body thì
+    // structured data nói một đằng, thẻ meta nói một nẻo.
+    article.meta_description?.trim()
+      || article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
     article.published_at,
     "WildlyPlay Desk",
     article.slug,
