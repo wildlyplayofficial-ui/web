@@ -26,15 +26,18 @@ export function LocalKickoffTime({ iso, showDate, className = "text-xs text-mute
     setLabel(fmt.format(d));
   }, [iso, showDate]);
 
-  // SSR fallback: show UTC, guard NaN
+  // SSR fallback (trước khi JS chạy, chưa biết múi giờ viewer): hiện giờ VN
+  // (UTC+7) theo định dạng ngày kiểu Việt (21/8) — đây là thứ Google thấy
+  // đầu tiên nên không để "UTC" hay ngày ISO lọt ra bản tiếng Việt.
   if (!label) {
     if (!iso) return null;
     const d = new Date(iso);
     if (isNaN(d.getTime())) return null;
-    const h = String(d.getUTCHours()).padStart(2, "0");
-    const m = String(d.getUTCMinutes()).padStart(2, "0");
-    const datePrefix = showDate ? `${iso.slice(0, 10)} · ` : "";
-    return <span className={className}>{datePrefix}{h}:{m} UTC</span>;
+    const vn = new Date(d.getTime() + 7 * 3600_000);
+    const h = String(vn.getUTCHours()).padStart(2, "0");
+    const m = String(vn.getUTCMinutes()).padStart(2, "0");
+    const datePrefix = showDate ? `${vn.getUTCDate()}/${vn.getUTCMonth() + 1} · ` : "";
+    return <span className={className}>{datePrefix}{h}:{m}</span>;
   }
 
   return <span className={className}>{label}</span>;

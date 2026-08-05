@@ -72,10 +72,24 @@ interface LivescoreTableEntry {
   form?: string;
 }
 
+/**
+ * Bảng xếp hạng của Livescore trả tên đội đã escape sẵn ("Brighton &amp; Hove
+ * Albion") trong khi endpoint lịch thi đấu trả tên thô. Không gỡ thì React escape
+ * thêm lần nữa → hiện "&amp;" trên trang, và tên lệch làm mất luôn logo đội.
+ */
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'");
+}
+
 function parseEntry(e: LivescoreTableEntry): StandingTeam {
   return {
     rank: parseInt(e.rank ?? "0", 10),
-    name: e.name ?? "",
+    name: decodeEntities(e.name ?? ""),
     played: parseInt(e.matches ?? "0", 10),
     won: parseInt(e.won ?? "0", 10),
     drawn: parseInt(e.drawn ?? "0", 10),

@@ -108,13 +108,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Trang giải + 2 trang con (lịch thi đấu, phong độ). Trước chỉ phát trang gốc nên
   // 2 trang con đã dựng xong mà Google không biết chúng tồn tại (4/8).
-  // Chỉ phát trang con khi giải đang active — trang giải notFound() nếu không active,
-  // và aff-cup/asian-cup/euro-qualifiers hiện đã 404 (bug cũ, chưa sửa ở đây).
-  // World Cup (362) cũng bỏ: trang giải ẩn tab cho WC nên trang con thành mồ côi.
-  const subPages = (c: { livescoreId: number; status: string }) =>
-    c.status === "active" && c.livescoreId !== 362 ? ["", "/fixtures", "/form"] : [""];
+  // Chỉ giải active mới vào sitemap: trang giải notFound() khi status khác "active",
+  // nên aff-cup/asian-cup/euro-qualifiers đang được nộp cho Google dưới dạng 404 (5/8).
+  // World Cup (362) giữ trang gốc nhưng bỏ trang con: trang giải ẩn tab cho WC.
+  const subPages = (c: { livescoreId: number }) =>
+    c.livescoreId !== 362 ? ["", "/fixtures", "/form"] : [""];
   const standingsRoutes: MetadataRoute.Sitemap = competitions
-    .filter((c) => c.slug)
+    .filter((c) => c.slug && c.status === "active")
     .flatMap((c) =>
       subPages(c).map((sub) => ({
         url: `${BASE}/competitions/${c.slug}${sub}`,
