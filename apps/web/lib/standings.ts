@@ -77,13 +77,22 @@ interface LivescoreTableEntry {
  * Albion") trong khi endpoint lịch thi đấu trả tên thô. Không gỡ thì React escape
  * thêm lần nữa → hiện "&amp;" trên trang, và tên lệch làm mất luôn logo đội.
  */
+const ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&apos;": "'",
+  "&nbsp;": " ",
+};
+
+// Quét MỘT lượt, không nối chuỗi .replace(): nối thì kết quả bước trước thành
+// đầu vào bước sau, nên "&amp;apos;" (chữ "&apos;" đã escape) bị gỡ hai lần
+// thành dấu nháy. Tên CLB kiểu O'Brien sẽ hiện sai khi mở rộng sang giải khác.
 function decodeEntities(s: string): string {
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#0?39;/g, "'");
+  return s.replace(/&(?:amp|lt|gt|quot|apos|nbsp|#0?39);/g, (m) =>
+    m === "&#39;" || m === "&#039;" ? "'" : ENTITIES[m],
+  );
 }
 
 function parseEntry(e: LivescoreTableEntry): StandingTeam {

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs } from "@/lib/data";
+import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
@@ -108,13 +108,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Trang giải + 2 trang con (lịch thi đấu, phong độ). Trước chỉ phát trang gốc nên
   // 2 trang con đã dựng xong mà Google không biết chúng tồn tại (4/8).
-  // Chỉ giải active mới vào sitemap: trang giải notFound() khi status khác "active",
-  // nên aff-cup/asian-cup/euro-qualifiers đang được nộp cho Google dưới dạng 404 (5/8).
+  // Sitemap phải soi ĐÚNG điều kiện sống của trang giải — xem
+  // app/[lang]/competitions/[slug]/page.tsx: notFound() khi status khác "active"
+  // VÀ cờ standings_<slug> tắt. Chỉ lọc theo status thì aff-cup/asian-cup/
+  // euro-qualifiers được nộp cho Google dưới dạng 404, còn giải soft-launch bằng
+  // cờ lại sống mà vắng mặt trong sitemap — hai mặt của cùng một lỗi (5/8).
   // World Cup (362) giữ trang gốc nhưng bỏ trang con: trang giải ẩn tab cho WC.
   const subPages = (c: { livescoreId: number }) =>
     c.livescoreId !== 362 ? ["", "/fixtures", "/form"] : [""];
+  const visible = await Promise.all(
+    competitions.map(async (c) => {
+      if (!c.slug) return false;
+      if (c.status === "active") return true;
+      // Cờ tra theo từng giải, chỉ chạy cho số ít giải non-active. Lỗi Supabase
+      // thì coi như tắt: thà thiếu một URL còn hơn hỏng cả sitemap.
+      try {
+        return await isFeatureEnabled(`standings_${c.slug.replace(/-/g, "_")}`);
+      } catch {
+        return false;
+      }
+    }),
+  );
   const standingsRoutes: MetadataRoute.Sitemap = competitions
-    .filter((c) => c.slug && c.status === "active")
+    .filter((_, i) => visible[i])
     .flatMap((c) =>
       subPages(c).map((sub) => ({
         url: `${BASE}/competitions/${c.slug}${sub}`,
