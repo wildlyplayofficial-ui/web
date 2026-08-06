@@ -297,6 +297,8 @@ export interface Dict {
     scheduleDescriptionFor: string;
     formTitleFor: string;
     formDescriptionFor: string;
+    roundLabel: string;
+    provisionalTime: string;
   };
 }
 
@@ -555,6 +557,8 @@ const en: Dict = {
     scheduleDescriptionFor: "Full {name} {season} fixture list \u2014 kick-off times, matchweeks and results as they come in.",
     formTitleFor: "{name} Form Guide {season}",
     formDescriptionFor: "Last five results for every {name} team in {season} \u2014 who is in form and who is struggling.",
+    roundLabel: "Matchday {n}",
+    provisionalTime: "Kick-off time not yet confirmed",
   },
 };
 
@@ -813,6 +817,8 @@ const vi: Dict = {
     scheduleDescriptionFor: "L\u1ecbch thi \u0111\u1ea5u {name} {season} \u0111\u1ea7y \u0111\u1ee7 \u2014 gi\u1edd b\u00f3ng l\u0103n theo gi\u1edd Vi\u1ec7t Nam, chia theo t\u1eebng v\u00f2ng, c\u1eadp nh\u1eadt k\u1ebft qu\u1ea3 ngay khi c\u00f3.",
     formTitleFor: "Phong \u0111\u1ed9 c\u00e1c \u0111\u1ed9i {name} {season}",
     formDescriptionFor: "K\u1ebft qu\u1ea3 5 tr\u1eadn g\u1ea7n nh\u1ea5t c\u1ee7a t\u1eebng \u0111\u1ed9i {name} m\u00f9a {season} \u2014 \u0111\u1ed9i n\u00e0o \u0111ang l\u00ean ch\u00e2n, \u0111\u1ed9i n\u00e0o \u0111ang sa s\u00fat.",
+    roundLabel: "Vòng {n}",
+    provisionalTime: "Giờ chưa chốt",
   },
 };
 
@@ -1071,6 +1077,8 @@ const th: Dict = {
     scheduleDescriptionFor: "\u0e42\u0e1b\u0e23\u0e41\u0e01\u0e23\u0e21\u0e01\u0e32\u0e23\u0e41\u0e02\u0e48\u0e07\u0e02\u0e31\u0e19 {name} {season} \u0e04\u0e23\u0e1a\u0e17\u0e38\u0e01\u0e19\u0e31\u0e14 \u2014 \u0e40\u0e27\u0e25\u0e32\u0e41\u0e02\u0e48\u0e07 \u0e41\u0e1a\u0e48\u0e07\u0e15\u0e32\u0e21\u0e2a\u0e31\u0e1b\u0e14\u0e32\u0e2b\u0e4c \u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e1c\u0e25\u0e01\u0e32\u0e23\u0e41\u0e02\u0e48\u0e07\u0e02\u0e31\u0e19\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15",
     formTitleFor: "\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e01\u0e32\u0e23\u0e40\u0e25\u0e48\u0e19 {name} {season}",
     formDescriptionFor: "\u0e1c\u0e25 5 \u0e19\u0e31\u0e14\u0e2b\u0e25\u0e31\u0e07\u0e2a\u0e38\u0e14\u0e02\u0e2d\u0e07\u0e17\u0e38\u0e01\u0e17\u0e35\u0e21\u0e43\u0e19 {name} \u0e24\u0e14\u0e39\u0e01\u0e32\u0e25 {season} \u2014 \u0e17\u0e35\u0e21\u0e44\u0e2b\u0e19\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e14\u0e35 \u0e17\u0e35\u0e21\u0e44\u0e2b\u0e19\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e15\u0e01",
+    roundLabel: "นัดที่ {n}",
+    provisionalTime: "ยังไม่ยืนยันเวลา",
   },
 };
 
@@ -1331,6 +1339,8 @@ const es: Dict = {
     scheduleDescriptionFor: "Calendario completo de {name} {season} \u2014 horarios, jornadas y resultados actualizados.",
     formTitleFor: "Forma de los equipos de {name} {season}",
     formDescriptionFor: "\u00daltimos cinco resultados de cada equipo de {name} en {season} \u2014 qui\u00e9n llega en forma y qui\u00e9n no.",
+    roundLabel: "Jornada {n}",
+    provisionalTime: "Horario por confirmar",
   },
 };
 

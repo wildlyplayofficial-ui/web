@@ -1,14 +1,35 @@
+import Link from "next/link";
 import type { KnockoutRound, KnockoutMatch } from "@/lib/standings";
 import { TeamCrest } from "@/components/team-crest";
 import { LocalKickoffTime } from "./local-kickoff-time";
 
-export function MatchCard({ match }: { match: KnockoutMatch }) {
+/**
+ * `details` và `href` chỉ dùng ở lịch giải vô địch quốc gia (LeagueFixtures).
+ * Nhánh cúp không truyền: số vòng đã nằm ở tiêu đề cột, in lại trên thẻ là thừa.
+ */
+interface MatchCardProps {
+  match: KnockoutMatch;
+  href?: string;
+  details?: { roundLabel: string; provisionalLabel: string };
+}
+
+export function MatchCard({ match, href, details }: MatchCardProps) {
   const hasScore = match.homeScore !== null && match.awayScore !== null;
   const homeWin = hasScore && match.homeScore! > match.awayScore!;
   const awayWin = hasScore && match.awayScore! > match.homeScore!;
 
+  const Wrapper = href ? Link : "div";
+  const wrapperProps = href
+    ? { href, className: "group block rounded-card border border-line bg-card p-3 text-sm shadow-card transition-colors hover:border-line-hover hover:bg-card-hover" }
+    : { className: "rounded-card border border-line bg-card p-3 text-sm shadow-card" };
+
   return (
-    <div className="rounded-card border border-line bg-card p-3 text-sm shadow-card">
+    <Wrapper {...(wrapperProps as { href: string; className: string })}>
+      {details && match.round && (
+        <p className="mb-2 font-display text-[10px] font-semibold uppercase tracking-wide text-muted">
+          {details.roundLabel.replace("{n}", match.round)}
+        </p>
+      )}
       <div className={`flex items-center justify-between gap-2 ${homeWin ? "font-semibold text-ink" : "text-muted"}`}>
         <span className="flex items-center truncate">
           <TeamCrest name={match.homeName} />
@@ -43,7 +64,15 @@ export function MatchCard({ match }: { match: KnockoutMatch }) {
           )}
         </p>
       )}
-    </div>
+      {details && match.venue && (
+        <p className="mt-1 truncate text-[10px] text-muted/70">{match.venue}</p>
+      )}
+      {/* Giờ lấy từ lịch gốc cả mùa, đài truyền hình còn dời — nói rõ để người
+          đọc không đặt lịch nhầm rồi mất niềm tin vào cả trang. */}
+      {details && match.provisional && (
+        <p className="mt-1 text-[10px] text-muted/70">{details.provisionalLabel}</p>
+      )}
+    </Wrapper>
   );
 }
 
