@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { FixtureDay } from "@/lib/standings-extra";
 import type { KnockoutMatch } from "@/lib/standings";
-import type { Lang } from "@/lib/i18n";
+import { withLang, type Lang } from "@/lib/i18n";
 import { locales } from "@/lib/format";
-import { MatchCard } from "./knockout-bracket";
+import { buildMatchSlug } from "@/lib/data";
+import { TeamCrest } from "@/components/team-crest";
+import { LocalKickoffTime } from "./local-kickoff-time";
 
 /** Formats a YYYY-MM-DD calendar date as a localized weekday + day heading.
  *  Định dạng ngay khi render, KHÔNG chờ useEffect: trước đây nhãn khởi tạo rỗng
@@ -14,24 +17,17 @@ import { MatchCard } from "./knockout-bracket";
  *  đúng múi giờ, chỉ cần in ra; ghim timeZone UTC để server và trình duyệt cho
  *  cùng một chuỗi. Dùng ngôn ngữ của trang, không dùng ngôn ngữ máy người xem —
  *  trang tiếng Việt thì tiêu đề phải tiếng Việt. */
-function FixtureDateHeading({ date, lang }: { date: string; lang: Lang }) {
+function formatDateHeading(date: string, lang: Lang): string {
   const [y, m, d] = date.split("-").map(Number);
   const parsed = y && m && d ? new Date(Date.UTC(y, m - 1, d)) : null;
-  const label =
-    parsed && !isNaN(parsed.getTime())
-      ? new Intl.DateTimeFormat(locales[lang], {
-          weekday: "long",
-          day: "numeric",
-          month: "short",
-          timeZone: "UTC",
-        }).format(parsed)
-      : date;
-
-  return (
-    <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-muted">
-      {label}
-    </h3>
-  );
+  if (!parsed || isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat(locales[lang], {
+    weekday: "long",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(parsed);
 }
 
 /** Re-groups matches by the viewer's LOCAL calendar date instead of the
@@ -67,18 +63,88 @@ function groupByLocalDate(matches: KnockoutMatch[], vnOnly = false): FixtureDay[
     }));
 }
 
+/** Một trận = một hàng ngang, không phải thẻ vuông: mắt người đọc rà dọc theo
+ *  cột giờ để tìm trận, kiểu VnExpress/Livescore. Lưới 5 cột chỉ bật từ sm trở
+ *  lên; điện thoại bỏ cột sân và mũi tên để tên đội còn chỗ thở. */
+function FixtureRow({ match, lang }: { match: KnockoutMatch; lang: Lang }) {
+  const hasScore = match.homeScore !== null && match.awayScore !== null;
+  const href = match.time
+    ? withLang(
+        `/match/${buildMatchSlug(match.homeName, match.awayName, `${match.date}T${match.time}:00Z`)}`,
+        lang,
+      )
+    : null;
+
+  const row = (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:grid-cols-[minmax(0,10rem)_1fr_auto_1fr_1.5rem] sm:gap-3">
+      <span className="col-span-3 order-last truncate text-center text-[11px] text-muted/70 sm:col-span-1 sm:order-none sm:text-left">
+        {match.venue ?? ""}
+      </span>
+
+      <span className="flex min-w-0 items-center justify-end gap-2 text-right text-sm">
+        <span className="truncate">{match.homeName}</span>
+        <TeamCrest name={match.homeName} />
+      </span>
+
+      <span className="shrink-0 text-center font-display text-base font-bold tabular-nums">
+        {hasScore ? (
+          `${match.homeScore} - ${match.awayScore}`
+        ) : match.time ? (
+          <LocalKickoffTime
+            iso={`${match.date}T${match.time}:00Z`}
+            className="font-display text-base font-bold tabular-nums"
+          />
+        ) : (
+          "—"
+        )}
+      </span>
+
+      <span className="flex min-w-0 items-center gap-2 text-sm">
+        <TeamCrest name={match.awayName} />
+        <span className="truncate">{match.awayName}</span>
+      </span>
+
+      <span
+        aria-hidden="true"
+        className="hidden text-muted transition-colors group-hover:text-brand sm:inline"
+      >
+        →
+      </span>
+    </div>
+  );
+
+  if (!href) return <div className="border-t border-line first:border-t-0">{row}</div>;
+
+  return (
+    <Link
+      href={href}
+      className="group block border-t border-line transition-colors first:border-t-0 hover:bg-card-hover"
+    >
+      {row}
+    </Link>
+  );
+}
+
 interface LeagueFixturesProps {
   days: FixtureDay[];
   label: string;
   lang: Lang;
+  roundLabel: string;
+  provisionalLabel: string;
 }
 
-/** Regular-season schedule grouped by date (viewer's local time per card).
+/** Regular-season schedule grouped by date (viewer's local time per row).
  *  Renders the server-provided (UTC) grouping first so SSR/first paint
  *  match, then re-groups by local date on mount — same
  *  useState/useEffect pattern as LocalKickoffTime, to avoid a hydration
  *  mismatch (viewer's timezone is unknown on the server). */
-export function LeagueFixtures({ days, label, lang }: LeagueFixturesProps) {
+export function LeagueFixtures({
+  days,
+  label,
+  lang,
+  roundLabel,
+  provisionalLabel,
+}: LeagueFixturesProps) {
   // Lần đầu (server + hydrate): gom theo giờ VN — bản Google đọc phải khớp
   // tiêu đề với giờ trong thẻ. Sau khi chạy được JS mới gom lại theo múi giờ
   // người xem, để khách ở múi giờ khác cũng thấy đúng.
@@ -94,18 +160,36 @@ export function LeagueFixtures({ days, label, lang }: LeagueFixturesProps) {
 
   return (
     <section className="mt-12">
-      <h2 className="mb-6 text-center font-display text-2xl font-bold">{label}</h2>
-      <div className="space-y-8">
-        {groupedDays.map((day) => (
-          <div key={day.date}>
-            <FixtureDateHeading date={day.date} lang={lang} />
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {label && <h2 className="mb-6 text-center font-display text-2xl font-bold">{label}</h2>}
+      <div className="space-y-4">
+        {groupedDays.map((day) => {
+          // Số vòng để ở đầu nhóm ngày chứ không lặp trên từng hàng. Gần như
+          // ngày nào cũng thuộc một vòng, nhưng vòng đá bù thì không — nên gom
+          // các vòng có mặt rồi in hết, đỡ phải nói dối một con số.
+          const rounds = [...new Set(day.matches.map((m) => m.round).filter(Boolean))];
+          const anyProvisional = day.matches.some((m) => m.provisional);
+
+          return (
+            <div key={day.date} className="overflow-hidden rounded-card border border-line bg-card shadow-card">
+              <div className="border-b border-line px-3 py-3 text-center">
+                <p className="font-display text-sm font-bold">{formatDateHeading(day.date, lang)}</p>
+                {rounds.length > 0 && (
+                  <p className="mt-0.5 text-xs text-muted">
+                    {rounds.map((r) => roundLabel.replace("{n}", r)).join(" · ")}
+                  </p>
+                )}
+                {/* Giờ lấy từ lịch gốc cả mùa, đài truyền hình còn dời — nói rõ
+                    để người đọc không đặt lịch nhầm rồi mất tin vào cả trang. */}
+                {anyProvisional && (
+                  <p className="mt-0.5 text-[11px] text-muted/70">{provisionalLabel}</p>
+                )}
+              </div>
               {day.matches.map((m) => (
-                <MatchCard key={m.id} match={m} />
+                <FixtureRow key={m.id} match={m} lang={lang} />
               ))}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
