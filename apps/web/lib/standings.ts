@@ -36,6 +36,10 @@ export interface KnockoutMatch {
   homeScore: number | null;
   awayScore: number | null;
   finished: boolean;
+  /** Sân nhà. Livescore trả sẵn ở trường `location`. */
+  venue?: string;
+  /** Giờ chưa chốt — lấy từ lịch gốc cả mùa, đài truyền hình có thể dời. */
+  provisional?: boolean;
 }
 
 export interface KnockoutRound {
