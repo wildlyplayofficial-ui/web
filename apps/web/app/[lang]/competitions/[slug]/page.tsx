@@ -10,6 +10,8 @@ import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
 import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { CompetitionNews } from "@/components/competition-news";
+import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 
 export const revalidate = 3600;
@@ -97,14 +99,32 @@ export default async function StandingSlugPage({ params }: Props) {
   const EURO_LEAGUES = new Set(["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1"]);
   const showQualification = EURO_LEAGUES.has(slug);
 
-  const [tableRows, knockoutRounds, fixtureDays, formMap] = await Promise.all([
+  const [tableRows, knockoutRounds, fixtureDays, formMap, deskArticles] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId),
     isWorldCup ? getKnockoutRounds(comp.livescoreId) : Promise.resolve([]),
     // League schedule-by-date: non-WC competitions only (WC uses the bracket).
     isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId),
     // livescore's table has no form for leagues — derive it from results.
     isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId),
+    getAnalysisArticles(undefined, 30),
   ]);
+
+  // `analysis_articles.league` là chữ tự do do người viết đặt ("Premier League")
+  // nên không khớp cứng với competitions.name ("English Premier League"). So
+  // theo dạng đã chuẩn hoá, một chiều nào chứa chiều kia cũng tính là khớp —
+  // "laliga" vs "ligamx" không dính nhau nên không sợ lẫn giải.
+  //
+  // Chỉ hiện ở bản VI: `analysis_articles` mới có một cột `title`/`body`, toàn
+  // bộ bài Desk hiện viết tiếng Việt. Nick đã báo lỗi tiêu đề tiếng Việt lòi ra
+  // trang tiếng Anh — bỏ chốt này khi bài có cột đa ngôn ngữ.
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const compKey = norm(comp.name);
+  const compArticles = (lang === "vi" ? deskArticles : [])
+    .filter((a) => {
+      const leagueKey = norm(a.league ?? "");
+      return leagueKey.length > 0 && (compKey.includes(leagueKey) || leagueKey.includes(compKey));
+    })
+    .slice(0, 3);
 
   // Backfill the empty API form with the computed last-5 results.
   const rows = tableRows.map((r) => (r.form ? r : { ...r, form: formMap[r.name] ?? "" }));
@@ -168,6 +188,8 @@ export default async function StandingSlugPage({ params }: Props) {
           </p>
         )}
       </section>
+
+      <CompetitionNews articles={compArticles} lang={lang} title={dict.news.title} />
 
       {/* Tabs — hidden for WC. Label localize qua dict (trước hardcode tiếng Anh —
           Jane flag 28/7). Tái dùng key sẵn cho cả 4 lang: nav.standings/schedule/form. */}
