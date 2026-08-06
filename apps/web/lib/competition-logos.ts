@@ -11,6 +11,9 @@ export const COMPETITION_LOGOS: Record<string, string> = {
   'serie-a':          `${BASE}/serie-a.png`,
   'champions-league': `${BASE}/champions-league.png`,
   'world-cup-2026':   `${BASE}/world-cup-2026.png`,
+  // Giải này trước không có logo nên dòng cuối menu bị trống (Nick báo 6/8).
+  // Badge lấy từ TheSportsDB, cùng nguồn với logo CLB đang dùng.
+  'wc-afc-qualifiers': `${BASE}/wc-afc-qualifiers.png`,
 };
 
 /**
