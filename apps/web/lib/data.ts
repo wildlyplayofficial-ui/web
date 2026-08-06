@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import eplSeason from "./data/epl-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
@@ -833,6 +834,16 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
       existing.liveStatus = ls.status === "finished" ? "ft" : "live";
       existing.minute = ls.minute;
     }
+  }
+
+  // Lịch thi đấu cả mùa. Trước đây trang trận chỉ sinh từ picks/watching/live —
+  // nên 97 trang trận đang có toàn World Cup, KHÔNG có trận Ngoại hạng Anh nào,
+  // dù mình có sẵn dữ liệu. VnExpress có một trang cho từng trận và ăn từ khoá
+  // tên hai đội; đây là chỗ mình bỏ trống (6/8).
+  // Thêm sau cùng để không đè lên trận đã có kèo hoặc đang đá — addEntry chỉ ghi
+  // đè khi `updated` mới hơn, mà lịch tĩnh luôn dùng chính ngày đá làm mốc.
+  for (const f of eplSeason as Array<{ date: string; time: string; homeName: string; awayName: string }>) {
+    addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, "Premier League");
   }
 
   return [...slugMap.values()];

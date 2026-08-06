@@ -1,9 +1,22 @@
 import { unstable_cache } from "next/cache";
+import eplSeason from "./data/epl-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import type { KnockoutRound, KnockoutMatch, StandingsCompetition } from "./standings";
 import { lsFetch } from "./ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
+
+/** Ngoại hạng Anh trên Livescore. Chỉ giải này có lịch tĩnh cả mùa. */
+const EPL_LIVESCORE_ID = 2;
+
+interface SeasonFixture {
+  round: string;
+  date: string;
+  time: string;
+  homeName: string;
+  awayName: string;
+  provisional: boolean;
+}
 
 const KNOCKOUT_ROUNDS = ["R32", "R16", "QF", "SF", "3PPO", "F"] as const;
 type KnockoutRoundCode = (typeof KNOCKOUT_ROUNDS)[number];
@@ -330,6 +343,9 @@ async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<Fixtur
     ]);
 
     const matchMap = new Map<string, KnockoutMatch>();
+    // Tên sân theo đội chủ nhà, gom từ chính dữ liệu Livescore. Dùng để điền sân
+    // cho các trận cả mùa mà Livescore chưa trả — khỏi phải gõ tay 20 sân.
+    const sanNha = new Map<string, string>();
 
     if (fixturesRes.ok) {
       const fd = (await fixturesRes.json()) as {
@@ -341,22 +357,28 @@ async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<Fixtur
             time?: string;
             home_name?: string;
             away_name?: string;
+            location?: string;
+            round?: string;
           }>;
         };
       };
       if (fd.success && fd.data?.fixtures) {
         for (const f of fd.data.fixtures) {
           const id = String(f.id);
+          const home = f.home_name ?? "";
+          // Livescore trả sẵn tên sân và số vòng, trước đây code bỏ đi không dùng.
+          if (home && f.location) sanNha.set(home, f.location);
           matchMap.set(id, {
             id,
-            round: "",
+            round: f.round ?? "",
             date: f.date ?? "",
             time: (f.time ?? "").slice(0, 5),
-            homeName: f.home_name ?? "",
+            homeName: home,
             awayName: f.away_name ?? "",
             homeScore: null,
             awayScore: null,
             finished: false,
+            venue: f.location,
           });
         }
       }
@@ -445,6 +467,34 @@ async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<Fixtur
             finished,
           });
         }
+      }
+    }
+
+    // Livescore chỉ trả ~30 trận sắp tới, cuốn chiếu — xin nhiều hơn hay xin theo
+    // khoảng ngày đều ra đúng ngần đó. Nên phần còn lại của mùa lấy từ lịch tĩnh
+    // (openfootball, CC0). Livescore luôn thắng khi có, vì đó là giờ ĐÃ CHỐT sau
+    // khi đài chọn trận; lịch tĩnh là giờ gốc, 23/30 trận nằm ở khung 15:00 mặc
+    // định nên sẽ sai nếu dùng đè lên. Trận chỉ có lịch tĩnh được đánh dấu
+    // provisional để trang nói rõ giờ chưa chốt.
+    if (livescoreId === EPL_LIVESCORE_ID) {
+      const daCo = new Set(
+        [...matchMap.values()].map((m) => `${m.homeName}|${m.awayName}`),
+      );
+      for (const m of eplSeason as SeasonFixture[]) {
+        if (daCo.has(`${m.homeName}|${m.awayName}`)) continue;
+        matchMap.set(`season-${m.date}-${m.homeName}-${m.awayName}`, {
+          id: `season-${m.date}-${m.homeName}-${m.awayName}`,
+          round: m.round,
+          date: m.date,
+          time: m.time,
+          homeName: m.homeName,
+          awayName: m.awayName,
+          homeScore: null,
+          awayScore: null,
+          finished: false,
+          venue: sanNha.get(m.homeName),
+          provisional: m.provisional,
+        });
       }
     }
 
