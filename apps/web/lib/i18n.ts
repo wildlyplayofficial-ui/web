@@ -90,6 +90,8 @@ export interface Dict {
     viewBoard: string;
     trustCurator: string;
     trustScout: string;
+    opensIn: string;
+    seasonLive: string;
   };
   archive: {
     title: string;
@@ -351,6 +353,8 @@ const en: Dict = {
     viewBoard: "View the Daily Board",
     trustCurator: "The Curator — real human, hand-picked plays",
     trustScout: "The Scout — openly AI, separate ledger, lower confidence",
+    opensIn: "Kicks off in {n} days",
+    seasonLive: "Season under way",
   },
   archive: {
     title: "Play Archive",
@@ -558,7 +562,7 @@ const en: Dict = {
     formTitleFor: "{name} Form Guide {season}",
     formDescriptionFor: "Last five results for every {name} team in {season} \u2014 who is in form and who is struggling.",
     roundLabel: "Matchday {n}",
-    provisionalTime: "Kick-off time not yet confirmed",
+    provisionalTime: "Kick-off times not announced yet — date is set",
   },
 };
 
@@ -611,6 +615,8 @@ const vi: Dict = {
     viewBoard: "Xem Bảng Dự Đoán Hôm Nay",
     trustCurator: "Admin — người thật, tự tay chọn trận",
     trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
+    opensIn: "Khai mạc sau {n} ngày",
+    seasonLive: "Mùa giải đã lăn bóng",
   },
   archive: {
     title: "Lưu Trữ Nhận Định",
@@ -818,7 +824,7 @@ const vi: Dict = {
     formTitleFor: "Phong \u0111\u1ed9 c\u00e1c \u0111\u1ed9i {name} {season}",
     formDescriptionFor: "K\u1ebft qu\u1ea3 5 tr\u1eadn g\u1ea7n nh\u1ea5t c\u1ee7a t\u1eebng \u0111\u1ed9i {name} m\u00f9a {season} \u2014 \u0111\u1ed9i n\u00e0o \u0111ang l\u00ean ch\u00e2n, \u0111\u1ed9i n\u00e0o \u0111ang sa s\u00fat.",
     roundLabel: "Vòng {n}",
-    provisionalTime: "Giờ chưa chốt",
+    provisionalTime: "Chưa công bố giờ đá — ngày thì đã chốt",
   },
 };
 
@@ -871,6 +877,8 @@ const th: Dict = {
     viewBoard: "ดูบอร์ดประจำวัน",
     trustCurator: "Admin — คนจริง เลือกทีเด็ดด้วยมือ",
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
+    opensIn: "เปิดฤดูกาลอีก {n} วัน",
+    seasonLive: "ฤดูกาลเริ่มแล้ว",
   },
   archive: {
     title: "คลังทีเด็ด",
@@ -1078,7 +1086,7 @@ const th: Dict = {
     formTitleFor: "\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e01\u0e32\u0e23\u0e40\u0e25\u0e48\u0e19 {name} {season}",
     formDescriptionFor: "\u0e1c\u0e25 5 \u0e19\u0e31\u0e14\u0e2b\u0e25\u0e31\u0e07\u0e2a\u0e38\u0e14\u0e02\u0e2d\u0e07\u0e17\u0e38\u0e01\u0e17\u0e35\u0e21\u0e43\u0e19 {name} \u0e24\u0e14\u0e39\u0e01\u0e32\u0e25 {season} \u2014 \u0e17\u0e35\u0e21\u0e44\u0e2b\u0e19\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e14\u0e35 \u0e17\u0e35\u0e21\u0e44\u0e2b\u0e19\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e15\u0e01",
     roundLabel: "นัดที่ {n}",
-    provisionalTime: "ยังไม่ยืนยันเวลา",
+    provisionalTime: "ยังไม่ประกาศเวลาแข่ง — วันที่ยืนยันแล้ว",
   },
 };
 
@@ -1131,6 +1139,8 @@ const es: Dict = {
     viewBoard: "Ver la Pizarra Diaria",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
     trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
+    opensIn: "Arranca en {n} días",
+    seasonLive: "Temporada en marcha",
   },
   archive: {
     title: "Archivo de Jugadas",
@@ -1340,7 +1350,7 @@ const es: Dict = {
     formTitleFor: "Forma de los equipos de {name} {season}",
     formDescriptionFor: "\u00daltimos cinco resultados de cada equipo de {name} en {season} \u2014 qui\u00e9n llega en forma y qui\u00e9n no.",
     roundLabel: "Jornada {n}",
-    provisionalTime: "Horario por confirmar",
+    provisionalTime: "Horario sin anunciar — la fecha ya está fijada",
   },
 };
 
