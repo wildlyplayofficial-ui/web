@@ -90,6 +90,8 @@ export interface Dict {
     viewBoard: string;
     trustCurator: string;
     trustScout: string;
+    opensIn: string;
+    seasonLive: string;
   };
   archive: {
     title: string;
@@ -351,6 +353,8 @@ const en: Dict = {
     viewBoard: "View the Daily Board",
     trustCurator: "The Curator — real human, hand-picked plays",
     trustScout: "The Scout — openly AI, separate ledger, lower confidence",
+    opensIn: "Kicks off in {n} days",
+    seasonLive: "Season under way",
   },
   archive: {
     title: "Play Archive",
@@ -611,6 +615,8 @@ const vi: Dict = {
     viewBoard: "Xem Bảng Dự Đoán Hôm Nay",
     trustCurator: "Admin — người thật, tự tay chọn trận",
     trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
+    opensIn: "Khai mạc sau {n} ngày",
+    seasonLive: "Mùa giải đã lăn bóng",
   },
   archive: {
     title: "Lưu Trữ Nhận Định",
@@ -871,6 +877,8 @@ const th: Dict = {
     viewBoard: "ดูบอร์ดประจำวัน",
     trustCurator: "Admin — คนจริง เลือกทีเด็ดด้วยมือ",
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
+    opensIn: "เปิดฤดูกาลอีก {n} วัน",
+    seasonLive: "ฤดูกาลเริ่มแล้ว",
   },
   archive: {
     title: "คลังทีเด็ด",
@@ -1131,6 +1139,8 @@ const es: Dict = {
     viewBoard: "Ver la Pizarra Diaria",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
     trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
+    opensIn: "Arranca en {n} días",
+    seasonLive: "Temporada en marcha",
   },
   archive: {
     title: "Archivo de Jugadas",

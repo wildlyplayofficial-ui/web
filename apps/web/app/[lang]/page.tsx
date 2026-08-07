@@ -10,8 +10,14 @@ import {
 } from "@/lib/data";
 import { formatBoardDate, formatUnits, locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getCompetitionFixtures } from "@/lib/standings-extra";
+import { localizedCompetitionName } from "@/lib/competition-logos";
+import { HomeLeagueStrip } from "@/components/home-league-strip";
 
 export const revalidate = 300;
+
+/** Ngoại hạng Anh trên Livescore — giải duy nhất có lịch tĩnh cả mùa. */
+const EPL_LIVESCORE_ID = 2;
 
 /** Units P/L over the 30 days before now (form widget, batch 4). */
 function unitsLast30(picks: { settled_at: string | null; kickoff_utc: string; units_pl: number | null }[]): number {
@@ -60,14 +66,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, posts] = await Promise.all([
+  const [allPicks, record, settledPicks, noPlays, watching, posts, eplDays] = await Promise.all([
     getTodaysPicks(),
     getTrackRecordForAuthor("curator"),
     getSettledPicks(),
     getTodaysNoPlays(),
     getActiveWatching(),
     getPosts(lang),
+    getCompetitionFixtures(EPL_LIVESCORE_ID),
   ]);
+
+  // 6 trận sắp đá gần nhất của Ngoại hạng Anh. Lọc theo mốc hôm nay chứ không
+  // lấy từ đầu mảng: nguồn có cả trận đã đá, lấy bừa là trang chủ hiện trận cũ.
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const eplNext = eplDays
+    .filter((d) => d.date >= todayKey)
+    .flatMap((d) => d.matches)
+    .slice(0, 6);
+  const eplOpenDate = eplDays.length ? eplDays[0].date : null;
+  const daysToOpen =
+    eplOpenDate && eplOpenDate > todayKey
+      ? Math.ceil((Date.parse(eplOpenDate + "T00:00:00Z") - Date.parse(todayKey + "T00:00:00Z")) / 86_400_000)
+      : null;
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
 
@@ -194,6 +214,20 @@ export default async function Home({ params }: Props) {
           </span>
         </Link>
       </section>
+
+      <HomeLeagueStrip
+        name={localizedCompetitionName("premier-league", "Premier League", lang)}
+        slug="premier-league"
+        matches={eplNext}
+        lang={lang}
+        daysToOpen={daysToOpen}
+        labels={{
+          opensIn: dict.home.opensIn,
+          seasonLive: dict.home.seasonLive,
+          schedule: dict.standings.schedule,
+          standings: dict.nav.standings,
+        }}
+      />
 
       {/* 3. Latest analysis: newest published posts */}
       {latestPosts.length > 0 && (
