@@ -90,6 +90,9 @@ export default async function FixturesPage({ params }: Props) {
           lang={lang}
           roundLabel={dict.standings.roundLabel}
           provisionalLabel={dict.standings.provisionalTime}
+          localTimeNote={dict.standings.localTimeNote}
+          prevLabel={dict.standings.prevRound}
+          nextLabel={dict.standings.nextRound}
         />
       )}
     </div>
