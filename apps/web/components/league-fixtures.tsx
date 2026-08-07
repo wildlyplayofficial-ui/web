@@ -86,9 +86,15 @@ function FixtureRow({ match, lang }: { match: KnockoutMatch; lang: Lang }) {
         <TeamCrest name={match.homeName} />
       </span>
 
+      {/* Trận provisional KHÔNG in giờ. Lịch gốc nhét giờ mặc định cho phần mùa
+          chưa xếp: 200/380 trận cùng đúng 12:00 UTC, từ vòng 19 trở đi cả 10
+          trận một vòng cùng một giờ. In ra là bịa một con số trông rất thật —
+          người đọc đặt lịch xem theo rồi hụt. Ngày thì đúng, giữ nguyên. */}
       <span className="shrink-0 text-center font-display text-base font-bold tabular-nums">
         {hasScore ? (
           `${match.homeScore} - ${match.awayScore}`
+        ) : match.provisional ? (
+          <span className="text-sm font-semibold text-muted">--:--</span>
         ) : match.time ? (
           <LocalKickoffTime
             iso={`${match.date}T${match.time}:00Z`}
