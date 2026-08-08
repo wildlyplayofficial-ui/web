@@ -6,31 +6,16 @@ import { getPosts } from "@/lib/data";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import type { AnalysisArticle, Post } from "@/lib/types";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
+import { localizedCompetitionName } from "@/lib/competition-logos";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { LocalDate } from "@/components/local-date";
-import { locales } from "@/lib/format";
+
+/* eslint-disable @next/next/no-img-element */
 
 export const revalidate = 300;
 
 type Props = {
   params: Promise<{ lang: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  preview: "Preview",
-  result: "Result",
-  standings: "Standings",
-  transfer: "Transfer",
-  general: "News",
-};
-
-const TYPE_BADGE_COLORS: Record<string, string> = {
-  preview: "border-blue-400/40 text-blue-400",
-  result: "border-emerald-400/40 text-emerald-400",
-  standings: "border-amber-400/40 text-amber-400",
-  transfer: "border-indigo-soft/40 text-indigo-soft",
-  general: "border-muted/40 text-muted",
 };
 
 function resolveLeague(value: string | string[] | undefined): string | undefined {
@@ -53,155 +38,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** TZ-agnostic relative label; null when older than 7 days (caller falls back to LocalDate). */
-function relativeTime(iso: string): string | null {
+/** Nhãn thời gian tương đối theo NGÔN NGỮ TRANG — "11h ago" trên trang tiếng
+ *  Việt đọc như trang chưa dịch. Quá 7 ngày trả dd/mm cứng theo UTC để server
+ *  và trình duyệt in cùng một chuỗi, khỏi lệch hydration. */
+function timeLabel(iso: string, lang: Lang): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  const REL: Record<Lang, { now: string; m: string; h: string; d: string }> = {
+    en: { now: "just now", m: "{n}m ago", h: "{n}h ago", d: "{n}d ago" },
+    vi: { now: "vừa xong", m: "{n} phút trước", h: "{n} giờ trước", d: "{n} ngày trước" },
+    th: { now: "เมื่อสักครู่", m: "{n} นาทีที่แล้ว", h: "{n} ชม.ที่แล้ว", d: "{n} วันก่อน" },
+    es: { now: "ahora mismo", m: "hace {n} min", h: "hace {n} h", d: "hace {n} días" },
+  };
+  const t = REL[lang];
+  if (mins < 1) return t.now;
+  if (mins < 60) return t.m.replace("{n}", String(mins));
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t.h.replace("{n}", String(hours));
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return null;
+  if (days < 7) return t.d.replace("{n}", String(days));
+  const d = new Date(iso);
+  return `${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
 }
 
-function NewsCard({ item, lang, leagueLabels }: { item: NewsItem; lang: Lang; leagueLabels: Record<string, string> }) {
-  const headline = getHeadline(item, lang);
-  const typeLabel = TYPE_LABELS[item.type] ?? "News";
-  const badgeColor = TYPE_BADGE_COLORS[item.type] ?? TYPE_BADGE_COLORS.general;
-  const relative = relativeTime(item.published_at);
-  // Hình đại diện (Peter 8/8): hero card worker render sẵn nếu có, không thì
-  // OG editorial tự brand — tuyệt đối không lấy ảnh báo ngoài kiểu bongda24h.
-  const thumb = item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(headline)}`;
-
-  return (
-    <Link
-      href={withLang(`/news/${item.slug}`, lang)}
-      className="group flex gap-4 rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-4"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={thumb}
-        alt=""
-        width={1200}
-        height={630}
-        loading="lazy"
-        className="hidden w-40 shrink-0 self-center rounded-lg object-cover sm:block"
-      />
-      <div className="min-w-0 flex-1">
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${badgeColor}`}>
-          {typeLabel}
-        </span>
-        {item.competition_id && (
-          <span className="text-muted/70">
-            {leagueLabels[item.competition_id] ?? item.competition_id}
-          </span>
-        )}
-        {relative ? (
-          <time dateTime={item.published_at} className="ml-auto shrink-0">
-            {relative}
-          </time>
-        ) : (
-          <LocalDate
-            iso={item.published_at}
-            locale={locales[lang]}
-            format="short"
-            className="ml-auto shrink-0"
-          />
-        )}
-      </div>
-      <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
-        {headline}
-      </h2>
-      </div>
-    </Link>
-  );
-}
-
-type FeedEntry =
-  | { kind: "item"; item: NewsItem; date: string }
-  | { kind: "post"; post: Post; date: string }
-  | { kind: "desk"; article: AnalysisArticle; date: string };
-
-function PostNewsCard({ post, lang }: { post: Post; lang: Lang }) {
-  const relative = post.published_at ? relativeTime(post.published_at) : null;
-  return (
-    <Link
-      href={withLang(`/analysis/${post.slug}`, lang)}
-      className="group flex gap-4 rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-4"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`/api/og/news/${post.slug}`}
-        alt=""
-        width={1200}
-        height={630}
-        loading="lazy"
-        className="hidden w-40 shrink-0 self-center rounded-lg object-cover sm:block"
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-3 text-xs text-muted">
-          <span className="rounded-full border border-muted/40 px-2 py-0.5 font-display font-semibold text-muted">
-            {dictLabel(lang)}
-          </span>
-          {relative ? (
-            <time dateTime={post.published_at ?? undefined} className="ml-auto shrink-0">
-              {relative}
-            </time>
-          ) : post.published_at ? (
-            <LocalDate iso={post.published_at} locale={locales[lang]} format="short" className="ml-auto shrink-0" />
-          ) : null}
-        </div>
-        <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
-          {post.title}
-        </h2>
-      </div>
-    </Link>
-  );
-}
-
-function DeskNewsCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
-  const relative = relativeTime(article.published_at);
-  return (
-    <Link
-      href={withLang(`/analysis/${article.slug}`, lang)}
-      className="group flex gap-4 rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-4"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}`}
-        alt=""
-        width={1200}
-        height={630}
-        loading="lazy"
-        className="hidden w-40 shrink-0 self-center rounded-lg object-cover sm:block"
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-3 text-xs text-muted">
-          <span className="rounded-full border border-brand/40 px-2 py-0.5 font-display font-semibold text-brand">
-            {article.league}
-          </span>
-          {relative ? (
-            <time dateTime={article.published_at} className="ml-auto shrink-0">
-              {relative}
-            </time>
-          ) : (
-            <LocalDate iso={article.published_at} locale={locales[lang]} format="short" className="ml-auto shrink-0" />
-          )}
-        </div>
-        <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
-          {article.title}
-        </h2>
-      </div>
-    </Link>
-  );
-}
-
-/** Nhãn thẻ cho bài blog trong feed tin tức. */
-function dictLabel(lang: Lang): string {
-  return getDict(lang).nav.news;
+/** Mọi nguồn tin quy về MỘT dạng thẻ — bản trước 3 kiểu thẻ 3 markup là lý do
+ *  trang nhìn rối (Peter 8/8, tham chiếu bố cục espn.com/soccer). */
+interface Card {
+  key: string;
+  href: string;
+  title: string;
+  thumb: string;
+  badge: string;
+  date: string;
 }
 
 export default async function NewsLanding({ params, searchParams }: Props) {
@@ -215,51 +83,75 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     getAnalysisArticles(undefined, 30),
     getStandingsCompetitions(),
   ]);
-  // Bài blog type=news + bài Desk (Ngoại hạng Anh) gộp vào feed (Peter 8/8:
-  // "s k đẩy qua tin tức - ngoại hạng anh"). Phân tích TRẬN vẫn ở /analysis.
-  // Lọc giải chỉ áp cho news_items vì posts không có competition_id.
-  const newsPosts = league ? [] : posts.filter((p) => p.type === "news");
-  const deskNews = league ? [] : deskArticles;
-  const feed: FeedEntry[] = [
-    ...items.map((item): FeedEntry => ({ kind: "item", item, date: item.published_at })),
-    ...newsPosts.map((post): FeedEntry => ({ kind: "post", post, date: post.published_at ?? "" })),
-    ...deskNews.map((article): FeedEntry => ({ kind: "desk", article, date: article.published_at })),
-  ]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 50); // trang một cột, quá 50 thẻ là cuộn mỏi — bài cũ hơn vẫn sống ở URL riêng
-  // Chips mirror the active competition scope — same source as /competitions hub,
-  // so filter ids always match news_items.competition_id (FK -> competitions.id).
+
+  // Chip lọc: tên NGẮN đã dịch, MỘT hàng cuộn ngang — 11 tên tiếng Anh dài
+  // vắt 3 hàng là thứ làm đầu trang rối nhất.
   const leagueFilters = competitions
     .filter((c) => c.status === "active")
-    .map((c) => ({ id: c.id, label: c.name }));
+    .map((c) => ({ id: c.id, label: localizedCompetitionName(c.slug, c.shortName || c.name, lang) }));
   const leagueLabels = Object.fromEntries(leagueFilters.map((f) => [f.id, f.label]));
 
+  // Ba nguồn gộp một feed (Peter 8/8). Phân tích trận vẫn ở /analysis.
+  // Lọc giải chỉ áp cho news_items (hai nguồn kia không có FK competition_id).
+  const cards: Card[] = [
+    ...items.map((item: NewsItem): Card => ({
+      key: `i-${item.id}`,
+      href: withLang(`/news/${item.slug}`, lang),
+      title: getHeadline(item, lang),
+      thumb: item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(getHeadline(item, lang))}`,
+      badge: (item.competition_id && leagueLabels[item.competition_id]) || dict.nav.news,
+      date: item.published_at,
+    })),
+    ...(league ? [] : posts.filter((p) => p.type === "news")).map((post: Post): Card => ({
+      key: `p-${post.id}`,
+      href: withLang(`/analysis/${post.slug}`, lang),
+      title: post.title,
+      thumb: `/api/og/news/${post.slug}`,
+      badge: dict.nav.news,
+      date: post.published_at ?? "",
+    })),
+    ...(league ? [] : deskArticles).map((a: AnalysisArticle): Card => ({
+      key: `d-${a.id}`,
+      href: withLang(`/analysis/${a.slug}`, lang),
+      title: a.title,
+      thumb: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+      badge: a.league,
+      date: a.published_at,
+    })),
+  ]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 25); // 1 nổi bật + 6 headline + 18 dòng — đủ một trang, không cuộn mỏi
+
+  const noiBat = cards[0];
+  const headline = cards.slice(1, 7);
+  const conLai = cards.slice(7);
+
   return (
-    <div className="mx-auto max-w-[800px] px-5 pb-12">
+    <div className="mx-auto max-w-[1100px] px-5 pb-12">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.news.title, url: "/news" }]} />
 
-      <section className="py-12 text-center">
+      <section className="py-10 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.news.title}</h1>
         <p className="mt-3 text-muted">{dict.news.subtitle}</p>
       </section>
 
-      {/* League Filter Chips */}
-      <nav className="mb-6 flex flex-wrap gap-2">
+      {/* Chip lọc giải: một hàng cuộn ngang, tên ngắn đã dịch */}
+      <nav className="mb-8 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         <Link
           href={withLang("/news", lang)}
-          className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+          className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
             !league
               ? "bg-brand text-white"
               : "border border-line bg-card text-muted hover:border-line-hover hover:text-foreground"
           }`}
         >
-          All
+          {dict.analysis.tabs.all}
         </Link>
         {leagueFilters.map((f) => (
           <Link
             key={f.id}
             href={withLang(`/news?league=${f.id}`, lang)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
               league === f.id
                 ? "bg-brand text-white"
                 : "border border-line bg-card text-muted hover:border-line-hover hover:text-foreground"
@@ -270,23 +162,91 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         ))}
       </nav>
 
-      {/* News Feed */}
-      {feed.length === 0 ? (
+      {cards.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
           {dict.news.empty}
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {feed.map((entry) =>
-            entry.kind === "item" ? (
-              <NewsCard key={entry.item.id} item={entry.item} lang={lang} leagueLabels={leagueLabels} />
-            ) : entry.kind === "post" ? (
-              <PostNewsCard key={entry.post.id} post={entry.post} lang={lang} />
-            ) : (
-              <DeskNewsCard key={entry.article.id} article={entry.article} lang={lang} />
-            ),
-          )}
-        </div>
+        <>
+          {/* Khối trên theo mẫu ESPN: bài nổi bật (ảnh to) + cột headline chữ.
+              Thumbnail của mình là card có chữ sẵn — để cạnh tiêu đề là chữ
+              hiện 2 lần (Jane soi), nên cột phải KHÔNG dùng ảnh. */}
+          <div className="mb-8 grid gap-5 lg:grid-cols-3">
+            <Link
+              href={noiBat.href}
+              className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
+            >
+              <img
+                src={noiBat.thumb}
+                alt=""
+                width={1200}
+                height={630}
+                className="aspect-video w-full object-cover"
+              />
+              <div className="p-5">
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="rounded-full border border-brand/40 bg-brand-dim px-2.5 py-0.5 font-display font-semibold text-brand">
+                    {noiBat.badge}
+                  </span>
+                  <time dateTime={noiBat.date} className="text-muted">
+                    {timeLabel(noiBat.date, lang)}
+                  </time>
+                </div>
+                <h2 className="mt-2.5 font-display text-xl font-bold leading-snug transition-colors group-hover:text-brand sm:text-2xl">
+                  {noiBat.title}
+                </h2>
+              </div>
+            </Link>
+
+            <div className="rounded-card border border-line bg-card shadow-card">
+              <ul className="divide-y divide-line">
+                {headline.map((c) => (
+                  <li key={c.key}>
+                    <Link href={c.href} className="group block px-5 py-3.5">
+                      <span className="flex items-center gap-2 text-[11px] text-muted">
+                        <span className="font-display font-semibold text-brand">{c.badge}</span>
+                        <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+                      </span>
+                      <span className="mt-1 line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-brand">
+                        {c.title}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Danh sách còn lại: dòng gọn, thumbnail NHỎ (đọc như ảnh brand chứ
+              không phải chữ lặp), tiêu đề tối đa 2 dòng, meta một dòng */}
+          <div className="flex flex-col gap-3">
+            {conLai.map((c) => (
+              <Link
+                key={c.key}
+                href={c.href}
+                className="group flex items-center gap-4 rounded-card border border-line bg-card p-3 shadow-card transition-colors hover:border-brand/40"
+              >
+                <img
+                  src={c.thumb}
+                  alt=""
+                  width={1200}
+                  height={630}
+                  loading="lazy"
+                  className="hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block"
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2 text-[11px] text-muted">
+                    <span className="font-display font-semibold text-brand">{c.badge}</span>
+                    <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+                  </span>
+                  <h2 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-brand sm:text-base">
+                    {c.title}
+                  </h2>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
