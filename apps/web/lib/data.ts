@@ -1,5 +1,8 @@
 import { unstable_cache } from "next/cache";
 import eplSeason from "./data/epl-2026-27-season.json";
+import laligaSeason from "./data/laliga-2026-27-season.json";
+import serieaSeason from "./data/seriea-2026-27-season.json";
+import bundesligaSeason from "./data/bundesliga-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
@@ -837,13 +840,34 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
   }
 
   // Lịch thi đấu cả mùa. Trước đây trang trận chỉ sinh từ picks/watching/live —
-  // nên 97 trang trận đang có toàn World Cup, KHÔNG có trận Ngoại hạng Anh nào,
-  // dù mình có sẵn dữ liệu. VnExpress có một trang cho từng trận và ăn từ khoá
-  // tên hai đội; đây là chỗ mình bỏ trống (6/8).
+  // nên 97 trang trận đang có toàn World Cup, KHÔNG có trận giải VĐQG nào, dù
+  // mình có sẵn dữ liệu. VnExpress có một trang cho từng trận và ăn từ khoá tên
+  // hai đội; đây là chỗ mình bỏ trống (6/8).
+  //
+  // CHỈ LẤY TRẬN TRONG CỬA SỔ 30 NGÀY TRƯỚC/SAU (Peter chốt 8/8). Bốn giải cộng
+  // lại là 1.446 trận; đổ hết vào sơ đồ web thì Google bò một cục, mà Vercel
+  // tính tiền theo số lần dựng trang. Trận còn 9 tháng nữa cũng chưa ai tìm và
+  // mình chưa có gì để viết. Trận cũ trôi ra, trận mới trôi vào, không phải sửa
+  // tay. Trang vẫn mở được bình thường nếu ai đó có link — chỉ là không rủ
+  // Google bò hàng loạt.
+  //
   // Thêm sau cùng để không đè lên trận đã có kèo hoặc đang đá — addEntry chỉ ghi
   // đè khi `updated` mới hơn, mà lịch tĩnh luôn dùng chính ngày đá làm mốc.
-  for (const f of eplSeason as Array<{ date: string; time: string; homeName: string; awayName: string }>) {
-    addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, "Premier League");
+  const CUA_SO_NGAY = 30;
+  const nay = Date.now();
+  const tuNgay = new Date(nay - CUA_SO_NGAY * 86_400_000).toISOString().slice(0, 10);
+  const denNgay = new Date(nay + CUA_SO_NGAY * 86_400_000).toISOString().slice(0, 10);
+  const MUA: Array<[Array<{ date: string; time: string; homeName: string; awayName: string }>, string]> = [
+    [eplSeason, "Premier League"],
+    [laligaSeason, "La Liga"],
+    [serieaSeason, "Serie A"],
+    [bundesligaSeason, "Bundesliga"],
+  ];
+  for (const [mua, giai] of MUA) {
+    for (const f of mua) {
+      if (f.date < tuNgay || f.date > denNgay) continue;
+      addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, giai);
+    }
   }
 
   return [...slugMap.values()];
