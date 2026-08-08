@@ -1,13 +1,28 @@
 import { unstable_cache } from "next/cache";
 import eplSeason from "./data/epl-2026-27-season.json";
+import laligaSeason from "./data/laliga-2026-27-season.json";
+import serieaSeason from "./data/seriea-2026-27-season.json";
+import bundesligaSeason from "./data/bundesliga-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import type { KnockoutRound, KnockoutMatch, StandingsCompetition } from "./standings";
 import { lsFetch } from "./ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 
-/** Ngoại hạng Anh trên Livescore. Chỉ giải này có lịch tĩnh cả mùa. */
-const EPL_LIVESCORE_ID = 2;
+/**
+ * Giải nào có lịch tĩnh cả mùa, tra theo id Livescore.
+ *
+ * Livescore chỉ trả ~30 trận sắp tới nên phần còn lại của mùa lấy từ lịch gốc
+ * (openfootball, CC0). Tên đội hai nguồn viết khác nhau nên file JSON đã quy về
+ * ĐÚNG tên Livescore lúc dựng — xem scripts dựng file; sai chỗ này là sinh trận
+ * trùng, mà số trận vẫn đúng nên rất khó thấy.
+ */
+const SEASON_FIXTURES: Record<number, SeasonFixture[]> = {
+  2: eplSeason as SeasonFixture[],
+  3: laligaSeason as SeasonFixture[],
+  4: serieaSeason as SeasonFixture[],
+  1: bundesligaSeason as SeasonFixture[],
+};
 
 interface SeasonFixture {
   round: string;
@@ -476,11 +491,12 @@ async function fetchCompetitionFixturesImpl(livescoreId: number): Promise<Fixtur
     // khi đài chọn trận; lịch tĩnh là giờ gốc, 23/30 trận nằm ở khung 15:00 mặc
     // định nên sẽ sai nếu dùng đè lên. Trận chỉ có lịch tĩnh được đánh dấu
     // provisional để trang nói rõ giờ chưa chốt.
-    if (livescoreId === EPL_LIVESCORE_ID) {
+    const season = SEASON_FIXTURES[livescoreId];
+    if (season) {
       const daCo = new Set(
         [...matchMap.values()].map((m) => `${m.homeName}|${m.awayName}`),
       );
-      for (const m of eplSeason as SeasonFixture[]) {
+      for (const m of season) {
         if (daCo.has(`${m.homeName}|${m.awayName}`)) continue;
         matchMap.set(`season-${m.date}-${m.homeName}-${m.awayName}`, {
           id: `season-${m.date}-${m.homeName}-${m.awayName}`,
