@@ -52,11 +52,8 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/kelly-criterion-betting", permanent: true },
       // RSS feed redirect — must come before the catch-all /news/:slug* below
       { source: "/news/rss.xml", destination: "/api/analysis/rss", statusCode: 301 },
-      // 301 retire /news entirely → /analysis (spec §2E). Catch-all after specific rules above.
-      { source: "/news", destination: "/analysis", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news", destination: "/:lang/analysis", statusCode: 301 },
-      { source: "/news/:slug*", destination: "/analysis", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/:slug*", destination: "/:lang/analysis", statusCode: 301 },
+      // /news mở lại thành mục riêng (Peter 8/8) — bỏ 4 dòng 301 catch-all cũ.
+      // Redirect slug bài cũ + guides + rss ở trên vẫn giữ để không gãy link.
     ];
   },
 };
