@@ -3,7 +3,8 @@ import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
 import { getPosts } from "@/lib/data";
-import type { Post } from "@/lib/types";
+import { getAnalysisArticles } from "@/lib/analysis-articles";
+import type { AnalysisArticle, Post } from "@/lib/types";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LocalDate } from "@/components/local-date";
@@ -70,12 +71,25 @@ function NewsCard({ item, lang, leagueLabels }: { item: NewsItem; lang: Lang; le
   const typeLabel = TYPE_LABELS[item.type] ?? "News";
   const badgeColor = TYPE_BADGE_COLORS[item.type] ?? TYPE_BADGE_COLORS.general;
   const relative = relativeTime(item.published_at);
+  // Hình đại diện (Peter 8/8): hero card worker render sẵn nếu có, không thì
+  // OG editorial tự brand — tuyệt đối không lấy ảnh báo ngoài kiểu bongda24h.
+  const thumb = item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(headline)}`;
 
   return (
     <Link
       href={withLang(`/news/${item.slug}`, lang)}
-      className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-5"
+      className="group flex gap-4 rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-4"
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={thumb}
+        alt=""
+        width={1200}
+        height={630}
+        loading="lazy"
+        className="hidden w-40 shrink-0 self-center rounded-lg object-cover sm:block"
+      />
+      <div className="min-w-0 flex-1">
       <div className="flex items-center gap-3 text-xs text-muted">
         <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${badgeColor}`}>
           {typeLabel}
@@ -101,34 +115,86 @@ function NewsCard({ item, lang, leagueLabels }: { item: NewsItem; lang: Lang; le
       <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
         {headline}
       </h2>
+      </div>
     </Link>
   );
 }
 
-type FeedEntry = { kind: "item"; item: NewsItem; date: string } | { kind: "post"; post: Post; date: string };
+type FeedEntry =
+  | { kind: "item"; item: NewsItem; date: string }
+  | { kind: "post"; post: Post; date: string }
+  | { kind: "desk"; article: AnalysisArticle; date: string };
 
 function PostNewsCard({ post, lang }: { post: Post; lang: Lang }) {
   const relative = post.published_at ? relativeTime(post.published_at) : null;
   return (
     <Link
       href={withLang(`/analysis/${post.slug}`, lang)}
-      className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-5"
+      className="group flex gap-4 rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-4"
     >
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="rounded-full border border-muted/40 px-2 py-0.5 font-display font-semibold text-muted">
-          {dictLabel(lang)}
-        </span>
-        {relative ? (
-          <time dateTime={post.published_at ?? undefined} className="ml-auto shrink-0">
-            {relative}
-          </time>
-        ) : post.published_at ? (
-          <LocalDate iso={post.published_at} locale={locales[lang]} format="short" className="ml-auto shrink-0" />
-        ) : null}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/api/og/news/${post.slug}`}
+        alt=""
+        width={1200}
+        height={630}
+        loading="lazy"
+        className="hidden w-40 shrink-0 self-center rounded-lg object-cover sm:block"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className="rounded-full border border-muted/40 px-2 py-0.5 font-display font-semibold text-muted">
+            {dictLabel(lang)}
+          </span>
+          {relative ? (
+            <time dateTime={post.published_at ?? undefined} className="ml-auto shrink-0">
+              {relative}
+            </time>
+          ) : post.published_at ? (
+            <LocalDate iso={post.published_at} locale={locales[lang]} format="short" className="ml-auto shrink-0" />
+          ) : null}
+        </div>
+        <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
+          {post.title}
+        </h2>
       </div>
-      <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
-        {post.title}
-      </h2>
+    </Link>
+  );
+}
+
+function DeskNewsCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
+  const relative = relativeTime(article.published_at);
+  return (
+    <Link
+      href={withLang(`/analysis/${article.slug}`, lang)}
+      className="group flex gap-4 rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-4"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}`}
+        alt=""
+        width={1200}
+        height={630}
+        loading="lazy"
+        className="hidden w-40 shrink-0 self-center rounded-lg object-cover sm:block"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className="rounded-full border border-brand/40 px-2 py-0.5 font-display font-semibold text-brand">
+            {article.league}
+          </span>
+          {relative ? (
+            <time dateTime={article.published_at} className="ml-auto shrink-0">
+              {relative}
+            </time>
+          ) : (
+            <LocalDate iso={article.published_at} locale={locales[lang]} format="short" className="ml-auto shrink-0" />
+          )}
+        </div>
+        <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
+          {article.title}
+        </h2>
+      </div>
     </Link>
   );
 }
@@ -143,17 +209,21 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const sp = await searchParams;
   const league = resolveLeague(sp.league);
   const dict = getDict(lang);
-  const [items, posts, competitions] = await Promise.all([
+  const [items, posts, deskArticles, competitions] = await Promise.all([
     getNewsItems(league, 30),
     getPosts(lang),
+    getAnalysisArticles(undefined, 30),
     getStandingsCompetitions(),
   ]);
-  // Bài blog type=news gộp vào feed (Peter 8/8) — không lấy analysis, mục đó riêng.
+  // Bài blog type=news + bài Desk (Ngoại hạng Anh) gộp vào feed (Peter 8/8:
+  // "s k đẩy qua tin tức - ngoại hạng anh"). Phân tích TRẬN vẫn ở /analysis.
   // Lọc giải chỉ áp cho news_items vì posts không có competition_id.
   const newsPosts = league ? [] : posts.filter((p) => p.type === "news");
+  const deskNews = league ? [] : deskArticles;
   const feed: FeedEntry[] = [
     ...items.map((item): FeedEntry => ({ kind: "item", item, date: item.published_at })),
     ...newsPosts.map((post): FeedEntry => ({ kind: "post", post, date: post.published_at ?? "" })),
+    ...deskNews.map((article): FeedEntry => ({ kind: "desk", article, date: article.published_at })),
   ]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 50); // trang một cột, quá 50 thẻ là cuộn mỏi — bài cũ hơn vẫn sống ở URL riêng
@@ -210,8 +280,10 @@ export default async function NewsLanding({ params, searchParams }: Props) {
           {feed.map((entry) =>
             entry.kind === "item" ? (
               <NewsCard key={entry.item.id} item={entry.item} lang={lang} leagueLabels={leagueLabels} />
-            ) : (
+            ) : entry.kind === "post" ? (
               <PostNewsCard key={entry.post.id} post={entry.post} lang={lang} />
+            ) : (
+              <DeskNewsCard key={entry.article.id} article={entry.article} lang={lang} />
             ),
           )}
         </div>
