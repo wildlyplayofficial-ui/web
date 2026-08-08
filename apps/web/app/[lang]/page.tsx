@@ -191,7 +191,7 @@ export default async function Home({ params }: Props) {
           <p className="mt-4 text-base text-muted sm:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
             <p className="mt-6 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm">
-              <span className="text-muted">The Curator</span>
+              <span className="text-muted">{dict.pick.curator}</span>
               <span className="font-semibold text-ink">
                 {record.wins}-{record.losses}-{record.pushes}
               </span>

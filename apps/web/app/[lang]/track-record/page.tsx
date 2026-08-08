@@ -69,7 +69,7 @@ export default async function TrackRecordHub({ params }: Props) {
         <div className="rounded-card border border-brand/30 bg-brand-dim/30 p-6">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-bold text-bg">C</span>
-            <span className="font-display text-lg font-bold">The Curator</span>
+            <span className="font-display text-lg font-bold">{dict.pick.curator}</span>
           </div>
           <div className="mt-3 flex items-baseline gap-3">
             <span className="font-display text-2xl font-bold">{curator.wins}-{curator.losses}-{curator.pushes}</span>

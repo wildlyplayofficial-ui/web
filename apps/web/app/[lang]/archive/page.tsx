@@ -148,7 +148,7 @@ export default async function PlayArchive({ params, searchParams }: Props) {
 
       {/* Curator picks — compact rows with expand */}
       <section className="mt-6 pb-8">
-        <h2 className="mb-4 font-display text-xl font-bold">The Curator</h2>
+        <h2 className="mb-4 font-display text-xl font-bold">{dict.pick.curator}</h2>
         {picks.length === 0 ? (
           <div className="rounded-card border border-line bg-card px-6 py-12 text-center text-muted">{dict.archive.empty}</div>
         ) : (
