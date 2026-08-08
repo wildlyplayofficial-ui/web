@@ -44,14 +44,24 @@ export function LiveTicker() {
   if (matches.length === 0) return null;
 
   return (
-    <div className="border-b border-line bg-card/60 backdrop-blur-sm">
+    <div
+      className="border-b border-brand/40 bg-brand-dim"
+      role="status"
+      aria-live="polite"
+      aria-label="Live scores"
+    >
       <div
-        className="mx-auto flex max-w-[1100px] items-center gap-6 overflow-x-auto px-5 py-1.5"
+        className="mx-auto flex max-w-[1100px] items-center gap-5 overflow-x-auto px-5 py-2"
         style={{ scrollbarWidth: "none" }}
       >
-        <span className="relative mr-1 flex h-2 w-2 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+        {/* Nhãn LIVE bằng chữ, không để mỗi chấm nhấp nháy — chấm không đọc được
+            bằng trình đọc màn hình và cũng khó hiểu với người mới vào. */}
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand px-2.5 py-0.5 font-display text-[11px] font-bold uppercase tracking-wide text-bg">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bg opacity-75 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-bg" />
+          </span>
+          Live
         </span>
         {matches.map((m) => (
           <TickerItem key={m.id} match={m} />
@@ -66,20 +76,20 @@ function TickerItem({ match }: { match: TickerMatch }) {
   const af = teamFlag(match.awayTeam);
 
   return (
-    <span className="flex shrink-0 items-center gap-2 text-xs">
-      <span className="font-display font-semibold">
+    <span className="flex shrink-0 items-center gap-2 text-sm">
+      <span className="font-display font-semibold text-ink">
         {hf && <span className="mr-0.5">{hf}</span>}
         {shortName(match.homeTeam)}
       </span>
-      <span className="font-display font-bold text-brand tabular-nums">
-        {match.homeScore ?? 0} - {match.awayScore ?? 0}
+      <span className="rounded bg-brand/15 px-1.5 py-0.5 font-display font-bold text-brand tabular-nums">
+        {match.homeScore ?? 0}&ndash;{match.awayScore ?? 0}
       </span>
-      <span className="font-display font-semibold">
+      <span className="font-display font-semibold text-ink">
         {af && <span className="mr-0.5">{af}</span>}
         {shortName(match.awayTeam)}
       </span>
       {match.minute != null && (
-        <span className="text-muted">{match.minute}&apos;</span>
+        <span className="text-xs font-semibold text-muted tabular-nums">{match.minute}&apos;</span>
       )}
     </span>
   );

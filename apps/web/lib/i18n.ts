@@ -92,6 +92,10 @@ export interface Dict {
     trustScout: string;
     opensIn: string;
     seasonLive: string;
+    preseasonTitle: string;
+    preseasonBody: string;
+    daysLabel: string;
+    viewFixtures: string;
   };
   archive: {
     title: string;
@@ -358,6 +362,10 @@ const en: Dict = {
     trustScout: "The Scout — openly AI, separate ledger, lower confidence",
     opensIn: "Kicks off in {n} days",
     seasonLive: "Season under way",
+    preseasonTitle: "Season hasn't kicked off yet",
+    preseasonBody: "The board reopens when round 1 starts. Until then, browse all 38 rounds and the table.",
+    daysLabel: "days to go",
+    viewFixtures: "See round 1 fixtures",
   },
   archive: {
     title: "Play Archive",
@@ -623,6 +631,10 @@ const vi: Dict = {
     trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
     opensIn: "Khai mạc sau {n} ngày",
     seasonLive: "Mùa giải đã lăn bóng",
+    preseasonTitle: "Mùa giải chưa khai mạc",
+    preseasonBody: "Bảng dự đoán mở lại khi vòng 1 lăn bóng. Trong lúc chờ, xem lịch đủ 38 vòng và bảng xếp hạng.",
+    daysLabel: "ngày nữa",
+    viewFixtures: "Xem lịch vòng 1",
   },
   archive: {
     title: "Lưu Trữ Nhận Định",
@@ -888,6 +900,10 @@ const th: Dict = {
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
     opensIn: "เปิดฤดูกาลอีก {n} วัน",
     seasonLive: "ฤดูกาลเริ่มแล้ว",
+    preseasonTitle: "ฤดูกาลยังไม่เริ่ม",
+    preseasonBody: "กระดานจะกลับมาเมื่อนัดแรกเริ่มแข่ง ระหว่างนี้ดูโปรแกรมครบ 38 นัดและตารางคะแนนได้",
+    daysLabel: "วันก่อนเริ่ม",
+    viewFixtures: "ดูโปรแกรมนัดแรก",
   },
   archive: {
     title: "คลังทีเด็ด",
@@ -1153,6 +1169,10 @@ const es: Dict = {
     trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
     opensIn: "Arranca en {n} días",
     seasonLive: "Temporada en marcha",
+    preseasonTitle: "La temporada aún no ha empezado",
+    preseasonBody: "El tablero vuelve cuando arranque la jornada 1. Mientras tanto, consulta las 38 jornadas y la tabla.",
+    daysLabel: "días para el inicio",
+    viewFixtures: "Ver la jornada 1",
   },
   archive: {
     title: "Archivo de Jugadas",
