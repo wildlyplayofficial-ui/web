@@ -6,6 +6,7 @@ import { isFeatureEnabled } from "@/lib/data";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { FixturesJsonLd } from "@/components/fixtures-jsonld";
 import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 
 export const revalidate = 3600;
@@ -84,6 +85,12 @@ export default async function FixturesPage({ params }: Props) {
       {fixtureDays.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">{dict.standings.empty}</div>
       ) : (
+        <>
+        <FixturesJsonLd
+          days={fixtureDays}
+          competitionName={compName}
+          competitionUrl={withLang(`/competitions/${slug}`, lang)}
+        />
         <LeagueFixtures
           days={fixtureDays}
           label=""
@@ -94,6 +101,7 @@ export default async function FixturesPage({ params }: Props) {
           prevLabel={dict.standings.prevRound}
           nextLabel={dict.standings.nextRound}
         />
+        </>
       )}
     </div>
   );

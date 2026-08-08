@@ -106,6 +106,11 @@ export default async function Home({ params }: Props) {
     push: "border-line bg-card text-muted",
   };
 
+  // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
+  // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
+  const preseason =
+    daysToOpen !== null && picks.length === 0 && noPlays.length === 0 && watching.length === 0;
+
   const latestPosts = posts.slice(0, 4);
 
   return (
@@ -191,28 +196,52 @@ export default async function Home({ params }: Props) {
         </div>
       </section>
 
-      {/* 2. Daily Board teaser: today's summary + CTA */}
+      {/* 2. Daily Board teaser — hoặc đếm ngược khai mạc khi bảng chưa có gì.
+          Hiện "0 · 0 · 0" giữa mùa nghỉ làm trang chủ trông như hỏng. */}
       <section className="pb-10">
-        <Link
-          href={withLang("/daily-board", lang)}
-          className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-        >
-          <div>
-            <p className="font-display text-lg font-bold">{dict.board.title}</p>
-            <p className="mt-1 text-sm text-muted">
-              {formatBoardDate(new Date(), lang)}
-              <span className="mx-2">·</span>
-              {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
-              <span className="mx-2">·</span>
-              {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
-              <span className="mx-2">·</span>
-              {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-            {dict.home.viewBoard} &rarr;
-          </span>
-        </Link>
+        {preseason ? (
+          <Link
+            href={withLang("/competitions/premier-league/fixtures", lang)}
+            className="group flex flex-wrap items-center justify-between gap-5 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div className="flex items-center gap-5">
+              <div className="text-center leading-none">
+                <div className="font-display text-4xl font-bold text-brand tabular-nums">
+                  {daysToOpen}
+                </div>
+                <div className="mt-1 text-xs text-muted">{dict.home.daysLabel}</div>
+              </div>
+              <div>
+                <p className="font-display text-lg font-bold">{dict.home.preseasonTitle}</p>
+                <p className="mt-1 max-w-[46ch] text-sm text-muted">{dict.home.preseasonBody}</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewFixtures} &rarr;
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href={withLang("/daily-board", lang)}
+            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div>
+              <p className="font-display text-lg font-bold">{dict.board.title}</p>
+              <p className="mt-1 text-sm text-muted">
+                {formatBoardDate(new Date(), lang)}
+                <span className="mx-2">·</span>
+                {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
+                <span className="mx-2">·</span>
+                {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
+                <span className="mx-2">·</span>
+                {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewBoard} &rarr;
+            </span>
+          </Link>
+        )}
       </section>
 
       <HomeLeagueStrip
