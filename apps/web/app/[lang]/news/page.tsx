@@ -123,6 +123,9 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     const nhan = localizedCompetitionName(c.slug, c.shortName || c.name, lang);
     tenGiaiViet.set(c.name, nhan);
     if (c.shortName) tenGiaiViet.set(c.shortName, nhan);
+    // DB ghi "English Premier League" nhưng bài Desk ghi "Premier League" —
+    // thêm biến thể bỏ tiền tố quốc gia, không thì map trượt (Jane soi còn 7 thẻ).
+    tenGiaiViet.set(c.name.replace(/^(English|Spanish|Italian|German|French)\s+/, ""), nhan);
   }
 
   // Ba nguồn gộp một feed (Peter 8/8). Phân tích trận vẫn ở /analysis.
