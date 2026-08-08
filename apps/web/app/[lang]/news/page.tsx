@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
+import { getPosts } from "@/lib/data";
+import type { Post } from "@/lib/types";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LocalDate } from "@/components/local-date";
@@ -103,15 +105,58 @@ function NewsCard({ item, lang, leagueLabels }: { item: NewsItem; lang: Lang; le
   );
 }
 
+type FeedEntry = { kind: "item"; item: NewsItem; date: string } | { kind: "post"; post: Post; date: string };
+
+function PostNewsCard({ post, lang }: { post: Post; lang: Lang }) {
+  const relative = post.published_at ? relativeTime(post.published_at) : null;
+  return (
+    <Link
+      href={withLang(`/analysis/${post.slug}`, lang)}
+      className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover p-5"
+    >
+      <div className="flex items-center gap-3 text-xs text-muted">
+        <span className="rounded-full border border-muted/40 px-2 py-0.5 font-display font-semibold text-muted">
+          {dictLabel(lang)}
+        </span>
+        {relative ? (
+          <time dateTime={post.published_at ?? undefined} className="ml-auto shrink-0">
+            {relative}
+          </time>
+        ) : post.published_at ? (
+          <LocalDate iso={post.published_at} locale={locales[lang]} format="short" className="ml-auto shrink-0" />
+        ) : null}
+      </div>
+      <h2 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
+        {post.title}
+      </h2>
+    </Link>
+  );
+}
+
+/** Nhãn thẻ cho bài blog trong feed tin tức. */
+function dictLabel(lang: Lang): string {
+  return getDict(lang).nav.news;
+}
+
 export default async function NewsLanding({ params, searchParams }: Props) {
   const lang = resolveLang((await params).lang);
   const sp = await searchParams;
   const league = resolveLeague(sp.league);
   const dict = getDict(lang);
-  const [items, competitions] = await Promise.all([
+  const [items, posts, competitions] = await Promise.all([
     getNewsItems(league, 30),
+    getPosts(lang),
     getStandingsCompetitions(),
   ]);
+  // Bài blog type=news gộp vào feed (Peter 8/8) — không lấy analysis, mục đó riêng.
+  // Lọc giải chỉ áp cho news_items vì posts không có competition_id.
+  const newsPosts = league ? [] : posts.filter((p) => p.type === "news");
+  const feed: FeedEntry[] = [
+    ...items.map((item): FeedEntry => ({ kind: "item", item, date: item.published_at })),
+    ...newsPosts.map((post): FeedEntry => ({ kind: "post", post, date: post.published_at ?? "" })),
+  ]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 50); // trang một cột, quá 50 thẻ là cuộn mỏi — bài cũ hơn vẫn sống ở URL riêng
   // Chips mirror the active competition scope — same source as /competitions hub,
   // so filter ids always match news_items.competition_id (FK -> competitions.id).
   const leagueFilters = competitions
@@ -156,15 +201,19 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       </nav>
 
       {/* News Feed */}
-      {items.length === 0 ? (
+      {feed.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
           {dict.news.empty}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {items.map((item) => (
-            <NewsCard key={item.id} item={item} lang={lang} leagueLabels={leagueLabels} />
-          ))}
+          {feed.map((entry) =>
+            entry.kind === "item" ? (
+              <NewsCard key={entry.item.id} item={entry.item} lang={lang} leagueLabels={leagueLabels} />
+            ) : (
+              <PostNewsCard key={entry.post.id} post={entry.post} lang={lang} />
+            ),
+          )}
         </div>
       )}
     </div>

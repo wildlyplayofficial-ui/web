@@ -16,7 +16,9 @@ type NavLink = { name: string; href: string; logo_url?: string };
 /** A dropdown row: a link, or a visual divider between groups. */
 type NavItem = NavLink | { divider: true };
 /** A top-level nav cluster: either a single link or a dropdown of items. */
-type NavCluster = { label: string; href: string } | { label: string; items: NavItem[] };
+type NavCluster =
+  | { label: string; href: string }
+  | { label: string; items: NavItem[]; accent?: boolean };
 
 const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
 
@@ -33,7 +35,8 @@ function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => voi
   const bareFull = qs ? `${bare}?${qs}` : bare;
   return (
     <div className="flex gap-1 rounded-lg bg-card p-1">
-      {LANGS.map((l) => (
+      {/* Chỉ hiện en + vi (Peter 8/8) — th/es vẫn sống qua URL, chỉ ẩn nút. */}
+      {(["en", "vi"] as const).map((l) => (
         <Link
           key={l}
           href={withLang(bareFull, l)}
@@ -60,12 +63,15 @@ function NavDropdown({
   items,
   lang,
   onNavigate,
+  accent = false,
 }: {
   label: string;
   active: boolean;
   items: NavItem[];
   lang: Lang;
   onNavigate: () => void;
+  /** Mục nhấn màu brand cả khi không active — dùng cho "Dự Đoán Hôm Nay". */
+  accent?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
@@ -86,7 +92,11 @@ function NavDropdown({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`}
+        className={
+          accent
+            ? "flex items-center gap-1 rounded-full border border-brand/40 bg-brand-dim px-3 py-1 text-sm font-semibold text-brand transition-colors hover:border-brand"
+            : `flex items-center gap-1 text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`
+        }
       >
         {label}
         <svg
@@ -160,6 +170,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
   const clusters: NavCluster[] = [
     {
       label: nav.todaysPick,
+      accent: true,
       items: [
         { name: nav.todaysPick, href: "/daily-board" },
         { name: nav.dailyLine, href: "/daily-line" },
@@ -175,6 +186,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
       ],
     },
     { label: nav.analysis, href: "/analysis" },
+    { label: nav.news, href: "/news" },
     {
       label: nav.matches,
       items: [
@@ -241,6 +253,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
                   items={cluster.items}
                   lang={lang}
                   onNavigate={() => setOpen(false)}
+                  accent={"accent" in cluster && cluster.accent}
                 />
               );
             })}
