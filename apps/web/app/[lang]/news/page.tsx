@@ -8,6 +8,7 @@ import type { AnalysisArticle, Post } from "@/lib/types";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { teamBadge } from "@/lib/team-badges";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -59,6 +60,31 @@ function timeLabel(iso: string, lang: Lang): string {
   if (days < 7) return t.d.replace("{n}", String(days));
   const d = new Date(iso);
   return `${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
+}
+
+/** Bóc "A vs B" hoặc "A 2-1 B" từ tiêu đề tin trận. */
+function bocTenDoi(title: string): [string, string] | null {
+  const than = title.includes(":") ? title.slice(title.indexOf(":") + 1) : title;
+  const gon = than.split("—")[0].split("–")[0].trim();
+  let m = gon.match(/^(.{2,40}?)\s+vs\.?\s+(.{2,40})$/i);
+  if (m) return [m[1].trim(), m[2].trim()];
+  m = gon.match(/^(.{2,40}?)\s+\d+\s*-\s*\d+\s+(.{2,40})$/);
+  if (m) return [m[1].trim(), m[2].trim()];
+  return null;
+}
+
+function CrestThumb({ title, className }: { title: string; className: string }) {
+  const doi = bocTenDoi(title);
+  const nha = doi && teamBadge(doi[0]);
+  const khach = doi && teamBadge(doi[1]);
+  if (!nha || !khach) return null;
+  return (
+    <div className={`${className} flex items-center justify-center gap-3 bg-gradient-to-br from-brand-dim to-card`}>
+      <img src={nha} alt="" width={40} height={40} className="h-9 w-9 object-contain" />
+      <span className="font-display text-[10px] font-bold text-muted">VS</span>
+      <img src={khach} alt="" width={40} height={40} className="h-9 w-9 object-contain" />
+    </div>
+  );
 }
 
 /** Mọi nguồn tin quy về MỘT dạng thẻ — bản trước 3 kiểu thẻ 3 markup là lý do
@@ -128,7 +154,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     })),
   ]
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 25); // 1 nổi bật + 6 headline + 18 dòng — đủ một trang, không cuộn mỏi
+    .slice(0, 21); // 1 nổi bật + 6 headline + 14 dòng lưới 2 cột — Peter chê dài, cắt bớt
 
   const noiBat = cards[0];
   const headline = cards.slice(1, 7);
@@ -230,21 +256,25 @@ export default async function NewsLanding({ params, searchParams }: Props) {
 
           {/* Danh sách còn lại: dòng gọn, thumbnail NHỎ (đọc như ảnh brand chứ
               không phải chữ lặp), tiêu đề tối đa 2 dòng, meta một dòng */}
-          <div className="flex flex-col gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {conLai.map((c) => (
               <Link
                 key={c.key}
                 href={c.href}
                 className="group flex items-center gap-4 rounded-card border border-line bg-card p-3 shadow-card transition-colors hover:border-brand/40"
               >
-                <img
-                  src={c.thumb}
-                  alt=""
-                  width={1200}
-                  height={630}
-                  loading="lazy"
-                  className="hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block"
-                />
+                {bocTenDoi(c.title) && teamBadge(bocTenDoi(c.title)![0]) && teamBadge(bocTenDoi(c.title)![1]) ? (
+                  <CrestThumb title={c.title} className="hidden h-16 w-28 shrink-0 rounded-lg sm:flex" />
+                ) : (
+                  <img
+                    src={c.thumb}
+                    alt=""
+                    width={1200}
+                    height={630}
+                    loading="lazy"
+                    className="hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block"
+                  />
+                )}
                 <div className="min-w-0 flex-1">
                   <span className="flex items-center gap-2 text-[11px] text-muted">
                     <span className="font-display font-semibold text-brand">{c.badge}</span>
