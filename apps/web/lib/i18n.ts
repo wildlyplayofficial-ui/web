@@ -134,6 +134,17 @@ export interface Dict {
     seoDescription: string;
     empty: string;
     backTo: string;
+    disclaimer: string;
+    railTitle: string;
+    tabs: {
+      all: string;
+      picks: string;
+      analysis: string;
+      recap: string;
+      noplay: string;
+      postmortem: string;
+      desk: string;
+    };
   };
   guides: {
     title: string;
@@ -408,6 +419,17 @@ const en: Dict = {
     seoDescription: "Free football match recaps, previews and betting analysis published after every play. Honest breakdowns of what worked, what didn't, and why — open to everyone, no paywall.",
     empty: "No posts yet.",
     backTo: "Back to Analysis",
+    disclaimer: "Coverage and analysis, NOT betting advice.",
+    railTitle: "Latest picks & recaps",
+    tabs: {
+      all: "All",
+      picks: "Picks & predictions",
+      analysis: "Analysis",
+      recap: "Recap",
+      noplay: "No play",
+      postmortem: "Post-mortem",
+      desk: "Desk",
+    },
   },
   guides: {
     title: "Guides",
@@ -680,6 +702,17 @@ const vi: Dict = {
     seoDescription: "Recap trận đấu, nhận định trước trận và phân tích bóng đá miễn phí, xuất bản sau mỗi trận. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
     empty: "Chưa có bài viết.",
     backTo: "Quay lại Phân Tích",
+    disclaimer: "Đây là nội dung phân tích và đưa tin, KHÔNG phải lời khuyên cá cược.",
+    railTitle: "Soi trận & recap mới nhất",
+    tabs: {
+      all: "Tất cả",
+      picks: "Soi trận / Dự đoán",
+      analysis: "Phân tích",
+      recap: "Recap",
+      noplay: "Không cược",
+      postmortem: "Mổ băng",
+      desk: "Chuyên sâu",
+    },
   },
   guides: {
     title: "Hướng Dẫn",
@@ -952,6 +985,17 @@ const th: Dict = {
     seoDescription: "สรุปผลแมตช์ฟุตบอล พรีวิวก่อนเกม และบทวิเคราะห์เดิมพันฟรี เผยแพร่หลังจบทุกทีเด็ด วิเคราะห์ตรงไปตรงมา — อะไรเวิร์ก อะไรไม่เวิร์ก และเพราะอะไร — เปิดให้ทุกคน ไม่มีค่าใช้จ่าย",
     empty: "ยังไม่มีบทความ",
     backTo: "กลับไปหน้าบทวิเคราะห์",
+    disclaimer: "เป็นการรายงานและวิเคราะห์ ไม่ใช่คำแนะนำการเดิมพัน",
+    railTitle: "วิเคราะห์และสรุปเกมล่าสุด",
+    tabs: {
+      all: "ทั้งหมด",
+      picks: "วิเคราะห์ / ทายผล",
+      analysis: "บทวิเคราะห์",
+      recap: "สรุปเกม",
+      noplay: "ไม่ลงเดิมพัน",
+      postmortem: "ถอดบทเรียน",
+      desk: "เจาะลึก",
+    },
   },
   guides: {
     title: "คู่มือ",
@@ -1224,6 +1268,17 @@ const es: Dict = {
     seoDescription: "Resúmenes de partidos de fútbol, previas y análisis de apuestas gratuitos publicados después de cada jugada. Análisis honesto — qué funcionó, qué no y por qué — abierto a todos, sin muro de pago.",
     empty: "Aún no hay publicaciones.",
     backTo: "Volver a Análisis",
+    disclaimer: "Cobertura y análisis, NO consejos de apuestas.",
+    railTitle: "Pronósticos y resúmenes recientes",
+    tabs: {
+      all: "Todo",
+      picks: "Pronósticos",
+      analysis: "Análisis",
+      recap: "Resumen",
+      noplay: "Sin apuesta",
+      postmortem: "Autopsia",
+      desk: "A fondo",
+    },
   },
   guides: {
     title: "Guías",

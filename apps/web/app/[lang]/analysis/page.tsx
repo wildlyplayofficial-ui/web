@@ -14,27 +14,20 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-type FilterTab = "all" | "picks" | "analysis" | "news" | "noplay" | "postmortem" | "desk";
+type FilterTab = "all" | "picks" | "analysis" | "recap" | "noplay" | "postmortem" | "desk";
 
 const TAB_TYPES: Record<FilterTab, PostType[] | null> = {
   all: null,
-  picks: ["preview", "recap"],
+  picks: ["preview"],
   analysis: ["analysis"],
-  news: ["news"],
+  recap: ["recap"],
   noplay: ["no-play"],
   postmortem: ["post-mortem"],
   desk: [], // special: Desk articles only
 };
 
-const TAB_LABELS: Record<FilterTab, string> = {
-  all: "All",
-  picks: "Picks & Recaps",
-  analysis: "Analysis",
-  news: "News",
-  noplay: "No Play",
-  postmortem: "Post-Mortem",
-  desk: "Desk",
-};
+/** Trang mình là trang dự đoán nên "Phân tích" phải nổi hơn cả khi chưa chọn. */
+const TAB_NOI_BAT: FilterTab = "analysis";
 
 const TYPE_LABELS: Record<PostType, string> = {
   recap: "Recap",
@@ -257,6 +250,7 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
     const allowedTypes = TAB_TYPES[tab];
     const postItems: FeedItem[] = allPosts
       .filter((p) => {
+        if (p.type === "news") return false;
         if (allowedTypes && !allowedTypes.includes(p.type)) return false;
         if (showRail && railIds.has(p.id)) return false;
         return true;
@@ -291,22 +285,24 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
 
       {/* Standing disclaimer (spec §2B) */}
       <p className="mb-6 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-center text-xs text-muted">
-        Analysis is coverage &amp; analysis, NOT betting advice.
+        {dict.analysis.disclaimer}
       </p>
 
       {/* Filter Chips */}
       <nav className="mb-6 flex flex-wrap gap-2">
-        {(Object.keys(TAB_LABELS) as FilterTab[]).map((t) => (
+        {(Object.keys(TAB_TYPES) as FilterTab[]).map((t) => (
           <Link
             key={t}
             href={buildTabHref(t, lang)}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
               t === tab
                 ? "bg-brand text-white"
-                : "border border-line bg-card text-muted hover:border-line-hover hover:text-foreground"
+                : t === TAB_NOI_BAT
+                  ? "border border-brand/50 bg-brand-dim text-brand hover:border-brand"
+                  : "border border-line bg-card text-muted hover:border-line-hover hover:text-foreground"
             }`}
           >
-            {TAB_LABELS[t]}
+            {dict.analysis.tabs[t]}
           </Link>
         ))}
       </nav>
@@ -314,7 +310,7 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
       {/* Pinned Rail */}
       {showRail && railPosts.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-4 font-display text-lg font-bold text-brand">Latest Picks & Recaps</h2>
+          <h2 className="mb-4 font-display text-lg font-bold text-brand">{dict.analysis.railTitle}</h2>
           <div className="flex flex-col gap-3">
             {railPosts.map((post) => (
               <PostCard key={post.id} post={post} lang={lang} />
