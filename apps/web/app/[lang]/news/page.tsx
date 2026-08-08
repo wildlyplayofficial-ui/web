@@ -90,6 +90,14 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     .filter((c) => c.status === "active")
     .map((c) => ({ id: c.id, label: localizedCompetitionName(c.slug, c.shortName || c.name, lang) }));
   const leagueLabels = Object.fromEntries(leagueFilters.map((f) => [f.id, f.label]));
+  // Bài Desk lưu league bằng TÊN tiếng Anh ("Premier League") — đổi sang nhãn
+  // đã dịch cho khớp chip, không thì thẻ "Premier League" cạnh chip "Ngoại hạng Anh".
+  const tenGiaiViet = new Map<string, string>();
+  for (const c of competitions) {
+    const nhan = localizedCompetitionName(c.slug, c.shortName || c.name, lang);
+    tenGiaiViet.set(c.name, nhan);
+    if (c.shortName) tenGiaiViet.set(c.shortName, nhan);
+  }
 
   // Ba nguồn gộp một feed (Peter 8/8). Phân tích trận vẫn ở /analysis.
   // Lọc giải chỉ áp cho news_items (hai nguồn kia không có FK competition_id).
@@ -115,7 +123,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       href: withLang(`/analysis/${a.slug}`, lang),
       title: a.title,
       thumb: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
-      badge: a.league,
+      badge: tenGiaiViet.get(a.league) ?? a.league,
       date: a.published_at,
     })),
   ]
@@ -125,6 +133,9 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const noiBat = cards[0];
   const headline = cards.slice(1, 7);
   const conLai = cards.slice(7);
+  const anhNoiBat = noiBat
+    ? `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=WildlyPlay`
+    : "";
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
@@ -177,7 +188,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
               className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
             >
               <img
-                src={noiBat.thumb}
+                src={anhNoiBat}
                 alt=""
                 width={1200}
                 height={630}
