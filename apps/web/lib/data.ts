@@ -3,6 +3,7 @@ import eplSeason from "./data/epl-2026-27-season.json";
 import laligaSeason from "./data/laliga-2026-27-season.json";
 import serieaSeason from "./data/seriea-2026-27-season.json";
 import bundesligaSeason from "./data/bundesliga-2026-27-season.json";
+import ligue1Season from "./data/ligue1-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
@@ -862,6 +863,7 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     [laligaSeason, "La Liga"],
     [serieaSeason, "Serie A"],
     [bundesligaSeason, "Bundesliga"],
+    [ligue1Season, "Ligue 1"],
   ];
   for (const [mua, giai] of MUA) {
     for (const f of mua) {
