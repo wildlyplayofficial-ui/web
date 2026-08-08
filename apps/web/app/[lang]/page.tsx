@@ -10,9 +10,9 @@ import {
 } from "@/lib/data";
 import { formatBoardDate, formatUnits, locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
-import { getCompetitionFixtures } from "@/lib/standings-extra";
+import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
-import { HomeLeagueStrip } from "@/components/home-league-strip";
+import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
 
 export const revalidate = 300;
 
@@ -66,23 +66,60 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, posts, eplDays] = await Promise.all([
-    getTodaysPicks(),
-    getTrackRecordForAuthor("curator"),
-    getSettledPicks(),
-    getTodaysNoPlays(),
-    getActiveWatching(),
-    getPosts(lang),
-    getCompetitionFixtures(EPL_LIVESCORE_ID),
-  ]);
+  const [allPicks, record, settledPicks, noPlays, watching, posts, eplDays, competitions] =
+    await Promise.all([
+      getTodaysPicks(),
+      getTrackRecordForAuthor("curator"),
+      getSettledPicks(),
+      getTodaysNoPlays(),
+      getActiveWatching(),
+      getPosts(lang),
+      getCompetitionFixtures(EPL_LIVESCORE_ID),
+      getStandingsCompetitions(),
+    ]);
 
-  // 6 trận sắp đá gần nhất của Ngoại hạng Anh. Lọc theo mốc hôm nay chứ không
-  // lấy từ đầu mảng: nguồn có cả trận đã đá, lấy bừa là trang chủ hiện trận cũ.
   const todayKey = new Date().toISOString().slice(0, 10);
-  const eplNext = eplDays
-    .filter((d) => d.date >= todayKey)
-    .flatMap((d) => d.matches)
-    .slice(0, 6);
+
+  // Dải trận trang chủ gộp MỌI giải, không riêng Ngoại hạng Anh (Peter 8/8).
+  // Lấy trận vừa đá xong (có tỉ số) rồi tới trận sắp đá — tháng 8 Ngoại hạng Anh
+  // chưa lăn bóng nhưng MLS/Liga MX đang đá, trang chủ phải có cái để xem.
+  const active = competitions.filter((c) => c.status === "active" && c.slug);
+  const perComp = await Promise.all(
+    active.map(async (c) => {
+      const days = await getCompetitionFixtures(c.livescoreId).catch(() => []);
+      return days.flatMap((d) =>
+        d.matches.map(
+          (m): StripMatch => ({
+            ...m,
+            compSlug: c.slug,
+            compName: localizedCompetitionName(c.slug, c.shortName || c.name, lang),
+          }),
+        ),
+      );
+    }),
+  );
+  const allMatches = perComp.flat();
+  const key = (m: StripMatch) => `${m.date}T${m.time || "00:00"}`;
+  const vuaDa = allMatches
+    .filter((m) => m.finished && m.date <= todayKey)
+    .sort((a, b) => key(b).localeCompare(key(a)))
+    .slice(0, 3)
+    .reverse();
+  // Tối đa 2 trận mỗi giải: xếp thuần theo giờ thì vòng loại Cúp C1 chiếm gần
+  // hết dải, vẫn là "một giải" y như cũ chỉ khác tên.
+  const demTheoGiai = new Map<string, number>();
+  const sapDa: StripMatch[] = [];
+  for (const m of allMatches
+    .filter((x) => !x.finished && x.date >= todayKey)
+    .sort((a, b) => key(a).localeCompare(key(b)))) {
+    const da = demTheoGiai.get(m.compSlug) ?? 0;
+    if (da >= 2) continue;
+    demTheoGiai.set(m.compSlug, da + 1);
+    sapDa.push(m);
+    if (sapDa.length >= 8) break;
+  }
+  const stripMatches = [...vuaDa, ...sapDa];
+
   const eplOpenDate = eplDays.length ? eplDays[0].date : null;
   const daysToOpen =
     eplOpenDate && eplOpenDate > todayKey
@@ -244,17 +281,14 @@ export default async function Home({ params }: Props) {
         )}
       </section>
 
-      <HomeLeagueStrip
-        name={localizedCompetitionName("premier-league", "Premier League", lang)}
-        slug="premier-league"
-        matches={eplNext}
+      <HomeNextMatches
+        matches={stripMatches}
         lang={lang}
-        daysToOpen={daysToOpen}
         labels={{
-          opensIn: dict.home.opensIn,
-          seasonLive: dict.home.seasonLive,
-          schedule: dict.standings.schedule,
-          standings: dict.nav.standings,
+          title: dict.home.matchesTitle,
+          all: dict.home.allCompetitions,
+          finished: dict.home.finished,
+          noTime: dict.standings.provisionalTime,
         }}
       />
 

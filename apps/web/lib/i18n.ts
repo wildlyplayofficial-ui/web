@@ -96,6 +96,9 @@ export interface Dict {
     preseasonBody: string;
     daysLabel: string;
     viewFixtures: string;
+    matchesTitle: string;
+    allCompetitions: string;
+    finished: string;
   };
   archive: {
     title: string;
@@ -366,6 +369,9 @@ const en: Dict = {
     preseasonBody: "The board reopens when round 1 starts. Until then, browse all 38 rounds and the table.",
     daysLabel: "days to go",
     viewFixtures: "See round 1 fixtures",
+    matchesTitle: "Matches",
+    allCompetitions: "All competitions",
+    finished: "Full time",
   },
   archive: {
     title: "Play Archive",
@@ -635,6 +641,9 @@ const vi: Dict = {
     preseasonBody: "Bảng dự đoán mở lại khi vòng 1 lăn bóng. Trong lúc chờ, xem lịch đủ 38 vòng và bảng xếp hạng.",
     daysLabel: "ngày nữa",
     viewFixtures: "Xem lịch vòng 1",
+    matchesTitle: "Trận đấu",
+    allCompetitions: "Tất cả giải",
+    finished: "Kết thúc",
   },
   archive: {
     title: "Lưu Trữ Nhận Định",
@@ -904,6 +913,9 @@ const th: Dict = {
     preseasonBody: "กระดานจะกลับมาเมื่อนัดแรกเริ่มแข่ง ระหว่างนี้ดูโปรแกรมครบ 38 นัดและตารางคะแนนได้",
     daysLabel: "วันก่อนเริ่ม",
     viewFixtures: "ดูโปรแกรมนัดแรก",
+    matchesTitle: "การแข่งขัน",
+    allCompetitions: "ทุกรายการ",
+    finished: "จบเกม",
   },
   archive: {
     title: "คลังทีเด็ด",
@@ -1173,6 +1185,9 @@ const es: Dict = {
     preseasonBody: "El tablero vuelve cuando arranque la jornada 1. Mientras tanto, consulta las 38 jornadas y la tabla.",
     daysLabel: "días para el inicio",
     viewFixtures: "Ver la jornada 1",
+    matchesTitle: "Partidos",
+    allCompetitions: "Todas las competiciones",
+    finished: "Final",
   },
   archive: {
     title: "Archivo de Jugadas",
