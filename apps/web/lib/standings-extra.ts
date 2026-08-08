@@ -3,6 +3,7 @@ import eplSeason from "./data/epl-2026-27-season.json";
 import laligaSeason from "./data/laliga-2026-27-season.json";
 import serieaSeason from "./data/seriea-2026-27-season.json";
 import bundesligaSeason from "./data/bundesliga-2026-27-season.json";
+import ligue1Season from "./data/ligue1-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import type { KnockoutRound, KnockoutMatch, StandingsCompetition } from "./standings";
 import { lsFetch } from "./ls-fetch";
@@ -22,6 +23,7 @@ const SEASON_FIXTURES: Record<number, SeasonFixture[]> = {
   3: laligaSeason as SeasonFixture[],
   4: serieaSeason as SeasonFixture[],
   1: bundesligaSeason as SeasonFixture[],
+  5: ligue1Season as SeasonFixture[],
 };
 
 interface SeasonFixture {
