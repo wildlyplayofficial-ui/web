@@ -220,9 +220,16 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   // Chip chỉ hiện giải THẬT SỰ có tin (Peter 9/8: "các giải khác chưa có" —
   // bấm chip ra trang trống là tệ nhất). NHA luôn hiện vì có bài Desk.
   const giaiCoTin = new Set(items.map((i) => i.competition_id).filter(Boolean));
+  // Bài Desk mang league bằng TÊN — mở chip cho cả giải có bài Desk (9 bài
+  // La Liga/Ligue 1 đăng 9/8 mà chip không mở là bài không có lối lọc).
+  const giaiDesk = new Set(deskArticles.map((a) => a.league));
+  const coDesk = (c: { name: string; shortName: string }) =>
+    giaiDesk.has(c.name) ||
+    (c.shortName && giaiDesk.has(c.shortName)) ||
+    giaiDesk.has(c.name.replace(/^(English|Spanish|Italian|German|French)\s+/, ""));
   const leagueFilters = competitions
     .filter((c) => c.status === "active")
-    .filter((c) => giaiCoTin.has(c.id) || c.slug === "premier-league")
+    .filter((c) => giaiCoTin.has(c.id) || coDesk(c) || c.slug === "premier-league")
     .map((c) => ({ id: c.id, label: localizedCompetitionName(c.slug, c.shortName || c.name, lang) }));
   const leagueLabels = Object.fromEntries(
     competitions.map((c) => [c.id, localizedCompetitionName(c.slug, c.shortName || c.name, lang)]),
@@ -304,7 +311,14 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       phutDoc: phutDoc(post.body_md),
       moTa: tomTat(post.body_md),
     })),
-    ...(league ? [] : deskArticles).map((a: AnalysisArticle): Card => ({
+    ...(league
+      ? deskArticles.filter((a) => {
+          const c = competitions.find((x) => x.id === league);
+          return !!c && (a.league === c.name || a.league === c.shortName ||
+            a.league === c.name.replace(/^(English|Spanish|Italian|German|French)\s+/, ""));
+        })
+      : deskArticles
+    ).map((a: AnalysisArticle): Card => ({
       key: `d-${a.id}`,
       href: withLang(`/analysis/${a.slug}`, lang),
       title: a.title,
