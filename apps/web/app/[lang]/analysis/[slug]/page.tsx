@@ -236,12 +236,15 @@ function DeskArticleView({
 
       {/* Hero image — branded Desk OG card when no hero_image is set */}
       <div className="mt-6 overflow-hidden rounded-card">
+        {/* aspect-video + object-cover: ảnh Wikimedia có tấm DỌC (cúp C1, sân
+            Bernabeu) — để nguyên là ảnh cao ~1000px nuốt cả trang (Peter 9/8
+            "các trang bị lệch") */}
         <img
           src={article.hero_image ?? deskOgCard(article, lang)}
           alt={article.title}
           width={1200}
           height={630}
-          className="w-full"
+          className="aspect-video w-full object-cover"
           loading="eager"
         />
       </div>
