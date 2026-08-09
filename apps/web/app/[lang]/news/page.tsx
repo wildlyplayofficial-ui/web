@@ -264,14 +264,16 @@ export default async function NewsLanding({ params, searchParams }: Props) {
           <div className="mb-6 grid gap-4 lg:grid-cols-3">
             <Link
               href={noiBat.href}
-              className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
+              className="group flex flex-col overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
             >
+              {/* flex-1: cột headline bên phải cao hơn → ảnh giãn theo, không chừa
+                  khoảng đen trống dưới tựa (soi screenshot desktop 9/8) */}
               <img
                 src={anhNoiBat}
                 alt=""
                 width={1200}
                 height={630}
-                className="h-40 w-full object-cover sm:h-56"
+                className="h-40 w-full object-cover sm:h-56 lg:h-auto lg:min-h-56 lg:flex-1"
               />
               <div className="p-4">
                 <div className="flex items-center gap-2.5 text-xs">
