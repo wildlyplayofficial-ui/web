@@ -5,6 +5,7 @@ import { buildMatchSlug } from "@/lib/data";
 import { TeamCrest } from "@/components/team-crest";
 import { LocalKickoffTime } from "@/components/local-kickoff-time";
 import { COMPETITION_LOGOS } from "@/lib/competition-logos";
+import { ScrollRow } from "@/components/scroll-row";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -44,8 +45,9 @@ export function HomeNextMatches({
           </Link>
         </div>
 
-        {/* Cuộn ngang trong khung riêng — thân trang không được đẩy ngang theo. */}
-        <div className="flex gap-3 overflow-x-auto px-5 py-4" style={{ scrollbarWidth: "none" }}>
+        {/* Cuộn ngang trong khung riêng — mũi tên ‹ › vì scrollbar đã ẩn,
+            chuột thường không kéo ngang được (Peter 9/8). */}
+        <ScrollRow className="flex gap-3 px-5 py-4">
           {matches.map((m) => {
             const href = m.time
               ? withLang(
@@ -111,7 +113,7 @@ export function HomeNextMatches({
               </div>
             );
           })}
-        </div>
+        </ScrollRow>
       </div>
     </section>
   );

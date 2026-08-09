@@ -11,6 +11,7 @@ import { localizedCompetitionName } from "@/lib/competition-logos";
 import { teamBadge } from "@/lib/team-badges";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
+import { ScrollRow } from "@/components/scroll-row";
 import { TeamCrest } from "@/components/team-crest";
 import { LocalKickoffTime } from "@/components/local-kickoff-time";
 
@@ -216,10 +217,16 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     getCompetitionFixtures(EPL_LIVESCORE_ID),
   ]);
 
+  // Chip chỉ hiện giải THẬT SỰ có tin (Peter 9/8: "các giải khác chưa có" —
+  // bấm chip ra trang trống là tệ nhất). NHA luôn hiện vì có bài Desk.
+  const giaiCoTin = new Set(items.map((i) => i.competition_id).filter(Boolean));
   const leagueFilters = competitions
     .filter((c) => c.status === "active")
+    .filter((c) => giaiCoTin.has(c.id) || c.slug === "premier-league")
     .map((c) => ({ id: c.id, label: localizedCompetitionName(c.slug, c.shortName || c.name, lang) }));
-  const leagueLabels = Object.fromEntries(leagueFilters.map((f) => [f.id, f.label]));
+  const leagueLabels = Object.fromEntries(
+    competitions.map((c) => [c.id, localizedCompetitionName(c.slug, c.shortName || c.name, lang)]),
+  );
   const tenGiaiViet = new Map<string, string>();
   for (const c of competitions) {
     const nhan = localizedCompetitionName(c.slug, c.shortName || c.name, lang);
@@ -270,7 +277,10 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   // ── Gộp 3 nguồn tin về một dạng Card ──
   const cards: Card[] = [
     ...items.map((item: NewsItem): Card => {
-      const { loai, tua } = bocLoai(getHeadline(item, lang));
+      const { loai, tua: tuaTho } = bocLoai(getHeadline(item, lang));
+      // Bỏ đuôi "— Major League Soccer": badge đã ghi giải, lặp trong tựa vừa dài
+      // vừa gây "éo hiểu tin đó là gì" (Peter 9/8)
+      const tua = tuaTho.replace(/\s+[—–]\s+[^—–]{3,40}$/, "");
       return {
         key: `i-${item.id}`,
         href: withLang(`/news/${item.slug}`, lang),
@@ -352,7 +362,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       />
 
       {/* 2. Chip lọc giải */}
-      <nav className="mb-6 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+      <ScrollRow className="mb-6 flex gap-2 pb-1">
         <Link
           href={withLang("/news", lang)}
           className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
@@ -376,7 +386,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
             {f.label}
           </Link>
         ))}
-      </nav>
+      </ScrollRow>
 
       {cards.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
@@ -384,7 +394,11 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         </div>
       ) : (
         <>
-          {/* 3. Hero: 1 bài to + 5 headline CÓ ẢNH nhỏ (cột chữ trần nhìn trống — Peter 9/8) */}
+          {/* 3. Hero: 1 bài to + headline có ảnh. Mỗi section có TIÊU ĐỀ —
+              Peter 9/8: "các section chưa có header, éo hiểu tin đó là gì". */}
+          <h2 className="mb-3 border-l-4 border-brand pl-3 font-display text-lg font-bold">
+            {dict.news.featuredTitle}
+          </h2>
           <div className="mb-6 grid gap-4 lg:grid-cols-3">
             <Link
               href={noiBat.href}
@@ -437,6 +451,10 @@ export default async function NewsLanding({ params, searchParams }: Props) {
 
           {/* 4. Lưới 3 cột — ảnh trên, tựa dưới (Jane: 3 cột dễ đọc mobile hơn 4) */}
           {luoi.length > 0 && (
+            <>
+            <h2 className="mb-3 border-l-4 border-brand pl-3 font-display text-lg font-bold">
+              {dict.news.latestTitle}
+            </h2>
             <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {luoi.map((c) => (
                 <Link
@@ -454,9 +472,13 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                 </Link>
               ))}
             </div>
+            </>
           )}
 
           {/* 5. Hai cột: list có TÓM TẮT + sidebar BXH/lịch/CTA */}
+          <h2 className="mb-3 border-l-4 border-brand pl-3 font-display text-lg font-bold">
+            {dict.news.allTitle}
+          </h2>
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="flex flex-col gap-3 lg:col-span-2">
               {list.map((c) => (
