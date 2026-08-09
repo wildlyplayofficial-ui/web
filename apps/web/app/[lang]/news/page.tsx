@@ -96,6 +96,32 @@ interface Card {
   thumb: string;
   badge: string;
   date: string;
+  /** Loại tin — badge màu để thẻ khác nhau khi lướt nhanh (review 9/8). */
+  tag?: string;
+  tagColor?: string;
+  /** Phút đọc, chỉ bài dài (Desk/blog). */
+  phutDoc?: number;
+}
+
+/** "Trước trận: A vs B" → badge "Trước trận" + tựa "A vs B" — tiền tố trong
+ *  tựa lặp với badge loại tin nên bóc ra, tựa gọn lại (review 9/8). */
+function bocLoai(title: string): { loai: string | null; tua: string } {
+  const m = title.match(/^([^:]{2,18}):\s+(.+)$/);
+  return m ? { loai: m[1], tua: m[2] } : { loai: null, tua: title };
+}
+
+const MAU_LOAI: Record<string, string> = {
+  preview: "border-blue-400/40 text-blue-400",
+  result: "border-emerald-400/40 text-emerald-400",
+  transfer: "border-indigo-soft/40 text-indigo-soft",
+  standings: "border-amber-400/40 text-amber-400",
+  general: "border-line text-muted",
+};
+
+function phutDoc(body: string | null | undefined): number | undefined {
+  if (!body) return undefined;
+  const tu = body.split(/\s+/).length;
+  return tu > 150 ? Math.max(1, Math.round(tu / 200)) : undefined;
 }
 
 export default async function NewsLanding({ params, searchParams }: Props) {
@@ -131,14 +157,19 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   // Ba nguồn gộp một feed (Peter 8/8). Phân tích trận vẫn ở /analysis.
   // Lọc giải chỉ áp cho news_items (hai nguồn kia không có FK competition_id).
   const cards: Card[] = [
-    ...items.map((item: NewsItem): Card => ({
-      key: `i-${item.id}`,
-      href: withLang(`/news/${item.slug}`, lang),
-      title: getHeadline(item, lang),
-      thumb: item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(getHeadline(item, lang))}`,
-      badge: (item.competition_id && leagueLabels[item.competition_id]) || dict.nav.news,
-      date: item.published_at,
-    })),
+    ...items.map((item: NewsItem): Card => {
+      const { loai, tua } = bocLoai(getHeadline(item, lang));
+      return {
+        key: `i-${item.id}`,
+        href: withLang(`/news/${item.slug}`, lang),
+        title: tua,
+        thumb: item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(tua)}`,
+        badge: (item.competition_id && leagueLabels[item.competition_id]) || dict.nav.news,
+        date: item.published_at,
+        tag: loai ?? undefined,
+        tagColor: MAU_LOAI[item.type] ?? MAU_LOAI.general,
+      };
+    }),
     ...(league ? [] : posts.filter((p) => p.type === "news")).map((post: Post): Card => ({
       key: `p-${post.id}`,
       href: withLang(`/analysis/${post.slug}`, lang),
@@ -146,6 +177,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       thumb: `/api/og/news/${post.slug}`,
       badge: dict.nav.news,
       date: post.published_at ?? "",
+      phutDoc: phutDoc(post.body_md),
     })),
     ...(league ? [] : deskArticles).map((a: AnalysisArticle): Card => ({
       key: `d-${a.id}`,
@@ -154,6 +186,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       thumb: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
       badge: tenGiaiViet.get(a.league) ?? a.league,
       date: a.published_at,
+      phutDoc: phutDoc(a.body),
     })),
   ]
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -170,13 +203,13 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.news.title, url: "/news" }]} />
 
-      <section className="py-10 text-center">
+      <section className="py-8 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.news.title}</h1>
         <p className="mt-3 text-muted">{dict.news.subtitle}</p>
       </section>
 
       {/* Chip lọc giải: một hàng cuộn ngang, tên ngắn đã dịch */}
-      <nav className="mb-8 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+      <nav className="mb-6 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         <Link
           href={withLang("/news", lang)}
           className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
@@ -211,7 +244,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
           {/* Khối trên theo mẫu ESPN: bài nổi bật (ảnh to) + cột headline chữ.
               Thumbnail của mình là card có chữ sẵn — để cạnh tiêu đề là chữ
               hiện 2 lần (Jane soi), nên cột phải KHÔNG dùng ảnh. */}
-          <div className="mb-8 grid gap-5 lg:grid-cols-3">
+          <div className="mb-6 grid gap-4 lg:grid-cols-3">
             <Link
               href={noiBat.href}
               className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
@@ -221,16 +254,26 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                 alt=""
                 width={1200}
                 height={630}
-                className="aspect-video w-full object-cover"
+                className="h-40 w-full object-cover sm:h-56"
               />
-              <div className="p-5">
-                <div className="flex items-center gap-3 text-xs">
+              <div className="p-4">
+                <div className="flex items-center gap-2.5 text-xs">
                   <span className="rounded-full border border-brand/40 bg-brand-dim px-2.5 py-0.5 font-display font-semibold text-brand">
                     {noiBat.badge}
                   </span>
+                  {noiBat.tag && (
+                    <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${noiBat.tagColor}`}>
+                      {noiBat.tag}
+                    </span>
+                  )}
                   <time dateTime={noiBat.date} className="text-muted">
                     {timeLabel(noiBat.date, lang)}
                   </time>
+                  {noiBat.phutDoc && (
+                    <span className="text-muted">
+                      · {noiBat.phutDoc} {lang === "vi" ? "phút đọc" : lang === "th" ? "นาที" : lang === "es" ? "min" : "min read"}
+                    </span>
+                  )}
                 </div>
                 <h2 className="mt-2.5 font-display text-xl font-bold leading-snug transition-colors group-hover:text-brand sm:text-2xl">
                   {noiBat.title}
@@ -240,15 +283,22 @@ export default async function NewsLanding({ params, searchParams }: Props) {
 
             <div className="rounded-card border border-line bg-card shadow-card">
               <ul className="divide-y divide-line">
-                {headline.map((c) => (
+                {headline.map((c, i) => (
                   <li key={c.key}>
-                    <Link href={c.href} className="group block px-5 py-3.5">
-                      <span className="flex items-center gap-2 text-[11px] text-muted">
-                        <span className="font-display font-semibold text-brand">{c.badge}</span>
-                        <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+                    <Link href={c.href} className="group flex gap-3 px-4 py-3">
+                      {/* Số thứ tự — cột trước đây 6 dòng giống hệt nhau, không có
+                          mỏ neo để quét mắt (review 9/8) */}
+                      <span className="font-display text-lg font-bold leading-6 text-brand/60 tabular-nums">
+                        {i + 1}
                       </span>
-                      <span className="mt-1 line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-brand">
-                        {c.title}
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2 text-[11px] text-muted">
+                          <span className="font-display font-semibold text-brand">{c.badge}</span>
+                          <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+                        </span>
+                        <span className="mt-0.5 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand">
+                          {c.title}
+                        </span>
                       </span>
                     </Link>
                   </li>
@@ -281,9 +331,17 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                 <div className="min-w-0 flex-1">
                   <span className="flex items-center gap-2 text-[11px] text-muted">
                     <span className="font-display font-semibold text-brand">{c.badge}</span>
+                    {c.tag && (
+                      <span className={`rounded-full border px-1.5 py-px font-display font-semibold ${c.tagColor}`}>
+                        {c.tag}
+                      </span>
+                    )}
                     <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+                    {c.phutDoc && (
+                      <span>· {c.phutDoc} {lang === "vi" ? "phút đọc" : lang === "th" ? "นาที" : lang === "es" ? "min" : "min read"}</span>
+                    )}
                   </span>
-                  <h2 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-brand sm:text-base">
+                  <h2 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand sm:text-[17px]">
                     {c.title}
                   </h2>
                 </div>
