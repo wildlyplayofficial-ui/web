@@ -73,16 +73,28 @@ function bocTenDoi(title: string): [string, string] | null {
   return null;
 }
 
+function CrestOrInitial({ name }: { name: string }) {
+  const badge = teamBadge(name);
+  if (badge) {
+    return <img src={badge} alt="" width={40} height={40} className="h-9 w-9 object-contain" />;
+  }
+  // CLB nhỏ ngoài kho 192 logo (vòng loại Cúp C1…) — vòng tròn 2 chữ cái đầu,
+  // không rơi về card chữ xanh nữa (Peter 9/8: "như cứt, sửa liền").
+  return (
+    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-card font-display text-sm font-bold text-muted">
+      {name.replace(/^(FC|AFC|CF|SK|FK)\s+/i, "").slice(0, 2).toUpperCase()}
+    </span>
+  );
+}
+
 function CrestThumb({ title, className }: { title: string; className: string }) {
   const doi = bocTenDoi(title);
-  const nha = doi && teamBadge(doi[0]);
-  const khach = doi && teamBadge(doi[1]);
-  if (!nha || !khach) return null;
+  if (!doi) return null;
   return (
     <div className={`${className} flex items-center justify-center gap-3 bg-gradient-to-br from-brand-dim to-card`}>
-      <img src={nha} alt="" width={40} height={40} className="h-9 w-9 object-contain" />
+      <CrestOrInitial name={doi[0]} />
       <span className="font-display text-[10px] font-bold text-muted">VS</span>
-      <img src={khach} alt="" width={40} height={40} className="h-9 w-9 object-contain" />
+      <CrestOrInitial name={doi[1]} />
     </div>
   );
 }
@@ -101,6 +113,8 @@ interface Card {
   tagColor?: string;
   /** Phút đọc, chỉ bài dài (Desk/blog). */
   phutDoc?: number;
+  /** Ảnh chụp thật (hero Wikimedia/storage) — khác card chữ tự render. */
+  anhThat?: boolean;
 }
 
 /** "Trước trận: A vs B" → badge "Trước trận" + tựa "A vs B" — tiền tố trong
@@ -187,6 +201,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       badge: tenGiaiViet.get(a.league) ?? a.league,
       date: a.published_at,
       phutDoc: phutDoc(a.body),
+      anhThat: !!a.hero_image,
     })),
   ]
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -195,9 +210,11 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const noiBat = cards[0];
   const headline = cards.slice(1, 7);
   const conLai = cards.slice(7);
-  const anhNoiBat = noiBat
-    ? `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=WildlyPlay`
-    : "";
+  const anhNoiBat = !noiBat
+    ? ""
+    : noiBat.anhThat
+      ? noiBat.thumb // ảnh thật (Wikimedia, credit nằm trong bài) — Peter chê card xanh 9/8
+      : `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=WildlyPlay`;
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
@@ -316,7 +333,16 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                 href={c.href}
                 className="group flex items-center gap-4 rounded-card border border-line bg-card p-3 shadow-card transition-colors hover:border-brand/40"
               >
-                {bocTenDoi(c.title) && teamBadge(bocTenDoi(c.title)![0]) && teamBadge(bocTenDoi(c.title)![1]) ? (
+                {c.anhThat ? (
+                  <img
+                    src={c.thumb}
+                    alt=""
+                    width={1200}
+                    height={630}
+                    loading="lazy"
+                    className="hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block"
+                  />
+                ) : bocTenDoi(c.title) ? (
                   <CrestThumb title={c.title} className="hidden h-16 w-28 shrink-0 rounded-lg sm:flex" />
                 ) : (
                   <img
