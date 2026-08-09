@@ -144,25 +144,42 @@ function bocTenDoi(title: string): [string, string] | null {
   return null;
 }
 
-function CrestThumb({ title, className }: { title: string; className: string }) {
+function CrestThumb({ title, className, big = false }: { title: string; className: string; big?: boolean }) {
   const doi = bocTenDoi(title);
   if (!doi) return null;
+  if (!big) {
+    return (
+      <div className={`${className} flex items-center justify-center gap-3 bg-gradient-to-br from-brand-dim to-card`}>
+        <CrestOrInitial name={doi[0]} />
+        <span className="font-display text-[10px] font-bold text-muted">VS</span>
+        <CrestOrInitial name={doi[1]} />
+      </div>
+    );
+  }
+  // Bản to cho lưới: logo lớn + tên đội — thumb chỉ 2 logo nhỏ giữa nền trống
+  // là một trong các "chỗ còn trống" Peter chỉ 9/8.
   return (
-    <div className={`${className} flex items-center justify-center gap-3 bg-gradient-to-br from-brand-dim to-card`}>
-      <CrestOrInitial name={doi[0]} />
-      <span className="font-display text-[10px] font-bold text-muted">VS</span>
-      <CrestOrInitial name={doi[1]} />
+    <div className={`${className} flex items-center justify-center gap-5 bg-gradient-to-br from-brand-dim to-card px-4`}>
+      <span className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
+        <CrestOrInitial name={doi[0]} />
+        <span className="line-clamp-1 text-[11px] font-semibold text-muted">{doi[0]}</span>
+      </span>
+      <span className="font-display text-xs font-bold text-muted">VS</span>
+      <span className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
+        <CrestOrInitial name={doi[1]} />
+        <span className="line-clamp-1 text-[11px] font-semibold text-muted">{doi[1]}</span>
+      </span>
     </div>
   );
 }
 
 /** Ảnh thẻ dùng chung: ảnh thật > crest 2 đội > card OG. */
-function CardThumb({ c, className }: { c: Card; className: string }) {
+function CardThumb({ c, className, big = false }: { c: Card; className: string; big?: boolean }) {
   if (c.anhThat) {
     return <img src={c.thumb} alt="" width={1200} height={630} loading="lazy" className={`${className} object-cover`} />;
   }
   if (bocTenDoi(c.title)) {
-    return <CrestThumb title={c.title} className={className} />;
+    return <CrestThumb title={c.title} className={className} big={big} />;
   }
   return <img src={c.thumb} alt="" width={1200} height={630} loading="lazy" className={`${className} object-cover`} />;
 }
@@ -263,7 +280,8 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         date: item.published_at,
         tag: loai ?? undefined,
         tagColor: MAU_LOAI[item.type] ?? MAU_LOAI.general,
-        moTa: tomTat(getBody(item, lang)),
+        // KHÔNG tóm tắt tin tự sinh: body là câu template giống hệt nhau
+        // ("Theo dõi tỷ số trực tiếp…" ×14) — đọc như robot.
       };
     }),
     ...(league ? [] : posts.filter((p) => p.type === "news")).map((post: Post): Card => ({
@@ -291,10 +309,10 @@ export default async function NewsLanding({ params, searchParams }: Props) {
 
   // ── Chia tầng: 1 nổi bật + 5 headline có ảnh + 6 lưới + list có tóm tắt ──
   const noiBat = cards[0];
-  const headline = cards.slice(1, 6);
-  const luoi = cards.slice(6, 12);
+  const headline = cards.slice(1, 7);
+  const luoi = cards.slice(7, 13);
   const PAGE_SIZE = 10;
-  const listAll = cards.slice(12);
+  const listAll = cards.slice(13);
   const list = listAll.slice(0, page * PAGE_SIZE);
   const conNua = listAll.length > list.length;
 
@@ -388,8 +406,8 @@ export default async function NewsLanding({ params, searchParams }: Props) {
               </div>
             </Link>
 
-            <div className="rounded-card border border-line bg-card shadow-card">
-              <ul className="divide-y divide-line">
+            <div className="flex flex-col rounded-card border border-line bg-card shadow-card">
+              <ul className="flex-1 divide-y divide-line">
                 {headline.map((c) => (
                   <li key={c.key}>
                     <Link href={c.href} className="group flex items-center gap-3 px-4 py-3">
@@ -407,6 +425,13 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                   </li>
                 ))}
               </ul>
+              {/* Footer ghim đáy — thẻ bị grid stretch, không có footer là hở khoảng trống */}
+              <Link
+                href={withLang("/news?page=2", lang)}
+                className="border-t border-line px-4 py-2.5 text-center font-display text-xs font-semibold text-brand hover:underline"
+              >
+                {dict.news.loadMore} →
+              </Link>
             </div>
           </div>
 
@@ -419,7 +444,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                   href={c.href}
                   className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40"
                 >
-                  <CardThumb c={c} className="aspect-video w-full" />
+                  <CardThumb c={c} className="aspect-video w-full" big />
                   <div className="p-3.5">
                     <MetaRow c={c} lang={lang} />
                     <h2 className="mt-1.5 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand">
@@ -462,7 +487,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
               )}
             </div>
 
-            <aside className="flex flex-col gap-4">
+            <aside className="flex flex-col gap-4 self-start lg:sticky lg:top-20">
               {/* Mini BXH NHA top 5 */}
               {top5.length > 0 && (
                 <div className="rounded-card border border-line bg-card shadow-card">

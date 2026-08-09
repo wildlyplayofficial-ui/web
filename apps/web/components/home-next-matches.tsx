@@ -45,7 +45,7 @@ export function HomeNextMatches({
         </div>
 
         {/* Cuộn ngang trong khung riêng — thân trang không được đẩy ngang theo. */}
-        <div className="flex gap-3 overflow-x-auto px-5 py-4">
+        <div className="flex gap-3 overflow-x-auto px-5 py-4" style={{ scrollbarWidth: "none" }}>
           {matches.map((m) => {
             const href = m.time
               ? withLang(
