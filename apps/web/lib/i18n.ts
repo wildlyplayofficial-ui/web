@@ -128,6 +128,9 @@ export interface Dict {
     empty: string;
     backToNews: string;
     loadMore: string;
+    featuredTitle: string;
+    latestTitle: string;
+    allTitle: string;
     standingsTitle: string;
     upcomingTitle: string;
     fromAnalysis: string;
@@ -418,6 +421,9 @@ const en: Dict = {
     empty: "No posts yet.",
     backToNews: "Back to News",
     loadMore: "Load more",
+    featuredTitle: "Top stories",
+    latestTitle: "Latest",
+    allTitle: "All news",
     standingsTitle: "Premier League table",
     upcomingTitle: "Upcoming fixtures",
     fromAnalysis: "Match previews & picks",
@@ -706,6 +712,9 @@ const vi: Dict = {
     empty: "Chưa có bài viết.",
     backToNews: "Quay lại Tin Tức",
     loadMore: "Xem thêm",
+    featuredTitle: "Tin nổi bật",
+    latestTitle: "Tin mới",
+    allTitle: "Tất cả tin",
     standingsTitle: "BXH Ngoại hạng Anh",
     upcomingTitle: "Trận sắp diễn ra",
     fromAnalysis: "Nhận định & dự đoán trận đấu",
@@ -994,6 +1003,9 @@ const th: Dict = {
     empty: "ยังไม่มีบทความ",
     backToNews: "กลับไปหน้าข่าวสาร",
     loadMore: "ดูเพิ่มเติม",
+    featuredTitle: "ข่าวเด่น",
+    latestTitle: "ข่าวล่าสุด",
+    allTitle: "ข่าวทั้งหมด",
     standingsTitle: "ตารางคะแนนพรีเมียร์ลีก",
     upcomingTitle: "นัดต่อไป",
     fromAnalysis: "วิเคราะห์และทายผล",
@@ -1282,6 +1294,9 @@ const es: Dict = {
     empty: "Aún no hay publicaciones.",
     backToNews: "Volver a Noticias",
     loadMore: "Ver más",
+    featuredTitle: "Destacadas",
+    latestTitle: "Últimas",
+    allTitle: "Todas las noticias",
     standingsTitle: "Tabla de la Premier League",
     upcomingTitle: "Próximos partidos",
     fromAnalysis: "Análisis y pronósticos",
