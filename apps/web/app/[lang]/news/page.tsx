@@ -5,14 +5,20 @@ import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
 import { getPosts } from "@/lib/data";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import type { AnalysisArticle, Post } from "@/lib/types";
-import { getStandingsCompetitions } from "@/lib/standings-extra";
+import { fetchCompetitionTable } from "@/lib/standings";
+import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
-import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { teamBadge } from "@/lib/team-badges";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
+import { TeamCrest } from "@/components/team-crest";
+import { LocalKickoffTime } from "@/components/local-kickoff-time";
 
 /* eslint-disable @next/next/no-img-element */
 
 export const revalidate = 300;
+
+const EPL_LIVESCORE_ID = 2;
 
 type Props = {
   params: Promise<{ lang: string }>;
@@ -39,9 +45,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** Nhãn thời gian tương đối theo NGÔN NGỮ TRANG — "11h ago" trên trang tiếng
- *  Việt đọc như trang chưa dịch. Quá 7 ngày trả dd/mm cứng theo UTC để server
- *  và trình duyệt in cùng một chuỗi, khỏi lệch hydration. */
+/** Nhãn thời gian tương đối theo NGÔN NGỮ TRANG. Quá 7 ngày trả dd/mm theo UTC
+ *  để server và trình duyệt in cùng một chuỗi, khỏi lệch hydration. */
 function timeLabel(iso: string, lang: Lang): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -62,63 +67,7 @@ function timeLabel(iso: string, lang: Lang): string {
   return `${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
 }
 
-/** Bóc "A vs B" hoặc "A 2-1 B" từ tiêu đề tin trận. */
-function bocTenDoi(title: string): [string, string] | null {
-  const than = title.includes(":") ? title.slice(title.indexOf(":") + 1) : title;
-  const gon = than.split("—")[0].split("–")[0].trim();
-  let m = gon.match(/^(.{2,40}?)\s+vs\.?\s+(.{2,40})$/i);
-  if (m) return [m[1].trim(), m[2].trim()];
-  m = gon.match(/^(.{2,40}?)\s+\d+\s*-\s*\d+\s+(.{2,40})$/);
-  if (m) return [m[1].trim(), m[2].trim()];
-  return null;
-}
-
-function CrestOrInitial({ name }: { name: string }) {
-  const badge = teamBadge(name);
-  if (badge) {
-    return <img src={badge} alt="" width={40} height={40} className="h-9 w-9 object-contain" />;
-  }
-  // CLB nhỏ ngoài kho 192 logo (vòng loại Cúp C1…) — vòng tròn 2 chữ cái đầu,
-  // không rơi về card chữ xanh nữa (Peter 9/8: "như cứt, sửa liền").
-  return (
-    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-card font-display text-sm font-bold text-muted">
-      {name.replace(/^(FC|AFC|CF|SK|FK)\s+/i, "").slice(0, 2).toUpperCase()}
-    </span>
-  );
-}
-
-function CrestThumb({ title, className }: { title: string; className: string }) {
-  const doi = bocTenDoi(title);
-  if (!doi) return null;
-  return (
-    <div className={`${className} flex items-center justify-center gap-3 bg-gradient-to-br from-brand-dim to-card`}>
-      <CrestOrInitial name={doi[0]} />
-      <span className="font-display text-[10px] font-bold text-muted">VS</span>
-      <CrestOrInitial name={doi[1]} />
-    </div>
-  );
-}
-
-/** Mọi nguồn tin quy về MỘT dạng thẻ — bản trước 3 kiểu thẻ 3 markup là lý do
- *  trang nhìn rối (Peter 8/8, tham chiếu bố cục espn.com/soccer). */
-interface Card {
-  key: string;
-  href: string;
-  title: string;
-  thumb: string;
-  badge: string;
-  date: string;
-  /** Loại tin — badge màu để thẻ khác nhau khi lướt nhanh (review 9/8). */
-  tag?: string;
-  tagColor?: string;
-  /** Phút đọc, chỉ bài dài (Desk/blog). */
-  phutDoc?: number;
-  /** Ảnh chụp thật (hero Wikimedia/storage) — khác card chữ tự render. */
-  anhThat?: boolean;
-}
-
-/** "Trước trận: A vs B" → badge "Trước trận" + tựa "A vs B" — tiền tố trong
- *  tựa lặp với badge loại tin nên bóc ra, tựa gọn lại (review 9/8). */
+/** "Trước trận: A vs B" → badge loại + tựa gọn — tiền tố lặp với badge nên bóc ra. */
 function bocLoai(title: string): { loai: string | null; tua: string } {
   const m = title.match(/^([^:]{2,18}):\s+(.+)$/);
   return m ? { loai: m[1], tua: m[2] } : { loai: null, tua: title };
@@ -138,38 +87,170 @@ function phutDoc(body: string | null | undefined): number | undefined {
   return tu > 150 ? Math.max(1, Math.round(tu / 200)) : undefined;
 }
 
+/** Cắt tóm tắt ~150 ký tự tại ranh giới TỪ — thứ lấp trống nhiều nhất so với
+ *  vnexpress (Peter duyệt bố cục 9/8). Bỏ markdown để không lòi ###, [link]. */
+function tomTat(body: string | null | undefined): string | undefined {
+  if (!body) return undefined;
+  const sach = body
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[#*_>`|-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (sach.length < 60) return undefined;
+  const cat = sach.slice(0, 150);
+  return cat.slice(0, cat.lastIndexOf(" ")) + "…";
+}
+
+function getBody(item: NewsItem, lang: Lang): string | null {
+  const key = `body_${lang}` as keyof NewsItem;
+  return (item[key] as string | null) || item.body_en;
+}
+
+interface Card {
+  key: string;
+  href: string;
+  title: string;
+  thumb: string;
+  badge: string;
+  date: string;
+  tag?: string;
+  tagColor?: string;
+  phutDoc?: number;
+  /** Ảnh chụp thật (hero Wikimedia/storage) — khác card chữ tự render. */
+  anhThat?: boolean;
+  moTa?: string;
+}
+
+function CrestOrInitial({ name }: { name: string }) {
+  const badge = teamBadge(name);
+  if (badge) {
+    return <img src={badge} alt="" width={40} height={40} className="h-9 w-9 object-contain" />;
+  }
+  return (
+    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-card font-display text-sm font-bold text-muted">
+      {name.replace(/^(FC|AFC|CF|SK|FK)\s+/i, "").slice(0, 2).toUpperCase()}
+    </span>
+  );
+}
+
+function bocTenDoi(title: string): [string, string] | null {
+  const than = title.includes(":") ? title.slice(title.indexOf(":") + 1) : title;
+  const gon = than.split("—")[0].split("–")[0].trim();
+  let m = gon.match(/^(.{2,40}?)\s+vs\.?\s+(.{2,40})$/i);
+  if (m) return [m[1].trim(), m[2].trim()];
+  m = gon.match(/^(.{2,40}?)\s+\d+\s*-\s*\d+\s+(.{2,40})$/);
+  if (m) return [m[1].trim(), m[2].trim()];
+  return null;
+}
+
+function CrestThumb({ title, className }: { title: string; className: string }) {
+  const doi = bocTenDoi(title);
+  if (!doi) return null;
+  return (
+    <div className={`${className} flex items-center justify-center gap-3 bg-gradient-to-br from-brand-dim to-card`}>
+      <CrestOrInitial name={doi[0]} />
+      <span className="font-display text-[10px] font-bold text-muted">VS</span>
+      <CrestOrInitial name={doi[1]} />
+    </div>
+  );
+}
+
+/** Ảnh thẻ dùng chung: ảnh thật > crest 2 đội > card OG. */
+function CardThumb({ c, className }: { c: Card; className: string }) {
+  if (c.anhThat) {
+    return <img src={c.thumb} alt="" width={1200} height={630} loading="lazy" className={`${className} object-cover`} />;
+  }
+  if (bocTenDoi(c.title)) {
+    return <CrestThumb title={c.title} className={className} />;
+  }
+  return <img src={c.thumb} alt="" width={1200} height={630} loading="lazy" className={`${className} object-cover`} />;
+}
+
+function MetaRow({ c, lang }: { c: Card; lang: Lang }) {
+  return (
+    <span className="flex items-center gap-2 text-[11px] text-muted">
+      <span className="font-display font-semibold text-brand">{c.badge}</span>
+      {c.tag && (
+        <span className={`rounded-full border px-1.5 py-px font-display font-semibold ${c.tagColor}`}>{c.tag}</span>
+      )}
+      <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+      {c.phutDoc && (
+        <span>
+          · {c.phutDoc} {lang === "vi" ? "phút đọc" : lang === "th" ? "นาที" : lang === "es" ? "min" : "min read"}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default async function NewsLanding({ params, searchParams }: Props) {
   const lang = resolveLang((await params).lang);
   const sp = await searchParams;
   const league = resolveLeague(sp.league);
+  const page = Math.max(1, Number(sp.page) || 1);
   const dict = getDict(lang);
-  const [items, posts, deskArticles, competitions] = await Promise.all([
+  const [items, posts, deskArticles, competitions, eplTable, eplDays] = await Promise.all([
     getNewsItems(league, 30),
     getPosts(lang),
     getAnalysisArticles(undefined, 30),
     getStandingsCompetitions(),
+    fetchCompetitionTable(EPL_LIVESCORE_ID),
+    getCompetitionFixtures(EPL_LIVESCORE_ID),
   ]);
 
-  // Chip lọc: tên NGẮN đã dịch, MỘT hàng cuộn ngang — 11 tên tiếng Anh dài
-  // vắt 3 hàng là thứ làm đầu trang rối nhất.
   const leagueFilters = competitions
     .filter((c) => c.status === "active")
     .map((c) => ({ id: c.id, label: localizedCompetitionName(c.slug, c.shortName || c.name, lang) }));
   const leagueLabels = Object.fromEntries(leagueFilters.map((f) => [f.id, f.label]));
-  // Bài Desk lưu league bằng TÊN tiếng Anh ("Premier League") — đổi sang nhãn
-  // đã dịch cho khớp chip, không thì thẻ "Premier League" cạnh chip "Ngoại hạng Anh".
   const tenGiaiViet = new Map<string, string>();
   for (const c of competitions) {
     const nhan = localizedCompetitionName(c.slug, c.shortName || c.name, lang);
     tenGiaiViet.set(c.name, nhan);
     if (c.shortName) tenGiaiViet.set(c.shortName, nhan);
-    // DB ghi "English Premier League" nhưng bài Desk ghi "Premier League" —
-    // thêm biến thể bỏ tiền tố quốc gia, không thì map trượt (Jane soi còn 7 thẻ).
     tenGiaiViet.set(c.name.replace(/^(English|Spanish|Italian|German|French)\s+/, ""), nhan);
   }
 
-  // Ba nguồn gộp một feed (Peter 8/8). Phân tích trận vẫn ở /analysis.
-  // Lọc giải chỉ áp cho news_items (hai nguồn kia không có FK competition_id).
+  // ── Tầng 1: dải trận (tái dùng component + logic trang chủ) ──
+  const active = competitions.filter((c) => c.status === "active" && c.slug);
+  const perComp = await Promise.all(
+    active.map(async (c) => {
+      const days = await getCompetitionFixtures(c.livescoreId).catch(() => []);
+      return days.flatMap((d) =>
+        d.matches.map(
+          (m): StripMatch => ({
+            ...m,
+            compSlug: c.slug,
+            compName: localizedCompetitionName(c.slug, c.shortName || c.name, lang),
+          }),
+        ),
+      );
+    }),
+  );
+  const allMatches = perComp.flat();
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const key = (m: StripMatch) => `${m.date}T${m.time || "00:00"}`;
+  const vuaDa = allMatches
+    .filter((m) => m.finished && m.date <= todayKey)
+    .sort((a, b) => key(b).localeCompare(key(a)))
+    .slice(0, 3)
+    .reverse();
+  const chuaDa = allMatches
+    .filter((x) => !x.finished && x.date >= todayKey)
+    .sort((a, b) => key(a).localeCompare(key(b)));
+  const uuTien = chuaDa.filter((m) => m.compSlug === "premier-league").slice(0, 3);
+  const demTheoGiai = new Map<string, number>([["premier-league", uuTien.length]]);
+  const sapDaStrip: StripMatch[] = [...uuTien];
+  for (const m of chuaDa) {
+    const da = demTheoGiai.get(m.compSlug) ?? 0;
+    if (da >= 2) continue;
+    demTheoGiai.set(m.compSlug, da + 1);
+    sapDaStrip.push(m);
+    if (sapDaStrip.length >= 8) break;
+  }
+  const stripMatches = [...vuaDa, ...sapDaStrip];
+
+  // ── Gộp 3 nguồn tin về một dạng Card ──
   const cards: Card[] = [
     ...items.map((item: NewsItem): Card => {
       const { loai, tua } = bocLoai(getHeadline(item, lang));
@@ -182,6 +263,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         date: item.published_at,
         tag: loai ?? undefined,
         tagColor: MAU_LOAI[item.type] ?? MAU_LOAI.general,
+        moTa: tomTat(getBody(item, lang)),
       };
     }),
     ...(league ? [] : posts.filter((p) => p.type === "news")).map((post: Post): Card => ({
@@ -192,6 +274,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       badge: dict.nav.news,
       date: post.published_at ?? "",
       phutDoc: phutDoc(post.body_md),
+      moTa: tomTat(post.body_md),
     })),
     ...(league ? [] : deskArticles).map((a: AnalysisArticle): Card => ({
       key: `d-${a.id}`,
@@ -202,18 +285,31 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       date: a.published_at,
       phutDoc: phutDoc(a.body),
       anhThat: !!a.hero_image,
+      moTa: tomTat(a.body),
     })),
-  ]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 21); // 1 nổi bật + 6 headline + 14 dòng lưới 2 cột — Peter chê dài, cắt bớt
+  ].sort((a, b) => b.date.localeCompare(a.date));
 
+  // ── Chia tầng: 1 nổi bật + 5 headline có ảnh + 6 lưới + list có tóm tắt ──
   const noiBat = cards[0];
-  const headline = cards.slice(1, 7);
-  const conLai = cards.slice(7);
+  const headline = cards.slice(1, 6);
+  const luoi = cards.slice(6, 12);
+  const PAGE_SIZE = 10;
+  const listAll = cards.slice(12);
+  const list = listAll.slice(0, page * PAGE_SIZE);
+  const conNua = listAll.length > list.length;
+
+  // Sidebar: BXH top 5 + 3 trận NHA sắp đá
+  const top5 = eplTable.slice(0, 5);
+  const eplSapDa = eplDays
+    .filter((d) => d.date >= todayKey)
+    .flatMap((d) => d.matches)
+    .filter((m) => !m.finished)
+    .slice(0, 3);
+
   const anhNoiBat = !noiBat
     ? ""
     : noiBat.anhThat
-      ? noiBat.thumb // ảnh thật (Wikimedia, credit nằm trong bài) — Peter chê card xanh 9/8
+      ? noiBat.thumb
       : `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=WildlyPlay`;
 
   return (
@@ -225,7 +321,19 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         <p className="mt-3 text-muted">{dict.news.subtitle}</p>
       </section>
 
-      {/* Chip lọc giải: một hàng cuộn ngang, tên ngắn đã dịch */}
+      {/* 1. Dải trận: lịch + tỷ số — khối dữ liệu sống lấp đầu trang (mẫu vnexpress) */}
+      <HomeNextMatches
+        matches={stripMatches}
+        lang={lang}
+        labels={{
+          title: dict.home.matchesTitle,
+          all: dict.home.allCompetitions,
+          finished: dict.home.finished,
+          noTime: dict.standings.provisionalTime,
+        }}
+      />
+
+      {/* 2. Chip lọc giải */}
       <nav className="mb-6 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         <Link
           href={withLang("/news", lang)}
@@ -258,16 +366,12 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         </div>
       ) : (
         <>
-          {/* Khối trên theo mẫu ESPN: bài nổi bật (ảnh to) + cột headline chữ.
-              Thumbnail của mình là card có chữ sẵn — để cạnh tiêu đề là chữ
-              hiện 2 lần (Jane soi), nên cột phải KHÔNG dùng ảnh. */}
+          {/* 3. Hero: 1 bài to + 5 headline CÓ ẢNH nhỏ (cột chữ trần nhìn trống — Peter 9/8) */}
           <div className="mb-6 grid gap-4 lg:grid-cols-3">
             <Link
               href={noiBat.href}
               className="group flex flex-col overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
             >
-              {/* flex-1: cột headline bên phải cao hơn → ảnh giãn theo, không chừa
-                  khoảng đen trống dưới tựa (soi screenshot desktop 9/8) */}
               <img
                 src={anhNoiBat}
                 alt=""
@@ -276,46 +380,26 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                 className="h-40 w-full object-cover sm:h-56 lg:h-auto lg:min-h-56 lg:flex-1"
               />
               <div className="p-4">
-                <div className="flex items-center gap-2.5 text-xs">
-                  <span className="rounded-full border border-brand/40 bg-brand-dim px-2.5 py-0.5 font-display font-semibold text-brand">
-                    {noiBat.badge}
-                  </span>
-                  {noiBat.tag && (
-                    <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${noiBat.tagColor}`}>
-                      {noiBat.tag}
-                    </span>
-                  )}
-                  <time dateTime={noiBat.date} className="text-muted">
-                    {timeLabel(noiBat.date, lang)}
-                  </time>
-                  {noiBat.phutDoc && (
-                    <span className="text-muted">
-                      · {noiBat.phutDoc} {lang === "vi" ? "phút đọc" : lang === "th" ? "นาที" : lang === "es" ? "min" : "min read"}
-                    </span>
-                  )}
-                </div>
-                <h2 className="mt-2.5 font-display text-xl font-bold leading-snug transition-colors group-hover:text-brand sm:text-2xl">
+                <MetaRow c={noiBat} lang={lang} />
+                <h2 className="mt-2 font-display text-xl font-bold leading-snug transition-colors group-hover:text-brand sm:text-2xl">
                   {noiBat.title}
                 </h2>
+                {noiBat.moTa && <p className="mt-2 line-clamp-2 text-sm text-muted">{noiBat.moTa}</p>}
               </div>
             </Link>
 
             <div className="rounded-card border border-line bg-card shadow-card">
               <ul className="divide-y divide-line">
-                {headline.map((c, i) => (
+                {headline.map((c) => (
                   <li key={c.key}>
-                    <Link href={c.href} className="group flex gap-3 px-4 py-3">
-                      {/* Số thứ tự — cột trước đây 6 dòng giống hệt nhau, không có
-                          mỏ neo để quét mắt (review 9/8) */}
-                      <span className="font-display text-lg font-bold leading-6 text-brand/60 tabular-nums">
-                        {i + 1}
-                      </span>
+                    <Link href={c.href} className="group flex items-center gap-3 px-4 py-3">
+                      <CardThumb c={c} className="h-12 w-20 shrink-0 rounded-md" />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2 text-[11px] text-muted">
                           <span className="font-display font-semibold text-brand">{c.badge}</span>
                           <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
                         </span>
-                        <span className="mt-0.5 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand">
+                        <span className="mt-0.5 line-clamp-2 text-[14px] font-semibold leading-snug transition-colors group-hover:text-brand">
                           {c.title}
                         </span>
                       </span>
@@ -326,55 +410,135 @@ export default async function NewsLanding({ params, searchParams }: Props) {
             </div>
           </div>
 
-          {/* Danh sách còn lại: dòng gọn, thumbnail NHỎ (đọc như ảnh brand chứ
-              không phải chữ lặp), tiêu đề tối đa 2 dòng, meta một dòng */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {conLai.map((c) => (
-              <Link
-                key={c.key}
-                href={c.href}
-                className="group flex items-center gap-4 rounded-card border border-line bg-card p-3 shadow-card transition-colors hover:border-brand/40"
-              >
-                {c.anhThat ? (
-                  <img
-                    src={c.thumb}
-                    alt=""
-                    width={1200}
-                    height={630}
-                    loading="lazy"
-                    className="hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block"
-                  />
-                ) : bocTenDoi(c.title) ? (
-                  <CrestThumb title={c.title} className="hidden h-16 w-28 shrink-0 rounded-lg sm:flex" />
-                ) : (
-                  <img
-                    src={c.thumb}
-                    alt=""
-                    width={1200}
-                    height={630}
-                    loading="lazy"
-                    className="hidden h-16 w-28 shrink-0 rounded-lg object-cover sm:block"
-                  />
-                )}
-                <div className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 text-[11px] text-muted">
-                    <span className="font-display font-semibold text-brand">{c.badge}</span>
-                    {c.tag && (
-                      <span className={`rounded-full border px-1.5 py-px font-display font-semibold ${c.tagColor}`}>
-                        {c.tag}
-                      </span>
-                    )}
-                    <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
-                    {c.phutDoc && (
-                      <span>· {c.phutDoc} {lang === "vi" ? "phút đọc" : lang === "th" ? "นาที" : lang === "es" ? "min" : "min read"}</span>
-                    )}
-                  </span>
-                  <h2 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand sm:text-[17px]">
-                    {c.title}
-                  </h2>
+          {/* 4. Lưới 3 cột — ảnh trên, tựa dưới (Jane: 3 cột dễ đọc mobile hơn 4) */}
+          {luoi.length > 0 && (
+            <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {luoi.map((c) => (
+                <Link
+                  key={c.key}
+                  href={c.href}
+                  className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40"
+                >
+                  <CardThumb c={c} className="aspect-video w-full" />
+                  <div className="p-3.5">
+                    <MetaRow c={c} lang={lang} />
+                    <h2 className="mt-1.5 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand">
+                      {c.title}
+                    </h2>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* 5. Hai cột: list có TÓM TẮT + sidebar BXH/lịch/CTA */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="flex flex-col gap-3 lg:col-span-2">
+              {list.map((c) => (
+                <Link
+                  key={c.key}
+                  href={c.href}
+                  className="group flex items-start gap-4 rounded-card border border-line bg-card p-3 shadow-card transition-colors hover:border-brand/40"
+                >
+                  <CardThumb c={c} className="hidden h-16 w-28 shrink-0 rounded-lg sm:flex" />
+                  <div className="min-w-0 flex-1">
+                    <MetaRow c={c} lang={lang} />
+                    <h2 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand sm:text-[16px]">
+                      {c.title}
+                    </h2>
+                    {c.moTa && <p className="mt-1 line-clamp-2 text-sm text-muted">{c.moTa}</p>}
+                  </div>
+                </Link>
+              ))}
+
+              {/* 8. Xem thêm — giữ query giải đang lọc */}
+              {conNua && (
+                <Link
+                  href={withLang(`/news?${league ? `league=${league}&` : ""}page=${page + 1}`, lang)}
+                  className="mt-2 rounded-full border border-line bg-card px-6 py-2.5 text-center font-display text-sm font-semibold text-muted transition-colors hover:border-brand/40 hover:text-brand"
+                >
+                  {dict.news.loadMore} ↓
+                </Link>
+              )}
+            </div>
+
+            <aside className="flex flex-col gap-4">
+              {/* Mini BXH NHA top 5 */}
+              {top5.length > 0 && (
+                <div className="rounded-card border border-line bg-card shadow-card">
+                  <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                    <h3 className="font-display text-sm font-bold">{dict.news.standingsTitle}</h3>
+                    <Link href={withLang("/competitions/premier-league", lang)} className="text-xs font-semibold text-brand hover:underline">
+                      {dict.nav.standings} →
+                    </Link>
+                  </div>
+                  <ul className="divide-y divide-line">
+                    {top5.map((t) => (
+                      <li key={t.rank} className="flex items-center gap-2.5 px-4 py-2 text-sm">
+                        <span className="w-4 text-right font-display font-bold text-muted tabular-nums">{t.rank}</span>
+                        <TeamCrest name={t.name} />
+                        <span className="min-w-0 flex-1 truncate">{t.name}</span>
+                        <span className="font-display font-bold tabular-nums">{t.points}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+              )}
+
+              {/* Lịch NHA sắp đá */}
+              {eplSapDa.length > 0 && (
+                <div className="rounded-card border border-line bg-card shadow-card">
+                  <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                    <h3 className="font-display text-sm font-bold">{dict.news.upcomingTitle}</h3>
+                    <Link
+                      href={withLang("/competitions/premier-league/fixtures", lang)}
+                      className="text-xs font-semibold text-brand hover:underline"
+                    >
+                      {dict.standings.schedule} →
+                    </Link>
+                  </div>
+                  <ul className="divide-y divide-line">
+                    {eplSapDa.map((m) => (
+                      <li key={m.id} className="px-4 py-2.5 text-sm">
+                        {m.time && !m.provisional ? (
+                          <LocalKickoffTime iso={`${m.date}T${m.time}:00Z`} showDate className="text-[11px] text-muted" />
+                        ) : (
+                          <span className="text-[11px] text-muted">{dict.standings.provisionalTime}</span>
+                        )}
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <TeamCrest name={m.homeName} />
+                          <span className="truncate">{m.homeName}</span>
+                          <span className="text-muted">–</span>
+                          <TeamCrest name={m.awayName} />
+                          <span className="truncate">{m.awayName}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 7. Cross-link sang Phân Tích + Dự Đoán — promo tĩnh, không trộn list */}
+              <Link
+                href={withLang("/analysis", lang)}
+                className="group rounded-card border border-brand/30 bg-brand-dim/40 p-4 transition-colors hover:border-brand/60"
+              >
+                <h3 className="font-display text-sm font-bold text-brand">{dict.news.fromAnalysis}</h3>
+                <p className="mt-1.5 text-sm text-muted">{dict.news.fromAnalysisBody}</p>
+                <span className="mt-2 inline-block font-display text-sm font-semibold text-brand group-hover:underline">
+                  {dict.nav.analysis} →
+                </span>
               </Link>
-            ))}
+              <Link
+                href={withLang("/daily-board", lang)}
+                className="group rounded-card bg-brand p-4 transition-transform hover:-translate-y-0.5"
+              >
+                <h3 className="font-display text-sm font-bold text-bg">{dict.board.title}</h3>
+                <span className="mt-1.5 inline-block font-display text-sm font-semibold text-bg/90 group-hover:underline">
+                  {dict.home.viewBoard} →
+                </span>
+              </Link>
+            </aside>
           </div>
         </>
       )}

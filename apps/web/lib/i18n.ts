@@ -127,6 +127,11 @@ export interface Dict {
     subtitle: string;
     empty: string;
     backToNews: string;
+    loadMore: string;
+    standingsTitle: string;
+    upcomingTitle: string;
+    fromAnalysis: string;
+    fromAnalysisBody: string;
   };
   analysis: {
     title: string;
@@ -412,6 +417,11 @@ const en: Dict = {
     subtitle: "Transfers, match news and updates from the leagues we cover.",
     empty: "No posts yet.",
     backToNews: "Back to News",
+    loadMore: "Load more",
+    standingsTitle: "Premier League table",
+    upcomingTitle: "Upcoming fixtures",
+    fromAnalysis: "Match previews & picks",
+    fromAnalysisBody: "One match a day, picked by a human. Every result stays public — wins and losses.",
   },
   analysis: {
     title: "Analysis",
@@ -695,6 +705,11 @@ const vi: Dict = {
     subtitle: "Chuyển nhượng, tin trận đấu và cập nhật từ các giải chúng tôi theo dõi.",
     empty: "Chưa có bài viết.",
     backToNews: "Quay lại Tin Tức",
+    loadMore: "Xem thêm",
+    standingsTitle: "BXH Ngoại hạng Anh",
+    upcomingTitle: "Trận sắp diễn ra",
+    fromAnalysis: "Nhận định & dự đoán trận đấu",
+    fromAnalysisBody: "Mỗi ngày một trận do người thật chọn. Mọi kết quả công khai vĩnh viễn — thắng lẫn thua.",
   },
   analysis: {
     title: "Nhận Định & Phân Tích Bóng Đá",
@@ -978,6 +993,11 @@ const th: Dict = {
     subtitle: "ข่าวย้ายทีม ข่าวแมตช์ และอัปเดตจากลีกที่เราติดตาม",
     empty: "ยังไม่มีบทความ",
     backToNews: "กลับไปหน้าข่าวสาร",
+    loadMore: "ดูเพิ่มเติม",
+    standingsTitle: "ตารางคะแนนพรีเมียร์ลีก",
+    upcomingTitle: "นัดต่อไป",
+    fromAnalysis: "วิเคราะห์และทายผล",
+    fromAnalysisBody: "วันละหนึ่งนัด เลือกโดยคนจริง ผลทุกนัดเปิดเผยถาวร",
   },
   analysis: {
     title: "บทวิเคราะห์",
@@ -1261,6 +1281,11 @@ const es: Dict = {
     subtitle: "Fichajes, noticias de partidos y novedades de las ligas que cubrimos.",
     empty: "Aún no hay publicaciones.",
     backToNews: "Volver a Noticias",
+    loadMore: "Ver más",
+    standingsTitle: "Tabla de la Premier League",
+    upcomingTitle: "Próximos partidos",
+    fromAnalysis: "Análisis y pronósticos",
+    fromAnalysisBody: "Un partido al día, elegido por una persona. Todos los resultados quedan públicos.",
   },
   analysis: {
     title: "Análisis",
