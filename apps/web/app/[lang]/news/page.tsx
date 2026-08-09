@@ -418,13 +418,19 @@ export default async function NewsLanding({ params, searchParams }: Props) {
               href={noiBat.href}
               className="group flex flex-col overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
             >
-              <img
-                src={anhNoiBat}
-                alt=""
-                width={1200}
-                height={630}
-                className="h-40 w-full object-cover sm:h-56 lg:h-auto lg:min-h-56 lg:flex-1"
-              />
+              {/* Ảnh bọc div relative + img absolute: ảnh DỌC (cúp MLS) với
+                  flex-1 cũ tự kéo cột trái cao 1191px trong khi cột phải 450px
+                  (Jane đo 9/8) — absolute thì ảnh lấp theo khung, không đẩy
+                  ngược chiều cao thẻ */}
+              <div className="relative h-40 overflow-hidden sm:h-56 lg:min-h-56 lg:flex-1">
+                <img
+                  src={anhNoiBat}
+                  alt=""
+                  width={1200}
+                  height={630}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
               <div className="p-4">
                 <MetaRow c={noiBat} lang={lang} />
                 <h2 className="mt-2 font-display text-xl font-bold leading-snug transition-colors group-hover:text-brand sm:text-2xl">
