@@ -52,9 +52,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .slice(0, 160);
     const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
     const alternates = buildAlternates(`/analysis/${slug}`, lang);
-    // og:image is always the branded Desk card (consistent 1200x630), even
-    // when a hero_image exists.
-    const ogCard = deskOgCard(desk, lang);
+    // og:image: prefer the article's hero_image (the real thumbnail) when set,
+    // else fall back to the branded Desk card. hero_image may be absolute
+    // (Supabase/Wikimedia) or site-relative (/images/…).
+    const rawHero = desk.hero_image;
+    const ogImage = rawHero
+      ? rawHero.startsWith("http")
+        ? rawHero
+        : `${BASE}${rawHero}`
+      : deskOgCard(desk, lang);
     return {
       title: desk.title,
       description,
@@ -64,13 +70,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         type: "article",
         publishedTime: desk.published_at,
-        images: [{ url: ogCard, width: 1200, height: 630 }],
+        images: [{ url: ogImage, width: 1200, height: 630 }],
       },
       twitter: {
         card: "summary_large_image",
         title: desk.title,
         description,
-        images: [{ url: ogCard, width: 1200, height: 630 }],
+        images: [{ url: ogImage, width: 1200, height: 630 }],
       },
     };
   }
