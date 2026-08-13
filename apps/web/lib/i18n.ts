@@ -99,6 +99,14 @@ export interface Dict {
     matchesTitle: string;
     allCompetitions: string;
     finished: string;
+    superSunday: string;
+    hotPick: string;
+    trackRecord: string;
+    hitRate: string;
+    viewAnalysisCta: string;
+    telegramTitle: string;
+    telegramPitch: string;
+    joinTelegram: string;
   };
   archive: {
     title: string;
@@ -391,6 +399,14 @@ const en: Dict = {
     matchesTitle: "Matches",
     allCompetitions: "All competitions",
     finished: "Full time",
+    superSunday: "Super Sunday",
+    hotPick: "Hottest pick",
+    trackRecord: "Track record",
+    hitRate: "Hit rate",
+    viewAnalysisCta: "View analysis",
+    telegramTitle: "Picks hit Telegram first",
+    telegramPitch: "With the number, the reasoning, and a clear ‘no play’.",
+    joinTelegram: "Join the Telegram",
   },
   archive: {
     title: "Play Archive",
@@ -682,6 +698,14 @@ const vi: Dict = {
     matchesTitle: "Trận đấu",
     allCompetitions: "Tất cả giải",
     finished: "Kết thúc",
+    superSunday: "Super Sunday",
+    hotPick: "Kèo hot nhất",
+    trackRecord: "Thành tích",
+    hitRate: "Tỷ lệ thắng",
+    viewAnalysisCta: "Xem phân tích",
+    telegramTitle: "Kèo lên Telegram trước",
+    telegramPitch: "Kèm số, lý do, và ‘no play’ rõ ràng.",
+    joinTelegram: "Vào kênh Telegram",
   },
   archive: {
     title: "Lưu Trữ Nhận Định",
@@ -973,6 +997,14 @@ const th: Dict = {
     matchesTitle: "การแข่งขัน",
     allCompetitions: "ทุกรายการ",
     finished: "จบเกม",
+    superSunday: "Super Sunday",
+    hotPick: "ทีเด็ดมาแรง",
+    trackRecord: "สถิติผลงาน",
+    hitRate: "อัตราชนะ",
+    viewAnalysisCta: "อ่านบทวิเคราะห์",
+    telegramTitle: "ทีเด็ดขึ้น Telegram ก่อน",
+    telegramPitch: "พร้อมราคา เหตุผล และ ‘ไม่เล่น’ อย่างชัดเจน",
+    joinTelegram: "เข้าร่วม Telegram",
   },
   archive: {
     title: "คลังทีเด็ด",
@@ -1264,6 +1296,14 @@ const es: Dict = {
     matchesTitle: "Partidos",
     allCompetitions: "Todas las competiciones",
     finished: "Final",
+    superSunday: "Super Sunday",
+    hotPick: "Pick más caliente",
+    trackRecord: "Historial",
+    hitRate: "Tasa de acierto",
+    viewAnalysisCta: "Ver análisis",
+    telegramTitle: "Los picks llegan primero a Telegram",
+    telegramPitch: "Con el número, el razonamiento y un ‘no play’ claro.",
+    joinTelegram: "Únete al Telegram",
   },
   archive: {
     title: "Archivo de Jugadas",
