@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   getActiveWatching,
-  getPosts,
   getSettledPicks,
   getTodaysNoPlays,
   getTodaysPicks,
@@ -13,6 +12,8 @@ import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/li
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
+import { getAnalysisArticles } from "@/lib/analysis-articles";
+import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 
 export const revalidate = 300;
 
@@ -66,16 +67,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, posts, eplDays, competitions] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
       getSettledPicks(),
       getTodaysNoPlays(),
       getActiveWatching(),
-      getPosts(lang),
       getCompetitionFixtures(EPL_LIVESCORE_ID),
       getStandingsCompetitions(),
+      getAnalysisArticles(undefined, 7),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -151,7 +152,11 @@ export default async function Home({ params }: Props) {
   const preseason =
     daysToOpen !== null && picks.length === 0 && noPlays.length === 0 && watching.length === 0;
 
-  const latestPosts = posts.slice(0, 4);
+  // Super Sunday: the marquee article headlines the page; the rest fill the feed.
+  const hot = articles.find((a) => a.tier === "T2_marquee") ?? articles[0];
+  const hotHero = hot ? hot.hero_image ?? `/api/og/analysis/${hot.slug}?locale=${lang}` : "";
+  const hotExcerpt = hot ? hot.meta_description || analysisExcerpt(hot.body) : "";
+  const restArticles = articles.filter((a) => a.slug !== hot?.slug).slice(0, 6);
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
@@ -232,6 +237,44 @@ export default async function Home({ params }: Props) {
         </div>
       </section>
 
+      {/* 1b. Super Sunday: the single biggest thing after the hero. */}
+      {hot && (
+        <section className="pt-4 pb-10">
+          <Link
+            href={withLang(`/analysis/${hot.slug}`, lang)}
+            prefetch={false}
+            className="group grid overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60 md:grid-cols-[1.1fr_1fr]"
+          >
+            <div
+              className="relative min-h-[200px] bg-cover bg-center md:min-h-[280px]"
+              style={{ backgroundImage: `url(${hotHero})`, aspectRatio: "1.9 / 1" }}
+              aria-hidden
+            >
+              <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-bg">
+                ★ {dict.home.superSunday}
+              </span>
+            </div>
+            <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
+              <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
+                ◆ {dict.home.hotPick}
+              </span>
+              <h2 className="font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
+                {hot.title}
+              </h2>
+              <p className="text-sm text-muted">
+                {hot.league}
+                <span className="mx-2">·</span>
+                {formatPostDate(hot.published_at, lang)}
+              </p>
+              {hotExcerpt && <p className="text-sm text-muted line-clamp-2">{hotExcerpt}</p>}
+              <span className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+                {dict.home.viewAnalysisCta} &rarr;
+              </span>
+            </div>
+          </Link>
+        </section>
+      )}
+
       {/* 2. Daily Board teaser — hoặc đếm ngược khai mạc khi bảng chưa có gì.
           Hiện "0 · 0 · 0" giữa mùa nghỉ làm trang chủ trông như hỏng.
           pt-6: hình sân ở hero bị cắt đúng mép section nên thẻ này dán sát vào
@@ -282,55 +325,113 @@ export default async function Home({ params }: Props) {
         )}
       </section>
 
-      <HomeNextMatches
-        matches={stripMatches}
-        lang={lang}
-        labels={{
-          title: dict.home.matchesTitle,
-          all: dict.home.allCompetitions,
-          finished: dict.home.finished,
-          noTime: dict.standings.provisionalTime,
-        }}
-      />
-
-      {/* 3. Latest analysis: newest published posts */}
-      {latestPosts.length > 0 && (
-        <section className="pb-10">
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
-            <Link href={withLang("/analysis", lang)} prefetch={false} className="text-sm font-semibold text-brand hover:underline">
-              {dict.nav.analysis} &rarr;
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {latestPosts.map((post) => (
-              <Link
-                key={post.id}
-                href={withLang(`/analysis/${post.slug}`, lang)}
-                prefetch={false}
-                className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
-              >
-                <img
-                  src={`/api/og/news/${post.slug}`}
-                  alt=""
-                  width={1200}
-                  height={630}
-                  className="w-full"
-                  loading="lazy"
-                />
-                <div className="p-5">
-                  <time className="text-xs text-muted" dateTime={post.published_at ?? undefined}>
-                    {formatPostDate(post.published_at, lang)}
-                  </time>
-                  <p className="mt-2 font-display text-base font-bold transition-colors group-hover:text-brand">
-                    {post.title}
-                  </p>
+      {/* 3. Two-column portal — main: latest analysis + matches; sidebar: record + Telegram */}
+      <div className="grid gap-8 pb-10 lg:grid-cols-[1fr_320px]">
+        <div className="min-w-0">
+          {restArticles.length > 0 && (
+            <section className="pb-10">
+              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
+                <Link
+                  href={withLang("/analysis", lang)}
+                  prefetch={false}
+                  className="text-sm font-semibold text-brand hover:underline"
+                >
+                  {dict.nav.analysis} &rarr;
+                </Link>
+              </div>
+              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+              {restArticles.length > 1 && (
+                <div className="mt-4 space-y-3">
+                  {restArticles.slice(1).map((a) => (
+                    <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
+                  ))}
                 </div>
+              )}
+            </section>
+          )}
+
+          <HomeNextMatches
+            matches={stripMatches}
+            lang={lang}
+            labels={{
+              title: dict.home.matchesTitle,
+              all: dict.home.allCompetitions,
+              finished: dict.home.finished,
+              noTime: dict.standings.provisionalTime,
+            }}
+          />
+        </div>
+
+        <aside className="space-y-6">
+          {/* Track record */}
+          <div className="rounded-card border border-line bg-card p-5">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="font-display text-lg font-bold">{dict.home.trackRecord}</h2>
+              <Link
+                href={withLang("/track-record", lang)}
+                prefetch={false}
+                className="text-sm font-semibold text-brand hover:underline"
+              >
+                {dict.board.trackRecordCta} &rarr;
               </Link>
-            ))}
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div className="font-display text-xl font-bold tabular-nums">
+                  {record.wins}-{record.losses}-{record.pushes}
+                </div>
+                <div className="mt-1 text-xs text-muted">W-D-L</div>
+              </div>
+              <div>
+                <div
+                  className={`font-display text-xl font-bold tabular-nums ${record.units_pl >= 0 ? "text-brand" : "text-loss"}`}
+                >
+                  {formatUnits(record.units_pl)}
+                </div>
+                <div className="mt-1 text-xs text-muted">{dict.archive.unitsPl}</div>
+              </div>
+              <div>
+                <div className="font-display text-xl font-bold tabular-nums">
+                  {record.settled > 0
+                    ? `${Math.round((record.wins / record.settled) * 100)}%`
+                    : "—"}
+                </div>
+                <div className="mt-1 text-xs text-muted">{dict.home.hitRate}</div>
+              </div>
+            </div>
+            {form.length > 0 && (
+              <div className="mt-5 flex flex-wrap gap-1.5">
+                {form.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={withLang(`/play/${p.id}`, lang)}
+                    prefetch={false}
+                    title={`${p.home_team} ${p.home_score ?? ""}-${p.away_score ?? ""} ${p.away_team}`}
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold transition-transform hover:-translate-y-0.5 ${formClass[p.status] ?? "border-line bg-card text-muted"}`}
+                  >
+                    {formLetter[p.status] ?? "–"}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        </section>
-      )}
+
+          {/* Telegram CTA */}
+          <div className="rounded-card border border-brand/30 bg-brand-dim/40 p-5">
+            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
+            <p className="mt-2 text-sm text-muted">{dict.home.telegramPitch}</p>
+            <a
+              href="https://t.me/wildlyplay"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+            >
+              {dict.home.joinTelegram} &rarr;
+            </a>
+          </div>
+        </aside>
+      </div>
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">
