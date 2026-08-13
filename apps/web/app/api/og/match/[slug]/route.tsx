@@ -1,12 +1,11 @@
-import { getMatchBySlug, getTrackRecordForAuthor } from "@/lib/data";
-import { teamBadge } from "@/lib/team-badges";
-import { accentFor, pickFields, renderShareCard } from "../../_share-card";
-import type { Author } from "@/lib/types";
+import { getMatchBySlug } from "@/lib/data";
+import { formatKickoff } from "@/lib/format";
+import { OgCard, ogResponse } from "../../_shared";
 
 /**
  * Dynamic share image (PNG 1200x630) for /match hub pages.
- * Vibrant team-colored card (see _share-card) reflecting the current state of
- * our coverage — pick / result / watching / preview.
+ * Branded green card reflecting the current coverage state (pick / result /
+ * watching / preview) with the two teams, league and kickoff.
  */
 
 export async function GET(
@@ -18,34 +17,23 @@ export async function GET(
   if (!match) return new Response("Not found", { status: 404 });
 
   const pick = match.picks[0] ?? null;
-  const author: Author = pick?.author ?? match.watching?.author ?? "curator";
-  const accent = accentFor(author);
-  const record = await getTrackRecordForAuthor(author);
-
-  let status: { label: string; color: string };
-  let infoLine: string | null;
-  let metric = null as ReturnType<typeof pickFields>["metric"];
+  let label = "Preview";
   if (pick) {
-    ({ status, infoLine, metric } = pickFields(pick, accent));
+    label =
+      pick.status === "won" || pick.status === "lost" || pick.status === "push"
+        ? pick.status.toUpperCase()
+        : "Our pick";
   } else if (match.watching) {
-    status = { label: "WATCHING", color: accent };
-    infoLine = match.league || "On our radar";
-  } else {
-    status = { label: "PREVIEW", color: accent };
-    infoLine = match.league || "Match preview";
+    label = "Watching";
   }
 
-  return renderShareCard({
-    home: match.homeTeam,
-    away: match.awayTeam,
-    homeBadge: teamBadge(match.homeTeam),
-    awayBadge: teamBadge(match.awayTeam),
-    league: match.league || null,
-    status,
-    headline: `${match.homeTeam} vs ${match.awayTeam}`,
-    infoLine,
-    metric,
-    record,
-    author,
-  });
+  return ogResponse(
+    <OgCard
+      eyebrow={label}
+      title={`${match.homeTeam} vs ${match.awayTeam}`}
+      topRight={match.league || null}
+      detail={[{ label: "Kick-off", value: formatKickoff(match.kickoffUtc, "en") }]}
+    />,
+    { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
+  );
 }
