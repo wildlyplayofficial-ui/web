@@ -5,10 +5,13 @@ import { DailyLineStrip } from "@/components/daily-line-strip";
 import { LiveCommentaryStrip } from "@/components/live-commentary-strip";
 import { MatchesWidget } from "@/components/matches-widget";
 import { PickCard } from "@/components/pick-card";
+import { HotPickCard } from "@/components/hot-pick-card";
 import { WatchingTeaser } from "@/components/watching-teaser";
 import { teamFlag } from "@/lib/flags";
+import { TEST_SEED_PICK, TEST_SEED_PREDICTED } from "@/lib/test-seed";
 import {
   buildMatchSlug,
+  buildPlaySlug,
   getActiveWatching,
   getSettledPicks,
   getThesisTranslations,
@@ -51,16 +54,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DailyBoard({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, settledPicks, watching, noPlays, scoutRecord] = await Promise.all([
+  const [allPicks, settledPicks, watching, noPlays, scoutRecord, curatorRecord] = await Promise.all([
     getTodaysPicks(),
     getSettledPicks(),
     getActiveWatching(),
     getTodaysNoPlays(),
     getTrackRecordForAuthor("scout"),
+    getTrackRecordForAuthor("curator"),
   ]);
   // §7.1: split picks by author — curator picks go to the board, scout picks to the Scout section
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
+
+  // Hero prediction — top curator pick, or the in-code test seed pre-season.
+  // TEST SEED — remove when real picks flow (see lib/test-seed.ts).
+  const heroPick = picks[0] ?? TEST_SEED_PICK;
+  const heroPredicted = picks.length > 0 ? null : TEST_SEED_PREDICTED;
+  const restPicks = picks.slice(1);
   const [votes, translations] = await Promise.all([
     getVoteCounts(allPicks.map((p) => p.id)),
     getThesisTranslations(allPicks.map((p) => p.id)),
@@ -92,6 +102,21 @@ export default async function DailyBoard({ params }: Props) {
           <span className="mx-2">·</span>
           {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
         </p>
+        {/* Curator W-D-L / units / hit-rate summary — mirrors the homepage hero record. */}
+        {curatorRecord.settled > 0 && (
+          <p className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm">
+            <span className="text-muted">{dict.pick.curator}</span>
+            <span className="font-semibold text-ink">
+              {curatorRecord.wins}-{curatorRecord.losses}-{curatorRecord.pushes}
+            </span>
+            <span className={`font-semibold ${curatorRecord.units_pl >= 0 ? "text-brand" : "text-loss"}`}>
+              {formatUnits(curatorRecord.units_pl)}
+            </span>
+            <span className="text-muted">
+              · {dict.home.hitRate} {Math.round((curatorRecord.wins / curatorRecord.settled) * 100)}%
+            </span>
+          </p>
+        )}
       </section>
 
       {/* Daily Line strip */}
@@ -109,24 +134,24 @@ export default async function DailyBoard({ params }: Props) {
         )}
       />
 
-      {/* 2. Curator picks (kickoff-ordered) or the honest no-play state */}
+      {/* 2a. Hot pick hero — top curator pick, or the pre-season test seed.
+          TEST SEED: when picks.length === 0 this renders the in-code Arsenal vs
+          Man City 1–1 seed. Restore the honest empty state here when the seed is removed. */}
       <section className="pb-8">
-        {picks.length === 0 ? (
-          <div className="rounded-card border border-line bg-card px-6 py-16 text-center">
-            <p className="font-display text-2xl font-bold">{dict.board.emptyTitle}</p>
-            <p className="mx-auto mt-3 max-w-[480px] text-muted">{dict.board.emptyBody}</p>
-            <a
-              href="https://t.me/wildlyplay"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-display font-semibold text-bg transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,230,118,0.3)]"
-            >
-              Telegram &rarr;
-            </a>
-          </div>
-        ) : (
+        <HotPickCard
+          pick={heroPick}
+          predicted={heroPredicted}
+          lang={lang}
+          href={withLang(picks.length > 0 ? `/play/${buildPlaySlug(heroPick)}` : "/analysis", lang)}
+          ctaLabel={dict.home.viewAnalysisCta}
+        />
+      </section>
+
+      {/* 2b. Remaining curator picks (kickoff-ordered). */}
+      {restPicks.length > 0 && (
+        <section className="pb-8">
           <div className="flex flex-col gap-5">
-            {picks.map((pick) => (
+            {restPicks.map((pick) => (
               <PickCard
                 key={pick.id}
                 pick={pick}
@@ -136,8 +161,8 @@ export default async function DailyBoard({ params }: Props) {
               />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* 3. No-plays today — the discipline moat as a real list, not just a count */}
       {noPlays.length > 0 && (

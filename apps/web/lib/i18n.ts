@@ -99,6 +99,8 @@ export interface Dict {
     matchesTitle: string;
     allCompetitions: string;
     finished: string;
+    scoreboardTitle: string;
+    predictedScore: string;
     superSunday: string;
     hotPick: string;
     trackRecord: string;
@@ -399,6 +401,8 @@ const en: Dict = {
     matchesTitle: "Matches",
     allCompetitions: "All competitions",
     finished: "Full time",
+    scoreboardTitle: "Scores & fixtures",
+    predictedScore: "Predicted",
     superSunday: "Super Sunday",
     hotPick: "Hottest pick",
     trackRecord: "Track record",
@@ -698,6 +702,8 @@ const vi: Dict = {
     matchesTitle: "Trận đấu",
     allCompetitions: "Tất cả giải",
     finished: "Kết thúc",
+    scoreboardTitle: "Tỷ số & lịch đấu",
+    predictedScore: "Dự đoán",
     superSunday: "Super Sunday",
     hotPick: "Kèo hot nhất",
     trackRecord: "Thành tích",
@@ -997,6 +1003,8 @@ const th: Dict = {
     matchesTitle: "การแข่งขัน",
     allCompetitions: "ทุกรายการ",
     finished: "จบเกม",
+    scoreboardTitle: "ผลและโปรแกรม",
+    predictedScore: "ทำนายผล",
     superSunday: "Super Sunday",
     hotPick: "ทีเด็ดมาแรง",
     trackRecord: "สถิติผลงาน",
@@ -1296,6 +1304,8 @@ const es: Dict = {
     matchesTitle: "Partidos",
     allCompetitions: "Todas las competiciones",
     finished: "Final",
+    scoreboardTitle: "Resultados y partidos",
+    predictedScore: "Pronóstico",
     superSunday: "Super Sunday",
     hotPick: "Pick más caliente",
     trackRecord: "Historial",
