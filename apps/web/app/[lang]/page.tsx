@@ -12,8 +12,11 @@ import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/li
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
+import { ScoreboardRail } from "@/components/scoreboard-rail";
+import { HotPickCard } from "@/components/hot-pick-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
+import { TEST_SEED_PICK, TEST_SEED_PREDICTED } from "@/lib/test-seed";
 
 export const revalidate = 300;
 
@@ -132,6 +135,11 @@ export default async function Home({ params }: Props) {
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
 
+  // Predictions slot — the top curator pick, or the in-code test seed pre-season.
+  // TEST SEED — remove when real picks flow (see lib/test-seed.ts).
+  const heroPick = picks[0] ?? TEST_SEED_PICK;
+  const heroPredicted = picks.length > 0 ? null : TEST_SEED_PREDICTED;
+
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
   const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
   const cutoff30 = Date.now() - 30 * 86_400_000;
@@ -159,7 +167,14 @@ export default async function Home({ params }: Props) {
   const restArticles = articles.filter((a) => a.slug !== hot?.slug).slice(0, 6);
 
   return (
-    <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
+    <>
+      {/* Top scoreboard rail (ESPN strip) — reuses the same match data as HomeNextMatches. */}
+      <ScoreboardRail
+        matches={stripMatches}
+        lang={lang}
+        labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
+      />
+      <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
       {/* 1. Hero: brand positioning + curator record + form */}
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
@@ -274,6 +289,17 @@ export default async function Home({ params }: Props) {
           </Link>
         </section>
       )}
+
+      {/* 1c. Hot pick prediction — the top curator pick, or the test seed pre-season. */}
+      <section className="pb-10">
+        <HotPickCard
+          pick={heroPick}
+          predicted={heroPredicted}
+          lang={lang}
+          href={withLang("/daily-board", lang)}
+          ctaLabel={dict.home.viewBoard}
+        />
+      </section>
 
       {/* 2. Daily Board teaser — hoặc đếm ngược khai mạc khi bảng chưa có gì.
           Hiện "0 · 0 · 0" giữa mùa nghỉ làm trang chủ trông như hỏng.
@@ -488,6 +514,7 @@ export default async function Home({ params }: Props) {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
