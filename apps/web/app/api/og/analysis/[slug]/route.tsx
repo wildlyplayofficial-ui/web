@@ -1,11 +1,10 @@
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
-import { teamsFromSlug, teamsFromSlugLoose } from "@/lib/team-badges";
-import { renderDeskCard } from "../../_desk-card";
+import { OgCard, ogResponse } from "../../_shared";
 
 /**
- * Dynamic share image (PNG 1200x630) for Desk-authored analysis articles
- * (analysis_articles table). Published articles only — drafts 404.
- * Layout lives in _desk-card (firewall-safe Desk variant of the news card).
+ * Dynamic share image (PNG 1200x630) for Desk-authored analysis articles.
+ * Published articles only — drafts 404. This is a FALLBACK card: pages prefer a
+ * hero_image, so keep it branded/generic-title (headline + kind + league).
  */
 
 const KIND_BADGE: Record<string, string> = {
@@ -13,13 +12,6 @@ const KIND_BADGE: Record<string, string> = {
   recap: "RECAP",
   roundup: "ROUNDUP",
 };
-
-/** Parse "Home vs Away: …" style titles when the slug carries no matchup. */
-function teamsFromTitle(title: string): { home: string; away: string } | null {
-  const m = title.match(/^(.+?)\s+vs\.?\s+(.+?)(?:\s*[:\u2013\u2014-]|$)/i);
-  if (!m) return null;
-  return { home: m[1].trim(), away: m[2].trim() };
-}
 
 export async function GET(
   request: Request,
@@ -43,20 +35,16 @@ export async function GET(
     year: "numeric",
     timeZone: "UTC",
   });
-  const league = article.league || null;
   const badgeLabel = KIND_BADGE[article.kind] ?? article.kind.toUpperCase();
 
-  // Roundups (and matchups we can't resolve) fall back to the brand-band card.
-  const teams = article.kind === "roundup"
-    ? null
-    : teamsFromSlug(slug) ?? teamsFromTitle(article.title) ?? teamsFromSlugLoose(slug);
-
-  return renderDeskCard({
-    home: teams?.home ?? null,
-    away: teams?.away ?? null,
-    badgeLabel,
-    headline: article.title,
-    league,
-    dateLine,
-  });
+  return ogResponse(
+    <OgCard
+      eyebrow={badgeLabel}
+      title={article.title}
+      topRight={article.league || null}
+      footer="wildlyplay.com"
+      footerRight={`WildlyPlay Desk (AI) · ${dateLine}`}
+    />,
+    { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
+  );
 }
