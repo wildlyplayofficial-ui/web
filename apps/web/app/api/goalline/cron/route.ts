@@ -144,7 +144,7 @@ async function autoCreate(
       cutoff_time_utc: cutoffTime.toISOString(),
       status: "open",
       published_at: new Date().toISOString(),
-      method_note: "Auto-created by cron. Line derived from Sbobet totals, de-vigged ~50/50.",
+      method_note: "Auto-created by cron. Line derived from bookmaker totals, de-vigged ~50/50.",
     })
     .select("id")
     .single();

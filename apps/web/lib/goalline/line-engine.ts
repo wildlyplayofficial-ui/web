@@ -4,15 +4,18 @@ import { devig } from "@/lib/goalline/settlement";
  * GoalLine Daily — Line Derivation Engine (spec section 4).
  *
  * Uses odds-api.io:
- * 1. Search WC events by team name via /events/search
- * 2. Fetch Sbobet totals odds via /odds?eventId=&bookmakers=Sbobet
+ * 1. Search events by team name via /events/search — ANY competition
+ * 2. Fetch totals odds via /odds?eventId= — KHÔNG lọc nhà cái
  * 3. De-vig each match's totals
  * 4. Goal Line = sum of per-match fair totals, rounded to nearest .5
  * 5. Calibrate Over/Under odds from de-vigged probabilities
+ *
+ * KHÔNG hardcode nhà cái. Gói odds-api hiện tại (Starter cũ, 11 EUR/tháng) không
+ * bao gồm sharp/exchange books — hỏi đích danh Sbobet là nhận 403. Lấy nhà cái nào
+ * cũng được miễn có kèo Totals; nâng gói sau thì tự động ăn thêm sách tốt hơn.
  */
 
 const ODDS_API_BASE = "https://api.odds-api.io/v3";
-const BOOKMAKER = "Sbobet";
 
 /** Livescore → odds-api team name aliases. */
 const SEARCH_ALIASES: Record<string, string> = {
@@ -70,47 +73,54 @@ function roundOdds(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-/** Search for a WC event matching a team name. */
-async function searchEvent(
+/** Search events by team name — mọi giải, không lọc theo giải nào. */
+async function searchEvents(
   teamName: string,
   apiKey: string,
-): Promise<OddsApiEvent | null> {
+): Promise<OddsApiEvent[]> {
   const query = searchName(teamName);
   const res = await fetch(
     `${ODDS_API_BASE}/events/search?query=${encodeURIComponent(query)}&sport=football&apiKey=${apiKey}`,
     { cache: "no-store" },
   );
-  if (!res.ok) return null;
-  const events = (await res.json()) as OddsApiEvent[];
-  // Prefer WC events
-  return events.find((e) => e.league?.slug === "international-fifa-world-cup") ?? null;
+  if (!res.ok) return [];
+  const events = await res.json();
+  return Array.isArray(events) ? (events as OddsApiEvent[]) : [];
 }
 
-/** Fetch totals odds from Sbobet for an event. */
+/** So tên đội lỏng: "Man City" khớp "Manchester City". */
+function looseMatch(a: string, b: string): boolean {
+  const x = a.toLowerCase();
+  const y = b.toLowerCase();
+  return x.includes(y.split(" ")[0]) || y.includes(x.split(" ")[0]);
+}
+
+/** Lấy kèo Totals từ nhà cái ĐẦU TIÊN có kèo đó, không kén tên nhà cái. */
 async function fetchTotalsOdds(
   eventId: string,
   apiKey: string,
 ): Promise<{ overOdds: number; underOdds: number; point: number } | null> {
   const res = await fetch(
-    `${ODDS_API_BASE}/odds?eventId=${eventId}&bookmakers=${BOOKMAKER}&apiKey=${apiKey}`,
+    `${ODDS_API_BASE}/odds?eventId=${eventId}&apiKey=${apiKey}`,
     { cache: "no-store" },
   );
   if (!res.ok) return null;
 
-  const data = await res.json();
-  const bookmakers = data.bookmakers ?? {};
-  const bm = bookmakers[BOOKMAKER];
-  if (!Array.isArray(bm)) return null;
-
-  const totalsMarket = bm.find((m: { name: string }) => m.name === "Totals");
-  if (!totalsMarket?.odds?.[0]) return null;
-
-  const totals = totalsMarket.odds[0] as TotalsMarket;
-  return {
-    overOdds: parseFloat(totals.over),
-    underOdds: parseFloat(totals.under),
-    point: totals.hdp,
-  };
+  const data = (await res.json()) as { bookmakers?: Record<string, unknown> };
+  for (const markets of Object.values(data.bookmakers ?? {})) {
+    if (!Array.isArray(markets)) continue;
+    const totalsMarket = markets.find(
+      (m: { name?: string }) => m?.name === "Totals",
+    ) as { odds?: TotalsMarket[] } | undefined;
+    const totals = totalsMarket?.odds?.[0];
+    if (!totals) continue;
+    return {
+      overOdds: parseFloat(totals.over),
+      underOdds: parseFloat(totals.under),
+      point: totals.hdp,
+    };
+  }
+  return null;
 }
 
 /** Match a livescore team to a WC event by searching odds-api. */
@@ -118,21 +128,17 @@ async function findEventForMatch(
   match: { homeTeam: string; awayTeam: string },
   apiKey: string,
 ): Promise<OddsApiEvent | null> {
-  // Try home team first, then away
-  const byHome = await searchEvent(match.homeTeam, apiKey);
-  if (byHome) {
-    const awayLower = match.awayTeam.toLowerCase();
-    if (byHome.away.toLowerCase().includes(awayLower.split(" ")[0]) ||
-        awayLower.includes(byHome.away.toLowerCase().split(" ")[0])) {
-      return byHome;
-    }
-  }
-  const byAway = await searchEvent(match.awayTeam, apiKey);
-  if (byAway) {
-    const homeLower = match.homeTeam.toLowerCase();
-    if (byAway.home.toLowerCase().includes(homeLower.split(" ")[0]) ||
-        homeLower.includes(byAway.home.toLowerCase().split(" ")[0])) {
-      return byAway;
+  // Tên đội rỗng thì DỪNG. card-actions.ts gọi vào đây với homeTeam/awayTeam là ""
+  // — không chặn thì looseMatch("","") trả true và vớ bừa trận đầu tiên tìm được.
+  if (!match.homeTeam.trim() || !match.awayTeam.trim()) return null;
+
+  // Trước đây chỉ khớp MỘT phía vì bộ lọc World Cup đã thu hẹp sẵn kết quả.
+  // Bỏ bộ lọc đó rồi thì phải khớp CẢ HAI đội, kẻo vớ nhầm trận khác cùng tên đội.
+  for (const teamName of [match.homeTeam, match.awayTeam]) {
+    for (const ev of await searchEvents(teamName, apiKey)) {
+      if (looseMatch(ev.home, match.homeTeam) && looseMatch(ev.away, match.awayTeam)) {
+        return ev;
+      }
     }
   }
   return null;
