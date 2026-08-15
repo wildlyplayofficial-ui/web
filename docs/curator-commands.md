@@ -23,6 +23,23 @@ Không cần gọi tạo hình riêng — hình đi kèm trong pipeline.
 
 ---
 
+## Curator vs Scout — CHUNG lệnh, khác 1 field
+
+Scout **không có endpoint riêng**. Dùng chung mọi lệnh, thêm `"author": "scout"` (mặc định `curator`).
+
+```bash
+# Pick của Scout: y hệt /api/pick, chỉ thêm author
+curl -X POST "$BASE/api/pick" "${H[@]}" -d '{ "author": "scout", "text": "match: ...\n..." }'
+# Đọc riêng kèo Scout
+curl -X POST "$BASE/api/board"  "${H[@]}" -d '{ "author": "scout" }'
+curl -X POST "$BASE/api/record" "${H[@]}" -d '{ "author": "scout" }'
+```
+
+- **`author_type` do SERVER suy ra**, client không set được: `scout` → `fictional_ai`, `curator` → `real_human` (`store.ts:authorTypeOf`). Cố tình chặn để không giả AI thành người hay ngược lại.
+- **Thẻ Scout TỰ có disclosure AI** (không tắt được): `— AI-picked · Not a real person · Odds at publish · Not financial advice`.
+
+---
+
 ## Lệnh TẠO
 
 ### /api/pick — tạo kèo mới
