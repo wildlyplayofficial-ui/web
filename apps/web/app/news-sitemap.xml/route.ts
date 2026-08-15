@@ -1,10 +1,11 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
+import { getAllNewsItemSlugs } from "@/lib/news";
 
 /**
  * GET /news-sitemap.xml — Google News sitemap for recent articles.
  * Only includes articles from the last 48 hours (Google News requirement).
- * Now points to /analysis/ URLs (retired /news, spec §2E).
+ * Covers /analysis/ (posts + desk articles) AND /news/ (news_items).
  */
 
 const BASE = "https://www.wildlyplay.com";
@@ -13,24 +14,28 @@ export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 export async function GET(): Promise<Response> {
-  const [posts, deskArticles] = await Promise.all([
+  const [posts, deskArticles, newsItems] = await Promise.all([
     getAllPostSlugs(),
     getAllAnalysisArticleSlugs(),
+    getAllNewsItemSlugs(),
   ]);
 
   // Google News: only articles from last 48 hours
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
 
   const allItems = [
-    ...posts.map((p) => ({ slug: p.slug, title: p.title, updated: p.updated })),
-    ...deskArticles.map((a) => ({ slug: a.slug, title: a.title, updated: a.updated })),
+    ...posts.map((p) => ({ path: "analysis", slug: p.slug, title: p.title, updated: p.updated })),
+    ...deskArticles.map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
+    // news_items have no title in the slug helper; the Google News <title> falls
+    // back to the slug rendered readable. They live at /news/, not /analysis/.
+    ...newsItems.map((n) => ({ path: "news", slug: n.slug, title: n.slug.replace(/-/g, " "), updated: n.updated })),
   ];
 
-  const recent = allItems.filter((p) => new Date(p.updated) >= cutoff);
+  const recent = allItems.filter((p) => p.updated && new Date(p.updated) >= cutoff);
 
   const urls = recent.map(
     (p) => `  <url>
-    <loc>${BASE}/analysis/${p.slug}</loc>
+    <loc>${BASE}/${p.path}/${p.slug}</loc>
     <news:news>
       <news:publication>
         <news:name>WildlyPlay</news:name>

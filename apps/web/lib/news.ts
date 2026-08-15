@@ -68,6 +68,26 @@ export const getNewsItems = unstable_cache(
   { revalidate: 300, tags: ["news"] },
 );
 
+/** Every published news_item slug + date — for the sitemap. No limit: getNewsItems
+ *  caps at 30, so it can't be reused here or older articles fall out of the sitemap. */
+async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("news_items")
+    .select("slug, published_at")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+  if (error) throw new Error(`getAllNewsItemSlugs: ${error.message}`);
+  return (data ?? []).map((r) => ({ slug: r.slug as string, updated: (r.published_at as string) ?? "" }));
+}
+
+export const getAllNewsItemSlugs = unstable_cache(
+  getAllNewsItemSlugsImpl,
+  ["news-item-slugs"],
+  { revalidate: 300, tags: ["news"] },
+);
+
 async function getNewsItemBySlugImpl(slug: string): Promise<NewsItem | null> {
   const supabase = getSupabase();
   if (!supabase) return null;

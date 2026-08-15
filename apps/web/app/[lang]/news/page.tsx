@@ -293,6 +293,10 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         href: withLang(`/news/${item.slug}`, lang),
         title: tua,
         thumb: item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(tua)}`,
+        // Featured slot uses thumb only when anhThat is set. Without this, a news
+        // item with a real hero (e.g. the Romero transfer card) fell back to the
+        // generic league OG image in the "nổi bật" slot (Jane 15/8).
+        anhThat: !!item.hero_card_url,
         badge: (item.competition_id && leagueLabels[item.competition_id]) || dict.nav.news,
         date: item.published_at,
         tag: loai ?? undefined,

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
 import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
+import { getAllNewsItemSlugs } from "@/lib/news";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
 /** SEO: every settled play + published post + all 4 language variants. */
@@ -27,7 +28,7 @@ function alternates(path: string, langs: readonly string[] = LANGS): MetadataRou
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches, guides, reports, competitions, deskArticles] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs()]);
+  const [picks, posts, matches, guides, reports, competitions, deskArticles, newsItems] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -108,6 +109,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/analysis/${a.slug}`),
   }));
 
+  // /news article pages: only the /news index was declared (line above), never the
+  // individual news_items — so every published news item (transfers, previews…) was
+  // orphaned from Google despite being live. Declare each one (Jane 15/8).
+  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.map((n) => ({
+    url: `${BASE}/news/${n.slug}`,
+    lastModified: n.updated ? new Date(n.updated) : new Date(),
+    changeFrequency: "weekly",
+    priority: 0.7,
+    alternates: alternates(`/news/${n.slug}`),
+  }));
+
   // Trang giải + 2 trang con (lịch thi đấu, phong độ). Trước chỉ phát trang gốc nên
   // 2 trang con đã dựng xong mà Google không biết chúng tồn tại (4/8).
   // Sitemap phải soi ĐÚNG điều kiện sống của trang giải — xem
@@ -143,5 +155,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
