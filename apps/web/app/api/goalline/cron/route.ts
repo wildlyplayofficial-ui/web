@@ -7,9 +7,9 @@ import {
   fetchLiveMatchMap,
   fetchFixtureMap,
   syncMatchScores,
-  WC_COMPETITION_ID,
+  getActiveCompetitionIds,
+  fetchUpcomingFixtures,
 } from "@/lib/goalline/cron-helpers";
-import { lsFetch } from "@/lib/ls-fetch";
 
 /**
  * POST /api/goalline/cron
@@ -23,7 +23,6 @@ import { lsFetch } from "@/lib/ls-fetch";
  * 3. Auto-settle locked/live cards when all matches finished (or Over clinched)
  */
 
-const LIVESCORE_BASE = "https://livescore-api.com/api-client";
 const MIN_LINE = 1.5;
 const MAX_LINE = 12.5;
 const MIN_ODDS = 1.3;
@@ -59,20 +58,22 @@ async function autoCreate(
     .single();
   if (existing) return { done: false, reason: `Card already exists for ${tomorrow}` };
 
-  // Fetch tomorrow's WC fixtures
-  const res = await lsFetch(
-    `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${WC_COMPETITION_ID}&date=${tomorrow}`,
-    { cache: "no-store" },
-  );
-  const lsData = await res.json() as { success: boolean; data?: { fixtures?: LivescoreFixture[] } };
-  const fixtures: LivescoreFixture[] = lsData.success ? (lsData.data?.fixtures ?? []) : [];
+  // Fetch tomorrow's fixtures across every active competition (Premier League,
+  // etc.) — no longer locked to the finished World Cup.
+  const compIds = await getActiveCompetitionIds(sb);
+  const fixtures = (await fetchUpcomingFixtures(
+    lsKey,
+    lsSecret,
+    tomorrow,
+    compIds,
+  )) as LivescoreFixture[];
 
   const upcoming = fixtures.filter((f) => {
     const s = (f.status || "").toUpperCase();
     return s !== "FINISHED" && s !== "FT" && s !== "CANCELLED" && s !== "POSTPONED";
   });
   if (upcoming.length < 3) {
-    return { done: false, reason: `Only ${upcoming.length} WC matches on ${tomorrow}, need ≥3` };
+    return { done: false, reason: `Only ${upcoming.length} upcoming matches on ${tomorrow}, need ≥3` };
   }
 
   const picked = [...upcoming].sort(() => Math.random() - 0.5).slice(0, 3);
@@ -200,8 +201,10 @@ async function autoSettle(
     .in("status", ["locked", "live"]);
   if (!activeCards?.length) return { settled, voided, skipped };
 
-  // Fetch live feed once for all cards
-  const liveMap = await fetchLiveMatchMap(lsKey, lsSecret);
+  // Fetch live feed once for all cards, across every active competition so EPL
+  // cards settle too (not just World Cup).
+  const compIds = await getActiveCompetitionIds(sb);
+  const liveMap = await fetchLiveMatchMap(lsKey, lsSecret, compIds);
 
   for (const card of activeCards as { id: string; goal_line: number; utc_date: string }[]) {
     const { data: junctions } = await sb
@@ -218,7 +221,7 @@ async function autoSettle(
     if (!dbMatches?.length) { skipped.push(card.id); continue; }
 
     // Fixture feed for finished matches not in live feed
-    const fixtureMap = await fetchFixtureMap(lsKey, lsSecret, card.utc_date);
+    const fixtureMap = await fetchFixtureMap(lsKey, lsSecret, card.utc_date, compIds);
 
     const { allFinished, hasVoidable, totalGoals } = await syncMatchScores(
       sb,

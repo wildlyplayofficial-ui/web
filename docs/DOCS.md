@@ -596,10 +596,10 @@ Key design decisions referenced in code comments:
 
 Route: `/daily-line` (308 permanent redirect from `/goalline`). A daily Over/Under prediction game on aggregate football goals.
 
-- **Daily cards** — 3 WC matches per card with a combined goal line derived from Sbobet totals (de-vigged to ~50/50 probability). Users pick Over or Under before a cutoff time, staking 100 pts per card.
+- **Daily cards** — 3 matches per card (from any active competition, e.g. Premier League) with a combined goal line derived from bookmaker totals (median across books, de-vigged to ~50/50 probability). Users pick Over or Under before a cutoff time, staking 100 pts per card.
 - **Lifecycle** — open → locked (at cutoff) → live (matches in progress) → settled/voided. Card status transitions are enforced by the cron and admin actions.
-- **Line derivation** — odds-api.io `/events/search` + `/odds?bookmakers=Sbobet` → totals decimal odds, de-vigged. `SEARCH_ALIASES` map team name differences (Turkey→Turkiye, Czech Republic→Czechia, etc.). Guardrails: line must be 1.5–12.5, odds 1.3–4.0.
-- **Auto-lifecycle cron** — Railway worker polls `POST /api/goalline/cron` every 15 minutes. Three steps run concurrently: (1) auto-create tomorrow's card if ≥3 WC matches + odds available, (2) auto-lock open cards past cutoff, (3) auto-settle locked/live cards when all matches finished. Score sync from livescore-api.com (live feed + fixture feed). Vercel cron backup: daily at 18:00 UTC.
+- **Line derivation** — odds-api.io `/events/search` + `/odds` (any book carrying a Totals market, median) → totals decimal odds, de-vigged. `SEARCH_ALIASES` map team name differences (Turkey→Turkiye, Czech Republic→Czechia, etc.). Guardrails: line must be 1.5–12.5, odds 1.3–4.0.
+- **Auto-lifecycle cron** — Railway worker polls `POST /api/goalline/cron` every 15 minutes. Three steps run concurrently: (1) auto-create tomorrow's card if ≥3 upcoming matches (active competitions) + odds available, (2) auto-lock open cards past cutoff, (3) auto-settle locked/live cards when all matches finished. Score sync from livescore-api.com (live feed + fixture feed). Vercel cron backup: daily at 18:00 UTC.
 - **Settlement rules** — Over wins when total goals > line (can clinch mid-card before all matches finish). Under wins when all matches finish and total ≤ line. Void if any match postponed/abandoned (unless Over already clinched).
 - **Anonymous users** — device_id via localStorage, auto-generated random animal names (Anonymous Penguin, Anonymous Bear, etc.). No accounts required.
 - **Community split** — Over/Under percentage revealed after user picks (spec §10).
