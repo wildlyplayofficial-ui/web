@@ -259,7 +259,11 @@ async function autoSettle(
 export async function POST(request: Request) {
   const secret = request.headers.get("x-revalidate-secret");
   const expected = process.env.REVALIDATE_SECRET;
-  if (expected && secret !== expected) {
+  // Fail CLOSED — an unset REVALIDATE_SECRET must reject, not wave everything through.
+  // This route runs autoCreate + autoLock + autoSettle (it decides winners and settles
+  // user bets) and sits on a public Vercel cron path, so an open door here is the worst
+  // of the three instances of this pattern.
+  if (!expected || secret !== expected) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

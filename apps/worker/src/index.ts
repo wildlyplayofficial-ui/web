@@ -289,6 +289,13 @@ import { handleAnalysisRoute } from './analysis-api';
 const WEBHOOK_SECRET = process.env.REVALIDATE_SECRET ?? '';
 const webhookPort = Number(process.env.WEBHOOK_PORT ?? process.env.PORT ?? '8080');
 
+// Auth below fails closed, so a missing secret takes the whole HTTP API down rather
+// than leaving it open. Say so loudly at boot — otherwise the symptom is every caller
+// getting a bare 401, indistinguishable from a wrong secret.
+if (!WEBHOOK_SECRET) {
+  log.error('REVALIDATE_SECRET unset — worker HTTP API will reject ALL requests with 401');
+}
+
 const server = createServer(async (req, res) => {
   const reqUrl = req.url ?? '';
   const isAnalysisRoute = reqUrl.startsWith('/api/analysis');

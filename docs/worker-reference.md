@@ -347,7 +347,7 @@ Timestamped console logger. The only place `console` is used. Supports failure l
 | `CHANNEL_CHAT_ID` | Telegram channel ID for announcements. | Channel announcements skipped. |
 | `FB_PAGE_ID` | Facebook Page ID. | Facebook posting disabled. |
 | `FB_PAGE_TOKEN` | Facebook Page access token. | Facebook posting disabled. |
-| `REVALIDATE_SECRET` | Shared secret for web revalidation + webhooks. | On-demand revalidation and IndexNow disabled. |
+| `REVALIDATE_SECRET` | **Required.** Shared secret for web revalidation + webhooks. | Auth fails closed: the **entire worker HTTP API returns 401** (`/webhook/*`, `/api/*`, `/api/analysis`), plus on-demand revalidation and IndexNow disabled. Logged loudly at boot. |
 | `LIVESCORE_API_KEY` | LiveScore API key. | Live score persistence, provider matcher, standings, finished/upcoming fixtures. |
 | `LIVESCORE_API_SECRET` | LiveScore API secret. | Same as above. |
 | `SERPER_API_KEY` | Serper (Google Search) API key. | Buzz grounding from real forum snippets (falls back to AI-only). |

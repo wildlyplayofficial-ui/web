@@ -33,7 +33,8 @@ export async function POST(request: Request) {
   // Auth: require revalidate secret or service header
   const secret = request.headers.get("x-revalidate-secret");
   const expected = process.env.REVALIDATE_SECRET;
-  if (expected && secret !== expected) {
+  // Fail CLOSED — an unset REVALIDATE_SECRET must reject, not publish for anyone.
+  if (!expected || secret !== expected) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
