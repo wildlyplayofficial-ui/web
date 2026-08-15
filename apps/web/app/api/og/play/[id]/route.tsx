@@ -1,7 +1,7 @@
 import { getPick } from "@/lib/data";
 import { formatKickoff } from "@/lib/format";
 import type { Confidence } from "@/lib/types";
-import { OgCard, ogResponse } from "../../_shared";
+import { OgCard, loadTeamPlayerDataUri, ogResponse } from "../../_shared";
 
 /**
  * Share image (PNG 1200x630) for ANY non-draft pick. This is the ONLY card type
@@ -34,6 +34,12 @@ export async function GET(
     ? ` · ${vi ? "Độ tự tin" : "Confidence"}: ${vi ? conf.vi : conf.en}`
     : "";
 
+  // Featured pick gets the club's cartoon when we have art for it — home team
+  // leads, away as fallback. No art yet → text-only card (selection + odds
+  // stay unchanged either way). Drop cartoons into public/og/players/<slug>.png.
+  let player = await loadTeamPlayerDataUri(pick.home_team);
+  if (!player) player = await loadTeamPlayerDataUri(pick.away_team);
+
   return ogResponse(
     <OgCard
       eyebrow={vi ? "Kèo tâm điểm" : "Featured pick"}
@@ -41,6 +47,8 @@ export async function GET(
       topRight={pick.league}
       badge={`${pick.selection}${confText}`}
       detail={[{ label: vi ? "Khởi tranh" : "Kick-off", value: formatKickoff(pick.kickoff_utc, vi ? "vi" : "en") }]}
+      player={player}
+      showPlayer={Boolean(player)}
     />,
     {
       headers: {

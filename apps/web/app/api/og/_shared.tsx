@@ -74,6 +74,62 @@ export function loadPlayerDataUri(): Promise<string | null> {
   return playerPromise;
 }
 
+// ── Per-team cartoon: public/og/players/{slug}.png, inlined as a data URI.
+//    Missing file → null, so the caller keeps a text-only card. Short club
+//    names map to the canonical slug so "Man City" and "Manchester City" both
+//    resolve to manchester-city.png. ──
+const EPL_TEAM_ALIASES: Record<string, string> = {
+  "man city": "manchester city",
+  "man utd": "manchester united",
+  "man united": "manchester united",
+  "manchester utd": "manchester united",
+  spurs: "tottenham",
+  "tottenham hotspur": "tottenham",
+  wolves: "wolverhampton",
+  "wolverhampton wanderers": "wolverhampton",
+  "nottm forest": "nottingham forest",
+  "brighton and hove albion": "brighton",
+  "west ham united": "west ham",
+  "newcastle united": "newcastle",
+  "leeds united": "leeds",
+  "afc bournemouth": "bournemouth",
+};
+
+/** Filename slug for a team's cartoon, e.g. "Man City" → "manchester-city". */
+export function teamImageSlug(name: string): string {
+  const norm = name
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return (EPL_TEAM_ALIASES[norm] ?? norm).replace(/\s+/g, "-");
+}
+
+const teamPlayerPromises = new Map<string, Promise<string | null>>();
+
+async function loadTeamPlayerOnce(slug: string): Promise<string | null> {
+  try {
+    const buf = await readFile(join(process.cwd(), `public/og/players/${slug}.png`));
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Cartoon for a specific team, or null when no art exists for it yet. */
+export function loadTeamPlayerDataUri(team: string): Promise<string | null> {
+  const slug = teamImageSlug(team);
+  let p = teamPlayerPromises.get(slug);
+  if (!p) {
+    p = loadTeamPlayerOnce(slug);
+    teamPlayerPromises.set(slug, p);
+  }
+  return p;
+}
+
 /** Build the ImageResponse with fonts applied when available, headers preserved. */
 export async function ogResponse(
   node: ReactElement,
