@@ -2,7 +2,9 @@
 
 # WildlyPlay Curator API
 
-Internal API for automating all Curator workflows. Every endpoint uses the same pipelines as the Telegram bot — 4-lang articles, TG+FB announcements, web cache revalidation.
+Internal API for automating all Curator workflows. Every endpoint uses the same pipelines as the Telegram bot — 4-lang articles, **cartoon hero image (player art + club badges, via the wp-thumbnail/cartoon_ify pipeline)**, TG+FB announcements, web cache revalidation.
+
+> Không có biến thể "web-only / bỏ announce": mọi lệnh tạo đều bắn TG+FB. Muốn đẩy thẳng web thì ghi DB (`news_items`/`picks`) rồi POST `/api/revalidate` (header `x-revalidate-secret`, body `{tags}`) — không đi qua các lệnh này.
 
 ## Base URL
 
