@@ -18,7 +18,7 @@ x-webhook-secret: <REVALIDATE_SECRET>
 
 All requests: `POST`, `Content-Type: application/json`.
 
-> **⚠️ Fail-open caveat:** Auth is only enforced when `REVALIDATE_SECRET` is set. Code checks `if (WEBHOOK_SECRET && header !== secret)` (`apps/worker/src/index.ts`), so if `REVALIDATE_SECRET` is **unset**, the check is skipped — all requests pass without auth. Always set `REVALIDATE_SECRET` in production.
+> **Auth fails closed.** `REVALIDATE_SECRET` is **required**. The worker checks `if (!WEBHOOK_SECRET || header !== WEBHOOK_SECRET)` (`apps/worker/src/index.ts`), so an unset or empty secret rejects **every** request with 401 — it does not wave them through. The worker also logs `REVALIDATE_SECRET unset — worker HTTP API will reject ALL requests with 401` at boot, so the outage is visible rather than silent. Running the worker locally requires setting this variable too.
 
 ---
 

@@ -289,6 +289,13 @@ import { handleAnalysisRoute } from './analysis-api';
 const WEBHOOK_SECRET = process.env.REVALIDATE_SECRET ?? '';
 const webhookPort = Number(process.env.WEBHOOK_PORT ?? process.env.PORT ?? '8080');
 
+// Auth below fails closed, so a missing secret takes the whole HTTP API down rather
+// than leaving it open. Say so loudly at boot — otherwise the symptom is every caller
+// getting a bare 401, indistinguishable from a wrong secret.
+if (!WEBHOOK_SECRET) {
+  log.error('REVALIDATE_SECRET unset — worker HTTP API will reject ALL requests with 401');
+}
+
 const server = createServer(async (req, res) => {
   const reqUrl = req.url ?? '';
   const isAnalysisRoute = reqUrl.startsWith('/api/analysis');
@@ -298,8 +305,11 @@ const server = createServer(async (req, res) => {
     res.writeHead(405).end('Method not allowed');
     return;
   }
-  // Auth check
-  if (WEBHOOK_SECRET && req.headers['x-webhook-secret'] !== WEBHOOK_SECRET) {
+  // Auth check — fail CLOSED: a missing/empty REVALIDATE_SECRET must reject every
+  // request, not wave them all through. The old `WEBHOOK_SECRET && ...` form meant a
+  // dropped env var silently opened every worker endpoint (including /api/analysis,
+  // which publishes under the "WildlyPlay Desk" byline) with no error to notice.
+  if (!WEBHOOK_SECRET || req.headers['x-webhook-secret'] !== WEBHOOK_SECRET) {
     res.writeHead(401).end('Unauthorized');
     return;
   }
