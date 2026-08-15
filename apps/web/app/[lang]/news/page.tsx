@@ -499,10 +499,14 @@ export default async function NewsLanding({ params, searchParams }: Props) {
             </>
           )}
 
-          {/* 5. Hai cột: list có TÓM TẮT + sidebar BXH/lịch/CTA */}
-          <h2 className="mb-3 border-l-4 border-brand pl-3 font-display text-lg font-bold">
-            {dict.news.allTitle}
-          </h2>
+          {/* 5. Hai cột: list có TÓM TẮT + sidebar BXH/lịch/CTA.
+              Tiêu đề chỉ hiện khi CÓ bài — giải ít hơn 13 bài (EPL, Serie A…)
+              thì list rỗng, trước đây tiêu đề vẫn hiện trên khoảng trống (Jane 15/8). */}
+          {list.length > 0 && (
+            <h2 className="mb-3 border-l-4 border-brand pl-3 font-display text-lg font-bold">
+              {dict.news.allTitle}
+            </h2>
+          )}
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="flex flex-col gap-3 lg:col-span-2">
               {list.map((c) => (
