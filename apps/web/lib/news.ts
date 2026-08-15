@@ -68,6 +68,32 @@ export const getNewsItems = unstable_cache(
   { revalidate: 300, tags: ["news"] },
 );
 
+/** Every published news_item slug + date + headline — for the sitemap. No limit:
+ *  getNewsItems caps at 30, so it can't be reused or older articles fall out.
+ *  Includes the real headline (title) so the Google News sitemap doesn't fall
+ *  back to the raw slug ("romero roi tottenham..." with no diacritics). */
+async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: string; title: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("news_items")
+    .select("slug, published_at, headline_en")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+  if (error) throw new Error(`getAllNewsItemSlugs: ${error.message}`);
+  return (data ?? []).map((r) => ({
+    slug: r.slug as string,
+    updated: (r.published_at as string) ?? "",
+    title: (r.headline_en as string) ?? (r.slug as string),
+  }));
+}
+
+export const getAllNewsItemSlugs = unstable_cache(
+  getAllNewsItemSlugsImpl,
+  ["news-item-slugs"],
+  { revalidate: 300, tags: ["news"] },
+);
+
 async function getNewsItemBySlugImpl(slug: string): Promise<NewsItem | null> {
   const supabase = getSupabase();
   if (!supabase) return null;
