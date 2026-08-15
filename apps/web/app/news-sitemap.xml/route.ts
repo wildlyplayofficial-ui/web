@@ -26,9 +26,9 @@ export async function GET(): Promise<Response> {
   const allItems = [
     ...posts.map((p) => ({ path: "analysis", slug: p.slug, title: p.title, updated: p.updated })),
     ...deskArticles.map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
-    // news_items have no title in the slug helper; the Google News <title> falls
-    // back to the slug rendered readable. They live at /news/, not /analysis/.
-    ...newsItems.map((n) => ({ path: "news", slug: n.slug, title: n.slug.replace(/-/g, " "), updated: n.updated })),
+    // news_items live at /news/, not /analysis/. Use the real headline (not the
+    // slug) so Google News shows a proper title, not "romero roi tottenham...".
+    ...newsItems.map((n) => ({ path: "news", slug: n.slug, title: n.title, updated: n.updated })),
   ];
 
   const recent = allItems.filter((p) => p.updated && new Date(p.updated) >= cutoff);
