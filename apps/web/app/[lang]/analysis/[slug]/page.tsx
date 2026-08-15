@@ -217,7 +217,7 @@ function DeskArticleView({
 
       {/* Standing disclaimer (spec section 2B) */}
       <p className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-center text-xs text-muted">
-        Analysis is coverage &amp; analysis, NOT betting advice.
+        {dict.analysis.disclaimer}
       </p>
 
       <header className="mt-6">
@@ -301,7 +301,7 @@ function DeskArticleView({
 
       {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        Phân tích do WildlyPlay Desk (AI) thực hiện. Analysis is coverage &amp; analysis, NOT betting advice.
+        Phân tích do WildlyPlay Desk (AI) thực hiện. {dict.analysis.disclaimer}
       </p>
     </article>
   );
@@ -355,7 +355,7 @@ export default async function AnalysisArticlePage({ params }: Props) {
 
       {/* Standing disclaimer (spec section 2B) */}
       <p className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-center text-xs text-muted">
-        Analysis is coverage &amp; analysis, NOT betting advice.
+        {dict.analysis.disclaimer}
       </p>
 
       <header className="mt-6">
