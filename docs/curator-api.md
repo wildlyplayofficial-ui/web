@@ -2,7 +2,9 @@
 
 # WildlyPlay Curator API
 
-Internal API for automating all Curator workflows. Every endpoint uses the same pipelines as the Telegram bot — 4-lang articles, **cartoon hero image (player art + club badges, via the wp-thumbnail/cartoon_ify pipeline)**, TG+FB announcements, web cache revalidation.
+Internal API for automating all Curator workflows. Every endpoint uses the same pipelines as the Telegram bot — 4-lang articles, an **auto-generated OG social card** (via `/api/og/*` — teams headline + selection/verdict + confidence badge, rendered at request time), TG+FB announcements, web cache revalidation.
+
+> **Card ≠ cartoon hero.** The `/pick` card (`/api/og/play/{id}`) is currently a text card (teams + selection + confidence + kickoff), **not** a cartoon. The `cartoon_ify` player-art pipeline (`wp-thumbnail`) is the **news** hero, a separate flow. A per-club cartoon slot for pick cards is in progress (`_shared.tsx` already has a 620×620 bottom-right player slot; picks don't enable it yet) — this note will be updated when it ships.
 
 > Không có biến thể "web-only / bỏ announce": mọi lệnh tạo đều bắn TG+FB. Muốn đẩy thẳng web thì ghi DB (`news_items`/`picks`) rồi POST `/api/revalidate` (header `x-revalidate-secret`, body `{tags}`) — không đi qua các lệnh này.
 
