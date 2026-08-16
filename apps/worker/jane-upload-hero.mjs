@@ -24,6 +24,6 @@ console.log('hero set on', slug);
 const res = await fetch(`${process.env.SITE_URL || 'https://www.wildlyplay.com'}/api/revalidate`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-revalidate-secret': process.env.REVALIDATE_SECRET },
-  body: JSON.stringify({ tags: ['posts'] }),
+  body: JSON.stringify({ tags: ['analysis-articles'] }),
 });
 console.log('revalidate:', res.status, await res.text());
