@@ -71,13 +71,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/analysis/${p.slug}`),
   }));
 
-  const matchRoutes: MetadataRoute.Sitemap = matches.map((m) => ({
-    url: `${BASE}/match/${m.slug}`,
-    lastModified: new Date(m.updated),
-    changeFrequency: "weekly",
-    priority: 0.7,
-    alternates: alternates(`/match/${m.slug}`),
-  }));
+  // Trận đã đá xong (ngày trong slug < hôm nay) → gỡ khỏi sitemap, đừng mời Google
+  // vào trang trận cũ mỏng. Khớp với noindex ở generateMetadata (Peter/Nick 16/8).
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const matchRoutes: MetadataRoute.Sitemap = matches
+    .filter((m) => {
+      const d = m.slug.match(/(\d{4}-\d{2}-\d{2})$/)?.[1];
+      return !d || d >= todayKey;
+    })
+    .map((m) => ({
+      url: `${BASE}/match/${m.slug}`,
+      lastModified: new Date(m.updated),
+      changeFrequency: "weekly",
+      priority: 0.7,
+      alternates: alternates(`/match/${m.slug}`),
+    }));
 
   // Guide: chỉ 6 bài nặng thuật ngữ cá cược mới loại 'vi' khỏi hreflang sitemap.
   // Các guide còn lại khai đủ 4 ngôn ngữ. (Nick chốt danh sách 4/8)

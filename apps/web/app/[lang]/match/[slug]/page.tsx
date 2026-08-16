@@ -26,8 +26,15 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
+  // Tr\u1eadn \u0111\u00e3 \u0111\u00e1 xong (ng\u00e0y trong slug < h\u00f4m nay) \u2192 ch\u1eb7n l\u1eadp ch\u1ec9 m\u1ee5c: \u0111\u00f3ng \u0111\u00e1m trang
+  // tr\u1eadn c\u0169 m\u1ecfng + t\u1ef1 \u0111\u00f3ng m\u1ecdi tr\u1eadn sau khi \u0111\u00e1 xong (Peter/Nick 16/8). K\u00e8o \u0111\u00e3 settle
+  // n\u1eb1m canonical \u1edf /play + /archive n\u00ean trang /match c\u1ee7a tr\u1eadn c\u0169 kh\u00f4ng c\u1ea7n index.
+  const matchDate = slug.match(/(\d{4}-\d{2}-\d{2})$/)?.[1];
+  const finished = !!matchDate && matchDate < new Date().toISOString().slice(0, 10);
+  const robots = finished ? { index: false, follow: true } : undefined;
+
   const match = await getMatchBySlug(slug);
-  if (!match) return { title: "Not found" };
+  if (!match) return { title: "Not found", robots };
 
   const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Preview, Pick & Result`;
   const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on WildlyPlay.`;
@@ -36,6 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    robots,
     openGraph: { title: `${title} | WildlyPlay`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     alternates: buildAlternates(`/match/${slug}`, lang),
@@ -87,7 +95,7 @@ export default async function MatchPage({ params }: Props) {
         <header className="mt-6">
           <p className="text-sm text-muted">{formatKickoff(datePart + "T00:00:00Z", lang)}</p>
           <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-            {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName}<span className="mx-2 text-muted">vs</span>{ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
+            {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName}{" "}<span className="text-muted">vs</span>{" "}{ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
         </header>
         <div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>
@@ -125,7 +133,7 @@ export default async function MatchPage({ params }: Props) {
       <header className="mt-6">
         <p className="text-sm text-muted">{match.league}{match.league ? " \u00b7 " : ""}{formatKickoff(match.kickoffUtc, lang)}</p>
         <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-          {homeBadge ? <img src={homeBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}{match.homeTeam}<span className="mx-2 text-muted">vs</span>{awayBadge ? <img src={awayBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}{match.awayTeam}
+          {homeBadge ? <img src={homeBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}{match.homeTeam}{" "}<span className="text-muted">vs</span>{" "}{awayBadge ? <img src={awayBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}{match.awayTeam}
         </h1>
         {match.picks.some((p) => p.home_score !== null) && (() => {
           const pick = match.picks.find((p) => p.home_score !== null)!;
