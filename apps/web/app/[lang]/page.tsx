@@ -175,6 +175,56 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
+      {/* Daily Board teaser — right under the scoreboard rail so the day's picks
+          are the first thing after the fixtures strip (Nick 16/8). Preseason
+          countdown when the board is empty, so the homepage doesn't read as
+          broken with "0 · 0 · 0" between seasons. */}
+      <section className="pb-10 pt-6">
+        {preseason ? (
+          <Link
+            href={withLang("/competitions/premier-league/fixtures", lang)}
+            className="group flex flex-wrap items-center justify-between gap-5 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div className="flex items-center gap-5">
+              <div className="text-center leading-none">
+                <div className="font-display text-4xl font-bold text-brand tabular-nums">
+                  {daysToOpen}
+                </div>
+                <div className="mt-1 text-xs text-muted">{dict.home.daysLabel}</div>
+              </div>
+              <div>
+                <p className="font-display text-lg font-bold">{dict.home.preseasonTitle}</p>
+                <p className="mt-1 max-w-[46ch] text-sm text-muted">{dict.home.preseasonBody}</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewFixtures} &rarr;
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href={withLang("/daily-board", lang)}
+            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div>
+              <p className="font-display text-lg font-bold">{dict.board.title}</p>
+              <p className="mt-1 text-sm text-muted">
+                {formatBoardDate(new Date(), lang)}
+                <span className="mx-2">·</span>
+                {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
+                <span className="mx-2">·</span>
+                {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
+                <span className="mx-2">·</span>
+                {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewBoard} &rarr;
+            </span>
+          </Link>
+        )}
+      </section>
+
       {/* 1. Hero: brand positioning + curator record + form */}
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
@@ -299,56 +349,6 @@ export default async function Home({ params }: Props) {
           href={withLang("/daily-board", lang)}
           ctaLabel={dict.home.viewBoard}
         />
-      </section>
-
-      {/* 2. Daily Board teaser — hoặc đếm ngược khai mạc khi bảng chưa có gì.
-          Hiện "0 · 0 · 0" giữa mùa nghỉ làm trang chủ trông như hỏng.
-          pt-6: hình sân ở hero bị cắt đúng mép section nên thẻ này dán sát vào
-          đường biên sân, nhìn như dính (Nick soi 8/8). */}
-      <section className="pb-10 pt-6">
-        {preseason ? (
-          <Link
-            href={withLang("/competitions/premier-league/fixtures", lang)}
-            className="group flex flex-wrap items-center justify-between gap-5 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-          >
-            <div className="flex items-center gap-5">
-              <div className="text-center leading-none">
-                <div className="font-display text-4xl font-bold text-brand tabular-nums">
-                  {daysToOpen}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.home.daysLabel}</div>
-              </div>
-              <div>
-                <p className="font-display text-lg font-bold">{dict.home.preseasonTitle}</p>
-                <p className="mt-1 max-w-[46ch] text-sm text-muted">{dict.home.preseasonBody}</p>
-              </div>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-              {dict.home.viewFixtures} &rarr;
-            </span>
-          </Link>
-        ) : (
-          <Link
-            href={withLang("/daily-board", lang)}
-            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-          >
-            <div>
-              <p className="font-display text-lg font-bold">{dict.board.title}</p>
-              <p className="mt-1 text-sm text-muted">
-                {formatBoardDate(new Date(), lang)}
-                <span className="mx-2">·</span>
-                {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
-                <span className="mx-2">·</span>
-                {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
-                <span className="mx-2">·</span>
-                {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-              {dict.home.viewBoard} &rarr;
-            </span>
-          </Link>
-        )}
       </section>
 
       {/* 3. Two-column portal — main: latest analysis + matches; sidebar: record + Telegram */}
