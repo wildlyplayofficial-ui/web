@@ -50,23 +50,47 @@ export function buildThesisContentRows(
     }));
 }
 
-/** Generate + store the thesis translations for a fresh pick. Never throws. */
+/** Languages asked for but absent from the rows. Pure. */
+export function missingThesisLangs(rows: NewPickContent[]): PostLang[] {
+  return THESIS_LANGS.filter((lang) => !rows.some((r) => r.lang === lang));
+}
+
+/** Generate + store the thesis translations for a fresh pick. Never throws.
+ *  A partial result is a failure, not a success: the model has come back with
+ *  only one of the three sections before (pick 12552f7b, 16/8 — th only, vi and
+ *  es silently absent), and the old code logged that as stored. Retry once, keep
+ *  whichever attempt was more complete, and say out loud what is still missing. */
 export async function publishThesisTranslations(
   deps: { store: Store; env: { apiKey: string | undefined; model?: string } },
   pick: PickRow,
 ): Promise<void> {
   try {
-    const text = await callClaude(
-      deps.env, buildThesisTranslationPrompt(pick), `thesis translation pick ${pick.id}`, 1000,
-    );
-    if (text === null) return;
-    const rows = buildThesisContentRows(pick, text, deps.env.model ?? DEFAULT_MODEL);
+    let rows: NewPickContent[] = [];
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const text = await callClaude(
+        deps.env, buildThesisTranslationPrompt(pick), `thesis translation pick ${pick.id}`, 1000,
+      );
+      if (text === null) break;
+      const attemptRows = buildThesisContentRows(pick, text, deps.env.model ?? DEFAULT_MODEL);
+      if (attemptRows.length === 0) {
+        log.warn(`thesis translation for pick ${pick.id}: language split failed (attempt ${attempt}) — raw: ${text.slice(0, 300)}`);
+      }
+      if (attemptRows.length > rows.length) rows = attemptRows;
+      if (missingThesisLangs(rows).length === 0) break;
+      log.warn(`thesis translation for pick ${pick.id}: missing ${missingThesisLangs(rows).join(', ')} (attempt ${attempt})`);
+    }
+
     if (rows.length === 0) {
-      log.warn(`thesis translation for pick ${pick.id}: language split failed — skipping`);
+      log.warn(`thesis translation for pick ${pick.id}: nothing usable after 2 attempts — skipping`);
       return;
     }
     await deps.store.upsertPickContent(rows);
-    log.info(`stored thesis translations for pick ${pick.id} (${rows.map((r) => r.lang).join(', ')})`);
+    const missing = missingThesisLangs(rows);
+    if (missing.length > 0) {
+      log.warn(`stored PARTIAL thesis translations for pick ${pick.id} (${rows.map((r) => r.lang).join(', ')}) — still missing ${missing.join(', ')}`);
+    } else {
+      log.info(`stored thesis translations for pick ${pick.id} (${rows.map((r) => r.lang).join(', ')})`);
+    }
   } catch (err) {
     log.warn(`thesis translation failed for pick ${pick.id} — pick already published:`, err);
   }
