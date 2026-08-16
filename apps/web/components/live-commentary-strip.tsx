@@ -84,7 +84,12 @@ export function LiveCommentaryStrip({ pickMatchSlugs }: { pickMatchSlugs: Record
             LIVE
           </span>
           <span className="font-display text-sm font-bold text-ink">
-            {liveMatch.homeTeam} {liveMatch.homeScore ?? 0}-{liveMatch.awayScore ?? 0} {liveMatch.awayTeam}
+            {/* Only show a scoreline when BOTH scores are real. Matches built from a
+                pick (no live-scores source, e.g. the English Super Cup) carry null
+                scores; the old `?? 0` fabricated a fake 0-0 that never updated. */}
+            {liveMatch.homeScore !== null && liveMatch.awayScore !== null
+              ? `${liveMatch.homeTeam} ${liveMatch.homeScore}-${liveMatch.awayScore} ${liveMatch.awayTeam}`
+              : `${liveMatch.homeTeam} vs ${liveMatch.awayTeam}`}
           </span>
           {liveMatch.minute && (
             <span className="text-xs text-muted">{liveMatch.minute}&apos;</span>
