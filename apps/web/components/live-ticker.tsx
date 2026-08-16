@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { teamFlag } from "@/lib/flags";
+import { TeamCrest } from "@/components/team-crest";
 
 interface TickerMatch {
   id: string;
@@ -72,20 +72,19 @@ export function LiveTicker() {
 }
 
 function TickerItem({ match }: { match: TickerMatch }) {
-  const hf = teamFlag(match.homeTeam);
-  const af = teamFlag(match.awayTeam);
-
   return (
     <span className="flex shrink-0 items-center gap-2 text-sm">
       <span className="font-display font-semibold text-ink">
-        {hf && <span className="mr-0.5">{hf}</span>}
+        {/* Crest CLB (teamBadge theo tên) → cờ quốc gia → không có, tự xuống hạng.
+            Trước chỉ có cờ nên trận CLB như Atlas-Tigres trống logo (Peter 16/8). */}
+        <TeamCrest name={match.homeTeam} />
         {shortName(match.homeTeam)}
       </span>
       <span className="rounded bg-brand/15 px-1.5 py-0.5 font-display font-bold text-brand tabular-nums">
         {match.homeScore ?? 0}&ndash;{match.awayScore ?? 0}
       </span>
       <span className="font-display font-semibold text-ink">
-        {af && <span className="mr-0.5">{af}</span>}
+        <TeamCrest name={match.awayTeam} />
         {shortName(match.awayTeam)}
       </span>
       {match.minute != null && (
