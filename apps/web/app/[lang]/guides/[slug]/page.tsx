@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   for (const l of availableLangs) {
     languages[l] = `${BASE}${withLang(`/guides/${slug}`, l)}`;
   }
-  if (availableLangs.includes("en")) {
+  if (availableLangs.includes("vi")) {
     languages["x-default"] = `${BASE}/guides/${slug}`;
   }
 

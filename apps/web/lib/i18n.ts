@@ -11,12 +11,12 @@ export const LANGS: readonly Lang[] = ["en", "vi", "th", "es"] as const;
 export function resolveLang(value: string | string[] | undefined): Lang {
   return typeof value === "string" && (LANGS as readonly string[]).includes(value)
     ? (value as Lang)
-    : "en";
+    : "vi";
 }
 
-/** Prefix an internal href with `/${lang}/` when needed. EN = no prefix. */
+/** Prefix an internal href with `/${lang}/` when needed. VI = no prefix (default lang). */
 export function withLang(href: string, lang: Lang): string {
-  if (lang === "en") return href;
+  if (lang === "vi") return href;
   const clean = href.startsWith("/") ? href : `/${href}`;
   return `/${lang}${clean}`;
 }
@@ -24,17 +24,17 @@ export function withLang(href: string, lang: Lang): string {
 const BASE = "https://www.wildlyplay.com";
 
 /** Build hreflang alternates + self-canonical for a page path. */
-export function buildAlternates(path: string, currentLang: Lang = "en"): {
+export function buildAlternates(path: string, currentLang: Lang = "vi"): {
   canonical: string;
   languages: Record<string, string>;
 } {
   const clean = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
-  const selfUrl = currentLang === "en" ? `${BASE}${clean || "/"}` : `${BASE}/${currentLang}${clean}`;
+  const selfUrl = currentLang === "vi" ? `${BASE}${clean || "/"}` : `${BASE}/${currentLang}${clean}`;
   return {
     canonical: selfUrl,
     languages: {
-      "en": `${BASE}${clean || "/"}`,
-      "vi": `${BASE}/vi${clean}`,
+      "vi": `${BASE}${clean || "/"}`,
+      "en": `${BASE}/en${clean}`,
       "th": `${BASE}/th${clean}`,
       "es": `${BASE}/es${clean}`,
       "x-default": `${BASE}${clean || "/"}`,
