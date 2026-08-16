@@ -135,7 +135,7 @@ const rankLine = (name, r) =>
 function clubLinks(homeSlug, awaySlug) {
   const out = [];
   for (const s of [homeSlug, awaySlug]) {
-    if (CLUB_ARTICLE[s]) out.push(`[nhận định mùa giải](/vi/analysis/${CLUB_ARTICLE[s]})`);
+    if (CLUB_ARTICLE[s]) out.push(`[nhận định mùa giải](/analysis/${CLUB_ARTICLE[s]})`);
   }
   return out;
 }
@@ -161,7 +161,7 @@ function buildPreview(f, ctx) {
   lines.push(
     '## Xem trận này ở đâu',
     '',
-    `Trận đấu diễn ra lúc ${t.text} giờ Việt Nam. Bản quyền ${league === 'Premier League' ? 'Ngoại hạng Anh mùa này do FPT Play nắm giữ, chi tiết gói xem có trong bài [xem Ngoại hạng Anh 2026/27 ở đâu](/vi/analysis/xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus)' : 'tuỳ từng giải, xem lịch phát sóng của nhà đài trong nước'}.`,
+    `Trận đấu diễn ra lúc ${t.text} giờ Việt Nam. Bản quyền ${league === 'Premier League' ? 'Ngoại hạng Anh mùa này do FPT Play nắm giữ, chi tiết gói xem có trong bài [xem Ngoại hạng Anh 2026/27 ở đâu](/analysis/xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus)' : 'tuỳ từng giải, xem lịch phát sóng của nhà đài trong nước'}.`,
     '',
   );
   const links = clubLinks(ctx.homeSlug, ctx.awaySlug);
@@ -198,20 +198,30 @@ function buildRecap(f, ctx) {
   return { title, body: lines.join('\n'), kind: 'recap' };
 }
 
-async function heroFor(sb, homeName) {
+/**
+ * Ảnh cho bài, lấy theo đội chủ nhà:
+ *  - hero: banner ngang, dùng ở đầu bài và khi chia sẻ ra ngoài.
+ *  - thumb: ảnh VUÔNG chỉ có logo, dùng cho ô danh sách rộng ~120px.
+ *    Thiếu thumb thì ô danh sách rơi về hero, mà hero 2400px nhét vào 120px là NHOÈ
+ *    (Peter phản hồi 16/8) — nên bài tự động luôn phải điền cả hai.
+ */
+async function imagesFor(sb, homeName) {
   const { data } = await sb.from('teams').select('slug').eq('canonical_name', homeName).maybeSingle();
   const slug = data?.slug || slugify(homeName);
-  const url = `${STORAGE}/club-${slug}.jpg`;
-  const head = await fetch(url, { method: 'HEAD' });
-  return head.status === 200 ? url : null;
+  const pick = async (name) => {
+    const url = `${STORAGE}/${name}`;
+    const head = await fetch(url, { method: 'HEAD' });
+    return head.status === 200 ? url : null;
+  };
+  return { hero: await pick(`club-${slug}.jpg`), thumb: await pick(`thumb-${slug}.jpg`) };
 }
 
-async function publish(sb, { slug, title, body, kind, league, heroImage, matchId }) {
+async function publish(sb, { slug, title, body, kind, league, heroImage, thumbImage, matchId }) {
   const nowIso = new Date().toISOString();
   const { error } = await sb.from('analysis_articles').upsert({
     slug, kind, tier: 'T1_covered', league, title, body,
     byline: 'WildlyPlay Desk', author_type: 'desk_ai',
-    hero_image: heroImage, match_id: matchId ?? null,
+    hero_image: heroImage, thumb_image: thumbImage ?? null, match_id: matchId ?? null,
     status: 'published', published_at: nowIso,
   }, { onConflict: 'slug' });
   if (error) throw new Error(`upsert ${slug}: ${error.message}`);
@@ -224,7 +234,7 @@ async function publish(sb, { slug, title, body, kind, league, heroImage, matchId
   if (!rev.ok) throw new Error(`revalidate ${slug}: HTTP ${rev.status}`);
 
   // verify bản live — đọc HTML thô, không tin trình duyệt
-  const url = `${SITE}/vi/analysis/${slug}`;
+  const url = `${SITE}/analysis/${slug}`;
   const page = await fetch(url);
   const html = await page.text();
   if (page.status !== 200) throw new Error(`verify ${slug}: HTTP ${page.status}`);
@@ -307,12 +317,13 @@ export async function runNewsTick({ mode = 'evening', dryRun = true, limit = 3, 
     }
 
     const built = mode === 'morning' ? buildRecap(f, ctx) : buildPreview(f, ctx);
-    const heroImage = await heroFor(sb, f.home_team_name);
+    const { hero: heroImage, thumb: thumbImage } = await imagesFor(sb, f.home_team_name);
     if (!heroImage) { console.log(`news-engine: chưa có ảnh bìa cho ${f.home_team_name}, bỏ qua ${slug}`); continue; }
+    if (!thumbImage) console.log(`news-engine: CHƯA có ảnh vuông cho ${f.home_team_name} — ô danh sách sẽ nhoè`);
 
-    if (dryRun) { results.push({ slug, ...built, heroImage, dryRun: true }); continue; }
+    if (dryRun) { results.push({ slug, ...built, heroImage, thumbImage, dryRun: true }); continue; }
     const url = await publish(sb, {
-      slug, ...built, league: LEAGUE_LABEL[f.competition_id], heroImage, matchId: f.id,
+      slug, ...built, league: LEAGUE_LABEL[f.competition_id], heroImage, thumbImage, matchId: f.id,
     });
     results.push({ slug, title: built.title, url });
   }
