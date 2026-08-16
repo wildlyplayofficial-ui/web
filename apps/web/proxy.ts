@@ -7,10 +7,11 @@ const LANG_PREFIX_RE = /^\/(en|vi|th|es)(\/|$)/;
 /**
  * Next.js 16 Proxy — path-based i18n routing.
  *
- * - /vi/..., /th/..., /es/... -> pass through, set x-lang header
- * - Unprefixed paths -> rewrite to /en/... internally (URL stays the same for user)
- * - ?lang=vi on any path -> 301 redirect to /vi/path (migration from old query-param scheme)
- * - ?lang=en on any path -> 301 redirect to strip the param
+ * - /en/..., /th/..., /es/... -> pass through, set x-lang header
+ * - /vi/... -> 301 strip the prefix (Vietnamese is the prefix-less canonical)
+ * - Unprefixed paths -> rewrite to /vi/... internally (URL stays the same for user)
+ * - ?lang=<non-vi> on any path -> 301 redirect to /<lang>/path (migration from old query-param scheme)
+ * - ?lang=vi on any path -> 301 redirect to strip the param (back to the bare canonical)
  * - Admin/API routes pass through unchanged
  */
 export function proxy(request: NextRequest) {
@@ -21,16 +22,17 @@ export function proxy(request: NextRequest) {
   if (qLang) {
     const url = request.nextUrl.clone();
     url.searchParams.delete("lang");
-    if (qLang !== "en" && VALID_LANGS.has(qLang) && !LANG_PREFIX_RE.test(pathname)) {
+    if (qLang !== "vi" && VALID_LANGS.has(qLang) && !LANG_PREFIX_RE.test(pathname)) {
       url.pathname = `/${qLang}${pathname}`;
     }
     return NextResponse.redirect(url, 301);
   }
 
-  // ── /en prefix is redundant (English is the prefix-less canonical) ──
-  // Rewrite maps bare paths to /en internally, but /en/... stays directly
+  // ── /vi prefix is redundant (Vietnamese is now the prefix-less canonical) ──
+  // Rewrite maps bare paths to /vi internally, but /vi/... stays directly
   // reachable and duplicates the canonical URL. 301 strip it so Google sees one.
-  if (pathname === "/en" || pathname.startsWith("/en/")) {
+  // (/en/... is NOT stripped — it's the explicit home of the English version.)
+  if (pathname === "/vi" || pathname.startsWith("/vi/")) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(3) || "/";
     return NextResponse.redirect(url, 301);
@@ -71,12 +73,12 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  // ── Unprefixed paths: rewrite internally to /en/... ──
+  // ── Unprefixed paths: rewrite internally to /vi/... (VI is the default lang) ──
   const url = request.nextUrl.clone();
-  url.pathname = `/en${pathname}`;
+  url.pathname = `/vi${pathname}`;
   const response = NextResponse.rewrite(url);
   response.headers.set("x-pathname", pathname);
-  response.headers.set("x-lang", "en");
+  response.headers.set("x-lang", "vi");
   return response;
 }
 

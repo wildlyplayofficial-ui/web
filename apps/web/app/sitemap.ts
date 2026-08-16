@@ -22,7 +22,7 @@ function alternates(path: string, langs: readonly string[] = LANGS): MetadataRou
   const clean = path === "/" ? "" : path;
   return {
     languages: Object.fromEntries(
-      langs.map((l) => [l, l === "en" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
+      langs.map((l) => [l, l === "vi" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
     ),
   };
 }

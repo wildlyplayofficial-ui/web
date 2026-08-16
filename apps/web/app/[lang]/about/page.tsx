@@ -45,7 +45,7 @@ export default async function AboutPage({ params }: Props) {
         "@type": "AboutPage",
         name: c.metaTitle,
         description: c.metaDescription,
-        url: `https://www.wildlyplay.com${lang === "en" ? "" : `/${lang}`}/about`,
+        url: `https://www.wildlyplay.com${lang === "vi" ? "" : `/${lang}`}/about`,
         inLanguage: lang,
         isPartOf: { "@type": "WebSite", name: "WildlyPlay", url: "https://www.wildlyplay.com" },
       }) }} />
