@@ -219,7 +219,7 @@ async function publish(sb, { slug, title, body, kind, league, heroImage, matchId
   const rev = await fetch(`${SITE}/api/revalidate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-revalidate-secret': process.env.REVALIDATE_SECRET },
-    body: JSON.stringify({ tags: ['posts'] }),
+    body: JSON.stringify({ tags: ['analysis-articles'] }),
   });
   if (!rev.ok) throw new Error(`revalidate ${slug}: HTTP ${rev.status}`);
 
