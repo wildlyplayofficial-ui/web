@@ -28,6 +28,10 @@ export interface AnalysisArticle {
   match_id: string | null;
   linked_pick_id: string | null;
   hero_image: string | null;
+  /** Ảnh vuông tối giản (chỉ logo đội, không chữ) cho ô thumbnail nhỏ trong danh
+   *  sách. Bỏ trống thì rơi về hero_image/banner. Banner nhét vào ô ~120px thì nhoè
+   *  (Peter 16/8) nên list dùng ảnh này khi có. */
+  thumb_image?: string | null;
   /** Mô tả cho Google, viết tay. Bỏ trống thì trang tự cắt 160 ký tự đầu body —
    *  cách đó hay đứt giữa từ ("…kéo dài tới rạng sá"), nên bài quan trọng thì viết tay. */
   meta_description?: string | null;

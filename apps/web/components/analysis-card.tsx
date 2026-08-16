@@ -56,11 +56,17 @@ export function AnalysisCard({
         prefetch={false}
         className="group flex overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30 hover:bg-card-hover"
       >
-        {/* object-contain, KHÔNG phải cover: ô 120px cao theo chữ (~90px) nên tỉ lệ
-            ~1.33, còn ảnh OG là 1200x630 (1.9). cover cắt 15% mỗi bên — mất đúng
-            logo WildlyPlay ở mép trái và wildlyplay.com ở mép phải dưới. */}
+        {/* Ô list 120px. Ảnh vuông tối giản (thumb_image, chỉ logo, có lề) thì LẤP ĐẦY
+            bằng object-cover — crest ở giữa nên không cắt vào. Không có thì rơi về
+            banner với object-contain: banner 1200x630 dồn vào ô hẹp thì nhoè, nhưng
+            contain giữ trọn logo WildlyPlay ở mép (cover sẽ cắt ~15% mỗi bên). */}
         <div className="w-[120px] shrink-0 self-stretch bg-card-hover">
-          <img src={hero} alt="" loading="lazy" className="h-full w-full object-contain" />
+          <img
+            src={article.thumb_image ?? hero}
+            alt=""
+            loading="lazy"
+            className={`h-full w-full ${article.thumb_image ? "object-cover" : "object-contain"}`}
+          />
         </div>
         <div className="min-w-0 flex-1 px-4 py-3">
           <div className="flex items-center gap-2 text-xs text-muted">
