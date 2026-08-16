@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/goalline/supabase";
-import { fetchWcEvents, deriveLineForMatches } from "@/lib/goalline/line-engine";
-import { lsFetch } from "@/lib/ls-fetch";
-
-const LIVESCORE_BASE = "https://livescore-api.com/api-client";
-const WC_COMPETITION_ID = 362;
+import { deriveLineForMatches } from "@/lib/goalline/line-engine";
+import { getActiveCompetitionIds, fetchUpcomingFixtures } from "@/lib/goalline/cron-helpers";
 
 // Guardrails per spec + Jane review
 const MIN_LINE = 1.5;
@@ -24,7 +21,7 @@ interface LivescoreFixture {
 
 /**
  * POST /api/goalline/auto-create — fully automatic card creation.
- * Cron or manual trigger. Picks 3 random upcoming WC matches,
+ * Cron or manual trigger. Picks 3 random upcoming matches (any active competition),
  * derives line + odds, creates + publishes card.
  *
  * Protected by secret header to prevent public abuse.
@@ -62,15 +59,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ skip: true, reason: `Card already exists for ${tomorrow}` });
   }
 
-  // Fetch tomorrow's WC fixtures from livescore
-  const lsRes = await lsFetch(
-    `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${WC_COMPETITION_ID}&date=${tomorrow}`,
-    { cache: "no-store" },
-  );
-  const lsData = await lsRes.json();
-  const fixtures: LivescoreFixture[] = lsData.success && lsData.data?.fixtures
-    ? lsData.data.fixtures
-    : [];
+  // Fetch tomorrow's fixtures across every active competition (Premier League,
+  // etc.) — no longer locked to the finished World Cup.
+  const compIds = await getActiveCompetitionIds(sb);
+  const fixtures = (await fetchUpcomingFixtures(
+    lsKey,
+    lsSecret,
+    tomorrow,
+    compIds,
+  )) as LivescoreFixture[];
 
   // Filter upcoming only
   const upcoming = fixtures.filter((f) => {
@@ -79,7 +76,7 @@ export async function POST(request: Request) {
   });
 
   if (upcoming.length < 3) {
-    return NextResponse.json({ skip: true, reason: `Only ${upcoming.length} WC matches on ${tomorrow}, need 3` });
+    return NextResponse.json({ skip: true, reason: `Only ${upcoming.length} upcoming matches on ${tomorrow}, need 3` });
   }
 
   // Random pick 3

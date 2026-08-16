@@ -7,14 +7,68 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { lsFetch } from "../ls-fetch";
 
 const LIVESCORE_BASE = "https://livescore-api.com/api-client";
-/** Default competition — will be read from competitions table in multi-league mode. */
+/** Fallback competition when the competitions table is unavailable. The primary
+ *  path is DB-driven (getActiveCompetitionIds) — GoalLine is no longer locked to
+ *  the finished World Cup. Mirrors apps/web/lib/matches.ts (un-hardcoded 8/7). */
 export const WC_COMPETITION_ID = 362;
+
+/** livescore_id of every competition marked active in the DB (e.g. Premier
+ *  League). Falls back to the flagship feed so the cron never fetches nothing. */
+export async function getActiveCompetitionIds(
+  sb: SupabaseClient,
+): Promise<number[]> {
+  try {
+    const { data, error } = await sb
+      .from("competitions")
+      .select("livescore_id")
+      .eq("status", "active");
+    if (error || !data) return [WC_COMPETITION_ID];
+    const ids = data
+      .map((r) => Number(r.livescore_id))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    return ids.length > 0 ? ids : [WC_COMPETITION_ID];
+  } catch {
+    return [WC_COMPETITION_ID];
+  }
+}
+
+/** Fetch a date's fixtures across every active competition, concatenated.
+ *  A single competition failing (network/parse) drops only that one. */
+export async function fetchUpcomingFixtures(
+  lsKey: string,
+  lsSecret: string,
+  date: string,
+  competitionIds: number[],
+): Promise<LivescoreFixture[]> {
+  const perComp = await Promise.all(
+    competitionIds.map(async (cid) => {
+      try {
+        const res = await lsFetch(
+          `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${cid}&date=${date}`,
+          { cache: "no-store" },
+        );
+        const d = (await res.json()) as {
+          success: boolean;
+          data?: { fixtures?: LivescoreFixture[] };
+        };
+        return d.success ? d.data?.fixtures ?? [] : [];
+      } catch {
+        return [];
+      }
+    }),
+  );
+  return perComp.flat();
+}
 
 interface LivescoreFixture {
   id: string;
   fixture_id: string;
   status: string;
   ft_score?: string;
+  home_name?: string;
+  away_name?: string;
+  date?: string;
+  time?: string;
 }
 
 interface LivescoreMatch {
@@ -49,44 +103,61 @@ function parseScore(score: string): { home: number; away: number } | null {
   return null;
 }
 
-/** Fetch live matches from livescore. Returns fixture_id→match lookup. */
+/** Fetch live matches across competitions. Returns fixture_id→match lookup.
+ *  Multi-competition so EPL cards settle, not just World Cup ones. */
 export async function fetchLiveMatchMap(
   lsKey: string,
   lsSecret: string,
-  competitionId: number = WC_COMPETITION_ID,
+  competitionIds: number[] = [WC_COMPETITION_ID],
 ): Promise<Map<string, LivescoreMatch>> {
-  const res = await lsFetch(
-    `${LIVESCORE_BASE}/scores/live.json?key=${lsKey}&secret=${lsSecret}&competition_id=${competitionId}`,
-    { cache: "no-store" },
-  );
-  const data = await res.json() as { success: boolean; data?: { match?: LivescoreMatch[] } };
   const map = new Map<string, LivescoreMatch>();
-  if (!data.success || !data.data?.match) return map;
-  for (const m of data.data.match) {
-    map.set(String(m.fixture_id || m.id), m);
-    map.set(String(m.id), m);
-  }
+  await Promise.all(
+    competitionIds.map(async (cid) => {
+      try {
+        const res = await lsFetch(
+          `${LIVESCORE_BASE}/scores/live.json?key=${lsKey}&secret=${lsSecret}&competition_id=${cid}`,
+          { cache: "no-store" },
+        );
+        const data = (await res.json()) as { success: boolean; data?: { match?: LivescoreMatch[] } };
+        if (!data.success || !data.data?.match) return;
+        for (const m of data.data.match) {
+          map.set(String(m.fixture_id || m.id), m);
+          map.set(String(m.id), m);
+        }
+      } catch {
+        /* one competition failing must not drop the others */
+      }
+    }),
+  );
   return map;
 }
 
-/** Fetch fixtures for a given date. Returns fixture_id→fixture lookup. */
+/** Fetch fixtures for a date across competitions. Returns fixture_id→fixture lookup. */
 export async function fetchFixtureMap(
   lsKey: string,
   lsSecret: string,
   date: string,
-  competitionId: number = WC_COMPETITION_ID,
+  competitionIds: number[] = [WC_COMPETITION_ID],
 ): Promise<Map<string, LivescoreFixture>> {
-  const res = await lsFetch(
-    `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${competitionId}&date=${date}`,
-    { cache: "no-store" },
-  );
-  const data = await res.json() as { success: boolean; data?: { fixtures?: LivescoreFixture[] } };
   const map = new Map<string, LivescoreFixture>();
-  if (!data.success || !data.data?.fixtures) return map;
-  for (const f of data.data.fixtures) {
-    map.set(String(f.fixture_id || f.id), f);
-    map.set(String(f.id || f.fixture_id), f);
-  }
+  await Promise.all(
+    competitionIds.map(async (cid) => {
+      try {
+        const res = await lsFetch(
+          `${LIVESCORE_BASE}/fixtures/matches.json?key=${lsKey}&secret=${lsSecret}&competition_id=${cid}&date=${date}`,
+          { cache: "no-store" },
+        );
+        const data = (await res.json()) as { success: boolean; data?: { fixtures?: LivescoreFixture[] } };
+        if (!data.success || !data.data?.fixtures) return;
+        for (const f of data.data.fixtures) {
+          map.set(String(f.fixture_id || f.id), f);
+          map.set(String(f.id || f.fixture_id), f);
+        }
+      } catch {
+        /* one competition failing must not drop the others */
+      }
+    }),
+  );
   return map;
 }
 
