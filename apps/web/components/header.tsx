@@ -30,13 +30,17 @@ function stripLangPrefix(pathname: string): string {
 function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  // VN-first (Nick 16/8): switcher chỉ còn tiếng Việt → ẩn hẳn nút chọn ngôn ngữ
+  // (bỏ EN, nối tiếp việc Peter ẩn th/es hồi 8/8). Bài en/th/es vẫn truy cập qua
+  // URL, chỉ không hiện lựa chọn. Còn 1 ngôn ngữ thì switcher vô nghĩa → ẩn hẳn.
+  const shown: readonly Lang[] = ["vi"];
+  if (shown.length < 2) return null;
   const bare = stripLangPrefix(pathname);
   const qs = searchParams.toString();
   const bareFull = qs ? `${bare}?${qs}` : bare;
   return (
     <div className="flex gap-1 rounded-lg bg-card p-1">
-      {/* Chỉ hiện en + vi (Peter 8/8) — th/es vẫn sống qua URL, chỉ ẩn nút. */}
-      {(["en", "vi"] as const).map((l) => (
+      {shown.map((l) => (
         <Link
           key={l}
           href={withLang(bareFull, l)}
