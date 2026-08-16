@@ -9,7 +9,10 @@ import { revalidateTag } from "next/cache";
  * unstable_cache tags in lib/data.ts.
  */
 
-const ALLOWED_TAGS = ["picks", "posts", "votes", "matches", "watching", "analysis-articles"] as const;
+// "news" was missing: worker news-gen.ts calls revalidate(['news']) after every
+// news_item, but this endpoint rejected it (400) — so news relied on the 5-min
+// ISR window instead of refreshing on-demand. All 3 news_items caches tag "news".
+const ALLOWED_TAGS = ["picks", "posts", "votes", "matches", "watching", "analysis-articles", "news"] as const;
 
 function secretMatches(given: string | null): boolean {
   const expected = process.env.REVALIDATE_SECRET;
