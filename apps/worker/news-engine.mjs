@@ -38,6 +38,19 @@ const LEAGUE_LABEL = {
   'wc-afc-qual-2026': 'World Cup AFC Qualifiers',
 };
 
+/**
+ * Bài "xem giải này ở đâu" đã có sẵn cho từng giải — bài tự động link đúng bài của giải đó,
+ * thay vì chỉ nói chung chung. Vừa hữu ích cho người đọc vừa kéo mấy bài cũ khỏi mồ côi.
+ */
+const LEAGUE_GUIDE = {
+  'epl-2026': ['xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus', 'xem Ngoại hạng Anh 2026/27 ở đâu'],
+  'laliga-2026': ['xem-la-liga-2026-27-o-dau-sctv', 'xem La Liga 2026/27 ở đâu'],
+  'seriea-2026': ['xem-serie-a-2026-27-o-dau-viet-nam', 'xem Serie A 2026/27 ở đâu'],
+  'bundesliga-2026': ['xem-bundesliga-2026-27-o-dau-tv360', 'xem Bundesliga 2026/27 ở đâu'],
+  'ligue1-2026': ['xem-ligue-1-2026-27-o-dau-viet-nam', 'xem Ligue 1 2026/27 ở đâu'],
+  'ucl-2026': ['xem-cup-c1-2026-27-o-dau-vtvcab', 'xem Cúp C1 2026/27 ở đâu'],
+};
+
 /** Bài nhận định mùa giải đã có — bài tự động link về đây để cụm dính chùm. */
 const CLUB_ARTICLE = {
   'manchester-united': 'nhan-dinh-man-utd-2026-27-carrick',
@@ -129,8 +142,15 @@ const formLine = (name, f) =>
   f ? `${name} 5 trận gần nhất thắng ${f.won}, hoà ${f.drew}, thua ${f.lost} (${f.streak}).`
     : `${name} chưa có đủ trận trong mùa để tính phong độ.`;
 
-const rankLine = (name, r) =>
-  r ? `${name} đang đứng thứ ${r.pos} với ${r.pts} điểm sau ${r.p} trận.` : null;
+/**
+ * Thứ hạng CHỈ nêu khi đáng tin. BXH ở đây tự tính từ các trận ĐÃ có tỷ số, nên đầu mùa
+ * bảng mới có vài đội — nói "đứng thứ 1" lúc đó là SAI vì bảng chưa đủ đội.
+ * Ngưỡng: bảng phải có >=10 đội VÀ đội đó đã đá >=3 trận.
+ */
+const rankLine = (name, r, tblSize) =>
+  r && tblSize >= 10 && r.p >= 3
+    ? `${name} đang đứng thứ ${r.pos} với ${r.pts} điểm sau ${r.p} trận.`
+    : null;
 
 function clubLinks(homeSlug, awaySlug) {
   const out = [];
@@ -138,6 +158,14 @@ function clubLinks(homeSlug, awaySlug) {
     if (CLUB_ARTICLE[s]) out.push(`[nhận định mùa giải](/analysis/${CLUB_ARTICLE[s]})`);
   }
   return out;
+}
+
+/** Câu "xem ở đâu" — trỏ đúng bài hướng dẫn của giải đó nếu có. */
+function guideLine(compId, timeText) {
+  const g = LEAGUE_GUIDE[compId];
+  return g
+    ? `Trận đấu diễn ra lúc ${timeText} giờ Việt Nam. Chi tiết kênh phát sóng và gói xem tại Việt Nam có trong bài [${g[1]}](/analysis/${g[0]}).`
+    : `Trận đấu diễn ra lúc ${timeText} giờ Việt Nam. Kênh phát sóng tuỳ từng giải, xem lịch của nhà đài trong nước.`;
 }
 
 /** ---- Khuôn bài xem trước ---- */
@@ -155,13 +183,13 @@ function buildPreview(f, ctx) {
     formLine(f.away_team_name, ctx.awayForm),
     '',
   ];
-  const rh = rankLine(f.home_team_name, ctx.homeRank);
-  const ra = rankLine(f.away_team_name, ctx.awayRank);
+  const rh = rankLine(f.home_team_name, ctx.homeRank, ctx.tableSize);
+  const ra = rankLine(f.away_team_name, ctx.awayRank, ctx.tableSize);
   if (rh || ra) lines.push('## Vị trí trên bảng xếp hạng', '', [rh, ra].filter(Boolean).join(' '), '');
   lines.push(
     '## Xem trận này ở đâu',
     '',
-    `Trận đấu diễn ra lúc ${t.text} giờ Việt Nam. Bản quyền ${league === 'Premier League' ? 'Ngoại hạng Anh mùa này do FPT Play nắm giữ, chi tiết gói xem có trong bài [xem Ngoại hạng Anh 2026/27 ở đâu](/analysis/xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus)' : 'tuỳ từng giải, xem lịch phát sóng của nhà đài trong nước'}.`,
+    guideLine(f.competition_id, t.text),
     '',
   );
   const links = clubLinks(ctx.homeSlug, ctx.awaySlug);
@@ -182,18 +210,23 @@ function buildRecap(f, ctx) {
     '',
     win ? `${win} giành trọn 3 điểm.` : 'Hai đội chia điểm.',
     '',
-    '## Kết quả này nói lên điều gì',
-    '',
-    formLine(f.home_team_name, ctx.homeForm),
-    '',
-    formLine(f.away_team_name, ctx.awayForm),
-    '',
   ];
-  const rh = rankLine(f.home_team_name, ctx.homeRank);
-  const ra = rankLine(f.away_team_name, ctx.awayRank);
+  // Vòng đầu mùa chưa có phong độ: BỎ HẲN mục này thay vì in hai câu "chưa đủ trận"
+  // — in ra chỉ tổ làm bài loãng, đúng thứ mình đang tránh.
+  if (ctx.homeForm || ctx.awayForm) {
+    lines.push(
+      '## Kết quả này nói lên điều gì', '',
+      formLine(f.home_team_name, ctx.homeForm), '',
+      formLine(f.away_team_name, ctx.awayForm), '',
+    );
+  }
+  const rh = rankLine(f.home_team_name, ctx.homeRank, ctx.tableSize);
+  const ra = rankLine(f.away_team_name, ctx.awayRank, ctx.tableSize);
   if (rh || ra) lines.push('## Bảng xếp hạng sau trận', '', [rh, ra].filter(Boolean).join(' '), '');
   const links = clubLinks(ctx.homeSlug, ctx.awaySlug);
   if (links.length) lines.push(`Tìm hiểu sâu hơn về hai đội mùa này: ${links.join(' · ')}.`, '');
+  const g = LEAGUE_GUIDE[f.competition_id];
+  if (g) lines.push(`Lịch và kênh phát sóng phần còn lại của giải có trong bài [${g[1]}](/analysis/${g[0]}).`, '');
   lines.push('Số liệu trong bài lấy từ dữ liệu trận đấu của WildlyPlay, cập nhật tới thời điểm đăng.');
   return { title, body: lines.join('\n'), kind: 'recap' };
 }
@@ -205,7 +238,13 @@ function buildRecap(f, ctx) {
  *    Thiếu thumb thì ô danh sách rơi về hero, mà hero 2400px nhét vào 120px là NHOÈ
  *    (Peter phản hồi 16/8) — nên bài tự động luôn phải điền cả hai.
  */
-async function imagesFor(sb, homeName) {
+const LEAGUE_IMG = {
+  'epl-2026': 'premier-league', 'laliga-2026': 'la-liga', 'seriea-2026': 'serie-a',
+  'bundesliga-2026': 'bundesliga', 'ligue1-2026': 'ligue-1', 'ucl-2026': 'champions-league',
+  'wc-afc-qual-2026': 'wc-afc-qualifiers',
+};
+
+async function imagesFor(sb, homeName, compId) {
   const { data } = await sb.from('teams').select('slug').eq('canonical_name', homeName).maybeSingle();
   const slug = data?.slug || slugify(homeName);
   const pick = async (name) => {
@@ -213,7 +252,12 @@ async function imagesFor(sb, homeName) {
     const head = await fetch(url, { method: 'HEAD' });
     return head.status === 200 ? url : null;
   };
-  return { hero: await pick(`club-${slug}.jpg`), thumb: await pick(`thumb-${slug}.jpg`) };
+  // Ưu tiên ảnh riêng của CLB; đội chưa có ảnh thì rơi về ảnh của GIẢI, để bài vẫn ra
+  // thay vì bị bỏ (trước đây thiếu ảnh CLB là bỏ luôn cả bài).
+  const lg = LEAGUE_IMG[compId];
+  const hero = await pick(`club-${slug}.jpg`) || (lg && await pick(`league-${lg}.jpg`));
+  const thumb = await pick(`thumb-${slug}.jpg`) || (lg && await pick(`thumb-league-${lg}.jpg`));
+  return { hero: hero || null, thumb: thumb || null, usedLeagueImg: !!(hero && !hero.includes(`club-${slug}`)) };
 }
 
 async function publish(sb, { slug, title, body, kind, league, heroImage, thumbImage, matchId }) {
@@ -303,6 +347,7 @@ export async function runNewsTick({ mode = 'evening', dryRun = true, limit = 3, 
       homeSlug, awaySlug,
       homeForm: await form(sb, f.home_team_name, f.kickoff_utc, f.competition_id),
       awayForm: await form(sb, f.away_team_name, f.kickoff_utc, f.competition_id),
+      tableSize: tbl.length,
       homeRank: rank(tbl, f.home_team_name),
       awayRank: rank(tbl, f.away_team_name),
     };
@@ -317,7 +362,8 @@ export async function runNewsTick({ mode = 'evening', dryRun = true, limit = 3, 
     }
 
     const built = mode === 'morning' ? buildRecap(f, ctx) : buildPreview(f, ctx);
-    const { hero: heroImage, thumb: thumbImage } = await imagesFor(sb, f.home_team_name);
+    const { hero: heroImage, thumb: thumbImage, usedLeagueImg } = await imagesFor(sb, f.home_team_name, f.competition_id);
+    if (usedLeagueImg) console.log(`news-engine: ${f.home_team_name} chưa có ảnh riêng → dùng ảnh giải`);
     if (!heroImage) { console.log(`news-engine: chưa có ảnh bìa cho ${f.home_team_name}, bỏ qua ${slug}`); continue; }
     if (!thumbImage) console.log(`news-engine: CHƯA có ảnh vuông cho ${f.home_team_name} — ô danh sách sẽ nhoè`);
 
