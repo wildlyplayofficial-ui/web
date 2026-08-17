@@ -378,16 +378,6 @@ export default async function Home({ params }: Props) {
             </section>
           )}
 
-          <HomeNextMatches
-            matches={stripMatches}
-            lang={lang}
-            labels={{
-              title: dict.home.matchesTitle,
-              all: dict.home.allCompetitions,
-              finished: dict.home.finished,
-              noTime: dict.standings.provisionalTime,
-            }}
-          />
         </div>
 
         <aside className="space-y-6">
@@ -459,6 +449,19 @@ export default async function Home({ params }: Props) {
           </div>
         </aside>
       </div>
+
+      {/* 3b. Matches strip — full container width, not boxed into the main column
+          (Nick 17/8: "kéo dài ra" — the column squeezed it to ~3 visible cards). */}
+      <HomeNextMatches
+        matches={stripMatches}
+        lang={lang}
+        labels={{
+          title: dict.home.matchesTitle,
+          all: dict.home.allCompetitions,
+          finished: dict.home.finished,
+          noTime: dict.standings.provisionalTime,
+        }}
+      />
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">
