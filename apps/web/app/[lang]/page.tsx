@@ -16,7 +16,6 @@ import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { HotPickCard } from "@/components/hot-pick-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
-import { TEST_SEED_PICK, TEST_SEED_PREDICTED } from "@/lib/test-seed";
 
 export const revalidate = 300;
 
@@ -135,10 +134,9 @@ export default async function Home({ params }: Props) {
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
 
-  // Predictions slot — the top curator pick, or the in-code test seed pre-season.
-  // TEST SEED — remove when real picks flow (see lib/test-seed.ts).
-  const heroPick = picks[0] ?? TEST_SEED_PICK;
-  const heroPredicted = picks.length > 0 ? null : TEST_SEED_PREDICTED;
+  // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
+  // no real pick = the card is omitted below (the old test-seed rendered a fake match).
+  const heroPick = picks[0] ?? null;
 
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
   const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
@@ -290,16 +288,19 @@ export default async function Home({ params }: Props) {
         </section>
       )}
 
-      {/* 1c. Hot pick prediction — the top curator pick, or the test seed pre-season. */}
-      <section className="pb-10">
-        <HotPickCard
-          pick={heroPick}
-          predicted={heroPredicted}
-          lang={lang}
-          href={withLang("/daily-board", lang)}
-          ctaLabel={dict.home.viewBoard}
-        />
-      </section>
+      {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
+          (never a fabricated seed). */}
+      {heroPick && (
+        <section className="pb-10">
+          <HotPickCard
+            pick={heroPick}
+            predicted={null}
+            lang={lang}
+            href={withLang("/daily-board", lang)}
+            ctaLabel={dict.home.viewBoard}
+          />
+        </section>
+      )}
 
       {/* 2. Daily Board teaser — hoặc đếm ngược khai mạc khi bảng chưa có gì.
           Hiện "0 · 0 · 0" giữa mùa nghỉ làm trang chủ trông như hỏng.

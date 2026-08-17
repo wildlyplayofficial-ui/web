@@ -8,7 +8,6 @@ import { PickCard } from "@/components/pick-card";
 import { HotPickCard } from "@/components/hot-pick-card";
 import { WatchingTeaser } from "@/components/watching-teaser";
 import { teamFlag } from "@/lib/flags";
-import { TEST_SEED_PICK, TEST_SEED_PREDICTED } from "@/lib/test-seed";
 import {
   buildMatchSlug,
   buildPlaySlug,
@@ -66,10 +65,9 @@ export default async function DailyBoard({ params }: Props) {
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
 
-  // Hero prediction — top curator pick, or the in-code test seed pre-season.
-  // TEST SEED — remove when real picks flow (see lib/test-seed.ts).
-  const heroPick = picks[0] ?? TEST_SEED_PICK;
-  const heroPredicted = picks.length > 0 ? null : TEST_SEED_PREDICTED;
+  // Hero prediction — top curator pick, or nothing. NEVER a fabricated seed:
+  // no real pick = the card is omitted below (the old test-seed rendered a fake match).
+  const heroPick = picks[0] ?? null;
   const restPicks = picks.slice(1);
   const [votes, translations] = await Promise.all([
     getVoteCounts(allPicks.map((p) => p.id)),
@@ -134,18 +132,29 @@ export default async function DailyBoard({ params }: Props) {
         )}
       />
 
-      {/* 2a. Hot pick hero — top curator pick, or the pre-season test seed.
-          TEST SEED: when picks.length === 0 this renders the in-code Arsenal vs
-          Man City 1–1 seed. Restore the honest empty state here when the seed is removed. */}
-      <section className="pb-8">
-        <HotPickCard
-          pick={heroPick}
-          predicted={heroPredicted}
-          lang={lang}
-          href={withLang(picks.length > 0 ? `/play/${buildPlaySlug(heroPick)}` : "/analysis", lang)}
-          ctaLabel={dict.home.viewAnalysisCta}
-        />
-      </section>
+      {/* 2a. Hot pick hero — top curator pick. Omitted when there is none (never a
+          fabricated seed). */}
+      {heroPick && (
+        <section className="pb-8">
+          <HotPickCard
+            pick={heroPick}
+            predicted={null}
+            lang={lang}
+            href={withLang(`/play/${buildPlaySlug(heroPick)}`, lang)}
+            ctaLabel={dict.home.viewAnalysisCta}
+          />
+        </section>
+      )}
+
+      {/* 2a-empty. No pick today — honest empty state, never a fabricated seed. */}
+      {!heroPick && (
+        <section className="pb-8">
+          <div className="rounded-card border border-dashed border-brand/30 bg-brand-dim/20 px-5 py-10 text-center">
+            <h2 className="font-display text-xl font-bold text-ink">{dict.board.emptyTitle}</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted">{dict.board.emptyBody}</p>
+          </div>
+        </section>
+      )}
 
       {/* 2b. Remaining curator picks (kickoff-ordered). */}
       {restPicks.length > 0 && (
