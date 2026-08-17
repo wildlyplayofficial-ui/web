@@ -42,7 +42,7 @@ export async function GET(
 
   return ogResponse(
     <OgCard
-      eyebrow={vi ? "Kèo tâm điểm" : "Featured pick"}
+      eyebrow={vi ? "Trận tâm điểm" : "Featured pick"}
       title={`${pick.home_team} vs ${pick.away_team}`}
       topRight={pick.league}
       badge={`${pick.selection}${confText}`}
