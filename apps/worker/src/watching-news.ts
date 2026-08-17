@@ -273,15 +273,22 @@ export async function publishWatchingNews(
     // Skip for presence cards — minimal render, no hero image needed.
     if (deps.db && !watching.presence) {
       try {
+        // Only self-hosted photos (relative storage paths, real author + licence credit).
+        // The bulk of player_photos holds absolute thesportsdb URLs credited "TheSportsDB" —
+        // not a free licence, not an author credit — those must never enter an article.
         const { data: photos } = await deps.db
           .from('player_photos')
           .select('player_name, image_url, credit')
           .or(`team.ilike.%${watching.home_team}%,team.ilike.%${watching.away_team}%`)
+          .not('image_url', 'ilike', 'http%')
           .limit(1);
         if (photos?.length) {
           const p = photos[0] as { player_name: string; image_url: string; credit: string };
           const storageBase = `${process.env.SUPABASE_URL}/storage/v1/object/public`;
-          const heroMd = `![${p.player_name}](${storageBase}/${p.image_url})\n*${p.credit}*\n\n`;
+          // Guard the join: an already-absolute image_url must be used as-is — prefixing it
+          // produced the broken double-URL hero (Arsenal–Coventry, 17 Aug).
+          const src = /^https?:\/\//i.test(p.image_url) ? p.image_url : `${storageBase}/${p.image_url}`;
+          const heroMd = `![${p.player_name}](${src})\n*${p.credit}*\n\n`;
           for (const post of posts) {
             post.body_md = heroMd + post.body_md;
           }
