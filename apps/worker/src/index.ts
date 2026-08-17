@@ -37,6 +37,7 @@ import { ingestFixtures } from './fixture-ingest';
 import { linkPickToFixture, linkWatchingToFixture } from './fixture-link';
 import { enqueueJob, processJobs, retryStaleJobs, type HandlerMap } from './job-queue';
 import { startNewsGenCron } from './news-gen';
+import { startNewsEngineCron } from './news-engine-cron';
 
 const token = process.env.CURATOR_BOT_TOKEN;
 if (!token) {
@@ -227,6 +228,15 @@ const stopNewsGen = persistDb && newsGenEnabled
   : () => {};
 if (!persistDb) log.warn('news-gen: disabled (missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY)');
 if (persistDb && !newsGenEnabled) log.info('news-gen: disabled (NEWS_GEN_ENABLED !== "true") — /news retired, see /analysis migration');
+
+// ── News engine (SPEC-wp-auto-news-2026-08-16): 05:00 + 17:00 VN auto articles ──
+// NEWS_ENGINE_MODE: unset = off · 'dry' = generate + log only (the spec's 1-day trial) · 'live' = publish.
+const newsEngineMode = process.env.NEWS_ENGINE_MODE;
+const stopNewsEngine = newsEngineMode === 'dry' || newsEngineMode === 'live'
+  ? startNewsEngineCron({ mode: newsEngineMode })
+  : () => {};
+if (newsEngineMode !== 'dry' && newsEngineMode !== 'live')
+  log.info('news-engine: off (NEWS_ENGINE_MODE unset — set dry|live, see SPEC-wp-auto-news)');
 
 // ── Durable job queue: recover stale + process every 60s ──
 const jobHandlers: HandlerMap = {};
@@ -509,6 +519,7 @@ async function shutdown(signal: string): Promise<void> {
   stopAnalysis();
   stopBuzz();
   stopNewsGen();
+  stopNewsEngine();
   await bot.stop();
   log.info('shutdown complete');
   process.exit(0);
