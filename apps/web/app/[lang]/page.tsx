@@ -364,103 +364,52 @@ export default async function Home({ params }: Props) {
         }}
       />
 
-      {/* 3. Two-column portal — main: latest analysis + matches; sidebar: record + Telegram */}
-      <div className="grid gap-8 pb-10 lg:grid-cols-[1fr_320px]">
-        <div className="min-w-0">
-          {restArticles.length > 0 && (
-            <section className="pb-10">
-              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
-                <Link
-                  href={withLang("/analysis", lang)}
-                  prefetch={false}
-                  className="text-sm font-semibold text-brand hover:underline"
-                >
-                  {dict.nav.analysis} &rarr;
-                </Link>
-              </div>
-              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
-              {restArticles.length > 1 && (
-                <div className="mt-4 space-y-3">
-                  {restArticles.slice(1).map((a) => (
-                    <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-        </div>
-
-        <aside className="space-y-6">
-          {/* Track record */}
-          <div className="rounded-card border border-line bg-card p-5">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className="font-display text-lg font-bold">{dict.home.trackRecord}</h2>
-              <Link
-                href={withLang("/track-record", lang)}
-                prefetch={false}
-                className="text-sm font-semibold text-brand hover:underline"
-              >
-                {dict.board.trackRecordCta} &rarr;
-              </Link>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <div>
-                <div className="font-display text-xl font-bold tabular-nums">
-                  {record.wins}-{record.losses}-{record.pushes}
-                </div>
-                <div className="mt-1 text-xs text-muted">W-D-L</div>
-              </div>
-              <div>
-                <div
-                  className={`font-display text-xl font-bold tabular-nums ${record.units_pl >= 0 ? "text-brand" : "text-loss"}`}
-                >
-                  {formatUnits(record.units_pl)}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.archive.unitsPl}</div>
-              </div>
-              <div>
-                <div className="font-display text-xl font-bold tabular-nums">
-                  {record.settled > 0
-                    ? `${Math.round((record.wins / record.settled) * 100)}%`
-                    : "—"}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.home.hitRate}</div>
-              </div>
-            </div>
-            {form.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {form.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={withLang(`/play/${p.id}`, lang)}
-                    prefetch={false}
-                    title={`${p.home_team} ${p.home_score ?? ""}-${p.away_score ?? ""} ${p.away_team}`}
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold transition-transform hover:-translate-y-0.5 ${formClass[p.status] ?? "border-line bg-card text-muted"}`}
-                  >
-                    {formLetter[p.status] ?? "–"}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Telegram CTA */}
-          <div className="rounded-card border border-brand/30 bg-brand-dim/40 p-5">
-            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
-            <p className="mt-2 text-sm text-muted">{dict.home.telegramPitch}</p>
-            <a
-              href="https://t.me/wildlyplay"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+      {/* 3. Latest analysis — FULL WIDTH, ESPN style (Nick 17/8: "dùng toàn bộ chiều
+          ngang... theo kiểu ESPN"). Right sidebar dropped: the record box duplicated the
+          hero's record line; the Telegram CTA moved below as a thin band. */}
+      {restArticles.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
+            <Link
+              href={withLang("/analysis", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
             >
-              {dict.home.joinTelegram} &rarr;
-            </a>
+              {dict.nav.analysis} &rarr;
+            </Link>
           </div>
-        </aside>
-      </div>
+          {/* Lead story ~2/3 width, then a 3-up grid (2 on tablet, 1 on phone). */}
+          <div className="lg:w-2/3">
+            <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+          </div>
+          {restArticles.length > 1 && (
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {restArticles.slice(1).map((a) => (
+                <AnalysisCard key={a.slug} article={a} lang={lang} variant="lead" />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 3c. Telegram CTA — thin full-width band (was the sidebar box). */}
+      <section className="pb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5">
+          <div>
+            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
+            <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
+          </div>
+          <a
+            href="https://t.me/wildlyplay"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+          >
+            {dict.home.joinTelegram} &rarr;
+          </a>
+        </div>
+      </section>
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">

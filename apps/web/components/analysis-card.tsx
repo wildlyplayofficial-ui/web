@@ -103,7 +103,8 @@ export function AnalysisCard({
             {formatDate(article.published_at, lang)}
           </time>
         </div>
-        <h3 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
+        {/* 2 dòng: thẻ này giờ đứng trong lưới 3 cột nên tiêu đề dài làm cao thấp lệch nhau. */}
+        <h3 className="mt-3 line-clamp-2 font-display text-lg font-bold transition-colors group-hover:text-brand">
           {article.title}
         </h3>
         {excerpt && <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>}
