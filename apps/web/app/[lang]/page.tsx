@@ -326,15 +326,15 @@ export default async function Home({ params }: Props) {
             className="group grid overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60 md:grid-cols-[1.1fr_1fr]"
           >
             <div
-              className="relative min-h-[200px] bg-cover bg-center md:min-h-[280px]"
-              style={{ backgroundImage: `url(${hotHero})`, aspectRatio: "1.9 / 1" }}
+              className="relative aspect-[1.9/1] min-h-[200px] bg-cover bg-center md:aspect-auto md:min-h-[280px]"
+              style={{ backgroundImage: `url(${hotHero})` }}
               aria-hidden
             />
             <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
               <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
                 ◆ {dict.home.featuredStory}
               </span>
-              <h2 className="font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
+              <h2 className="line-clamp-2 font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
                 {hot.title}
               </h2>
               <p className="text-sm text-muted">
