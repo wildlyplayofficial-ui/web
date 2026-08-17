@@ -9,7 +9,7 @@ export type RawOutcome = "win" | "half_win" | "push" | "half_loss" | "loss" | "v
 export type PostType = "recap" | "preview" | "news" | "analysis" | "no-play" | "post-mortem" | "guide";
 
 /** Desk-authored analysis article kind (spec §2A). */
-export type AnalysisKind = "preview" | "recap" | "roundup";
+export type AnalysisKind = "preview" | "recap" | "roundup" | "analysis" | "news";
 
 /** Desk-authored analysis article tier (spec §2A). */
 export type AnalysisTier = "T1_covered" | "T2_marquee";
