@@ -174,56 +174,6 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
-      {/* Daily Board teaser — right under the scoreboard rail so the day's picks
-          are the first thing after the fixtures strip (Nick 16/8). Preseason
-          countdown when the board is empty, so the homepage doesn't read as
-          broken with "0 · 0 · 0" between seasons. */}
-      <section className="pb-10 pt-6">
-        {preseason ? (
-          <Link
-            href={withLang("/competitions/premier-league/fixtures", lang)}
-            className="group flex flex-wrap items-center justify-between gap-5 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-          >
-            <div className="flex items-center gap-5">
-              <div className="text-center leading-none">
-                <div className="font-display text-4xl font-bold text-brand tabular-nums">
-                  {daysToOpen}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.home.daysLabel}</div>
-              </div>
-              <div>
-                <p className="font-display text-lg font-bold">{dict.home.preseasonTitle}</p>
-                <p className="mt-1 max-w-[46ch] text-sm text-muted">{dict.home.preseasonBody}</p>
-              </div>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-              {dict.home.viewFixtures} &rarr;
-            </span>
-          </Link>
-        ) : (
-          <Link
-            href={withLang("/daily-board", lang)}
-            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-          >
-            <div>
-              <p className="font-display text-lg font-bold">{dict.board.title}</p>
-              <p className="mt-1 text-sm text-muted">
-                {formatBoardDate(new Date(), lang)}
-                <span className="mx-2">·</span>
-                {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
-                <span className="mx-2">·</span>
-                {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
-                <span className="mx-2">·</span>
-                {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-              {dict.home.viewBoard} &rarr;
-            </span>
-          </Link>
-        )}
-      </section>
-
       {/* 1. Hero: brand positioning + curator record + form */}
       <section className="relative overflow-hidden py-16 text-center md:py-20">
         <div className="hero-glow" aria-hidden />
@@ -301,6 +251,56 @@ export default async function Home({ params }: Props) {
         </div>
       </section>
 
+      {/* Daily Board teaser — below the hero (Nick 17/8 order): the day's picks
+          are the first thing after the fixtures strip (Nick 16/8). Preseason
+          countdown when the board is empty, so the homepage doesn't read as
+          broken with "0 · 0 · 0" between seasons. */}
+      <section className="pb-10 pt-6">
+        {preseason ? (
+          <Link
+            href={withLang("/competitions/premier-league/fixtures", lang)}
+            className="group flex flex-wrap items-center justify-between gap-5 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div className="flex items-center gap-5">
+              <div className="text-center leading-none">
+                <div className="font-display text-4xl font-bold text-brand tabular-nums">
+                  {daysToOpen}
+                </div>
+                <div className="mt-1 text-xs text-muted">{dict.home.daysLabel}</div>
+              </div>
+              <div>
+                <p className="font-display text-lg font-bold">{dict.home.preseasonTitle}</p>
+                <p className="mt-1 max-w-[46ch] text-sm text-muted">{dict.home.preseasonBody}</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewFixtures} &rarr;
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href={withLang("/daily-board", lang)}
+            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div>
+              <p className="font-display text-lg font-bold">{dict.board.title}</p>
+              <p className="mt-1 text-sm text-muted">
+                {formatBoardDate(new Date(), lang)}
+                <span className="mx-2">·</span>
+                {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
+                <span className="mx-2">·</span>
+                {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
+                <span className="mx-2">·</span>
+                {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewBoard} &rarr;
+            </span>
+          </Link>
+        )}
+      </section>
+
       {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
           (never a fabricated seed). */}
       {heroPick && (
@@ -351,104 +351,6 @@ export default async function Home({ params }: Props) {
         </section>
       )}
 
-      {/* 3. Two-column portal — main: latest analysis + matches; sidebar: record + Telegram */}
-      <div className="grid gap-8 pb-10 lg:grid-cols-[1fr_320px]">
-        <div className="min-w-0">
-          {restArticles.length > 0 && (
-            <section className="pb-10">
-              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
-                <Link
-                  href={withLang("/analysis", lang)}
-                  prefetch={false}
-                  className="text-sm font-semibold text-brand hover:underline"
-                >
-                  {dict.nav.analysis} &rarr;
-                </Link>
-              </div>
-              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
-              {restArticles.length > 1 && (
-                <div className="mt-4 space-y-3">
-                  {restArticles.slice(1).map((a) => (
-                    <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-        </div>
-
-        <aside className="space-y-6">
-          {/* Track record */}
-          <div className="rounded-card border border-line bg-card p-5">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className="font-display text-lg font-bold">{dict.home.trackRecord}</h2>
-              <Link
-                href={withLang("/track-record", lang)}
-                prefetch={false}
-                className="text-sm font-semibold text-brand hover:underline"
-              >
-                {dict.board.trackRecordCta} &rarr;
-              </Link>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <div>
-                <div className="font-display text-xl font-bold tabular-nums">
-                  {record.wins}-{record.losses}-{record.pushes}
-                </div>
-                <div className="mt-1 text-xs text-muted">W-D-L</div>
-              </div>
-              <div>
-                <div
-                  className={`font-display text-xl font-bold tabular-nums ${record.units_pl >= 0 ? "text-brand" : "text-loss"}`}
-                >
-                  {formatUnits(record.units_pl)}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.archive.unitsPl}</div>
-              </div>
-              <div>
-                <div className="font-display text-xl font-bold tabular-nums">
-                  {record.settled > 0
-                    ? `${Math.round((record.wins / record.settled) * 100)}%`
-                    : "—"}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.home.hitRate}</div>
-              </div>
-            </div>
-            {form.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {form.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={withLang(`/play/${p.id}`, lang)}
-                    prefetch={false}
-                    title={`${p.home_team} ${p.home_score ?? ""}-${p.away_score ?? ""} ${p.away_team}`}
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold transition-transform hover:-translate-y-0.5 ${formClass[p.status] ?? "border-line bg-card text-muted"}`}
-                  >
-                    {formLetter[p.status] ?? "–"}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Telegram CTA */}
-          <div className="rounded-card border border-brand/30 bg-brand-dim/40 p-5">
-            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
-            <p className="mt-2 text-sm text-muted">{dict.home.telegramPitch}</p>
-            <a
-              href="https://t.me/wildlyplay"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
-            >
-              {dict.home.joinTelegram} &rarr;
-            </a>
-          </div>
-        </aside>
-      </div>
-
       {/* 3b. Matches strip — full container width, not boxed into the main column
           (Nick 17/8: "kéo dài ra" — the column squeezed it to ~3 visible cards). */}
       <HomeNextMatches
@@ -461,6 +363,53 @@ export default async function Home({ params }: Props) {
           noTime: dict.standings.provisionalTime,
         }}
       />
+
+      {/* 3. Latest analysis — FULL WIDTH, ESPN style (Nick 17/8: "dùng toàn bộ chiều
+          ngang... theo kiểu ESPN"). Right sidebar dropped: the record box duplicated the
+          hero's record line; the Telegram CTA moved below as a thin band. */}
+      {restArticles.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
+            <Link
+              href={withLang("/analysis", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.nav.analysis} &rarr;
+            </Link>
+          </div>
+          {/* Lead story ~2/3 width, then a 3-up grid (2 on tablet, 1 on phone). */}
+          <div className="lg:w-2/3">
+            <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+          </div>
+          {restArticles.length > 1 && (
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {restArticles.slice(1).map((a) => (
+                <AnalysisCard key={a.slug} article={a} lang={lang} variant="lead" />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 3c. Telegram CTA — thin full-width band (was the sidebar box). */}
+      <section className="pb-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5">
+          <div>
+            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
+            <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
+          </div>
+          <a
+            href="https://t.me/wildlyplay"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+          >
+            {dict.home.joinTelegram} &rarr;
+          </a>
+        </div>
+      </section>
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">
