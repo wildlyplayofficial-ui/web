@@ -59,11 +59,6 @@ const DESK_KIND_COLORS: Record<string, string> = {
 };
 
 /** Badge labels for Desk article tiers. */
-const TIER_LABELS: Record<string, string> = {
-  T1_covered: "Covered",
-  T2_marquee: "Marquee",
-};
-
 const PICK_TYPES: PostType[] = ["preview", "recap"];
 const RAIL_COUNT = 5;
 const PAGE_SIZE = 10;
@@ -175,7 +170,6 @@ function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
   const excerpt = extractExcerpt(article.body);
   const kindLabel = article.kind.charAt(0).toUpperCase() + article.kind.slice(1);
   const badgeColor = DESK_KIND_COLORS[article.kind] ?? DESK_KIND_COLORS.roundup;
-  const tierLabel = TIER_LABELS[article.tier];
 
   return (
     <Link
@@ -195,11 +189,6 @@ function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
           <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${badgeColor}`}>
             {kindLabel}
           </span>
-          {tierLabel && (
-            <span className="rounded-full border border-brand/30 px-2 py-0.5 font-display font-semibold text-brand">
-              {tierLabel}
-            </span>
-          )}
           <span className="text-muted/70">{article.league}</span>
           <time dateTime={article.published_at} className="ml-auto shrink-0">
             {formatDate(article.published_at, lang)}
