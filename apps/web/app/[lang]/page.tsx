@@ -334,7 +334,7 @@ export default async function Home({ params }: Props) {
               <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
                 ◆ {dict.home.featuredStory}
               </span>
-              <h2 className="font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
+              <h2 className="line-clamp-2 font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
                 {hot.title}
               </h2>
               <p className="text-sm text-muted">
