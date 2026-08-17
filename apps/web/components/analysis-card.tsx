@@ -10,6 +10,8 @@ const KIND_COLORS: Record<string, string> = {
   preview: "border-blue-400/40 text-blue-400",
   recap: "border-emerald-400/40 text-emerald-400",
   roundup: "border-amber-400/40 text-amber-400",
+  analysis: "border-amber-400/40 text-amber-400",
+  news: "border-indigo-soft/40 text-indigo-soft",
 };
 
 function formatDate(iso: string, lang: Lang): string {

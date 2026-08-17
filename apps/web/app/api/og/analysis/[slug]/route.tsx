@@ -11,6 +11,8 @@ const KIND_BADGE: Record<string, string> = {
   preview: "PREVIEW",
   recap: "RECAP",
   roundup: "ROUNDUP",
+  analysis: "ANALYSIS",
+  news: "NEWS",
 };
 
 export async function GET(

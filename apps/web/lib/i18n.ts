@@ -103,6 +103,7 @@ export interface Dict {
     predictedScore: string;
     superSunday: string;
     hotPick: string;
+    featuredStory: string;
     trackRecord: string;
     hitRate: string;
     viewAnalysisCta: string;
@@ -405,6 +406,7 @@ const en: Dict = {
     predictedScore: "Predicted",
     superSunday: "Super Sunday",
     hotPick: "Hottest pick",
+    featuredStory: "Featured story",
     trackRecord: "Track record",
     hitRate: "Hit rate",
     viewAnalysisCta: "View analysis",
@@ -705,11 +707,12 @@ const vi: Dict = {
     scoreboardTitle: "Tỷ số & lịch đấu",
     predictedScore: "Dự đoán",
     superSunday: "Super Sunday",
-    hotPick: "Kèo hot nhất",
+    hotPick: "Nhận định nổi bật",
+    featuredStory: "Bài nổi bật",
     trackRecord: "Thành tích",
     hitRate: "Tỷ lệ thắng",
     viewAnalysisCta: "Xem phân tích",
-    telegramTitle: "Kèo lên Telegram trước",
+    telegramTitle: "Nhận định lên Telegram trước",
     telegramPitch: "Kèm số, lý do, và ‘no play’ rõ ràng.",
     joinTelegram: "Vào kênh Telegram",
   },
@@ -863,7 +866,7 @@ const vi: Dict = {
     live: "LIVE",
     won: "THẮNG",
     lost: "THUA",
-    push: "HÒA KÈO",
+    push: "HOÀ",
     void: "HỦY",
   },
   forum: {
@@ -1007,6 +1010,7 @@ const th: Dict = {
     predictedScore: "ทำนายผล",
     superSunday: "Super Sunday",
     hotPick: "ทีเด็ดมาแรง",
+    featuredStory: "บทความเด่น",
     trackRecord: "สถิติผลงาน",
     hitRate: "อัตราชนะ",
     viewAnalysisCta: "อ่านบทวิเคราะห์",
@@ -1308,6 +1312,7 @@ const es: Dict = {
     predictedScore: "Pronóstico",
     superSunday: "Super Sunday",
     hotPick: "Pick más caliente",
+    featuredStory: "Artículo destacado",
     trackRecord: "Historial",
     hitRate: "Tasa de acierto",
     viewAnalysisCta: "Ver análisis",
