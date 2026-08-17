@@ -326,8 +326,8 @@ export default async function Home({ params }: Props) {
             className="group grid overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60 md:grid-cols-[1.1fr_1fr]"
           >
             <div
-              className="relative min-h-[200px] bg-cover bg-center md:min-h-[280px]"
-              style={{ backgroundImage: `url(${hotHero})`, aspectRatio: "1.9 / 1" }}
+              className="relative aspect-[1.9/1] min-h-[200px] bg-cover bg-center md:aspect-auto md:min-h-[280px]"
+              style={{ backgroundImage: `url(${hotHero})` }}
               aria-hidden
             />
             <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
