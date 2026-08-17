@@ -55,6 +55,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // (Booth shared), so consolidate ranking there (Nick + Jane 3/7).
   const alternates = buildAlternates(`/play/${slug}`, lang);
   alternates.canonical = buildAlternates(`/match/${buildMatchSlug(pick.home_team, pick.away_team, pick.kickoff_utc)}`, lang).canonical;
+  // Picks are EN/ES-only — no Vietnamese pick page (odds language, VN law). Keep
+  // en/th/es hreflang; drop vi + x-default so the English odds page isn't declared
+  // the Vietnamese/default version. Bare /play/ 301s to /en/play/ in proxy.ts.
+  alternates.languages = Object.fromEntries(
+    Object.entries(alternates.languages).filter(([k]) => k !== "vi" && k !== "x-default"),
+  );
   return {
     title,
     description,

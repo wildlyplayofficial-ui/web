@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled } from "@/lib/data";
+import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs } from "@/lib/news";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
@@ -28,7 +28,7 @@ function alternates(path: string, langs: readonly string[] = LANGS): MetadataRou
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches, guides, reports, competitions, deskArticles, newsItems] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs()]);
+  const [posts, matches, guides, reports, competitions, deskArticles, newsItems] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs()]);
 
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -55,14 +55,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
   ] as MetadataRoute.Sitemap).map((r) => ({ ...r, lastModified: VI_REPOSITION }));
 
-  const playRoutes: MetadataRoute.Sitemap = picks.map((p) => ({
-    url: `${BASE}/play/${p.slug}`,
-    lastModified: new Date(p.updated),
-    changeFrequency: "weekly",
-    priority: 0.6,
-    alternates: alternates(`/play/${p.slug}`),
-  }));
-
+  // /play/ picks (170 URLs) intentionally NOT in the sitemap: they are the EN/ES
+  // odds product, canonical already points at /match, and bare /play/ 301s to
+  // /en/play/. Listing them would submit redirecting/VI-labelled odds URLs. (Nick 16/8)
   const newsRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${BASE}/analysis/${p.slug}`,
     lastModified: new Date(p.updated),
@@ -155,5 +150,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
