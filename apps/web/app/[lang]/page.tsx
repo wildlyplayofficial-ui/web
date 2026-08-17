@@ -158,8 +158,9 @@ export default async function Home({ params }: Props) {
   const preseason =
     daysToOpen !== null && picks.length === 0 && noPlays.length === 0 && watching.length === 0;
 
-  // Super Sunday: the marquee article headlines the page; the rest fill the feed.
-  const hot = articles.find((a) => a.tier === "T2_marquee") ?? articles[0];
+  // Featured story: hand-picked marquee ONLY (Nick 17/8: "em chọn tay bài nào lên
+  // đó thay vì để bài mới nhất tự nhảy vào") — no newest-article fallback.
+  const hot = articles.find((a) => a.tier === "T2_marquee") ?? null;
   const hotHero = hot ? hot.hero_image ?? `/api/og/analysis/${hot.slug}?locale=${lang}` : "";
   const hotExcerpt = hot ? hot.meta_description || analysisExcerpt(hot.body) : "";
   const restArticles = articles.filter((a) => a.slug !== hot?.slug).slice(0, 6);
@@ -300,7 +301,23 @@ export default async function Home({ params }: Props) {
         </div>
       </section>
 
-      {/* 1b. Super Sunday: the single biggest thing after the hero. */}
+      {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
+          (never a fabricated seed). */}
+      {heroPick && (
+        <section className="pb-10">
+          <HotPickCard
+            pick={heroPick}
+            predicted={null}
+            lang={lang}
+            href={withLang("/daily-board", lang)}
+            ctaLabel={dict.home.viewBoard}
+          />
+        </section>
+      )}
+
+      {/* 2b. Featured story — BELOW the pick/watching/noplay content (Nick 17/8:
+          "Khối đó phải nằm dưới /pick /watching /noplay"). Hand-picked marquee only;
+          hidden when Jane hasn't flagged one. No pick-vocabulary badges here. */}
       {hot && (
         <section className="pt-4 pb-10">
           <Link
@@ -312,11 +329,7 @@ export default async function Home({ params }: Props) {
               className="relative min-h-[200px] bg-cover bg-center md:min-h-[280px]"
               style={{ backgroundImage: `url(${hotHero})`, aspectRatio: "1.9 / 1" }}
               aria-hidden
-            >
-              <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-bg">
-                ★ {dict.home.superSunday}
-              </span>
-            </div>
+            />
             <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
               <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
                 ◆ {dict.home.featuredStory}
@@ -335,20 +348,6 @@ export default async function Home({ params }: Props) {
               </span>
             </div>
           </Link>
-        </section>
-      )}
-
-      {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
-          (never a fabricated seed). */}
-      {heroPick && (
-        <section className="pb-10">
-          <HotPickCard
-            pick={heroPick}
-            predicted={null}
-            lang={lang}
-            href={withLang("/daily-board", lang)}
-            ctaLabel={dict.home.viewBoard}
-          />
         </section>
       )}
 
