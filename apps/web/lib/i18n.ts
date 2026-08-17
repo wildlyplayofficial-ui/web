@@ -103,6 +103,7 @@ export interface Dict {
     predictedScore: string;
     superSunday: string;
     hotPick: string;
+    featuredStory: string;
     trackRecord: string;
     hitRate: string;
     viewAnalysisCta: string;
@@ -405,6 +406,7 @@ const en: Dict = {
     predictedScore: "Predicted",
     superSunday: "Super Sunday",
     hotPick: "Hottest pick",
+    featuredStory: "Featured story",
     trackRecord: "Track record",
     hitRate: "Hit rate",
     viewAnalysisCta: "View analysis",
@@ -706,6 +708,7 @@ const vi: Dict = {
     predictedScore: "Dự đoán",
     superSunday: "Super Sunday",
     hotPick: "Nhận định nổi bật",
+    featuredStory: "Bài nổi bật",
     trackRecord: "Thành tích",
     hitRate: "Tỷ lệ thắng",
     viewAnalysisCta: "Xem phân tích",
@@ -1007,6 +1010,7 @@ const th: Dict = {
     predictedScore: "ทำนายผล",
     superSunday: "Super Sunday",
     hotPick: "ทีเด็ดมาแรง",
+    featuredStory: "บทความเด่น",
     trackRecord: "สถิติผลงาน",
     hitRate: "อัตราชนะ",
     viewAnalysisCta: "อ่านบทวิเคราะห์",
@@ -1308,6 +1312,7 @@ const es: Dict = {
     predictedScore: "Pronóstico",
     superSunday: "Super Sunday",
     hotPick: "Pick más caliente",
+    featuredStory: "Artículo destacado",
     trackRecord: "Historial",
     hitRate: "Tasa de acierto",
     viewAnalysisCta: "Ver análisis",

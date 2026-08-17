@@ -319,7 +319,7 @@ export default async function Home({ params }: Props) {
             </div>
             <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
               <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
-                ◆ {dict.home.hotPick}
+                ◆ {dict.home.featuredStory}
               </span>
               <h2 className="font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
                 {hot.title}
