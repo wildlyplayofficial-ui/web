@@ -61,7 +61,7 @@ export function disclosureFor(authorType: AuthorType, lang: PostLang): string {
 /** Watching/no-play footer (Req 2): state-accurate — does NOT claim "chose this play". */
 const WATCHING_DISCLOSURE: Record<PostLang, string> = {
   en: 'AI-written coverage. No play taken \u2014 we\u2019re watching this match, not betting it.',
-  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng \u0111\u01b0a ra nh\u1eadn \u0111\u1ecbnh \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.',
+  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. B\u00e0i n\u00e0y ch\u1ec9 theo d\u00f5i di\u1ec5n bi\u1ebfn tr\u1eadn \u0111\u1ea5u, kh\u00f4ng \u0111\u01b0a ra l\u1ef1a ch\u1ecdn n\u00e0o.',
   th: '\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u0e44\u0e21\u0e48\u0e21\u0e35\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u2014 \u0e40\u0e23\u0e32\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49 \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19',
   es: 'Cobertura escrita por IA. No se ha tomado ninguna apuesta \u2014 seguimos este partido, no apostamos.',
 };
