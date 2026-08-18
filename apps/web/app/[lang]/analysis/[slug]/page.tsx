@@ -10,10 +10,11 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { AnalysisArticle } from "@/lib/types";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
+import { SITE_URL, DESK } from "@/lib/brand";
 
 export const revalidate = 300;
 
-const BASE = "https://www.banhbong.net";
+const BASE = SITE_URL;
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -196,7 +197,7 @@ function DeskArticleView({
     article.meta_description?.trim()
       || article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
     article.published_at,
-    "Banh Bóng Desk",
+    DESK,
     article.slug,
     lang,
     article.hero_image ?? undefined,
@@ -236,7 +237,7 @@ function DeskArticleView({
         </p>
         {/* AI disclosure (spec section 2C) */}
         <p className="mt-1 text-xs text-muted/70 italic">
-          Phân tích do Banh Bóng Desk (AI) thực hiện
+          Phân tích do {DESK} (AI) thực hiện
         </p>
       </header>
 
@@ -301,7 +302,7 @@ function DeskArticleView({
 
       {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        Phân tích do Banh Bóng Desk (AI) thực hiện. {dict.analysis.disclaimer}
+        Phân tích do {DESK} (AI) thực hiện. {dict.analysis.disclaimer}
       </p>
     </article>
   );

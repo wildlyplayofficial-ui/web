@@ -300,7 +300,7 @@ export default async function DailyBoard({ params }: Props) {
           {dict.board.trackRecordCta} &rarr;
         </Link>
         <a
-          href="https://t.me/banhbong"
+          href="https://t.me/wildlyplay"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-display font-semibold text-bg transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,230,118,0.3)]"

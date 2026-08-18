@@ -401,7 +401,7 @@ export default async function Home({ params }: Props) {
             <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
           </div>
           <a
-            href="https://t.me/banhbong"
+            href="https://t.me/wildlyplay"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"

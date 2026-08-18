@@ -37,7 +37,7 @@ export default async function ForumPage({ params }: Props) {
           </p>
           <p className="mx-auto mt-6 max-w-[440px] leading-relaxed text-muted">{dict.forum.body}</p>
           <a
-            href="https://t.me/banhbong"
+            href="https://t.me/wildlyplay"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-display font-semibold text-bg transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,230,118,0.3)]"

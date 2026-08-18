@@ -45,7 +45,7 @@ export function Footer() {
             </Link>
           ))}
           <a
-            href="https://t.me/banhbong"
+            href="https://t.me/wildlyplay"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted transition-colors hover:text-brand"
