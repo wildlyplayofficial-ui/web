@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.stats.title,
     description: dict.stats.subtitle,
-    openGraph: { title: `${dict.stats.title} | WildlyPlay`, description: dict.stats.subtitle, images: [{ url: "/api/og/record?page=stats", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.stats.title} | banhbong.net`, description: dict.stats.subtitle, images: [{ url: "/api/og/record?page=stats", width: 1200, height: 630 }] },
     alternates: buildAlternates("/stats", lang),
   };
 }
@@ -198,7 +198,7 @@ export default async function StatsPage({ params }: Props) {
               Alternative Picks &middot; The Scout
             </h2>
             <p className="mt-2 text-xs text-muted">
-              Fictional, AI-operated WildlyPlay persona &middot; lower confidence &middot; separate ledger
+              Fictional, AI-operated banhbong.net persona &middot; lower confidence &middot; separate ledger
             </p>
           </div>
 

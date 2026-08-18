@@ -124,12 +124,12 @@ describe('buildWeeklyDigest', () => {
         settledPick({ id: 'c', status: 'push', units_pl: 0 }),
       ],
       2,
-      'https://www.wildlyplay.com',
+      'https://www.banhbong.net',
       NOW,
     );
     expect(text).toContain('\u{1F4CA} Week 1 \u2014 Record 1-1-1 \u00b7 +0.05u');
     expect(text).toContain('Picks: 3 (1W 1L 1P) \u00b7 Passes: 2 \u2014 discipline first');
-    expect(text).toContain('https://www.wildlyplay.com/stats');
+    expect(text).toContain('https://www.banhbong.net/stats');
     expect(text).toContain('Not financial advice');
     expect(text).not.toContain('Calibration'); // no confidence recorded
   });
@@ -170,7 +170,7 @@ describe('digestOnce', () => {
       api: api as unknown as DigestDeps['api'],
       store,
       channelChatId: '-100123',
-      siteUrl: 'https://www.wildlyplay.com',
+      siteUrl: 'https://www.banhbong.net',
     };
   }
 
@@ -183,7 +183,7 @@ describe('digestOnce', () => {
     expect(api.sendPhoto).toHaveBeenCalledOnce();
     expect(api.sendPhoto).toHaveBeenCalledWith(
       '-100123',
-      'https://www.wildlyplay.com/images/wildlyplay_recap.png',
+      'https://www.banhbong.net/images/wildlyplay_recap.png',
       { caption: expect.stringContaining('Week 1') },
     );
     expect(api.sendMessage).not.toHaveBeenCalled();

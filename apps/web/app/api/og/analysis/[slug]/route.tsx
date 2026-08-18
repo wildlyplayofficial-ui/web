@@ -44,8 +44,8 @@ export async function GET(
       eyebrow={badgeLabel}
       title={article.title}
       topRight={article.league || null}
-      footer="wildlyplay.com"
-      footerRight={`WildlyPlay Desk (AI) · ${dateLine}`}
+      footer="banhbong.net"
+      footerRight={`Banh Bóng Desk (AI) · ${dateLine}`}
     />,
     { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
   );

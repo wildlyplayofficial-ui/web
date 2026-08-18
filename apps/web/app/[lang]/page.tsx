@@ -49,17 +49,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: { absolute: `WildlyPlay — ${dict.tagline}` },
+    title: { absolute: `banhbong.net — ${dict.tagline}` },
     description: dict.home.seoDescription,
     alternates: buildAlternates("/", lang),
     openGraph: {
-      title: `WildlyPlay — ${dict.tagline}`,
+      title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `WildlyPlay — ${dict.tagline}`,
+      title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
@@ -401,7 +401,7 @@ export default async function Home({ params }: Props) {
             <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
           </div>
           <a
-            href="https://t.me/wildlyplay"
+            href="https://t.me/banhbong"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"

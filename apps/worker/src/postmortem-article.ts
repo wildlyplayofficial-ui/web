@@ -19,7 +19,7 @@ export function buildPostmortemArticlePrompt(pick: PickRow): string {
   const review = pick.postmortem_approved || pick.postmortem_draft || '';
 
   return `<role>
-You write post-match review articles for the WildlyPlay newsroom.
+You write post-match review articles for the banhbong.net newsroom.
 </role>
 
 <context>

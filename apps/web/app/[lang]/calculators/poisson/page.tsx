@@ -8,18 +8,18 @@ export const revalidate = 86400;
 
 const NAME = "Over/Under Poisson Calculator";
 const DESC =
-  "Turn expected goals (xG) into Over/Under, BTTS and correct-score probabilities with a Poisson model — the core of how WildlyPlay reads a total.";
+  "Turn expected goals (xG) into Over/Under, BTTS and correct-score probabilities with a Poisson model — the core of how banhbong.net reads a total.";
 
 type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   return {
-    title: `${NAME} | WildlyPlay`,
+    title: `${NAME} | banhbong.net`,
     description: DESC,
     alternates: buildAlternates("/calculators/poisson", lang),
     openGraph: {
-      title: `${NAME} | WildlyPlay`,
+      title: `${NAME} | banhbong.net`,
       description: DESC,
       images: [
         {

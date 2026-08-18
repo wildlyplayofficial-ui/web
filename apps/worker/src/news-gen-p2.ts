@@ -19,7 +19,7 @@ const SONNET_MODEL = 'claude-sonnet-4-6';
 const GUARDIAN_BASE = 'https://content.guardianapis.com/search';
 const GNEWS_RSS_BASE = 'https://news.google.com/rss/search';
 const P2_SOURCE = 'Guardian API + Google News';
-const P2_BYLINE = 'WildlyPlay News';
+const P2_BYLINE = 'banhbong.net News';
 const P2_MAX_TOKENS = 6000;
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ function buildP2Prompt(
     input.formAway ? `${input.away} recent form: ${input.formAway}` : null,
   ].filter(Boolean).join('\n') || '(Form data unavailable)';
 
-  return `You write neutral, informative pre-match preview articles for the WildlyPlay newsroom (wildlyplay.com/news).
+  return `You write neutral, informative pre-match preview articles for the banhbong.net newsroom (banhbong.net/news).
 
 Match:
 - ${input.home} vs ${input.away}
@@ -234,7 +234,7 @@ Rules:
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose".
 - End each language section with:
 ---
-WildlyPlay News | AI-assisted coverage | ${input.dateUtc}`;
+banhbong.net News | AI-assisted coverage | ${input.dateUtc}`;
 }
 
 // ── P2 Enrichment pipeline ──────────────────────────────────────────────────
@@ -350,7 +350,7 @@ function parseP2Output(
     // Append disclosure if not already present
     const disclosureMark = 'AI-assisted';
     if (!body.includes(disclosureMark)) {
-      body += `\n\n---\nWildlyPlay News | AI-assisted summary from Guardian, Google News | ${input.dateUtc}`;
+      body += `\n\n---\nbanhbong.net News | AI-assisted summary from Guardian, Google News | ${input.dateUtc}`;
     }
 
     // Add pick reference if available
@@ -426,7 +426,7 @@ function buildP2ResultPrompt(
     : input.awayScore > input.homeScore ? input.away : null;
   const scoreline = `${input.home} ${input.homeScore}-${input.awayScore} ${input.away}`;
 
-  return `You write neutral, informative match reports for the WildlyPlay newsroom (wildlyplay.com/news).
+  return `You write neutral, informative match reports for the banhbong.net newsroom (banhbong.net/news).
 
 Result: ${scoreline}
 Competition: ${input.competition}
@@ -465,7 +465,7 @@ Rules:
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose".
 - End each language section with:
 ---
-WildlyPlay News | AI-assisted match report | ${input.dateUtc}`;
+banhbong.net News | AI-assisted match report | ${input.dateUtc}`;
 }
 
 /** Generate P2 enriched result for a single match. Null on failure → P1 fallback. */

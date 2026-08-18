@@ -27,8 +27,8 @@ function card(headline: string, type: string, headers: Record<string, string>): 
     <OgCard
       eyebrow={label}
       title={headline}
-      footer="wildlyplay.com"
-      footerRight="WildlyPlay News"
+      footer="banhbong.net"
+      footerRight="banhbong.net News"
     />,
     { headers },
   );

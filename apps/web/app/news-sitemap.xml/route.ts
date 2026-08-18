@@ -8,7 +8,7 @@ import { getAllNewsItemSlugs } from "@/lib/news";
  * Covers /analysis/ (posts + desk articles) AND /news/ (news_items).
  */
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -38,7 +38,7 @@ export async function GET(): Promise<Response> {
     <loc>${BASE}/${p.path}/${p.slug}</loc>
     <news:news>
       <news:publication>
-        <news:name>WildlyPlay</news:name>
+        <news:name>banhbong.net</news:name>
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>${new Date(p.updated).toISOString()}</news:publication_date>

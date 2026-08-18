@@ -33,8 +33,8 @@ export function StickyTracker({ totalGoals: serverGoals, goalLine, status }: Sti
       );
       if (liveTotal > 0) setLiveGoals(liveTotal);
     }
-    window.addEventListener("wildlyplay:livescores", onLive);
-    return () => window.removeEventListener("wildlyplay:livescores", onLive);
+    window.addEventListener("banhbong:livescores", onLive);
+    return () => window.removeEventListener("banhbong:livescores", onLive);
   }, []);
 
   useEffect(() => { setLiveGoals(serverGoals); }, [serverGoals]);

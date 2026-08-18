@@ -15,11 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.nav.trackRecord} | WildlyPlay`,
+    title: `${dict.nav.trackRecord} | banhbong.net`,
     description: dict.archive.subtitle,
     alternates: buildAlternates("/track-record", lang),
     openGraph: {
-      title: `${dict.nav.trackRecord} | WildlyPlay`,
+      title: `${dict.nav.trackRecord} | banhbong.net`,
       description: dict.archive.subtitle,
       images: [{ url: "/api/og/record?page=archive", width: 1200, height: 630 }],
     },

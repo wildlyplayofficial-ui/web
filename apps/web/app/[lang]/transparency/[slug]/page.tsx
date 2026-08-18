@@ -9,7 +9,7 @@ import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -68,12 +68,12 @@ function buildArticleSchema(post: {
     mainEntityOfPage: `${BASE}${withLang(`/transparency/${slug}`, lang)}`,
     author: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
     },
     publisher: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
@@ -118,7 +118,7 @@ export default async function TransparencyReportPage({ params }: Props) {
         {published && (
           <p className="mt-3 text-sm text-muted">
             <time dateTime={post.published_at ?? undefined}>{published}</time>
-            {" \u00b7 WildlyPlay"}
+            {" \u00b7 banhbong.net"}
           </p>
         )}
       </header>

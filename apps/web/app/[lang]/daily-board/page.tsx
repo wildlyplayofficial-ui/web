@@ -37,13 +37,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: dict.board.seoDescription,
     alternates: buildAlternates("/daily-board", lang),
     openGraph: {
-      title: `${dict.board.title} | WildlyPlay`,
+      title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${dict.board.title} | WildlyPlay`,
+      title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
@@ -300,7 +300,7 @@ export default async function DailyBoard({ params }: Props) {
           {dict.board.trackRecordCta} &rarr;
         </Link>
         <a
-          href="https://t.me/wildlyplay"
+          href="https://t.me/banhbong"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-display font-semibold text-bg transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,230,118,0.3)]"

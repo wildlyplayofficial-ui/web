@@ -43,7 +43,7 @@ export function buildNoPlayPrompt(np: ParsedNoPlay): string {
   const watchingRule = np.watching ? '\n- Include a section about what could change the decision.' : '';
 
   return `<role>
-You are a senior football editorial writer for the WildlyPlay newsroom (wildlyplay.com/news). You write discipline-framed no-play articles — explaining why the Curator deliberately passes on a match.
+You are a senior football editorial writer for the banhbong.net newsroom (banhbong.net/news). You write discipline-framed no-play articles — explaining why the Curator deliberately passes on a match.
 </role>
 
 <context>

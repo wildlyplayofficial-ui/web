@@ -4,6 +4,7 @@
  * Language is carried via path prefix: /vi/, /th/, /es/. EN = default (no prefix).
  */
 
+import { SITE_URL } from "@/lib/brand";
 export type Lang = "en" | "vi" | "th" | "es";
 
 export const LANGS: readonly Lang[] = ["en", "vi", "th", "es"] as const;
@@ -21,7 +22,7 @@ export function withLang(href: string, lang: Lang): string {
   return `/${lang}${clean}`;
 }
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 
 /** Build hreflang alternates + self-canonical for a page path. */
 export function buildAlternates(path: string, currentLang: Lang = "vi"): {
@@ -570,7 +571,7 @@ const en: Dict = {
   forum: {
     title: "Forum",
     comingSoon: "Coming soon",
-    body: "The WildlyPlay forum opens once the crowd is big enough. Until then, the conversation lives on Telegram.",
+    body: "The banhbong.net forum opens once the crowd is big enough. Until then, the conversation lives on Telegram.",
   },
   donate: {
     copy: "Copy address",
@@ -587,7 +588,7 @@ const en: Dict = {
     heading: "Alternative Picks \u00b7 The Scout",
     badge: "Lower Confidence",
     noPlay: "The Scout \u2014 no Alt play today.",
-    disclosure: "The Scout \u2014 a fictional, AI-operated WildlyPlay persona \u00b7 lower confidence \u00b7 separate ledger",
+    disclosure: "The Scout \u2014 a fictional, AI-operated banhbong.net persona \u00b7 lower confidence \u00b7 separate ledger",
   },
   watching: {
     title: "The Curator is watching",
@@ -872,7 +873,7 @@ const vi: Dict = {
   forum: {
     title: "Diễn Đàn",
     comingSoon: "Sắp ra mắt",
-    body: "Diễn đàn WildlyPlay sẽ mở khi cộng đồng đủ lớn. Hiện tại, mọi thảo luận diễn ra trên Telegram.",
+    body: "Diễn đàn banhbong.net sẽ mở khi cộng đồng đủ lớn. Hiện tại, mọi thảo luận diễn ra trên Telegram.",
   },
   donate: {
     copy: "Sao chép địa chỉ",
@@ -889,7 +890,7 @@ const vi: Dict = {
     heading: "K\u00e8o Ph\u1ee5 \u00b7 The Scout",
     badge: "\u0110\u1ed9 tin th\u1ea5p h\u01a1n",
     noPlay: "The Scout \u2014 kh\u00f4ng c\u00f3 k\u00e8o ph\u1ee5 h\u00f4m nay.",
-    disclosure: "The Scout \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a WildlyPlay \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
+    disclosure: "The Scout \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a banhbong.net \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
   },
   watching: {
     title: "Admin \u0111ang theo d\u00f5i",
@@ -1174,7 +1175,7 @@ const th: Dict = {
   forum: {
     title: "ฟอรั่ม",
     comingSoon: "เร็วๆ นี้",
-    body: "ฟอรั่ม WildlyPlay จะเปิดเมื่อคอมมูนิตี้ใหญ่พอ ตอนนี้พูดคุยกันได้ที่ Telegram",
+    body: "ฟอรั่ม banhbong.net จะเปิดเมื่อคอมมูนิตี้ใหญ่พอ ตอนนี้พูดคุยกันได้ที่ Telegram",
   },
   donate: {
     copy: "คัดลอกที่อยู่",
@@ -1191,7 +1192,7 @@ const th: Dict = {
     heading: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07 \u00b7 The Scout",
     badge: "\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32",
     noPlay: "The Scout \u2014 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49",
-    disclosure: "The Scout \u2014 \u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e21\u0e21\u0e15\u0e34 \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e02\u0e2d\u0e07 WildlyPlay \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u00b7 \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01",
+    disclosure: "The Scout \u2014 \u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e21\u0e21\u0e15\u0e34 \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e02\u0e2d\u0e07 banhbong.net \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u00b7 \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01",
   },
   watching: {
     title: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
@@ -1478,7 +1479,7 @@ const es: Dict = {
   forum: {
     title: "Foro",
     comingSoon: "Muy pronto",
-    body: "El foro de WildlyPlay abrirá cuando la comunidad sea lo bastante grande. Hasta entonces, la conversación vive en Telegram.",
+    body: "El foro de banhbong.net abrirá cuando la comunidad sea lo bastante grande. Hasta entonces, la conversación vive en Telegram.",
   },
   donate: {
     copy: "Copiar dirección",
@@ -1495,7 +1496,7 @@ const es: Dict = {
     heading: "Picks Alternativos \u00b7 The Scout",
     badge: "Menor Confianza",
     noPlay: "The Scout \u2014 sin pick alternativo hoy.",
-    disclosure: "The Scout \u2014 personaje ficticio, operado por IA, de WildlyPlay \u00b7 menor confianza \u00b7 registro separado",
+    disclosure: "The Scout \u2014 personaje ficticio, operado por IA, de banhbong.net \u00b7 menor confianza \u00b7 registro separado",
   },
   watching: {
     title: "El Curator est\u00e1 observando",

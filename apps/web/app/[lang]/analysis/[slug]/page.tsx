@@ -13,7 +13,7 @@ import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -121,12 +121,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** Byline for a post: neutral "WildlyPlay" for general news coverage (no position),
+/** Byline for a post: neutral "banhbong.net" for general news coverage (no position),
  *  persona-specific for pick-driven content. */
 function postByline(post: { type: string; author?: string }): string {
-  if (post.type === "news" || post.type === "guide") return "WildlyPlay";
-  if (post.author === "scout") return "The Scout @ WildlyPlay";
-  return "The Curator @ WildlyPlay";
+  if (post.type === "news" || post.type === "guide") return "banhbong.net";
+  if (post.author === "scout") return "The Scout @ banhbong.net";
+  return "The Curator @ banhbong.net";
 }
 
 function buildArticleSchema(
@@ -154,7 +154,7 @@ function buildArticleSchema(
     },
     publisher: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
@@ -196,7 +196,7 @@ function DeskArticleView({
     article.meta_description?.trim()
       || article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
     article.published_at,
-    "WildlyPlay Desk",
+    "Banh Bóng Desk",
     article.slug,
     lang,
     article.hero_image ?? undefined,
@@ -236,7 +236,7 @@ function DeskArticleView({
         </p>
         {/* AI disclosure (spec section 2C) */}
         <p className="mt-1 text-xs text-muted/70 italic">
-          Phân tích do WildlyPlay Desk (AI) thực hiện
+          Phân tích do Banh Bóng Desk (AI) thực hiện
         </p>
       </header>
 
@@ -301,7 +301,7 @@ function DeskArticleView({
 
       {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        Phân tích do WildlyPlay Desk (AI) thực hiện. {dict.analysis.disclaimer}
+        Phân tích do Banh Bóng Desk (AI) thực hiện. {dict.analysis.disclaimer}
       </p>
     </article>
   );

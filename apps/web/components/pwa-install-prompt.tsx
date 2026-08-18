@@ -69,7 +69,7 @@ export function PwaInstallPrompt() {
           <span className="text-lg">⚽</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-ink">Install WildlyPlay</p>
+          <p className="text-sm font-semibold text-ink">Install banhbong.net</p>
           <p className="text-xs text-muted">Quick access from your home screen</p>
         </div>
         <button

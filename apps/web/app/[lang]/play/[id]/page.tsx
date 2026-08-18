@@ -65,8 +65,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates,
-    openGraph: { title: `${title} | WildlyPlay`, description, images: [image] },
-    twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [image] },
+    openGraph: { title: `${title} | banhbong.net`, description, images: [image] },
+    twitter: { card: "summary_large_image", title: `${title} | banhbong.net`, description, images: [image] },
   };
 }
 
@@ -91,7 +91,7 @@ function buildSportsEventSchema(pick: Awaited<ReturnType<typeof getPick>>) {
       { "@type": "SportsTeam", name: pick.away_team },
     ],
     eventStatus: `https://schema.org/${statusMap[pick.status] ?? "EventScheduled"}`,
-    organizer: { "@type": "Organization", name: "WildlyPlay", url: "https://www.wildlyplay.com" },
+    organizer: { "@type": "Organization", name: "banhbong.net", url: "https://www.banhbong.net" },
   };
 }
 
@@ -254,7 +254,7 @@ export default async function PlayDetail({ params }: Props) {
         )
       )}
 
-      <ShareBar lang={lang} text={`${pick.home_team} vs ${pick.away_team} \u2014 ${pick.selection} | WildlyPlay`} />
+      <ShareBar lang={lang} text={`${pick.home_team} vs ${pick.away_team} \u2014 ${pick.selection} | banhbong.net`} />
 
       {/* A4: Internal-linking hub→spoke */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">

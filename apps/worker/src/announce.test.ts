@@ -229,7 +229,7 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
 });
 
 describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)', () => {
-  const SITE = 'https://www.wildlyplay.com';
+  const SITE = 'https://www.banhbong.net';
   const FB = { pageId: '120', pageToken: 'tok' };
 
   afterEach(() => vi.unstubAllGlobals());

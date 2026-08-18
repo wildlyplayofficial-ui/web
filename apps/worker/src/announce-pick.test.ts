@@ -49,7 +49,7 @@ function fakeApi() {
 }
 
 const CHANNEL = '-100123';
-const SITE = 'https://beta.wildlyplay.com';
+const SITE = 'https://beta.banhbong.net';
 const FB = { pageId: '111', pageToken: 'tok' };
 
 afterEach(() => vi.unstubAllGlobals());

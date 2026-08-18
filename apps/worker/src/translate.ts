@@ -10,7 +10,7 @@ import { log } from './log';
 
 export function buildThesisTranslationPrompt(pick: PickRow): string {
   return [
-    'You translate betting theses for WildlyPlay (wildlyplay.com), a football picks site.',
+    'You translate betting theses for banhbong.net (banhbong.net), a football picks site.',
     '',
     "The Curator (human) wrote this pick's thesis in English:",
     `- Match: ${pick.home_team} vs ${pick.away_team} (${pick.league})`,

@@ -3,7 +3,7 @@ import { buildArticleCaption, buildArticleLink, announceArticle } from './announ
 import type { NewPost } from './store';
 import { MemoryStore } from './store';
 
-const SITE = 'https://www.wildlyplay.com';
+const SITE = 'https://www.banhbong.net';
 
 const mockPost: NewPost = {
   type: 'preview',
@@ -70,7 +70,7 @@ describe('buildArticleCaption', () => {
 describe('buildArticleLink', () => {
   it('builds correct UTM link', () => {
     const link = buildArticleLink(SITE, 'preview-mexico-vs-south-africa', 'facebook');
-    expect(link).toBe('https://www.wildlyplay.com/news/preview-mexico-vs-south-africa?utm_source=facebook&utm_medium=social&utm_campaign=newsroom');
+    expect(link).toBe('https://www.banhbong.net/news/preview-mexico-vs-south-africa?utm_source=facebook&utm_medium=social&utm_campaign=newsroom');
   });
 });
 

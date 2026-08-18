@@ -36,7 +36,7 @@ export async function GET(request: Request): Promise<Response> {
         eyebrow="Daily Line"
         title="Daily Line"
         sub="A daily Over/Under prediction game"
-        footer="wildlyplay.com/daily-line"
+        footer="banhbong.net/daily-line"
         footerRight="Pick your side, climb the leaderboard"
         player={player}
         showPlayer
@@ -260,7 +260,7 @@ export async function GET(request: Request): Promise<Response> {
             color: C.muted,
           }}
         >
-          wildlyplay.com/daily-line · Free prediction game
+          banhbong.net/daily-line · Free prediction game
         </div>
       </div>
     ),

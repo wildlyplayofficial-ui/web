@@ -23,7 +23,7 @@ export interface AnalysisArticle {
   title: string;
   league: string;
   body: string;
-  byline: "WildlyPlay Desk";
+  byline: "Banh Bóng Desk";
   author_type: "desk_ai";
   match_id: string | null;
   linked_pick_id: string | null;

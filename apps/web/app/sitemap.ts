@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
 import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
@@ -10,7 +11,7 @@ import { getStandingsCompetitions } from "@/lib/standings-extra";
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 const LANGS = ["en", "vi", "th", "es"] as const;
 
 // Ngày reposition VI-legal (28/7/2026) — set lastModified cho trang static/hub để

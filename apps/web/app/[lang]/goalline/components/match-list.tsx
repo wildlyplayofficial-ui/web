@@ -81,8 +81,8 @@ export function MatchList({ matches }: MatchListProps) {
         } as CardMatch;
       }));
     }
-    window.addEventListener("wildlyplay:livescores", onLive);
-    return () => window.removeEventListener("wildlyplay:livescores", onLive);
+    window.addEventListener("banhbong:livescores", onLive);
+    return () => window.removeEventListener("banhbong:livescores", onLive);
   }, []);
 
   // Reset when server data changes

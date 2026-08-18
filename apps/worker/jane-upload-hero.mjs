@@ -21,7 +21,7 @@ const { error } = await sb.from('analysis_articles').update({ hero_image: url })
 if (error) { console.error('update:', error.message); process.exit(1); }
 console.log('hero set on', slug);
 
-const res = await fetch(`${process.env.SITE_URL || 'https://www.wildlyplay.com'}/api/revalidate`, {
+const res = await fetch(`${process.env.SITE_URL || 'https://www.banhbong.net'}/api/revalidate`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-revalidate-secret': process.env.REVALIDATE_SECRET },
   body: JSON.stringify({ tags: ['analysis-articles'] }),

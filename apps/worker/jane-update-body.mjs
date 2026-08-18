@@ -9,7 +9,7 @@ const { error } = await sb.from('analysis_articles').update({ body }).eq('slug',
 if (error) { console.error('update failed:', error.message); process.exit(1); }
 console.log('updated body', slug, body.length, 'chars');
 
-const res = await fetch(`${process.env.SITE_URL || 'https://www.wildlyplay.com'}/api/revalidate`, {
+const res = await fetch(`${process.env.SITE_URL || 'https://www.banhbong.net'}/api/revalidate`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-revalidate-secret': process.env.REVALIDATE_SECRET },
   body: JSON.stringify({ tags: ['analysis-articles'] }),

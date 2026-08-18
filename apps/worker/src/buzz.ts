@@ -71,7 +71,7 @@ async function searchCommunityBuzz(home: string, away: string): Promise<{ snippe
 export function buildBuzzPrompt(w: WatchingRow, communitySnippets: string = ''): string {
   const kickoff = new Date(w.kickoff_utc).toISOString().slice(0, 16).replace('T', ' ');
   return [
-    'You are a football community sentiment analyst for WildlyPlay (wildlyplay.com).',
+    'You are a football community sentiment analyst for banhbong.net (banhbong.net).',
     '',
     `Match: ${w.home_team} vs ${w.away_team}`,
     `League: ${w.league}`,

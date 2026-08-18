@@ -12,7 +12,7 @@ import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/li
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -69,12 +69,12 @@ function buildArticleSchema(
     mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
     author: {
       "@type": "Organization",
-      name: item.byline || "WildlyPlay News",
+      name: item.byline || "banhbong.net News",
       url: BASE,
     },
     publisher: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
@@ -125,7 +125,7 @@ export default async function NewsDetail({ params }: Props) {
         </h1>
         <p className="mt-3 text-sm text-muted">
           <LocalDate iso={item.published_at} locale={locales[lang]} format="long" />
-          {" \u00b7 "}{item.byline || "WildlyPlay News"}
+          {" \u00b7 "}{item.byline || "banhbong.net News"}
         </p>
         {kickoffUtc && (
           <p className="mt-1 text-sm text-muted">

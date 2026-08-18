@@ -43,7 +43,7 @@ export function LiveScoreSync({ matches, children }: LiveScoreSyncProps) {
         if (liveMatches.length === 0) return;
 
         // Dispatch custom event with live scores — child components can listen
-        window.dispatchEvent(new CustomEvent("wildlyplay:livescores", {
+        window.dispatchEvent(new CustomEvent("banhbong:livescores", {
           detail: liveMatches,
         }));
       } catch { /* degrade silently */ }
