@@ -379,13 +379,23 @@ export default async function Home({ params }: Props) {
               {dict.nav.analysis} &rarr;
             </Link>
           </div>
-          {/* Lead story ~2/3 width, then a 3-up grid (2 on tablet, 1 on phone). */}
-          <div className="lg:w-2/3">
-            <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+          {/* Top: lead ~2/3 + up to 2 compact cards stacked in the right third
+              (fills the gap Nick flagged 17/8). Rest drop to a 3-up grid below. */}
+          <div className="grid gap-5 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+            </div>
+            {restArticles.length > 1 && (
+              <div className="flex flex-col gap-5">
+                {restArticles.slice(1, 3).map((a) => (
+                  <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
+                ))}
+              </div>
+            )}
           </div>
-          {restArticles.length > 1 && (
+          {restArticles.length > 3 && (
             <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {restArticles.slice(1).map((a) => (
+              {restArticles.slice(3).map((a) => (
                 <AnalysisCard key={a.slug} article={a} lang={lang} variant="lead" />
               ))}
             </div>
