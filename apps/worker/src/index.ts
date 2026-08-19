@@ -65,7 +65,7 @@ const recapArticle = anthropicApiKey
       return generateRecapArticle(aiEnv, pick, computeRecord(settled));
     }
   : undefined;
-const siteUrl = process.env.SITE_URL ?? 'https://www.wildlyplay.com';
+const siteUrl = process.env.SITE_URL ?? 'https://www.banhbong.net';
 const fbPageId = process.env.FB_PAGE_ID;
 const fbPageToken = process.env.FB_PAGE_TOKEN;
 if (!fbPageId || !fbPageToken) log.warn('FB_PAGE_ID/FB_PAGE_TOKEN unset — Facebook posting disabled');
@@ -318,7 +318,7 @@ const server = createServer(async (req, res) => {
   // Auth check — fail CLOSED: a missing/empty REVALIDATE_SECRET must reject every
   // request, not wave them all through. The old `WEBHOOK_SECRET && ...` form meant a
   // dropped env var silently opened every worker endpoint (including /api/analysis,
-  // which publishes under the "WildlyPlay Desk" byline) with no error to notice.
+  // which publishes under the "Banh Bóng Desk" byline) with no error to notice.
   if (!WEBHOOK_SECRET || req.headers['x-webhook-secret'] !== WEBHOOK_SECRET) {
     res.writeHead(401).end('Unauthorized');
     return;

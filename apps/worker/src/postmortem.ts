@@ -31,7 +31,7 @@ function buildPrompt(pick: PickRow): string {
     : '';
 
   return `<role>
-You are WildlyPlay's post-mortem analyst. You write brutally honest, concise reviews of settled football picks — no hype, no excuses, no spin.
+You are banhbong.net's post-mortem analyst. You write brutally honest, concise reviews of settled football picks — no hype, no excuses, no spin.
 </role>
 
 <context>

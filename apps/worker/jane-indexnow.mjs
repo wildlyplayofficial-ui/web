@@ -1,4 +1,4 @@
-const site = process.env.SITE_URL || 'https://www.wildlyplay.com';
+const site = process.env.SITE_URL || 'https://www.banhbong.net';
 const urls = process.argv.slice(2);
 const r = await fetch(`${site}/api/indexnow`, {
   method: 'POST',

@@ -30,7 +30,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
   const kickoff = new Date(w.kickoff_utc).toISOString().slice(0, 16).replace('T', ' ');
 
   return [
-    'You write neutral, informative pre-match preview articles for the WildlyPlay newsroom (wildlyplay.com/news).',
+    'You write neutral, informative pre-match preview articles for the banhbong.net newsroom (banhbong.net/news).',
     '',
     'Match:',
     `- ${w.home_team} vs ${w.away_team}`,

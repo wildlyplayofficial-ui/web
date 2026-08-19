@@ -1,5 +1,6 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
+import { SITE_URL, SITE_NAME, DESK } from "@/lib/brand";
 
 /**
  * GET /api/analysis/rss — RSS feed for /analysis section.
@@ -7,7 +8,7 @@ import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
  * Replaces the old /news/rss.xml feed (spec section 2B).
  */
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -53,16 +54,16 @@ export async function GET(): Promise<Response> {
       <link>${BASE}/analysis/${item.slug}</link>
       <guid isPermaLink="true">${BASE}/analysis/${item.slug}</guid>
       <pubDate>${new Date(item.updated).toUTCString()}</pubDate>
-      <dc:creator>WildlyPlay Desk</dc:creator>
+      <dc:creator>${DESK}</dc:creator>
     </item>`,
   );
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>WildlyPlay Analysis</title>
+    <title>${SITE_NAME} Analysis</title>
     <link>${BASE}/analysis</link>
-    <description>Match analysis, previews, recaps and post-mortems from WildlyPlay.</description>
+    <description>Match analysis, previews, recaps and post-mortems from ${SITE_NAME}.</description>
     <language>en</language>
     <lastBuildDate>${new Date(lastBuild).toUTCString()}</lastBuildDate>
     <atom:link href="${BASE}/api/analysis/rss" rel="self" type="application/rss+xml"/>

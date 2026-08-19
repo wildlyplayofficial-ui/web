@@ -16,7 +16,7 @@ import type { MatchData } from "@/lib/types";
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -30,14 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!match) return { title: "Not found" };
 
   const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Preview, Pick & Result`;
-  const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on WildlyPlay.`;
+  const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on banhbong.net.`;
   const ogImage = `/api/og/match/${slug}`;
 
   return {
     title,
     description,
-    openGraph: { title: `${title} | WildlyPlay`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
-    twitter: { card: "summary_large_image", title: `${title} | WildlyPlay`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
+    openGraph: { title: `${title} | banhbong.net`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image", title: `${title} | banhbong.net`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     alternates: buildAlternates(`/match/${slug}`, lang),
   };
 }
@@ -48,7 +48,7 @@ function buildSportsEventSchema(match: MatchData) {
     name: `${match.homeTeam} vs ${match.awayTeam}`, startDate: match.kickoffUtc,
     location: { "@type": "Place", name: match.league || "Football" },
     competitor: [{ "@type": "SportsTeam", name: match.homeTeam }, { "@type": "SportsTeam", name: match.awayTeam }],
-    organizer: { "@type": "Organization", name: "WildlyPlay", url: BASE },
+    organizer: { "@type": "Organization", name: "banhbong.net", url: BASE },
   };
 }
 

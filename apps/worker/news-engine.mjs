@@ -1,5 +1,5 @@
 /**
- * Phần ruột máy tin WildlyPlay — sinh bài preview / kết quả từ DB thật.
+ * Phần ruột máy tin banhbong.net — sinh bài preview / kết quả từ DB thật.
  *
  * Thiết kế theo docs/SPEC-wp-auto-news-2026-08-16.md:
  *  - CHỈ dùng dữ liệu có trong bảng `fixtures`. Không gọi LLM, không lấy tin ngoài
@@ -16,7 +16,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SITE = process.env.SITE_URL || 'https://www.wildlyplay.com';
+const SITE = process.env.SITE_URL || 'https://www.banhbong.net';
 const STORAGE = 'https://rtsyrktpodspdobelyqs.supabase.co/storage/v1/object/public/player-photos';
 
 /** Giải được phép tự đăng (tầng 1). Tầng 3 không nằm ở đây nên không bao giờ lọt. */
@@ -166,7 +166,7 @@ function buildPreview(f, ctx) {
   );
   const links = clubLinks(ctx.homeSlug, ctx.awaySlug);
   if (links.length) lines.push(`Tìm hiểu sâu hơn về hai đội mùa này: ${links.join(' · ')}.`, '');
-  lines.push(`Số liệu trong bài lấy từ dữ liệu trận đấu của WildlyPlay, cập nhật tới thời điểm đăng.`);
+  lines.push(`Số liệu trong bài lấy từ dữ liệu trận đấu của banhbong.net, cập nhật tới thời điểm đăng.`);
   return { title, body: lines.join('\n'), kind: 'preview' };
 }
 
@@ -194,7 +194,7 @@ function buildRecap(f, ctx) {
   if (rh || ra) lines.push('## Bảng xếp hạng sau trận', '', [rh, ra].filter(Boolean).join(' '), '');
   const links = clubLinks(ctx.homeSlug, ctx.awaySlug);
   if (links.length) lines.push(`Tìm hiểu sâu hơn về hai đội mùa này: ${links.join(' · ')}.`, '');
-  lines.push('Số liệu trong bài lấy từ dữ liệu trận đấu của WildlyPlay, cập nhật tới thời điểm đăng.');
+  lines.push('Số liệu trong bài lấy từ dữ liệu trận đấu của banhbong.net, cập nhật tới thời điểm đăng.');
   return { title, body: lines.join('\n'), kind: 'recap' };
 }
 
@@ -220,7 +220,7 @@ async function publish(sb, { slug, title, body, kind, league, heroImage, thumbIm
   const nowIso = new Date().toISOString();
   const { error } = await sb.from('analysis_articles').upsert({
     slug, kind, tier: 'T1_covered', league, title, body,
-    byline: 'WildlyPlay Desk', author_type: 'desk_ai',
+    byline: 'Banh Bóng Desk', author_type: 'desk_ai',
     hero_image: heroImage, thumb_image: thumbImage ?? null, match_id: matchId ?? null,
     status: 'published', published_at: nowIso,
   }, { onConflict: 'slug' });

@@ -22,7 +22,7 @@ const copy: Record<Lang, Copy> = {
   en: {
     title: "Responsible Play",
     intro:
-      "WildlyPlay is entertainment, full stop. Our picks are perspectives on the beautiful game \u2014 not predictions, not investment advice, and never a way to make a living. If you choose to play along, do it for fun and keep it that way.",
+      "banhbong.net is entertainment, full stop. Our picks are perspectives on the beautiful game \u2014 not predictions, not investment advice, and never a way to make a living. If you choose to play along, do it for fun and keep it that way.",
     rulesTitle: "House rules for yourself",
     rules: [
       "Only play with money you can comfortably afford to lose.",
@@ -39,7 +39,7 @@ const copy: Record<Lang, Copy> = {
   vi: {
     title: "Ch\u01a1i C\u00f3 Tr\u00e1ch Nhi\u1ec7m",
     intro:
-      "WildlyPlay l\u00e0 gi\u1ea3i tr\u00ed, ch\u1ea5m h\u1ebft. K\u00e8o c\u1ee7a ch\u00fang t\u00f4i l\u00e0 g\u00f3c nh\u00ecn v\u1ec1 b\u00f3ng \u0111\u00e1 \u2014 kh\u00f4ng ph\u1ea3i d\u1ef1 \u0111o\u00e1n ch\u1eafc th\u1eafng, kh\u00f4ng ph\u1ea3i l\u1eddi khuy\u00ean \u0111\u1ea7u t\u01b0, v\u00e0 kh\u00f4ng bao gi\u1edd l\u00e0 c\u00e1ch ki\u1ebfm s\u1ed1ng. N\u1ebfu b\u1ea1n ch\u1ecdn ch\u01a1i theo, h\u00e3y ch\u01a1i cho vui v\u00e0 gi\u1eef \u0111\u00fang tinh th\u1ea7n \u0111\u00f3.",
+      "banhbong.net l\u00e0 gi\u1ea3i tr\u00ed, ch\u1ea5m h\u1ebft. K\u00e8o c\u1ee7a ch\u00fang t\u00f4i l\u00e0 g\u00f3c nh\u00ecn v\u1ec1 b\u00f3ng \u0111\u00e1 \u2014 kh\u00f4ng ph\u1ea3i d\u1ef1 \u0111o\u00e1n ch\u1eafc th\u1eafng, kh\u00f4ng ph\u1ea3i l\u1eddi khuy\u00ean \u0111\u1ea7u t\u01b0, v\u00e0 kh\u00f4ng bao gi\u1edd l\u00e0 c\u00e1ch ki\u1ebfm s\u1ed1ng. N\u1ebfu b\u1ea1n ch\u1ecdn ch\u01a1i theo, h\u00e3y ch\u01a1i cho vui v\u00e0 gi\u1eef \u0111\u00fang tinh th\u1ea7n \u0111\u00f3.",
     rulesTitle: "Nguy\u00ean t\u1eafc cho ch\u00ednh b\u1ea1n",
     rules: [
       "Ch\u1ec9 ch\u01a1i v\u1edbi s\u1ed1 ti\u1ec1n b\u1ea1n ho\u00e0n to\u00e0n c\u00f3 th\u1ec3 m\u1ea5t m\u00e0 kh\u00f4ng \u1ea3nh h\u01b0\u1edfng cu\u1ed9c s\u1ed1ng.",
@@ -56,7 +56,7 @@ const copy: Record<Lang, Copy> = {
   th: {
     title: "\u0e40\u0e25\u0e48\u0e19\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e21\u0e35\u0e04\u0e27\u0e32\u0e21\u0e23\u0e31\u0e1a\u0e1c\u0e34\u0e14\u0e0a\u0e2d\u0e1a",
     intro:
-      "WildlyPlay \u0e04\u0e37\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e1a\u0e31\u0e19\u0e40\u0e17\u0e34\u0e07 \u0e08\u0e1a\u0e41\u0e04\u0e48\u0e19\u0e31\u0e49\u0e19 \u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07\u0e40\u0e23\u0e32\u0e04\u0e37\u0e2d\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07\u0e15\u0e48\u0e2d\u0e40\u0e01\u0e21\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25 \u2014 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e17\u0e33\u0e19\u0e32\u0e22 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e01\u0e32\u0e23\u0e25\u0e07\u0e17\u0e38\u0e19 \u0e41\u0e25\u0e30\u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e2b\u0e19\u0e17\u0e32\u0e07\u0e2b\u0e32\u0e40\u0e25\u0e35\u0e49\u0e22\u0e07\u0e0a\u0e35\u0e1e\u0e40\u0e14\u0e47\u0e14\u0e02\u0e32\u0e14 \u0e16\u0e49\u0e32\u0e04\u0e38\u0e13\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e08\u0e30\u0e40\u0e25\u0e48\u0e19\u0e15\u0e32\u0e21 \u0e02\u0e2d\u0e43\u0e2b\u0e49\u0e40\u0e25\u0e48\u0e19\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e19\u0e38\u0e01\u0e41\u0e25\u0e30\u0e23\u0e31\u0e01\u0e29\u0e32\u0e21\u0e31\u0e19\u0e44\u0e27\u0e49\u0e41\u0e1a\u0e1a\u0e19\u0e31\u0e49\u0e19",
+      "banhbong.net \u0e04\u0e37\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e1a\u0e31\u0e19\u0e40\u0e17\u0e34\u0e07 \u0e08\u0e1a\u0e41\u0e04\u0e48\u0e19\u0e31\u0e49\u0e19 \u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e02\u0e2d\u0e07\u0e40\u0e23\u0e32\u0e04\u0e37\u0e2d\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07\u0e15\u0e48\u0e2d\u0e40\u0e01\u0e21\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25 \u2014 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e17\u0e33\u0e19\u0e32\u0e22 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e01\u0e32\u0e23\u0e25\u0e07\u0e17\u0e38\u0e19 \u0e41\u0e25\u0e30\u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e2b\u0e19\u0e17\u0e32\u0e07\u0e2b\u0e32\u0e40\u0e25\u0e35\u0e49\u0e22\u0e07\u0e0a\u0e35\u0e1e\u0e40\u0e14\u0e47\u0e14\u0e02\u0e32\u0e14 \u0e16\u0e49\u0e32\u0e04\u0e38\u0e13\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e08\u0e30\u0e40\u0e25\u0e48\u0e19\u0e15\u0e32\u0e21 \u0e02\u0e2d\u0e43\u0e2b\u0e49\u0e40\u0e25\u0e48\u0e19\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e19\u0e38\u0e01\u0e41\u0e25\u0e30\u0e23\u0e31\u0e01\u0e29\u0e32\u0e21\u0e31\u0e19\u0e44\u0e27\u0e49\u0e41\u0e1a\u0e1a\u0e19\u0e31\u0e49\u0e19",
     rulesTitle: "\u0e01\u0e15\u0e34\u0e01\u0e32\u0e17\u0e35\u0e48\u0e15\u0e31\u0e49\u0e07\u0e44\u0e27\u0e49\u0e43\u0e2b\u0e49\u0e15\u0e31\u0e27\u0e04\u0e38\u0e13\u0e40\u0e2d\u0e07",
     rules: [
       "\u0e40\u0e25\u0e48\u0e19\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e14\u0e49\u0e27\u0e22\u0e40\u0e07\u0e34\u0e19\u0e17\u0e35\u0e48\u0e40\u0e2a\u0e35\u0e22\u0e44\u0e1b\u0e41\u0e25\u0e49\u0e27\u0e44\u0e21\u0e48\u0e01\u0e23\u0e30\u0e17\u0e1a\u0e0a\u0e35\u0e27\u0e34\u0e15\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13\u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19",
@@ -73,7 +73,7 @@ const copy: Record<Lang, Copy> = {
   es: {
     title: "Juego Responsable",
     intro:
-      "WildlyPlay es entretenimiento, punto. Nuestros picks son perspectivas sobre el f\u00fatbol \u2014 no predicciones, no asesor\u00eda de inversi\u00f3n, y nunca una forma de ganarse la vida. Si decides jugar, hazlo por diversi\u00f3n y que siga siendo as\u00ed.",
+      "banhbong.net es entretenimiento, punto. Nuestros picks son perspectivas sobre el f\u00fatbol \u2014 no predicciones, no asesor\u00eda de inversi\u00f3n, y nunca una forma de ganarse la vida. Si decides jugar, hazlo por diversi\u00f3n y que siga siendo as\u00ed.",
     rulesTitle: "Reglas de la casa para ti mismo",
     rules: [
       "Juega solo con dinero que puedas permitirte perder sin problema.",
@@ -94,7 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | WildlyPlay`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    openGraph: { title: `${copy[lang].title} | banhbong.net`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
   };
 }
 

@@ -3,7 +3,7 @@
  *  - Nations (World Cup) use flag colors.
  *  - Clubs (Liga MX / MLS) use crest-dominant colors.
  * Curated (not runtime-extracted) to keep cards premium + legible — The Athletic
- * matchday tone, not loud tipster. Unknown teams fall back to WildlyPlay green so
+ * matchday tone, not loud tipster. Unknown teams fall back to banhbong.net green so
  * a card is always vibrant, never the old dark template.
  */
 
@@ -144,7 +144,7 @@ const PALETTE: Record<string, string> = {
   "Sporting Kansas City": "#91b0d5",
 };
 
-/** Vibrant primary color for a team; WildlyPlay green when the team is unknown. */
+/** Vibrant primary color for a team; banhbong.net green when the team is unknown. */
 export function teamColor(name: string): string {
   if (!name) return BRAND_GREEN;
   const stripped = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");

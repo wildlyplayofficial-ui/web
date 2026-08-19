@@ -103,7 +103,7 @@ function validatePayload(payload: Json): { ok: true; data: ValidatedPayload } | 
       title,
       league,
       body,
-      byline: typeof payload.byline === 'string' ? payload.byline.trim() : 'WildlyPlay Desk',
+      byline: typeof payload.byline === 'string' ? payload.byline.trim() : 'Banh Bóng Desk',
       match_id: typeof payload.match_id === 'string' ? payload.match_id : null,
       linked_pick_id: typeof payload.linked_pick_id === 'string' ? payload.linked_pick_id : null,
       hero_image: typeof payload.hero_image === 'string' ? payload.hero_image : null,

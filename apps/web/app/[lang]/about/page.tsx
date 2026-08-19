@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // giữa câu như trước (intro.slice(0,160)).
     title: c.metaTitle,
     description: c.metaDescription,
-    openGraph: { title: `${c.title} | WildlyPlay`, description: c.metaDescription, images: [{ url: "/api/og/editorial?title=About%20WildlyPlay&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.", width: 1200, height: 630 }] },
+    openGraph: { title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: "/api/og/editorial?title=About%20banhbong.net&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.", width: 1200, height: 630 }] },
     alternates: buildAlternates("/about", lang),
   };
 }
@@ -45,9 +45,9 @@ export default async function AboutPage({ params }: Props) {
         "@type": "AboutPage",
         name: c.metaTitle,
         description: c.metaDescription,
-        url: `https://www.wildlyplay.com${lang === "vi" ? "" : `/${lang}`}/about`,
+        url: `https://www.banhbong.net${lang === "vi" ? "" : `/${lang}`}/about`,
         inLanguage: lang,
-        isPartOf: { "@type": "WebSite", name: "WildlyPlay", url: "https://www.wildlyplay.com" },
+        isPartOf: { "@type": "WebSite", name: "banhbong.net", url: "https://www.banhbong.net" },
       }) }} />
       <h1 className="gradient-text text-center font-display text-4xl font-bold">{c.title}</h1>
       <p className="mx-auto mt-6 max-w-[680px] text-center leading-relaxed text-ink/90">
@@ -181,7 +181,7 @@ export default async function AboutPage({ params }: Props) {
         <div className="mt-4 flex flex-wrap gap-4">
           <a href="https://t.me/wildlyplay" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Telegram</a>
           <a href="https://x.com/WildlyPlayGlob" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">X / Twitter</a>
-          <a href="https://www.facebook.com/wildlyplay" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Facebook</a>
+          <a href="https://www.facebook.com/xemthethaotructiep" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Facebook</a>
         </div>
       </section>
     </div>

@@ -147,7 +147,7 @@ export function buildRecapPrompt(pick: PickRow, record: SettledRecord): string {
 
   // 4 languages on the channel too (Nick 13/6) — same flag order as the newsroom articles.
   return `<role>
-You write post-match recaps for WildlyPlay's public Telegram channel. Short, honest, thesis-driven — every recap evaluates whether the pre-match read was right.
+You write post-match recaps for banhbong.net's public Telegram channel. Short, honest, thesis-driven — every recap evaluates whether the pre-match read was right.
 </role>
 
 <context>
@@ -306,7 +306,7 @@ export function buildRecapArticlePrompt(pick: PickRow, record: SettledRecord): s
   const pl = Number(pick.units_pl);
 
   return `<role>
-You write post-match articles for the WildlyPlay newsroom (wildlyplay.com/news). Longer-form, thesis-driven analysis — honest about wins and losses alike.
+You write post-match articles for the banhbong.net newsroom (banhbong.net/news). Longer-form, thesis-driven analysis — honest about wins and losses alike.
 </role>
 
 <context>

@@ -45,7 +45,7 @@ function GroupLeaderboard() {
 
   const openWebLeaderboard = () => {
     window.Telegram?.WebApp?.openLink(
-      "https://www.wildlyplay.com/en/goalline/leaderboard",
+      "https://www.banhbong.net/en/goalline/leaderboard",
     );
   };
 

@@ -12,11 +12,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.calculators.deVig} | WildlyPlay`,
+    title: `${dict.calculators.deVig} | banhbong.net`,
     description: dict.calculators.deVigDesc,
     alternates: buildAlternates("/calculators/de-vig", lang),
     openGraph: {
-      title: `${dict.calculators.deVig} | WildlyPlay`,
+      title: `${dict.calculators.deVig} | banhbong.net`,
       description: dict.calculators.deVigDesc,
       images: [{ url: "/api/og/guide?slug=de-vig&title=De-Vig%20Calculator", width: 1200, height: 630 }],
     },

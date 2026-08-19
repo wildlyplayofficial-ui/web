@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter, Space_Grotesk, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
+import { SITE_NAME, SITE_URL, SAME_AS, DEFAULT_TITLE } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,25 +21,25 @@ const notoSansThai = Noto_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.wildlyplay.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "WildlyPlay — Free Football Picks, Analysis & Betting Guides",
-    template: "%s | WildlyPlay",
+    default: DEFAULT_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
   description:
     "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis, odds tools and guides across Premier League, La Liga, Serie A and more.",
   openGraph: {
-    siteName: "WildlyPlay",
+    siteName: SITE_NAME,
     type: "website",
     locale: "en_US",
-    title: "WildlyPlay — Free Football Picks, Analysis & Betting Guides",
+    title: DEFAULT_TITLE,
     description:
       "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis and odds tools.",
     images: [{ url: "/og-home.png", width: 1200, height: 630, type: "image/png" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "WildlyPlay — Free Football Picks, Analysis & Betting Guides",
+    title: DEFAULT_TITLE,
     images: [{ url: "/og-home.png", width: 1200, height: 630 }],
   },
 };
@@ -75,27 +76,23 @@ export default async function RootLayout({
                 {
                   "@context": "https://schema.org",
                   "@type": "WebSite",
-                  name: "WildlyPlay",
-                  url: "https://www.wildlyplay.com",
+                  name: SITE_NAME,
+                  url: SITE_URL,
                   description: "Curator-led football picks, AI-operated. Every pick public forever.",
                   potentialAction: {
                     "@type": "SearchAction",
-                    target: { "@type": "EntryPoint", urlTemplate: "https://www.wildlyplay.com/matches?q={search_term_string}" },
+                    target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/matches?q={search_term_string}` },
                     "query-input": "required name=search_term_string",
                   },
                 },
                 {
                   "@context": "https://schema.org",
                   "@type": "Organization",
-                  name: "WildlyPlay",
-                  url: "https://www.wildlyplay.com",
-                  logo: { "@type": "ImageObject", url: "https://www.wildlyplay.com/icons/icon-512x512.png" },
+                  name: SITE_NAME,
+                  url: SITE_URL,
+                  logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon-512x512.png` },
                   description: "Handpicked plays for the global crowd. Transparent sports picks with full public track record, CLV tracking, and AI-powered multilingual content.",
-                  sameAs: [
-                    "https://t.me/wildlyplay",
-                    "https://facebook.com/wildlyplay",
-                    "https://x.com/WildlyPlayGlob",
-                  ],
+                  sameAs: [...SAME_AS],
                 },
               ]),
             }}

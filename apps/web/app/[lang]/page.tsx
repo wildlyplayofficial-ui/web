@@ -49,17 +49,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: { absolute: `WildlyPlay — ${dict.tagline}` },
+    title: { absolute: `banhbong.net — ${dict.tagline}` },
     description: dict.home.seoDescription,
     alternates: buildAlternates("/", lang),
     openGraph: {
-      title: `WildlyPlay — ${dict.tagline}`,
+      title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `WildlyPlay — ${dict.tagline}`,
+      title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },

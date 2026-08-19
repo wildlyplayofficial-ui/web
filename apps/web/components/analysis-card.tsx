@@ -61,7 +61,7 @@ export function AnalysisCard({
         {/* Ô list 120px. Ảnh vuông tối giản (thumb_image, chỉ logo, có lề) thì LẤP ĐẦY
             bằng object-cover — crest ở giữa nên không cắt vào. Không có thì rơi về
             banner với object-contain: banner 1200x630 dồn vào ô hẹp thì nhoè, nhưng
-            contain giữ trọn logo WildlyPlay ở mép (cover sẽ cắt ~15% mỗi bên). */}
+            contain giữ trọn logo banhbong.net ở mép (cover sẽ cắt ~15% mỗi bên). */}
         <div className="w-[120px] shrink-0 self-stretch bg-card-hover">
           <img
             src={article.thumb_image ?? hero}

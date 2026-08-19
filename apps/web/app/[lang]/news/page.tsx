@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: dict.news.title,
     description: dict.news.subtitle,
     openGraph: {
-      title: `${dict.news.title} | WildlyPlay`,
+      title: `${dict.news.title} | banhbong.net`,
       description: dict.news.subtitle,
       images: [{ url: "/api/og/editorial?title=News&subtitle=Match%20news%20and%20updates", width: 1200, height: 630 }],
     },
@@ -356,7 +356,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     ? ""
     : noiBat.anhThat
       ? noiBat.thumb
-      : `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=WildlyPlay`;
+      : `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=banhbong.net`;
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">

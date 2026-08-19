@@ -12,11 +12,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.calculators.kelly} | WildlyPlay`,
+    title: `${dict.calculators.kelly} | banhbong.net`,
     description: dict.calculators.kellyDesc,
     alternates: buildAlternates("/calculators/kelly", lang),
     openGraph: {
-      title: `${dict.calculators.kelly} | WildlyPlay`,
+      title: `${dict.calculators.kelly} | banhbong.net`,
       description: dict.calculators.kellyDesc,
       images: [{ url: "/api/og/guide?slug=kelly&title=Kelly%20Criterion%20Calculator", width: 1200, height: 630 }],
     },

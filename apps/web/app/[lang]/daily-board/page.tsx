@@ -37,13 +37,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: dict.board.seoDescription,
     alternates: buildAlternates("/daily-board", lang),
     openGraph: {
-      title: `${dict.board.title} | WildlyPlay`,
+      title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${dict.board.title} | WildlyPlay`,
+      title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },

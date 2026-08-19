@@ -44,20 +44,20 @@ describe('formatNoPlayMessage — TG card verdict line (R5: never auto-truncate 
   it('uses the short verdict field when present', () => {
     const msg = formatNoPlayMessage(
       noplay({ verdict: 'No position — two-pole variance, nobody prices which pole shows up.' }),
-      'https://www.wildlyplay.com',
+      'https://www.banhbong.net',
       'no-play-mexico-vs-south-africa-2026-07-04',
     );
     expect(msg).toContain('No position — two-pole variance, nobody prices which pole shows up.');
   });
 
   it('falls back to the reason label when verdict is absent', () => {
-    const msg = formatNoPlayMessage(noplay({ reason: 'VARIANCE_TOO_HIGH' }), 'https://www.wildlyplay.com', 'slug');
+    const msg = formatNoPlayMessage(noplay({ reason: 'VARIANCE_TOO_HIGH' }), 'https://www.banhbong.net', 'slug');
     expect(msg).toContain('Variance too high to justify a stake');
   });
 
   it('never dumps the long-form note into the card, even when note is set and verdict is not', () => {
     const longNote = 'Argentina at 84% with the full first team — Messi and Lautaro both start — against a Cape Verde side set up to contain, with the keeper who once held Spain scoreless.';
-    const msg = formatNoPlayMessage(noplay({ note: longNote }), 'https://www.wildlyplay.com', 'slug');
+    const msg = formatNoPlayMessage(noplay({ note: longNote }), 'https://www.banhbong.net', 'slug');
     expect(msg).not.toContain(longNote);
   });
 });

@@ -6,13 +6,13 @@
  * opens the TMA webapp directly inside Telegram.
  *
  * Webhook registration (run once):
- *   curl -s "https://api.telegram.org/bot${TMA_BOT_TOKEN}/setWebhook?url=https://www.wildlyplay.com/api/tma/webhook"
+ *   curl -s "https://api.telegram.org/bot${TMA_BOT_TOKEN}/setWebhook?url=https://www.banhbong.net/api/tma/webhook"
  */
 
 import { createClient } from "@supabase/supabase-js";
 
-const TMA_URL = "https://www.wildlyplay.com/tma/daily-line";
-const SITE_URL = "https://www.wildlyplay.com";
+const TMA_URL = "https://www.banhbong.net/tma/daily-line";
+const SITE_URL = "https://www.banhbong.net";
 const PLAY_BUTTON = {
   inline_keyboard: [
     [{ text: "🎯 Play Daily Line", web_app: { url: TMA_URL } }],
@@ -113,7 +113,7 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
         // sendGame creates a native game card — callback includes chat_id for group leaderboard
         await tgApi("sendGame", { chat_id: chatId, game_short_name: "dailyline" });
       } else {
-        await sendPlayMessage(chatId, "⚽ Welcome to WildlyPlay! Tap below to play Daily Line.");
+        await sendPlayMessage(chatId, "⚽ Welcome to banhbong.net! Tap below to play Daily Line.");
       }
       return;
     }
@@ -122,7 +122,7 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
     if (/^\/start(@\w+)?$/i.test(text)) {
       await sendPlayMessage(
         chatId,
-        "👋 Welcome to WildlyPlay!\n\nDaily Line — predict match outcomes and compete on the leaderboard. Tap the button below to start.",
+        "👋 Welcome to banhbong.net!\n\nDaily Line — predict match outcomes and compete on the leaderboard. Tap the button below to start.",
       );
       return;
     }
@@ -161,7 +161,7 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
     if (botWasAdded && message?.chat?.id) {
       await tgApi("sendMessage", {
         chat_id: message.chat.id,
-        text: "👋 Hey! I'm the WildlyPlay bot.\n\nType /play anytime to open Daily Line — predict matches and climb the leaderboard!",
+        text: "👋 Hey! I'm the banhbong.net bot.\n\nType /play anytime to open Daily Line — predict matches and climb the leaderboard!",
       });
       await tgApi("sendGame", { chat_id: message.chat.id, game_short_name: "dailyline" });
     }

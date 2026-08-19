@@ -40,7 +40,7 @@ export async function GET(request: Request): Promise<Response> {
       eyebrow={badge}
       title={title}
       noteBox={anchor || null}
-      footer="wildlyplay.com"
+      footer="banhbong.net"
       footerRight="Free betting education"
       player={player}
       showPlayer

@@ -1,4 +1,4 @@
-const CACHE_NAME = "wildlyplay-v1";
+const CACHE_NAME = "banhbong-v1";
 const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_URLS = [OFFLINE_URL];

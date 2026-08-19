@@ -1,6 +1,6 @@
 import type { FixtureDay } from "@/lib/standings-extra";
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 /** Số trận nhúng schema. Cả mùa 380 trận thì JSON-LD phình vô ích — Google chỉ
  *  cần các trận sắp đá. */

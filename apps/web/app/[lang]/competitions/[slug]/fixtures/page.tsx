@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .replace("{name}", compName)
       .replace("{season}", comp.season),
     alternates: buildAlternates(`/competitions/${slug}/fixtures`, lang),
-    openGraph: { title: `${title} | WildlyPlay` },
+    openGraph: { title: `${title} | banhbong.net` },
   };
 }
 

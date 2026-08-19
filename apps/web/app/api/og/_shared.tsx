@@ -5,9 +5,9 @@ import type { ReactElement, ReactNode } from "react";
 import { BRAND_GREEN } from "@/lib/team-palette";
 
 /**
- * Shared building blocks for every WildlyPlay OG card (1200×630).
+ * Shared building blocks for every banhbong.net OG card (1200×630).
  * Client-approved look: brand-green gradient card, gold eyebrow, white title,
- * a cartoon player anchored bottom-right (generic cards), wildlyplay.com footer.
+ * a cartoon player anchored bottom-right (generic cards), banhbong.net footer.
  *
  * Three concerns live here so all 9 generators stay DRY and consistent:
  *   1. loadOgFonts()      — Space Grotesk (Latin + Vietnamese) with a safe fallback
@@ -166,7 +166,7 @@ export type OgCardProps = {
   detail?: OgDetail[] | null;
   /** Small muted text in the top-right of the content column (e.g. league). */
   topRight?: string | null;
-  /** Footer wordmark link (left). Defaults to "wildlyplay.com". */
+  /** Footer wordmark link (left). Defaults to "banhbong.net". */
   footer?: string;
   /** Small muted note on the footer right. */
   footerRight?: string | null;
@@ -197,7 +197,7 @@ export function OgCard(props: OgCardProps): ReactNode {
     chips,
     detail,
     topRight,
-    footer = "wildlyplay.com",
+    footer = "banhbong.net",
     footerRight,
     player,
     showPlayer = false,
