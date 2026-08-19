@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/goalline/supabase";
 import type { DailyCard, CardMatch } from "@/lib/goalline/types";
 import { teamFlag } from "@/lib/flags";
 import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 /**
  * Daily Line share card image (1080x1080, square for social).
@@ -106,8 +107,8 @@ export async function GET(request: Request): Promise<Response> {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", fontSize: 32, fontWeight: 700 }}>
-            <span style={{ color: C.ink }}>Wildly</span>
-            <span style={{ color: C.brand }}>Play</span>
+            <span style={{ color: C.ink }}>{WORDMARK_A}</span>
+            <span style={{ color: C.brand }}>{WORDMARK_B}</span>
           </div>
           <div style={{ display: "flex", fontSize: 22, color: C.muted }}>
             Daily Line · Card #{c.card_number}
