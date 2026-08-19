@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDict, resolveLang, withLang } from "@/lib/i18n";
 import { trackTgFollowClick } from "@/lib/analytics";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 export function Footer() {
   const params = useParams<{ lang: string }>();
@@ -29,8 +30,8 @@ export function Footer() {
       <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-5 text-center">
         <div>
           <span className="font-display text-xl font-bold">
-            <span className="text-ink">Wildly</span>
-            <span className="text-brand">Play</span>
+            <span className="text-ink">{WORDMARK_A}</span>
+            <span className="text-brand">{WORDMARK_B}</span>
           </span>
           <p className="mt-2 text-sm text-muted">{dict.footerDisclaimer}</p>
         </div>

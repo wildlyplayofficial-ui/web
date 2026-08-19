@@ -4,6 +4,9 @@
  * Display name = "banhbong.net" (Banh Bóng Network); canonical host = www.
  */
 export const SITE_NAME = "banhbong.net";
+/** Two-tone wordmark parts (ink + brand colour), used by header/footer/OG images. */
+export const WORDMARK_A = "banhbong";
+export const WORDMARK_B = ".net";
 export const SITE_HOST = "www.banhbong.net";
 export const SITE_URL = "https://www.banhbong.net";
 export const DESK = "Banh Bóng Desk";

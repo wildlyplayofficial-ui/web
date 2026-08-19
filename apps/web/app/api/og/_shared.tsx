@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import type { ReactElement, ReactNode } from "react";
 import { BRAND_GREEN } from "@/lib/team-palette";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 /**
  * Shared building blocks for every banhbong.net OG card (1200×630).
@@ -243,8 +244,8 @@ export function OgCard(props: OgCardProps): ReactNode {
         {/* Top: wordmark + optional top-right note */}
         <div style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontSize: 40, fontWeight: 700 }}>
-            <span style={{ color: "#ffffff" }}>Wildly</span>
-            <span style={{ color: LIGHT_GREEN }}>Play</span>
+            <span style={{ color: "#ffffff" }}>{WORDMARK_A}</span>
+            <span style={{ color: LIGHT_GREEN }}>{WORDMARK_B}</span>
           </div>
           {topRight ? (
             <div style={{ display: "flex", fontSize: 20, fontWeight: 500, color: "rgba(255,255,255,0.82)" }}>

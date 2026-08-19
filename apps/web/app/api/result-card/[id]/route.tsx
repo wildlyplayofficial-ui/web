@@ -3,6 +3,7 @@ import { getPick } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { formatOdds, formatUnits } from "@/lib/format";
 import type { PickStatus } from "@/lib/types";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 /**
  * Shareable result card (PNG 1200x630) for a settled pick — used for social
@@ -82,9 +83,9 @@ export async function GET(
             justifyContent: "space-between",
           }}
         >
-          {/* Wordmark matching the site header: "Wildly" ink + "Play" brand. */}
+          {/* Wordmark matching the site header: "banhbong" ink + ".net" brand. */}
           <div style={{ display: "flex", fontSize: 34, fontWeight: 700 }}>
-            <span style={{ color: C.ink }}>Wildly</span><span style={{ color: C.brand }}>Play</span>
+            <span style={{ color: C.ink }}>{WORDMARK_A}</span><span style={{ color: C.brand }}>{WORDMARK_B}</span>
           </div>
           <div style={{ display: "flex", fontSize: 24, color: C.muted }}>{pick.league}</div>
         </div>
