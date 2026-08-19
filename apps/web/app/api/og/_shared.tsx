@@ -75,6 +75,23 @@ export function loadPlayerDataUri(): Promise<string | null> {
   return playerPromise;
 }
 
+// ── Brand mark bb (white, transparent) for the card's top-left, inlined as data URI. ──
+let markPromise: Promise<string | null> | undefined;
+
+async function loadMarkOnce(): Promise<string | null> {
+  try {
+    const buf = await readFile(join(process.cwd(), "public/brand/bb-mark-white.png"));
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+export function loadMarkDataUri(): Promise<string | null> {
+  if (!markPromise) markPromise = loadMarkOnce();
+  return markPromise;
+}
+
 // ── Per-team cartoon: public/og/players/{slug}.png, inlined as a data URI.
 //    Missing file → null, so the caller keeps a text-only card. Short club
 //    names map to the canonical slug so "Man City" and "Manchester City" both
@@ -175,6 +192,8 @@ export type OgCardProps = {
   player?: string | null;
   /** Show the bottom-right player (generic cards). Defaults to false. */
   showPlayer?: boolean;
+  /** Base64 data URI of the bb mark; when set, replaces the top-left wordmark (Nick 19/8: chữ banhbong.net đã có ở footer). */
+  mark?: string | null;
 };
 
 function autoTitleSize(title: string): number {
@@ -202,6 +221,7 @@ export function OgCard(props: OgCardProps): ReactNode {
     footerRight,
     player,
     showPlayer = false,
+    mark,
   } = props;
 
   const withPlayer = showPlayer && Boolean(player);
@@ -243,10 +263,15 @@ export function OgCard(props: OgCardProps): ReactNode {
       >
         {/* Top: wordmark + optional top-right note */}
         <div style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", fontSize: 40, fontWeight: 700 }}>
-            <span style={{ color: "#ffffff" }}>{WORDMARK_A}</span>
-            <span style={{ color: LIGHT_GREEN }}>{WORDMARK_B}</span>
-          </div>
+          {mark ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={mark} alt="" width={63} height={60} style={{ width: 63, height: 60 }} />
+          ) : (
+            <div style={{ display: "flex", fontSize: 40, fontWeight: 700 }}>
+              <span style={{ color: "#ffffff" }}>{WORDMARK_A}</span>
+              <span style={{ color: LIGHT_GREEN }}>{WORDMARK_B}</span>
+            </div>
+          )}
           {topRight ? (
             <div style={{ display: "flex", fontSize: 20, fontWeight: 500, color: "rgba(255,255,255,0.82)" }}>
               {topRight}

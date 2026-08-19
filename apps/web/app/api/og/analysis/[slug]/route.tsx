@@ -1,5 +1,5 @@
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
-import { OgCard, ogResponse } from "../../_shared";
+import { OgCard, ogResponse, loadMarkDataUri } from "../../_shared";
 import { SITE_NAME, DESK } from "@/lib/brand";
 
 /**
@@ -40,8 +40,10 @@ export async function GET(
   });
   const badgeLabel = KIND_BADGE[article.kind] ?? article.kind.toUpperCase();
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={badgeLabel}
       title={article.title}
       topRight={article.league || null}

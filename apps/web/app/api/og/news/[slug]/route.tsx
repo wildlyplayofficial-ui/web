@@ -1,6 +1,6 @@
 import { getPost } from "@/lib/data";
 import { getNewsItemBySlug } from "@/lib/news";
-import { OgCard, ogResponse } from "../../_shared";
+import { OgCard, ogResponse, loadMarkDataUri } from "../../_shared";
 
 /**
  * Dynamic share image (PNG 1200x630) for news/article pages.
@@ -21,10 +21,12 @@ const TYPE_STATUS: Record<string, string> = {
   guide: "GUIDE",
 };
 
-function card(headline: string, type: string, headers: Record<string, string>): Promise<Response> {
+async function card(headline: string, type: string, headers: Record<string, string>): Promise<Response> {
   const label = TYPE_STATUS[type] ?? type.toUpperCase();
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={label}
       title={headline}
       footer="banhbong.net"

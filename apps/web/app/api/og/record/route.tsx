@@ -1,5 +1,5 @@
 import { getTrackRecordForAuthor } from "@/lib/data";
-import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
 
 /**
  * Data-hub OG card (1200×630) — brand-green card with the live Curator record.
@@ -25,8 +25,10 @@ export async function GET(request: Request): Promise<Response> {
   const pl = `${curator.units_pl > 0 ? "+" : ""}${curator.units_pl}u`;
   const hitRate = curator.settled > 0 ? `${Math.round((curator.wins / curator.settled) * 100)}%` : "—";
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow="Public track record"
       title={stats ? "Statistics" : "Track Record"}
       sub={

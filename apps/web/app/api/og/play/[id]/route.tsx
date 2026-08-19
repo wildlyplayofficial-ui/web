@@ -1,7 +1,7 @@
 import { getPick } from "@/lib/data";
 import { formatKickoff } from "@/lib/format";
 import type { Confidence } from "@/lib/types";
-import { OgCard, loadTeamPlayerDataUri, ogResponse } from "../../_shared";
+import { OgCard, loadTeamPlayerDataUri, ogResponse, loadMarkDataUri } from "../../_shared";
 
 /**
  * Share image (PNG 1200x630) for ANY non-draft pick. This is the ONLY card type
@@ -40,8 +40,10 @@ export async function GET(
   let player = await loadTeamPlayerDataUri(pick.home_team);
   if (!player) player = await loadTeamPlayerDataUri(pick.away_team);
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={vi ? "Trận tâm điểm" : "Featured pick"}
       title={`${pick.home_team} vs ${pick.away_team}`}
       topRight={pick.league}
