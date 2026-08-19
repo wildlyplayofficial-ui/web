@@ -5,6 +5,7 @@ import { usePathname, useParams, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
+import { BrandMark } from "./brand-mark";
 import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 interface NavCompetition {
@@ -214,9 +215,12 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1100px] items-center justify-between px-5">
-        <Link href={withLang("/", lang)} className="font-display text-2xl font-bold">
-          <span className="text-ink">{WORDMARK_A}</span>
-          <span className="text-brand">{WORDMARK_B}</span>
+        <Link href={withLang("/", lang)} className="flex items-center gap-2 font-display text-2xl font-bold">
+          <BrandMark size={26} className="text-ink" />
+          <span>
+            <span className="text-ink">{WORDMARK_A}</span>
+            <span className="text-brand">{WORDMARK_B}</span>
+          </span>
         </Link>
 
         <button
