@@ -216,7 +216,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1100px] items-center justify-between px-5">
         <Link href={withLang("/", lang)} className="flex items-center gap-2 font-display text-2xl font-bold">
-          <BrandMark size={26} className="text-ink" />
+          <BrandMark size={28} />
           <span>
             <span className="text-ink">{WORDMARK_A}</span>
             <span className="text-brand">{WORDMARK_B}</span>

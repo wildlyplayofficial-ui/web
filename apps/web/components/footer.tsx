@@ -31,7 +31,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-5 text-center">
         <div>
           <span className="inline-flex items-center justify-center gap-2 font-display text-xl font-bold">
-            <BrandMark size={22} className="text-ink" />
+            <BrandMark size={22} />
             <span>
               <span className="text-ink">{WORDMARK_A}</span>
               <span className="text-brand">{WORDMARK_B}</span>
