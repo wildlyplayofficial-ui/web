@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { getDict, resolveLang, withLang } from "@/lib/i18n";
 import { trackTgFollowClick } from "@/lib/analytics";
 import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
+import { BrandMark } from "./brand-mark";
 
 export function Footer() {
   const params = useParams<{ lang: string }>();
@@ -29,9 +30,12 @@ export function Footer() {
     <footer className="mt-16 border-t border-line py-12">
       <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-5 text-center">
         <div>
-          <span className="font-display text-xl font-bold">
-            <span className="text-ink">{WORDMARK_A}</span>
-            <span className="text-brand">{WORDMARK_B}</span>
+          <span className="inline-flex items-center justify-center gap-2 font-display text-xl font-bold">
+            <BrandMark size={22} />
+            <span>
+              <span className="text-ink">{WORDMARK_A}</span>
+              <span className="text-brand">{WORDMARK_B}</span>
+            </span>
           </span>
           <p className="mt-2 text-sm text-muted">{dict.footerDisclaimer}</p>
         </div>
