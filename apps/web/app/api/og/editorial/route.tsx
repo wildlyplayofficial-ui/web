@@ -1,4 +1,4 @@
-import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
 
 /**
  * Branded editorial OG card (1200×630) for utility/evergreen pages
@@ -13,8 +13,10 @@ export async function GET(request: Request): Promise<Response> {
   const subtitle = searchParams.get("subtitle") || null;
   const player = await loadPlayerDataUri();
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow="banhbong.net"
       title={title}
       sub={subtitle}

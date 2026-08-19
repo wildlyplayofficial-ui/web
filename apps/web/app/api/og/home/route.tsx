@@ -1,5 +1,5 @@
 import { getTrackRecordForAuthor } from "@/lib/data";
-import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
 
 /**
  * Home share image (PNG 1200x630): brand-green card with the live Curator record.
@@ -15,8 +15,10 @@ export async function GET(request: Request): Promise<Response> {
   const pl = `${record.units_pl > 0 ? "+" : ""}${record.units_pl}u`;
   const hitRate = record.settled > 0 ? `${Math.round((record.wins / record.settled) * 100)}%` : "—";
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={vi ? "Phân tích & dự đoán bóng đá" : "Football analysis & predictions"}
       title={vi ? "Nhận định miễn phí, chỉ khi có lợi thế" : "Free analysis, only when there's an edge"}
       titleFontSize={vi ? 52 : 54}

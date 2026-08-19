@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { getServiceSupabase } from "@/lib/goalline/supabase";
 import type { DailyCard, CardMatch } from "@/lib/goalline/types";
 import { teamFlag } from "@/lib/flags";
-import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
 import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 /**
@@ -32,8 +32,10 @@ export async function GET(request: Request): Promise<Response> {
   // Fallback: no card param → branded Daily Line card (1200x630 og-safe)
   if (isNaN(cardNumber)) {
     const player = await loadPlayerDataUri();
+    const mark = await loadMarkDataUri();
     return ogResponse(
       <OgCard
+        mark={mark}
         eyebrow="Daily Line"
         title="Daily Line"
         sub="A daily Over/Under prediction game"
