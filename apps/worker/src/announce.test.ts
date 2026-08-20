@@ -262,7 +262,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     );
 
     expect(api.sendPhoto).toHaveBeenNthCalledWith(
-      2, CHANNEL, `${SITE}/images/wildlyplay_settled_win.png`, { caption: expectedText(pick) });
+      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick) });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (banner)');
   });

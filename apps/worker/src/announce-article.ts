@@ -19,12 +19,12 @@ export interface AnnounceArticleDeps {
 
 /** Map article type prefix → brand image filename (in /public/images/). */
 const TYPE_IMAGE: Record<string, string> = {
-  preview: 'wildlyplay_watching.png',   // watching/preview = same visual
-  news: 'wildlyplay_watching.png',      // watching articles
-  analysis: 'wildlyplay_pick.png',      // pick/analysis
-  'no-play': 'wildlyplay_noplay.png',
-  recap: 'wildlyplay_recap.png',
-  'post-mortem': 'wildlyplay_postmortem.png',
+  preview: 'banhbong_watching.png',   // watching/preview = same visual
+  news: 'banhbong_watching.png',      // watching articles
+  analysis: 'banhbong_pick.png',      // pick/analysis
+  'no-play': 'banhbong_noplay.png',
+  recap: 'banhbong_recap.png',
+  'post-mortem': 'banhbong_postmortem.png',
 };
 
 const TYPE_EMOJI: Record<string, string> = {

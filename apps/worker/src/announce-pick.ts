@@ -158,7 +158,7 @@ async function broadcast(
   // R7: TG NEW PLAY carries the OG data-card (numbers in the image);
   // branded PICK visual is the fallback — never text-only by design.
   const ogCardUrl = `${deps.siteUrl}/api/og/play/${pick.id}`;
-  const brandImageUrl = `${deps.siteUrl}/images/wildlyplay_pick.png`;
+  const brandImageUrl = `${deps.siteUrl}/images/banhbong_pick.png`;
 
   if (deps.channelChatId) {
     try {

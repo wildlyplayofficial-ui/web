@@ -183,7 +183,7 @@ describe('digestOnce', () => {
     expect(api.sendPhoto).toHaveBeenCalledOnce();
     expect(api.sendPhoto).toHaveBeenCalledWith(
       '-100123',
-      'https://www.banhbong.net/images/wildlyplay_recap.png',
+      'https://www.banhbong.net/images/banhbong_recap.png',
       { caption: expect.stringContaining('Week 1') },
     );
     expect(api.sendMessage).not.toHaveBeenCalled();

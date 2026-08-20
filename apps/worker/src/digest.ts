@@ -127,7 +127,7 @@ export async function digestOnce(
     return key;
   }
   // R7: never text-only — recap banner with the card as caption, text as fallback.
-  const imageUrl = `${deps.siteUrl}/images/wildlyplay_recap.png`;
+  const imageUrl = `${deps.siteUrl}/images/banhbong_recap.png`;
   try {
     await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: text });
   } catch (err) {
