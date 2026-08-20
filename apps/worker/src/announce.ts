@@ -36,9 +36,9 @@ const OUTCOME_BADGES: Record<string, string> = {
 
 /** Branded settled banner per status (§2.6 image table, fallback when OG card fails). */
 const SETTLED_IMAGES: Record<string, string> = {
-  won: 'wildlyplay_settled_win.png',
-  lost: 'wildlyplay_settled_loss.png',
-  push: 'wildlyplay_settled_push.png',
+  won: 'banhbong_settled_win.png',
+  lost: 'banhbong_settled_loss.png',
+  push: 'banhbong_settled_push.png',
 };
 
 export interface RecordSummary { wins: number; losses: number; pushes: number; units: number }

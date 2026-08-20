@@ -179,7 +179,7 @@ export default async function AboutPage({ params }: Props) {
         <h2 className="font-display text-lg font-semibold text-muted">{c.contactTitle}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">{c.contactBody}</p>
         <div className="mt-4 flex flex-wrap gap-4">
-          <a href="https://t.me/wildlyplay" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Telegram</a>
+          <a href="https://t.me/banhbongnet" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Telegram</a>
           <a href="https://x.com/WildlyPlayGlob" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">X / Twitter</a>
           <a href="https://www.facebook.com/xemthethaotructiep" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Facebook</a>
         </div>

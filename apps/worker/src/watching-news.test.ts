@@ -317,7 +317,7 @@ describe('publishWatchingNews', () => {
 
     expect(store.posts.map((p) => p.lang).sort()).toEqual(['en', 'es', 'vi']);
     expect(sendPhoto).toHaveBeenCalledTimes(1);
-    expect(sendPhoto).toHaveBeenCalledWith('-100', expect.stringContaining('wildlyplay_watching'), expect.anything());
+    expect(sendPhoto).toHaveBeenCalledWith('-100', expect.stringContaining('banhbong_watching'), expect.anything());
   });
 
   it('REQ 4: presence posts can be deleted by slug on unwatch', async () => {

@@ -178,7 +178,7 @@ export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: str
 /** Send the NO-PLAY card to TG channel + FB page. Fire-and-forget — never throws. */
 async function sendNoPlayCard(deps: NoPlayCardDeps, np: ParsedNoPlay, slug: string): Promise<void> {
   const msg = formatNoPlayMessage(np, deps.siteUrl, slug);
-  const imageUrl = `${deps.siteUrl}/images/wildlyplay_noplay.png`;
+  const imageUrl = `${deps.siteUrl}/images/banhbong_noplay.png`;
 
   // TG channel
   if (deps.channelChatId) {

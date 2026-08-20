@@ -197,7 +197,7 @@ async function sendWatchingCard(
   reason?: string | null,
 ): Promise<void> {
   const msg = formatWatchingMessage(w, deps.siteUrl, slug, reason);
-  const imageUrl = `${deps.siteUrl}/images/wildlyplay_watching.png`;
+  const imageUrl = `${deps.siteUrl}/images/banhbong_watching.png`;
 
   // TG channel card — independent fail-safe.
   if (deps.channelChatId) {
