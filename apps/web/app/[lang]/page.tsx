@@ -396,8 +396,24 @@ export default async function Home({ params }: Props) {
           {/* Top: lead ~2/3 + up to 2 compact cards stacked in the right third
               (fills the gap Nick flagged 17/8). Rest drop to a 3-up grid below. */}
           <div className="grid gap-5 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+            <div className="flex flex-col gap-5 lg:col-span-2">
               <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+              {/* Telegram CTA — lấp lỗ trống cột trái dưới thẻ nổi bật (Nick 21/8);
+                  mobile: xếp dọc, nút full-width. */}
+              <div className="flex flex-col gap-3 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+                <div>
+                  <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
+                  <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
+                </div>
+                <a
+                  href="https://t.me/banhbongnet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5 sm:w-auto"
+                >
+                  {dict.home.joinTelegram} &rarr;
+                </a>
+              </div>
             </div>
             {restArticles.length > 1 && (
               <div className="flex flex-col gap-5">
@@ -441,24 +457,6 @@ export default async function Home({ params }: Props) {
           )}
         </section>
       )}
-
-      {/* 3c. Telegram CTA — thin full-width band (was the sidebar box). */}
-      <section className="pb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5">
-          <div>
-            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
-            <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
-          </div>
-          <a
-            href="https://t.me/banhbongnet"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
-          >
-            {dict.home.joinTelegram} &rarr;
-          </a>
-        </div>
-      </section>
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">
