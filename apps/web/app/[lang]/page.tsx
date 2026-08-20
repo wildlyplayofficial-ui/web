@@ -78,7 +78,7 @@ export default async function Home({ params }: Props) {
       getActiveWatching(),
       getCompetitionFixtures(EPL_LIVESCORE_ID),
       getStandingsCompetitions(),
-      getAnalysisArticles(undefined, 7),
+      getAnalysisArticles(undefined, 12),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -164,6 +164,20 @@ export default async function Home({ params }: Props) {
   const hotHero = hot ? hot.hero_image ?? `/api/og/analysis/${hot.slug}?locale=${lang}` : "";
   const hotExcerpt = hot ? hot.meta_description || analysisExcerpt(hot.body) : "";
   const restArticles = articles.filter((a) => a.slug !== hot?.slug).slice(0, 6);
+  // Nhận định mới nhất — lấp ô trống cột phải (Nick 20/8, Cách A). Bài dự đoán/nhận
+  // định (kind preview|analysis) — loại đã hiện ở lead/2 thẻ compact, tối đa 4, text-only.
+  const shownSlugs = new Set(
+    [hot?.slug, ...restArticles.slice(0, 3).map((a) => a.slug)].filter(Boolean),
+  );
+  const predictions = articles
+    .filter((a) => (a.kind === "preview" || a.kind === "analysis") && !shownSlugs.has(a.slug))
+    .slice(0, 4);
+  const predDate = (iso: string) =>
+    new Intl.DateTimeFormat(lang === "vi" ? "vi-VN" : lang, {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    }).format(new Date(iso));
 
   return (
     <>
@@ -390,6 +404,31 @@ export default async function Home({ params }: Props) {
                 {restArticles.slice(1, 3).map((a) => (
                   <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
                 ))}
+                {predictions.length > 0 && (
+                  <div className="rounded-2xl border border-line bg-card/40 p-4">
+                    <h3 className="mb-2 font-display text-sm font-bold text-muted">
+                      {dict.home.latestPredictions}
+                    </h3>
+                    <ul className="flex flex-col divide-y divide-line">
+                      {predictions.map((a) => (
+                        <li key={a.slug}>
+                          <Link
+                            href={withLang(`/analysis/${a.slug}`, lang)}
+                            prefetch={false}
+                            className="group flex flex-col gap-1 py-2.5"
+                          >
+                            <span className="text-xs text-muted">
+                              {a.league} &middot; {predDate(a.published_at)}
+                            </span>
+                            <span className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-brand">
+                              {a.title}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
