@@ -111,13 +111,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -147,7 +147,7 @@ function buildArticleSchema(
     datePublished: publishedAt ?? undefined,
     dateModified: publishedAt ?? undefined,
     mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
-    image: imageUrl ?? `${BASE}/api/og/news/${slug}`,
+    image: imageUrl ?? `${BASE}/api/og/news/${slug}?locale=${lang}`,
     author: {
       "@type": "Organization",
       name: authorName,
@@ -377,7 +377,7 @@ export default async function AnalysisArticlePage({ params }: Props) {
       {/* Hero card */}
       <div className="mt-6 overflow-hidden rounded-card">
         <img
-          src={`/api/og/news/${slug}`}
+          src={`/api/og/news/${slug}?locale=${lang}`}
           alt={post.title}
           width={1200}
           height={630}

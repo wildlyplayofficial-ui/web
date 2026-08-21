@@ -175,7 +175,6 @@ export async function handleApiRoute(
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row);
       void publishWatchingNews({
         store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-        card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
       }, row as unknown as import('./store').WatchingRow, watching.reason);
     }
     if (deps.aiEnv?.apiKey) {
@@ -203,7 +202,6 @@ export async function handleApiRoute(
     if (deps.aiEnv?.apiKey) {
       void publishNoPlayArticle({
         store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-        card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
       }, noplay);
     }
     json(res, 200, {

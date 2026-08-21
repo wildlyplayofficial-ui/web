@@ -47,7 +47,7 @@ const DISCLOSURE: Record<AuthorType, Record<PostLang, string>> = {
   },
   fictional_ai: {
     en: 'AI-picked, AI-written — Scout is an experimental AI persona, not a real person.',
-    vi: 'AI chọn trận, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.',
+    vi: 'AI chọn trận, AI viết bài — Trợ lý AI là nhân vật AI thử nghiệm, không phải người thật.',
     th: 'AI เลือกเดิมพัน เขียนโดย AI — Scout เป็นตัวละคร AI ทดลอง ไม่ใช่บุคคลจริง',
     es: 'Elegido por IA, escrito por IA — Scout es un personaje de IA experimental, no una persona real.',
   },
@@ -123,7 +123,8 @@ export const CLV_RULE =
  *  MỌI prompt sinh section tiếng Việt (recap, preview, analysis, post-mortem, no-play,
  *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
 export const VI_LEXICON_RULE =
-  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)';
+  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)\n' +
+  '- TÊN NHÂN VẬT BẢN VI (Nick chốt 21/8): trong section tiếng Việt gọi Curator là "Admin" và Scout là "Trợ lý AI" — TUYỆT ĐỐI KHÔNG để nguyên chữ "Curator" hay "Scout" trong bản VI. (Section EN/TH/ES giữ nguyên tên gốc.)';
 
 /** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
  *  football language ("closing stages", "closed out the win") never matches. */

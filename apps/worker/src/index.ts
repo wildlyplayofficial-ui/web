@@ -4,7 +4,6 @@ import { parseAllowlist } from './allowlist';
 import { announceResult } from './announce';
 import { createBot } from './bot';
 import { fetchOddsPayload } from './clv';
-import { startWeeklyDigest } from './digest';
 import { findEvent, type MatchQuery } from './event-lookup';
 import { trackFailure } from './job-tracker';
 import { onWarn } from './log';
@@ -21,7 +20,6 @@ import { publishAnalysisForPick, startAnalysisCron } from './news';
 import { computeRecord, generateRecap, generateRecapArticle } from './recap';
 import { publishPreview } from './preview';
 import { publishThesisTranslations } from './translate';
-import type { AnnounceArticleDeps } from './announce-article';
 import { getFinalScore } from './scores';
 import { createStore, type PickRow } from './store';
 import { log } from './log';
@@ -128,9 +126,6 @@ if (oddsApiKey) {
 } else {
   log.warn('ODDS_API_KEY unset — auto-settlement disabled, use /score');
 }
-
-// Weekly digest (batch 4): Sundays 13:00 UTC → TG channel + FB Page.
-const stopDigest = startWeeklyDigest({ api: bot.api, store, channelChatId, siteUrl, facebook });
 
 // Analysis cron (M5): auto-generate analysis articles, ENV-driven cadence.
 // Separate env from recap — analysis uses Sonnet (not RECAP_MODEL which is Haiku).
@@ -258,7 +253,6 @@ if (persistDb) {
     if (!w) throw new Error(`watching ${watchingId} not found`);
     await publishWatchingNews({
       store, env: aiEnv, revalidateUrl: siteUrl,
-      card: { api: bot.api, channelChatId, siteUrl, facebook },
       db: persistDb ?? undefined,
     }, w, reason);
   };
@@ -274,8 +268,7 @@ if (persistDb) {
     const pick = await store.getPick(pickId);
     if (!pick) throw new Error(`pick ${pickId} not found`);
     const { publishPostmortemArticle } = await import('./postmortem-article');
-    const articleDeps: AnnounceArticleDeps = { api: bot.api, channelChatId, store, siteUrl, facebook };
-    await publishPostmortemArticle({ store, env: aiEnv, revalidateUrl: siteUrl, announceArticle: articleDeps }, pick);
+    await publishPostmortemArticle({ store, env: aiEnv, revalidateUrl: siteUrl }, pick);
   };
 
   void retryStaleJobs(persistDb);
@@ -383,7 +376,6 @@ const server = createServer(async (req, res) => {
         void translateWatchingNote({ store, env: aiEnv }, watching);
         void publishWatchingNews({
           store, env: aiEnv, revalidateUrl: siteUrl,
-          card: { api: bot.api, channelChatId, siteUrl, facebook },
         }, watching);
       }
       void revalidate(['watching']);
@@ -515,7 +507,6 @@ async function shutdown(signal: string): Promise<void> {
   clearInterval(persistTimer);
   if (jobQueueTimer) clearInterval(jobQueueTimer);
   stopPoller();
-  stopDigest();
   stopAnalysis();
   stopBuzz();
   stopNewsGen();

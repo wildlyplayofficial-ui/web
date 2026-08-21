@@ -309,7 +309,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       key: `p-${post.id}`,
       href: withLang(`/analysis/${post.slug}`, lang),
       title: post.title,
-      thumb: `/api/og/news/${post.slug}`,
+      thumb: `/api/og/news/${post.slug}?locale=${lang}`,
       badge: dict.nav.news,
       date: post.published_at ?? "",
       phutDoc: phutDoc(post.body_md),

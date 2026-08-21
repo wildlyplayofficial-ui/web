@@ -92,7 +92,7 @@ function buildArticleSchema(post: {
     dateModified: post.published_at ?? undefined,
     inLanguage: post.lang,
     mainEntityOfPage: `${BASE}${withLang(`/guides/${slug}`, lang)}`,
-    image: `${BASE}/api/og/news/${slug}`,
+    image: `${BASE}/api/og/news/${slug}?locale=${lang}`,
     author: {
       "@type": "Organization",
       name: "banhbong.net",
