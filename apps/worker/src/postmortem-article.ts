@@ -127,8 +127,9 @@ export async function publishPostmortemArticle(
     for (const post of posts) await deps.store.insertPost(post);
     log.info(`postmortem-article: published ${posts.length} posts for ${score}`);
 
-    const enPost = posts.find((p) => p.lang === 'en');
-    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
+    // Đăng bản tiếng Việt cho kênh (Nick 21/8); fallback EN nếu thiếu VI.
+    const announcePost = posts.find((p) => p.lang === 'vi') ?? posts.find((p) => p.lang === 'en');
+    if (announcePost && deps.announceArticle) void announceArticle(deps.announceArticle, announcePost);
 
     if (deps.revalidateUrl) {
       const rev = createRevalidator({ siteUrl: deps.revalidateUrl, secret: process.env.REVALIDATE_SECRET });

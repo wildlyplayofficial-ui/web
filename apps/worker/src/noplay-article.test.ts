@@ -52,7 +52,7 @@ describe('formatNoPlayMessage — TG card verdict line (R5: never auto-truncate 
 
   it('falls back to the reason label when verdict is absent', () => {
     const msg = formatNoPlayMessage(noplay({ reason: 'VARIANCE_TOO_HIGH' }), 'https://www.banhbong.net', 'slug');
-    expect(msg).toContain('Variance too high to justify a stake');
+    expect(msg).toContain('Trận quá khó lường');
   });
 
   it('never dumps the long-form note into the card, even when note is set and verdict is not', () => {

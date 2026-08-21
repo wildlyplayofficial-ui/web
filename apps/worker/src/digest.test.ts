@@ -95,7 +95,7 @@ describe('buildCalibrationLine', () => {
       settledPick({ id: 'b', confidence: 'high', status: 'won' }),
       settledPick({ id: 'c', confidence: 'medium', status: 'lost' }),
     ]);
-    expect(line).toBe('Calibration: MED 0-1, HIGH 2-0');
+    expect(line).toBe('Độ chuẩn theo mức tự tin: TRUNG BÌNH 0-1, CAO 2-0');
   });
 
   it('returns null when no pick has a confidence level', () => {
@@ -113,7 +113,7 @@ describe('buildWeeklyDigest', () => {
 
   it('still posts on a pass-only week', () => {
     const text = buildWeeklyDigest([], 1, 'https://x.test', NOW);
-    expect(text).toContain('Picks: 0 (0W 0L 0P) \u00b7 Passes: 1 \u2014 discipline first');
+    expect(text).toContain('Tuần này: 0 nhận định (0 đúng, 0 chưa trúng, 0 hòa) · Bỏ qua: 1 trận');
   });
 
   it('builds the 4-line ledger card with record, passes and stats link', () => {
@@ -127,11 +127,11 @@ describe('buildWeeklyDigest', () => {
       'https://www.banhbong.net',
       NOW,
     );
-    expect(text).toContain('\u{1F4CA} Week 1 \u2014 Record 1-1-1 \u00b7 +0.05u');
-    expect(text).toContain('Picks: 3 (1W 1L 1P) \u00b7 Passes: 2 \u2014 discipline first');
+    expect(text).toContain('📊 Tuần 1 — Thành tích: 1 đúng · 1 chưa trúng · 1 hòa');
+    expect(text).toContain('Tuần này: 3 nhận định (1 đúng, 1 chưa trúng, 1 hòa) · Bỏ qua: 2 trận');
     expect(text).toContain('https://www.banhbong.net/stats');
-    expect(text).toContain('Not financial advice');
-    expect(text).not.toContain('Calibration'); // no confidence recorded
+    expect(text).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
+    expect(text).not.toContain('Độ chuẩn'); // no confidence recorded
   });
 
   it('adds the calibration line when confidence data exists', () => {
@@ -141,7 +141,7 @@ describe('buildWeeklyDigest', () => {
       'https://x.test',
       NOW,
     );
-    expect(text).toContain('Calibration: LOW 1-0');
+    expect(text).toContain('Độ chuẩn theo mức tự tin: THẤP 1-0');
   });
 });
 
@@ -184,7 +184,7 @@ describe('digestOnce', () => {
     expect(api.sendPhoto).toHaveBeenCalledWith(
       '-100123',
       'https://www.banhbong.net/images/banhbong_recap.png',
-      { caption: expect.stringContaining('Week 1') },
+      { caption: expect.stringContaining('Tuần 1'), parse_mode: 'HTML' },
     );
     expect(api.sendMessage).not.toHaveBeenCalled();
   });
@@ -196,7 +196,7 @@ describe('digestOnce', () => {
     api.sendPhoto.mockRejectedValueOnce(new Error('boom'));
     const key = await digestOnce(deps(store, api), null, NOW);
     expect(key).toBe('2026-06-14');
-    expect(api.sendMessage).toHaveBeenCalledWith('-100123', expect.stringContaining('Week 1'));
+    expect(api.sendMessage).toHaveBeenCalledWith('-100123', expect.stringContaining('Tuần 1'), { parse_mode: 'HTML' });
   });
 
   it('does nothing when not due', async () => {

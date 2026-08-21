@@ -8,7 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang, VI_LEXICON_RULE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
-import { postToFacebook } from './announce-pick';
+import { postToFacebook, leagueVi, kickoffVi } from './announce-pick';
 import { postPhotoToFacebook } from './announce';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
 import { authorTypeOf } from './store';
@@ -180,12 +180,18 @@ export function formatWatchingMessage(
   siteUrl: string,
   slug: string,
   reason?: string | null,
+  html = false,
 ): string {
-  const ko = new Date(w.kickoff_utc).toISOString().slice(11, 16);
+  // parse_mode HTML: escape dynamic text; TG in đậm, FB bản thường.
+  const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
+  const b = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
+  const link = buildArticleLink(siteUrl, slug, 'telegram');
   return [
-    `\u{1F440} Watching \u2014 ${w.home_team} vs ${w.away_team} \u00b7 ${w.league} \u00b7 KO ${ko} UTC`,
-    ...(reason ? [reason] : []),
-    `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
+    `\u{1F440} ĐANG THEO DÕI — ${b(`${w.home_team} vs ${w.away_team}`)}`,
+    `${esc(leagueVi(w.league))} \u00b7 ${b(kickoffVi(w.kickoff_utc))} (giờ VN)`,
+    ...(reason ? ['', esc(reason)] : []),
+    '',
+    html ? `\u{1F517} <a href="${link}">Xem chi tiết</a>` : `\u{1F517} Xem chi tiết: ${link}`,
   ].join('\n');
 }
 
@@ -196,16 +202,18 @@ async function sendWatchingCard(
   slug: string,
   reason?: string | null,
 ): Promise<void> {
-  const msg = formatWatchingMessage(w, deps.siteUrl, slug, reason);
+  const msgTg = formatWatchingMessage(w, deps.siteUrl, slug, reason, true);
+  const msgFb = formatWatchingMessage(w, deps.siteUrl, slug, reason, false);
   const imageUrl = `${deps.siteUrl}/images/banhbong_watching.png`;
 
   // TG channel card — independent fail-safe.
   if (deps.channelChatId) {
     try {
+      const tgOpts = { parse_mode: 'HTML' as const };
       try {
-        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
+        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msgTg, ...tgOpts });
       } catch {
-        await deps.api.sendMessage(deps.channelChatId, msg);
+        await deps.api.sendMessage(deps.channelChatId, msgTg, tgOpts);
       }
       log.info(`watching card sent for ${w.home_team} vs ${w.away_team}`);
     } catch (err) {
@@ -217,10 +225,10 @@ async function sendWatchingCard(
   if (deps.facebook) {
     try {
       try {
-        await postPhotoToFacebook(deps.facebook, imageUrl, msg);
+        await postPhotoToFacebook(deps.facebook, imageUrl, msgFb);
       } catch (err) {
         log.warn(`watching FB photo failed for ${w.home_team} vs ${w.away_team} — falling back to link post:`, err);
-        await postToFacebook(deps.facebook, msg, buildArticleLink(deps.siteUrl, slug, 'facebook'));
+        await postToFacebook(deps.facebook, msgFb, buildArticleLink(deps.siteUrl, slug, 'facebook'));
       }
       log.info(`watching FB post sent for ${w.home_team} vs ${w.away_team}`);
     } catch (err) {
