@@ -14,7 +14,7 @@ export function buildOrganization() {
     name: SITE_NAME,
     url: BASE,
     logo: `${BASE}/icons/icon-512x512.png`,
-    description: "Handpicked plays for the global crowd. Transparent sports picks with full public track record.",
+    description: "Daily football match previews, transfer news and live scores — clearly sourced football analysis.",
     sameAs: [...SAME_AS],
   };
 }
