@@ -57,7 +57,7 @@ export function buildNewsArticle(post: {
     url: `${BASE}${post.lang !== "en" ? `/${post.lang}` : ""}/news/${post.slug}`,
     datePublished: post.published_at,
     dateModified: post.published_at,
-    author: { "@type": "Organization", name: `The Curator @ ${SITE_NAME}`, url: BASE },
+    author: { "@type": "Organization", name: `Admin @ ${SITE_NAME}`, url: BASE },
     publisher: { "@type": "Organization", name: SITE_NAME, url: BASE, logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` } },
     description: post.meta_description ?? post.body_md.slice(0, 160),
     inLanguage: post.lang,
@@ -117,7 +117,7 @@ export function buildPerson() {
   return {
     "@context": "https://schema.org",
     "@type": "Person",
-    name: "The Curator",
+    name: "Admin",
     url: `${BASE}/about`,
     description:
       "The human behind banhbong.net's football picks. Every play is hand-researched and only posted when there's a genuine edge. Full public track record — wins and losses, from day one. Entertainment only.",

@@ -153,9 +153,9 @@ export const copy: Record<Lang, AboutCopy> = {
         description: "Một con người thật nghiên cứu mỗi trận, tìm góc nhìn và gửi nhận định. Admin là cổng con người — mọi nhận định bắt đầu từ quyết định của con người. Thành tích theo dõi riêng, minh bạch từ ngày đầu.",
       },
       {
-        name: "The Scout",
+        name: "Trợ lý AI",
         role: "AI vận hành · Độ tin cậy thấp hơn",
-        description: "Persona do AI vận hành công khai, chạy phân tích riêng. The Scout có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Admin.",
+        description: "Persona do AI vận hành công khai, chạy phân tích riêng. Trợ lý AI có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Admin.",
       },
     ],
     promiseTitle: "Cam kết",
