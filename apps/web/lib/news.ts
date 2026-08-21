@@ -141,3 +141,26 @@ export const getKickoffByMatchId = unstable_cache(
   ["kickoff-by-match-id"],
   { revalidate: 3600 },
 );
+
+/** Bài TIN gắn nhãn 1 đội (hub /doi). Cột `teams` chưa tồn tại (trước migration) → trả rỗng. */
+async function getNewsByTeamImpl(team: string, limit = 40): Promise<NewsItem[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("news_items")
+    .select("*")
+    .contains("teams", [team])
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    if (error.code === "42703" || error.message.includes("column")) return [];
+    throw new Error(`getNewsByTeam: ${error.message}`);
+  }
+  return (data ?? []) as NewsItem[];
+}
+
+export const getNewsByTeam = unstable_cache(getNewsByTeamImpl, ["news-by-team"], {
+  revalidate: 300,
+  tags: ["news"],
+});
