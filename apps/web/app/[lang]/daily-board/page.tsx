@@ -310,11 +310,11 @@ export default async function DailyBoard({ params }: Props) {
       </section>
       <p className="pb-14 text-center text-sm text-muted">
         <Link href={withLang("/analysis", lang)} className="font-semibold text-brand hover:underline">
-          Deep-dive analysis &rarr;
+          {lang === "vi" ? "Phân tích chuyên sâu" : "Deep-dive analysis"} &rarr;
         </Link>
         <span className="mx-3 text-line">·</span>
         <Link href={withLang("/guides", lang)} className="font-semibold text-brand hover:underline">
-          Betting guides &rarr;
+          {lang === "vi" ? "Hướng dẫn" : "Betting guides"} &rarr;
         </Link>
       </p>
     </div>
