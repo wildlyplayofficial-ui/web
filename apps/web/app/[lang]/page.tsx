@@ -16,6 +16,7 @@ import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { HotPickCard } from "@/components/hot-pick-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
+import { getNewsItems, getHeadline } from "@/lib/news";
 
 export const revalidate = 300;
 
@@ -69,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -79,6 +80,7 @@ export default async function Home({ params }: Props) {
       getCompetitionFixtures(EPL_LIVESCORE_ID),
       getStandingsCompetitions(),
       getAnalysisArticles(undefined, 12),
+      getNewsItems(undefined, 6),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -377,6 +379,52 @@ export default async function Home({ params }: Props) {
           noTime: dict.standings.provisionalTime,
         }}
       />
+
+      {/* 3a. TIN MỚI NHẤT — news_items lên trang chủ (Nick 21/8: tin không lên
+          homepage vì trước chỉ query analysis_articles). Ngay dưới dải trận. */}
+      {newsItems.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestNews}</h2>
+            <Link
+              href={withLang("/news", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.home.allNews} &rarr;
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {newsItems.map((n) => (
+              <Link
+                key={n.id}
+                href={withLang(`/news/${n.slug}`, lang)}
+                prefetch={false}
+                className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
+              >
+                {n.hero_card_url && (
+                  <img
+                    src={n.hero_card_url}
+                    alt=""
+                    width={1200}
+                    height={630}
+                    className="w-full"
+                    loading="lazy"
+                  />
+                )}
+                <div className="p-4">
+                  <time className="text-xs text-muted" dateTime={n.published_at}>
+                    {formatPostDate(n.published_at, lang)}
+                  </time>
+                  <p className="mt-1.5 line-clamp-2 font-display text-sm font-bold leading-snug transition-colors group-hover:text-brand">
+                    {getHeadline(n, lang)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 3. Latest analysis — FULL WIDTH, ESPN style (Nick 17/8: "dùng toàn bộ chiều
           ngang... theo kiểu ESPN"). Right sidebar dropped: the record box duplicated the

@@ -89,6 +89,8 @@ export interface Dict {
     seoDescription: string;
     latestAnalysis: string;
     latestPredictions: string;
+    latestNews: string;
+    allNews: string;
     viewBoard: string;
     trustCurator: string;
     trustScout: string;
@@ -393,6 +395,8 @@ const en: Dict = {
     seoDescription: "Free daily football picks by a human curator. Every play public forever — wins and losses. Match analysis, odds tools and betting guides across Premier League, La Liga, Serie A, Bundesliga and more.",
     latestAnalysis: "Latest analysis",
     latestPredictions: "Latest predictions",
+    latestNews: "Latest news",
+    allNews: "All news",
     viewBoard: "View the Daily Board",
     trustCurator: "The Curator — real human, hand-picked plays",
     trustScout: "The Scout — openly AI, separate ledger, lower confidence",
@@ -696,6 +700,8 @@ const vi: Dict = {
     seoDescription: "Nhận định bóng đá miễn phí mỗi ngày do người thật chọn. Mọi nhận định công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
     latestAnalysis: "Phân tích mới nhất",
     latestPredictions: "Nhận định mới nhất",
+    latestNews: "Tin mới nhất",
+    allNews: "Tất cả tin",
     viewBoard: "Xem Bảng Dự Đoán Hôm Nay",
     trustCurator: "Admin — người thật, tự tay chọn trận",
     trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
@@ -999,6 +1005,8 @@ const th: Dict = {
     seoDescription: "ทีเด็ดบอลฟรีรายวันโดยคิวเรเตอร์มนุษย์ ทุกทีเด็ดเปิดเผยต่อสาธารณะตลอดไป ทั้งชนะและแพ้ วิเคราะห์แมตช์ เครื่องมืออัตราต่อรอง และคู่มือสำหรับพรีเมียร์ลีก ลาลีกา เซเรียอา บุนเดสลีกา และอีกมากมาย",
     latestAnalysis: "บทวิเคราะห์ล่าสุด",
     latestPredictions: "ทำนายผลล่าสุด",
+    latestNews: "ข่าวล่าสุด",
+    allNews: "ข่าวทั้งหมด",
     viewBoard: "ดูบอร์ดประจำวัน",
     trustCurator: "Admin — คนจริง เลือกทีเด็ดด้วยมือ",
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
@@ -1302,6 +1310,8 @@ const es: Dict = {
     seoDescription: "Pronósticos de fútbol gratuitos diarios por un curador humano. Cada jugada pública para siempre — aciertos y fallos. Análisis de partidos, herramientas de cuotas y guías para Premier League, La Liga, Serie A, Bundesliga y más.",
     latestAnalysis: "Análisis recientes",
     latestPredictions: "Pronósticos recientes",
+    latestNews: "Últimas noticias",
+    allNews: "Todas las noticias",
     viewBoard: "Ver la Pizarra Diaria",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
     trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
