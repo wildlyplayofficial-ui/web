@@ -46,7 +46,7 @@ export default async function LangLayout({
           không phải "trang kèo". Site-wide vì mô tả CẢ TRANG, không phải bài lẻ. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganization()) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganization(lang)) }}
       />
       <script
         type="application/ld+json"
