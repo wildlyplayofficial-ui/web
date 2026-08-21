@@ -24,17 +24,62 @@ export interface PickCardExtras {
 }
 
 /** Legacy constant — Curator footer only. Used by digest.ts and announce.ts for non-pick-specific cards. */
-export const CARD_FOOTER = '\u2014 Human-picked \u00b7 Odds at publish \u00b7 Not financial advice';
+export const CARD_FOOTER = '\u2014 Nh\u1eadn \u0111\u1ecbnh c\u1ee7a ng\u01b0\u1eddi th\u1eadt \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o';
 
-/** Disclosure footer keyed by author_type (Bug A fix: Scout picks must say AI-picked). */
+/** D\u00f2ng c\u00f4ng b\u1ed1 theo author_type \u2014 ti\u1ebfng Vi\u1ec7t, VI-safe (b\u1ecf "odds/not financial advice").
+ *  Scout = AI, Curator = ng\u01b0\u1eddi th\u1eadt (Bug A: Scout ph\u1ea3i ghi r\u00f5 do AI). */
 export function cardFooter(pick: PickRow): string {
   const at = authorTypeOf(pick.author);
   return at === 'fictional_ai'
-    ? '\u2014 AI-picked \u00b7 Not a real person \u00b7 Odds at publish \u00b7 Not financial advice'
-    : '\u2014 Human-picked \u00b7 Odds at publish \u00b7 Not financial advice';
+    ? '\u2014 Nh\u1eadn \u0111\u1ecbnh do AI th\u1ef1c hi\u1ec7n \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o'
+    : '\u2014 Nh\u1eadn \u0111\u1ecbnh c\u1ee7a ng\u01b0\u1eddi th\u1eadt \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o';
 }
 
-const CONFIDENCE_LABELS: Record<string, string> = { low: 'LOW', medium: 'MED', high: 'HIGH' };
+/** Nhãn độ tự tin tiếng Việt (VI-legal 28/7: caption tiếng Việt tránh từ cá cược). */
+const CONFIDENCE_VI: Record<string, string> = { low: 'THẤP', medium: 'TRUNG BÌNH', high: 'CAO' };
+
+/** Tên giải tiếng Việt cho caption. Không có trong map → giữ nguyên tên gốc. */
+const LEAGUE_VI: Record<string, string> = {
+  'Premier League': 'Ngoại hạng Anh',
+  'Champions League': 'Cúp C1 châu Âu',
+  'Europa League': 'Cúp C2 châu Âu',
+  'Europa Conference League': 'Cúp C3 châu Âu',
+  'FA Cup': 'Cúp FA',
+  'EFL Cup': 'Cúp Liên đoàn Anh',
+};
+export function leagueVi(league: string): string {
+  return LEAGUE_VI[league] ?? league;
+}
+
+/** ISO UTC → "HH:mm ngày DD/MM" theo giờ VN (UTC+7). */
+export function kickoffVi(iso: string): string {
+  const vn = new Date(new Date(iso).getTime() + 7 * 3_600_000);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(vn.getUTCHours())}:${p(vn.getUTCMinutes())} ngày ${p(vn.getUTCDate())}/${p(vn.getUTCMonth() + 1)}`;
+}
+
+/** Diễn đạt lựa chọn theo giọng "nhận định", KHÔNG dùng từ cá cược (tài/xỉu/kèo).
+ *  over → "trận NHIỀU BÀN", under → "trận ÍT BÀN", 1x2/ah → đội nghiêng về, hòa. */
+export function pickVi(pick: PickRow): string {
+  const line = pick.line;
+  switch (pick.market) {
+    case 'ou':
+      // Peter 21/8: bỏ "nghiêng trận nhiều/ít bàn" khó hiểu — dùng thẳng Over/Under.
+      if (pick.market_side === 'over') return line != null ? `Over ${line} bàn` : 'Over';
+      if (pick.market_side === 'under') return line != null ? `Under ${line} bàn` : 'Under';
+      return 'tổng số bàn của trận';
+    case 'ah':
+    case '1x2':
+      if (pick.market_side === 'home') return pick.home_team;
+      if (pick.market_side === 'away') return pick.away_team;
+      if (pick.market_side === 'draw') return 'kết quả HÒA';
+      return pick.selection;
+    case 'btts':
+      return 'cả hai đội cùng ghi bàn';
+    default:
+      return pick.selection;
+  }
+}
 
 /** SEO slug for outbound TG links (Bug D: prefer slug over UUID). Mirrors web buildPlaySlug. */
 function slugify(s: string): string {
@@ -68,17 +113,25 @@ export function formatPickBlock(pick: PickRow): string {
 }
 
 /** FINAL 5-line card (Post Restructure Spec v1 §2.1, locked 3/7 — 5 lines is the floor). */
-export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCardExtras = {}): string {
-  const live = pick.publish_score_home != null
-    ? ` (live @ ${pick.publish_score_home}-${pick.publish_score_away})` : '';
-  const confidence = pick.confidence ? CONFIDENCE_LABELS[pick.confidence] ?? pick.confidence.toUpperCase() : null;
-  const against = extras.againstMarket ? ' \u00b7 \u26A0\uFE0F against market' : '';
+export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCardExtras = {}, html = false): string {
+  // parse_mode HTML: escape dynamic text (team names như "Brighton & Hove Albion" chứa &).
+  const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
+  const b = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
   const slug = buildPickSlug(pick);
+  const link = `${siteUrl}/play/${slug}`;
+  const conf = pick.confidence ? CONFIDENCE_VI[pick.confidence] ?? pick.confidence.toUpperCase() : null;
+  const live = pick.publish_score_home != null
+    ? ` (\u0111ang \u0111\u00e1 ${pick.publish_score_home}-${pick.publish_score_away})` : '';
+  const against = extras.againstMarket ? ' \u00b7 \u26A0\uFE0F ng\u01b0\u1ee3c s\u1ed1 \u0111\u00f4ng' : '';
   return [
-    `\u{1F3AF} ${pick.home_team} vs ${pick.away_team} \u00b7 ${pick.league} \u00b7 KO ${pick.kickoff_utc.slice(11, 16)} UTC${live}`,
-    `\u{1F449} ${formatPickBlock(pick)} \u00b7 ${Number(pick.stake_units)}u${confidence ? ` \u00b7 ${confidence}` : ''}${against}`,
-    ...(extras.hook ? [`\u{1F4DD} ${extras.hook}`] : []),
-    `\u{1F517} ${siteUrl}/play/${slug}`,
+    `\ud83c\udfaf ${b(`${pick.home_team} vs ${pick.away_team}`)}`,
+    `${esc(leagueVi(pick.league))} \u00b7 ${b(kickoffVi(pick.kickoff_utc))} (gi\u1edd VN)${live}`,
+    '',
+    `\ud83d\udc49 Nghi\u00eang v\u1ec1 ${b(pickVi(pick))}`,
+    ...(conf ? [`\ud83d\udcca M\u1ee9c tin: ${b(conf)}${against}`] : []),
+    ...(extras.hook ? ['', `\ud83d\udcdd ${esc(extras.hook)}`] : []),
+    '',
+    html ? `\ud83d\udd17 <a href="${link}">Xem nh\u1eadn \u0111\u1ecbnh chi ti\u1ebft</a>` : `\ud83d\udd17 Xem nh\u1eadn \u0111\u1ecbnh chi ti\u1ebft: ${link}`,
     cardFooter(pick),
   ].join('\n');
 }
@@ -86,12 +139,11 @@ export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCa
 /** Voided before kickoff (Nick 12/6): the pick stays visible, never silently deleted. */
 export function formatVoidMessage(pick: PickRow, siteUrl: string): string {
   return [
-    '\u26D4 PLAY VOIDED \u2014 The Curator',
-    `${pick.home_team} vs ${pick.away_team} \u00b7 ${pick.league}`,
-    `Play: ${pick.selection} @ ${pick.odds_publish} \u2014 voided before kickoff.`,
-    'Does not count toward the record.',
+    '\u26D4 H\u1ee6Y NH\u1eacN \u0110\u1ecaNH',
+    `${pick.home_team} vs ${pick.away_team} \u00b7 ${leagueVi(pick.league)}`,
+    'Hu\u1ef7 tr\u01b0\u1edbc gi\u1edd \u0111\u00e1 \u2014 kh\u00f4ng t\u00ednh v\u00e0o th\u00e0nh t\u00edch.',
     '',
-    `\u{1F449} ${siteUrl}/play/${pick.id}`,
+    `\ud83d\udd17 Xem chi ti\u1ebft: ${siteUrl}/play/${pick.id}`,
   ].join('\n');
 }
 
@@ -141,35 +193,46 @@ export async function announcePick(
   pick: PickRow,
   extras: PickCardExtras = {},
 ): Promise<void> {
-  await broadcast(deps, pick, formatPickMessage(pick, deps.siteUrl, extras), 'pick announce');
+  // Telegram: in đậm phần chính bằng HTML; Facebook: bản thường (nhấn mạnh sẵn bằng CHỮ HOA).
+  await broadcast(
+    deps,
+    pick,
+    formatPickMessage(pick, deps.siteUrl, extras, true),
+    formatPickMessage(pick, deps.siteUrl, extras, false),
+    'pick announce',
+  );
 }
 
 /** Announce a pre-kickoff void — same channels, same fail-safe rules as a new pick. */
 export async function announceVoid(deps: AnnouncePickDeps, pick: PickRow): Promise<void> {
-  await broadcast(deps, pick, formatVoidMessage(pick, deps.siteUrl), 'void announce');
+  const msg = formatVoidMessage(pick, deps.siteUrl);
+  await broadcast(deps, pick, msg, msg, 'void announce');
 }
 
 async function broadcast(
   deps: AnnouncePickDeps,
   pick: PickRow,
-  msg: string,
+  msgTg: string,
+  msgFb: string,
   detail: 'pick announce' | 'void announce',
 ): Promise<void> {
   // R7: TG NEW PLAY carries the OG data-card (numbers in the image);
   // branded PICK visual is the fallback — never text-only by design.
-  const ogCardUrl = `${deps.siteUrl}/api/og/play/${pick.id}`;
+  // lang=vi: chữ trên thẻ OG render tiếng Việt (Nick 21/8).
+  const ogCardUrl = `${deps.siteUrl}/api/og/play/${pick.id}?lang=vi`;
   const brandImageUrl = `${deps.siteUrl}/images/banhbong_pick.png`;
 
   if (deps.channelChatId) {
     try {
       let sent;
+      const tgOpts = { parse_mode: 'HTML' as const };
       try {
-        sent = await deps.api.sendPhoto(deps.channelChatId, ogCardUrl, { caption: msg });
+        sent = await deps.api.sendPhoto(deps.channelChatId, ogCardUrl, { caption: msgTg, ...tgOpts });
       } catch {
         try {
-          sent = await deps.api.sendPhoto(deps.channelChatId, brandImageUrl, { caption: msg });
+          sent = await deps.api.sendPhoto(deps.channelChatId, brandImageUrl, { caption: msgTg, ...tgOpts });
         } catch {
-          sent = await deps.api.sendMessage(deps.channelChatId, msg);
+          sent = await deps.api.sendMessage(deps.channelChatId, msgTg, tgOpts);
         }
       }
       await deps.store.insertChannelLog({
@@ -193,11 +256,11 @@ async function broadcast(
       try {
         // §3: FB hero = branded PICK visual (stopping power); OG data-card + link go in the first comment.
         const { postPhotoToFacebook } = await import('./announce');
-        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, `${msg}\n\n${deps.siteUrl}/play/${pick.id}`);
+        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, `${msgFb}\n\n${deps.siteUrl}/play/${pick.id}`);
         void postFacebookComment(deps.facebook, fbId, `${deps.siteUrl}/play/${pick.id}`, ogCardUrl)
           .catch((err) => log.warn(`FB OG comment failed for ${pick.id} — hero already posted:`, err));
       } catch {
-        fbId = await postToFacebook(deps.facebook, msg, `${deps.siteUrl}/play/${pick.id}`);
+        fbId = await postToFacebook(deps.facebook, msgFb, `${deps.siteUrl}/play/${pick.id}`);
       }
       await deps.store.insertChannelLog({
         pick_id: pick.id,

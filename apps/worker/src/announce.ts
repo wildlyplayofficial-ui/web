@@ -1,6 +1,6 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
-import { postToFacebook, formatPickBlock, CARD_FOOTER } from './announce-pick';
+import { postToFacebook, pickVi, CARD_FOOTER } from './announce-pick';
 import { buildRecapPosts, detectClosingLineFabrication } from './recap';
 import type { PickRow, Store } from './store';
 import { log } from './log';
@@ -21,17 +21,20 @@ export interface AnnounceDeps {
   recapArticle?: (pick: PickRow) => Promise<string | null>;
 }
 
-const BADGES: Record<string, string> = {
-  won: '\u2705 WIN', lost: '\u274c LOSS', push: '\u{1F7E1} PUSH', void: '\u26aa VOID',
+const STATUS_VI: Record<string, string> = {
+  won: '\u2705 NHẬN ĐỊNH ĐÚNG',
+  lost: '\u274c CHƯA TRÚNG',
+  push: '\u{1F7E1} HÒA — KHÔNG TÍNH',
+  void: '\u26aa HỦY',
 };
 
-/** §2.3: all 5 AH settlement states get distinct markers (quarter-lines are routine). */
-const OUTCOME_BADGES: Record<string, string> = {
-  win: '\u2705 WIN',
-  half_win: '\u2705\u00bd HALF-WIN',
-  push: '\u{1F7E1} PUSH',
-  half_loss: '\u274c\u00bd HALF-LOSS',
-  loss: '\u274c LOSS',
+/** VI-safe: 5 trạng thái settle gộp về đúng/chưa trúng/hòa (bỏ half-win/half-loss của kèo AH). */
+const OUTCOME_VI: Record<string, string> = {
+  win: '\u2705 NHẬN ĐỊNH ĐÚNG',
+  half_win: '\u2705 NHẬN ĐỊNH ĐÚNG',
+  push: '\u{1F7E1} HÒA — KHÔNG TÍNH',
+  half_loss: '\u274c CHƯA TRÚNG',
+  loss: '\u274c CHƯA TRÚNG',
 };
 
 /** Branded settled banner per status (§2.6 image table, fallback when OG card fails). */
@@ -58,15 +61,16 @@ export function formatUnits(n: number): string {
   return `${rounded > 0 ? '+' : ''}${rounded}u`;
 }
 
-/** 3-line SETTLED card (Post Restructure Spec v1 §2.3, locked 3/7 — 5 AH states). */
+/** Thẻ KẾT QUẢ — tiếng Việt, VI-safe (bỏ @odds + units; giọng "nhận định đúng/chưa trúng"). */
 export function formatResultMessage(pick: PickRow, record?: RecordSummary): string {
-  const badge = (pick.raw_outcome && OUTCOME_BADGES[pick.raw_outcome])
-    ?? BADGES[pick.status] ?? pick.status;
+  const badge = (pick.raw_outcome && OUTCOME_VI[pick.raw_outcome])
+    ?? STATUS_VI[pick.status] ?? pick.status;
   const lines = [
-    `${badge} | ${formatPickBlock(pick)} \u2192 FT ${pick.home_score}-${pick.away_score} \u00b7 ${formatUnits(Number(pick.units_pl))}`,
+    `${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`,
+    `\u{1F449} ${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`,
   ];
   if (record) {
-    lines.push(`\u{1F4CA} Record: ${record.wins}-${record.losses}-${record.pushes} \u00b7 ${formatUnits(record.units)}`);
+    lines.push(`\u{1F4CA} Th\u00e0nh t\u00edch: ${record.wins} \u0111\u00fang \u00b7 ${record.losses} ch\u01b0a tr\u00fang \u00b7 ${record.pushes} h\u00f2a`);
   }
   lines.push(CARD_FOOTER);
   return lines.join('\n');

@@ -8,6 +8,7 @@ import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DE
 import { parseAnalysisSection } from './news';
 import { buildArticleLink } from './announce-article';
 import { postPhotoToFacebook } from './announce';
+import { leagueVi } from './announce-pick';
 import type { NewPost, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -26,6 +27,17 @@ const REASON_LABELS: Record<NoPlayReason, string> = {
   MARKET_EFFICIENT: 'Market already priced efficiently',
   SIGNAL_UNSTABLE: 'Signal too unstable to act on',
   VALUE_GONE: 'Price moved past our number',
+};
+
+/** Nhãn lý do bỏ qua — tiếng Việt, VI-safe (không dùng từ cá cược) cho thẻ kênh. */
+const REASON_LABELS_VI: Record<NoPlayReason, string> = {
+  NO_EDGE: 'Không có lý do đủ mạnh để chọn trận này',
+  PRICE_TOO_SHORT: 'Chênh lệch hai đội quá rõ, ít bất ngờ',
+  VARIANCE_TOO_HIGH: 'Trận quá khó lường',
+  TEAM_NEWS_UNCLEAR: 'Thông tin đội hình chưa rõ',
+  MARKET_EFFICIENT: 'Thế trận đã quá cân bằng, khó có kết luận',
+  SIGNAL_UNSTABLE: 'Tín hiệu chưa đủ ổn định để nhận định',
+  VALUE_GONE: 'Thời điểm hợp lý đã trôi qua',
 };
 
 // ── Slug ────────────────────────────────────────────────────────────────────
@@ -166,27 +178,34 @@ export interface NoPlayArticleDeps {
 }
 
 /** 3-line ⛔ NO-PLAY card (Post Restructure Spec v1 §2.2, Nick DUYỆT 3/7). Verdict = dedicated `verdict:` field (author-written), reason label as fallback — never the long-form `note:` (R5: never auto-truncate). */
-export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: string): string {
-  const verdict = np.verdict ?? REASON_LABELS[np.reason];
+export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: string, html = false): string {
+  const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
+  const b = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
+  const verdict = np.verdict ?? REASON_LABELS_VI[np.reason] ?? REASON_LABELS[np.reason];
+  const link = buildArticleLink(siteUrl, slug, 'telegram');
   return [
-    `\u26D4 NO-PLAY \u2014 ${np.homeTeam} vs ${np.awayTeam} \u00b7 ${np.league}`,
-    `${verdict} \u2014 why the Curator passes:`,
-    `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
+    `\u26D4 BỎ QUA TRẬN NÀY \u2014 ${b(`${np.homeTeam} vs ${np.awayTeam}`)}`,
+    esc(leagueVi(np.league)),
+    `Lý do bỏ qua: ${esc(verdict)}`,
+    '',
+    html ? `\u{1F517} <a href="${link}">Xem chi tiết</a>` : `\u{1F517} Xem chi tiết: ${link}`,
   ].join('\n');
 }
 
 /** Send the NO-PLAY card to TG channel + FB page. Fire-and-forget — never throws. */
 async function sendNoPlayCard(deps: NoPlayCardDeps, np: ParsedNoPlay, slug: string): Promise<void> {
-  const msg = formatNoPlayMessage(np, deps.siteUrl, slug);
+  const msgTg = formatNoPlayMessage(np, deps.siteUrl, slug, true);
+  const msgFb = formatNoPlayMessage(np, deps.siteUrl, slug, false);
   const imageUrl = `${deps.siteUrl}/images/banhbong_noplay.png`;
 
   // TG channel
   if (deps.channelChatId) {
     try {
+      const tgOpts = { parse_mode: 'HTML' as const };
       try {
-        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
+        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msgTg, ...tgOpts });
       } catch {
-        await deps.api.sendMessage(deps.channelChatId, msg);
+        await deps.api.sendMessage(deps.channelChatId, msgTg, tgOpts);
       }
       log.info(`no-play TG card sent for ${np.homeTeam} vs ${np.awayTeam}`);
     } catch (err) {
@@ -197,7 +216,7 @@ async function sendNoPlayCard(deps: NoPlayCardDeps, np: ParsedNoPlay, slug: stri
   // FB page (restored — was removed in Post Restructure 3/7, Nick confirms no-play should post to FB)
   if (deps.facebook) {
     try {
-      await postPhotoToFacebook(deps.facebook, imageUrl, msg);
+      await postPhotoToFacebook(deps.facebook, imageUrl, msgFb);
       log.info(`no-play FB post sent for ${np.homeTeam} vs ${np.awayTeam}`);
     } catch (err) {
       log.warn(`no-play FB post failed for ${np.homeTeam} vs ${np.awayTeam}:`, err);
