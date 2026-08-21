@@ -91,7 +91,7 @@ export default async function RootLayout({
                   name: SITE_NAME,
                   url: SITE_URL,
                   logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon-512x512.png` },
-                  description: "Handpicked plays for the global crowd. Transparent sports picks with full public track record, CLV tracking, and AI-powered multilingual content.",
+                  description: "Daily football match previews, transfer news and live scores — clearly sourced football analysis, updated every day.",
                   sameAs: [...SAME_AS],
                 },
               ]),

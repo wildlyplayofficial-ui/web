@@ -54,9 +54,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!pick) return { title: "Not found" };
   const slug = buildPlaySlug(pick);
   const settled = pick.status !== "published";
-  const title = settled
-    ? `${pick.home_team} vs ${pick.away_team} \u2014 Result & Analysis`
-    : `${pick.home_team} vs ${pick.away_team} \u2014 Prediction, Odds & Analysis`;
+  const title = lang === "vi"
+    ? (settled
+        ? `${pick.home_team} vs ${pick.away_team} — Nhận định & Kết quả`
+        : `${pick.home_team} vs ${pick.away_team} — Nhận định bóng đá`)
+    : (settled
+        ? `${pick.home_team} vs ${pick.away_team} — Result & Analysis`
+        : `${pick.home_team} vs ${pick.away_team} — Prediction & Analysis`);
   const translations = await getThesisTranslations([pick.id]);
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
   const image = `/api/og/play/${pick.id}`;
