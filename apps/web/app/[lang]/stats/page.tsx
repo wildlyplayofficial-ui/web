@@ -157,7 +157,7 @@ export default async function StatsPage({ params }: Props) {
       </section>
 
       <div className="mb-6 text-center">
-        <h2 className="font-display text-2xl font-bold text-brand">Main Picks &middot; The Curator</h2>
+        <h2 className="font-display text-2xl font-bold text-brand">Main Picks &middot; Admin</h2>
         <p className="mt-2 text-xs text-muted">Real analyst &middot; highest conviction &middot; primary ledger</p>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
@@ -195,7 +195,7 @@ export default async function StatsPage({ params }: Props) {
         <section className="mt-14 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
           <div className="text-center">
             <h2 className="font-display text-2xl font-bold text-[#6b9e9e]">
-              Alternative Picks &middot; The Scout
+              Alternative Picks &middot; Trợ lý AI
             </h2>
             <p className="mt-2 text-xs text-muted">
               Fictional, AI-operated banhbong.net persona &middot; lower confidence &middot; separate ledger

@@ -217,7 +217,7 @@ export default async function DailyBoard({ params }: Props) {
           </div>
 
           <p className="inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
-            <span className="text-muted">The Scout</span>
+            <span className="text-muted">Trợ lý AI</span>
             <span className="font-semibold text-ink">
               {scoutRecord.wins}-{scoutRecord.losses}-{scoutRecord.pushes}
             </span>
@@ -276,7 +276,7 @@ export default async function DailyBoard({ params }: Props) {
                     {p.home_team} {p.home_score ?? ""}&ndash;{p.away_score ?? ""} {p.away_team}
                   </span>
                   <span className="block truncate text-sm text-muted">
-                    {p.selection} · {(p.author ?? "curator") === "scout" ? "The Scout" : "The Curator"}
+                    {p.selection} · {(p.author ?? "curator") === "scout" ? "Trợ lý AI" : "Admin"}
                   </span>
                 </span>
                 <span className={`shrink-0 font-display text-sm font-semibold ${(p.units_pl ?? 0) >= 0 ? "text-brand" : "text-loss"}`}>

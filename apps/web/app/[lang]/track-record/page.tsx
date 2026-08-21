@@ -84,7 +84,7 @@ export default async function TrackRecordHub({ params }: Props) {
           <div className="rounded-card border border-[#6b9e9e]/30 bg-[#6b9e9e]/[.06] p-6">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6b9e9e] text-sm font-bold text-bg">S</span>
-              <span className="font-display text-lg font-bold">The Scout</span>
+              <span className="font-display text-lg font-bold">Trợ lý AI</span>
             </div>
             <div className="mt-3 flex items-baseline gap-3">
               <span className="font-display text-2xl font-bold">{scout.wins}-{scout.losses}-{scout.pushes}</span>

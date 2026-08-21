@@ -126,8 +126,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  *  persona-specific for pick-driven content. */
 function postByline(post: { type: string; author?: string }): string {
   if (post.type === "news" || post.type === "guide") return "banhbong.net";
-  if (post.author === "scout") return "The Scout @ banhbong.net";
-  return "The Curator @ banhbong.net";
+  if (post.author === "scout") return "Trợ lý AI @ banhbong.net";
+  return "Admin @ banhbong.net";
 }
 
 function buildArticleSchema(

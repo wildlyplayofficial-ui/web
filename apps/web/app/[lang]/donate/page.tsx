@@ -35,7 +35,7 @@ const copy: Record<Lang, Copy> = {
   vi: {
     title: "\u1ee6ng H\u1ed9 banhbong.net",
     intro:
-      "banhbong.net mi\u1ec5n ph\u00ed, v\u0129nh vi\u1ec5n. Kh\u00f4ng g\u00f3i VIP, kh\u00f4ng thu ph\u00ed, kh\u00f4ng affiliate nh\u00e0 c\u00e1i \u2014 ch\u1ec9 m\u1ed9t k\u00e8o m\u1ed7i ng\u00e0y v\u00e0 m\u1ed9t b\u1ea3ng th\u00e0nh t\u00edch c\u00f4ng khai. N\u1ebfu k\u00e8o mang l\u1ea1i gi\u00e1 tr\u1ecb v\u00e0 b\u1ea1n mu\u1ed1n m\u1eddi The Curator m\u1ed9t ly c\u00e0 ph\u00ea, crypto l\u00e0 c\u00e1ch duy nh\u1ea5t ch\u00fang t\u00f4i nh\u1eadn.",
+      "banhbong.net mi\u1ec5n ph\u00ed, v\u0129nh vi\u1ec5n. Kh\u00f4ng g\u00f3i VIP, kh\u00f4ng thu ph\u00ed, kh\u00f4ng affiliate nh\u00e0 c\u00e1i \u2014 ch\u1ec9 m\u1ed9t k\u00e8o m\u1ed7i ng\u00e0y v\u00e0 m\u1ed9t b\u1ea3ng th\u00e0nh t\u00edch c\u00f4ng khai. N\u1ebfu k\u00e8o mang l\u1ea1i gi\u00e1 tr\u1ecb v\u00e0 b\u1ea1n mu\u1ed1n m\u1eddi Admin m\u1ed9t ly c\u00e0 ph\u00ea, crypto l\u00e0 c\u00e1ch duy nh\u1ea5t ch\u00fang t\u00f4i nh\u1eadn.",
     freeForever:
       "Mi\u1ec5n ph\u00ed v\u0129nh vi\u1ec5n. \u1ee6ng h\u1ed9 kh\u00f4ng m\u1edf kh\u00f3a b\u1ea5t c\u1ee9 th\u1ee9 g\u00ec \u2014 v\u00ec kh\u00f4ng c\u00f3 g\u00ec \u0111\u1ec3 m\u1edf kh\u00f3a.",
     networkLabel: "USDT \u2014 ch\u1ec9 m\u1ea1ng TRC-20",

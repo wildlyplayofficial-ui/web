@@ -153,8 +153,8 @@ export async function GET(
           }}
         >
           {pick.author === "scout"
-            ? "banhbong.net · The Scout — AI-picked. Not a real person. Not financial advice."
-            : "banhbong.net · The Curator — Human-picked. Not financial advice."}
+            ? "banhbong.net · Trợ lý AI — AI-picked. Not a real person. Not financial advice."
+            : "banhbong.net · Admin — Human-picked. Not financial advice."}
         </div>
       </div>
     ),
