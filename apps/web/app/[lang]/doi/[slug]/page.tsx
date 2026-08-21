@@ -15,6 +15,10 @@ export const revalidate = 300;
 
 const LANGS: Lang[] = ["en", "vi", "th", "es"];
 
+/** Đủ bài mới cho Google index — dưới ngưỡng thì noindex để tránh "trang mỏng" dìm
+ *  cả site (Jane 21/8). Tự bật index khi 1 đội tích đủ bài, không cần sửa tay. */
+const MIN_INDEX = 12;
+
 export function generateStaticParams() {
   return LANGS.flatMap((lang) => TEAM_HUBS.map((t) => ({ lang, slug: t.slug })));
 }
@@ -76,10 +80,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const team = getTeamHub(slug);
   if (!team) return {};
   const L = LABELS[lang];
+  // Noindex khi chưa đủ bài (tránh trang mỏng dìm site) — tự bật index khi đủ.
+  const [news, analysis] = await Promise.all([getNewsByTeam(slug, MIN_INDEX), getAnalysisByTeam(slug, MIN_INDEX)]);
+  const dense = news.length + analysis.length >= MIN_INDEX;
   return {
     title: `${L.about(team.name)} | banhbong.net`,
     description: L.sub(team.name),
     alternates: buildAlternates(`/doi/${slug}`, lang),
+    robots: { index: dense, follow: true },
     openGraph: {
       title: `${L.about(team.name)} | banhbong.net`,
       description: L.sub(team.name),
