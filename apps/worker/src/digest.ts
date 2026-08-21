@@ -65,7 +65,7 @@ export function buildCalibrationLine(settled: PickRow[]): string | null {
     const l = of.filter((p) => p.status === 'lost').length;
     parts.push(`${label} ${w}-${l}`);
   }
-  return parts.length > 0 ? `Độ chuẩn theo mức tin: ${parts.join(', ')}` : null;
+  return parts.length > 0 ? `Độ chuẩn theo mức tự tin: ${parts.join(', ')}` : null;
 }
 
 /** 4-line WEEKLY LEDGER card. Null when nothing happened this week (no spam weeks). */

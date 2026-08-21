@@ -95,7 +95,7 @@ describe('buildCalibrationLine', () => {
       settledPick({ id: 'b', confidence: 'high', status: 'won' }),
       settledPick({ id: 'c', confidence: 'medium', status: 'lost' }),
     ]);
-    expect(line).toBe('Độ chuẩn theo mức tin: TRUNG BÌNH 0-1, CAO 2-0');
+    expect(line).toBe('Độ chuẩn theo mức tự tin: TRUNG BÌNH 0-1, CAO 2-0');
   });
 
   it('returns null when no pick has a confidence level', () => {
@@ -141,7 +141,7 @@ describe('buildWeeklyDigest', () => {
       'https://x.test',
       NOW,
     );
-    expect(text).toContain('Độ chuẩn theo mức tin: THẤP 1-0');
+    expect(text).toContain('Độ chuẩn theo mức tự tin: THẤP 1-0');
   });
 });
 

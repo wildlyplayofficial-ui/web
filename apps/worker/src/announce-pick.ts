@@ -59,7 +59,7 @@ export function kickoffVi(iso: string): string {
 }
 
 /** Diễn đạt lựa chọn theo giọng "nhận định", KHÔNG dùng từ cá cược (tài/xỉu/kèo).
- *  over → "trận NHIỀU BÀN", under → "trận ÍT BÀN", 1x2/ah → đội nghiêng về, hòa. */
+ *  ou → "Over/Under X bàn" (Peter 21/8), 1x2/ah → tên đội / "kết quả HÒA". */
 export function pickVi(pick: PickRow): string {
   const line = pick.line;
   switch (pick.market) {
@@ -127,8 +127,8 @@ export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCa
     `\ud83c\udfaf ${b(`${pick.home_team} vs ${pick.away_team}`)}`,
     `${esc(leagueVi(pick.league))} \u00b7 ${b(kickoffVi(pick.kickoff_utc))} (gi\u1edd VN)${live}`,
     '',
-    `\ud83d\udc49 Nghi\u00eang v\u1ec1 ${b(pickVi(pick))}`,
-    ...(conf ? [`\ud83d\udcca M\u1ee9c tin: ${b(conf)}${against}`] : []),
+    `\ud83d\udc49 ${b(pickVi(pick))}`,
+    ...(conf ? [`\ud83d\udcca M\u1ee9c t\u1ef1 tin: ${b(conf)}${against}`] : []),
     ...(extras.hook ? ['', `\ud83d\udcdd ${esc(extras.hook)}`] : []),
     '',
     html ? `\ud83d\udd17 <a href="${link}">Xem nh\u1eadn \u0111\u1ecbnh chi ti\u1ebft</a>` : `\ud83d\udd17 Xem nh\u1eadn \u0111\u1ecbnh chi ti\u1ebft: ${link}`,

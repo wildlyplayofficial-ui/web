@@ -61,13 +61,13 @@ describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () =
     const msg = formatPickMessage(pick, SITE);
     expect(msg).toContain('🎯 Mexico vs South Africa');
     expect(msg).toContain('FIFA World Cup 2026 — Group A · 02:00 ngày 12/06 (giờ VN)');
-    expect(msg).toContain('👉 Nghiêng về Mexico -1.25');
+    expect(msg).toContain('👉 Mexico -1.25');
     expect(msg).toContain(`${SITE}/play/mexico-vs-south-africa-mexico-1-25-2026-06-11`);
     expect(msg).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
     expect(msg).not.toContain('test thesis'); // R2: card is scannable, thesis lives on the play page
     expect(msg).not.toContain('sure win');
     expect(msg).not.toContain('live @');
-    expect(msg).not.toContain('Mức tin'); // no confidence registered on this pick
+    expect(msg).not.toContain('Mức tự tin'); // no confidence registered on this pick
     expect(msg).not.toContain('@ 2.05'); // VI-safe: no odds
   });
 
@@ -81,9 +81,9 @@ describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () =
   it('shows the confidence line with the against-the-market cue (R3)', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick({ confidence: 'high' }));
-    expect(formatPickMessage(pick, SITE)).toContain('📊 Mức tin: CAO');
+    expect(formatPickMessage(pick, SITE)).toContain('📊 Mức tự tin: CAO');
     expect(formatPickMessage(pick, SITE, { againstMarket: true }))
-      .toContain('Mức tin: CAO · ⚠️ ngược số đông');
+      .toContain('Mức tự tin: CAO · ⚠️ ngược số đông');
   });
 
   it('renders the hand-written hook untouched and omits the line when absent (R5)', async () => {
