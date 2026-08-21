@@ -77,7 +77,7 @@ export default async function TrackRecordHub({ params }: Props) {
               {formatUnits(curator.units_pl)}
             </span>
           </div>
-          <p className="mt-1 text-xs text-muted">{curator.settled} settled plays</p>
+          <p className="mt-1 text-xs text-muted">{curator.settled} {lang === "vi" ? "nhận định đã có kết quả" : "settled plays"}</p>
         </div>
 
         {scout.settled > 0 && (
@@ -92,7 +92,7 @@ export default async function TrackRecordHub({ params }: Props) {
                 {formatUnits(scout.units_pl)}
               </span>
             </div>
-            <p className="mt-1 text-xs text-muted">{scout.settled} settled plays · AI-operated</p>
+            <p className="mt-1 text-xs text-muted">{scout.settled} {lang === "vi" ? "nhận định đã có kết quả · AI vận hành" : "settled plays · AI-operated"}</p>
           </div>
         )}
       </div>
