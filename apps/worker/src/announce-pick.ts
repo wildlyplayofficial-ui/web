@@ -35,9 +35,6 @@ export function cardFooter(pick: PickRow): string {
     : '\u2014 Nh\u1eadn \u0111\u1ecbnh c\u1ee7a ng\u01b0\u1eddi th\u1eadt \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o';
 }
 
-/** Nhãn độ tự tin tiếng Việt (VI-legal 28/7: caption tiếng Việt tránh từ cá cược). */
-const CONFIDENCE_VI: Record<string, string> = { low: 'THẤP', medium: 'TRUNG BÌNH', high: 'CAO' };
-
 /** Tên giải tiếng Việt cho caption. Không có trong map → giữ nguyên tên gốc. */
 const LEAGUE_VI: Record<string, string> = {
   'Premier League': 'Ngoại hạng Anh',
@@ -112,26 +109,14 @@ export function formatPickBlock(pick: PickRow): string {
   return `${pick.selection}${lineSuffix} @ ${Number(pick.odds_publish).toFixed(2)}`;
 }
 
-/** FINAL 5-line card (Post Restructure Spec v1 §2.1, locked 3/7 — 5 lines is the floor). */
+/** Caption gọn (Nick 21/8): thẻ hình đã mang thông tin → caption chỉ còn nhận định ngắn (nếu có) + link + disclaimer. */
 export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCardExtras = {}, html = false): string {
-  // parse_mode HTML: escape dynamic text (team names như "Brighton & Hove Albion" chứa &).
+  // Thẻ hình đã đủ thông tin (đội · Over/Under · Mức tự tin · giờ VN) → caption KHÔNG lặp lại.
   const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
-  const b = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
-  const slug = buildPickSlug(pick);
-  const link = `${siteUrl}/play/${slug}`;
-  const conf = pick.confidence ? CONFIDENCE_VI[pick.confidence] ?? pick.confidence.toUpperCase() : null;
-  const live = pick.publish_score_home != null
-    ? ` (\u0111ang \u0111\u00e1 ${pick.publish_score_home}-${pick.publish_score_away})` : '';
-  const against = extras.againstMarket ? ' \u00b7 \u26A0\uFE0F ng\u01b0\u1ee3c s\u1ed1 \u0111\u00f4ng' : '';
+  const link = `${siteUrl}/play/${buildPickSlug(pick)}`;
   return [
-    `\ud83c\udfaf ${b(`${pick.home_team} vs ${pick.away_team}`)}`,
-    `${esc(leagueVi(pick.league))} \u00b7 ${b(kickoffVi(pick.kickoff_utc))} (gi\u1edd VN)${live}`,
-    '',
-    `\ud83d\udc49 ${b(pickVi(pick))}`,
-    ...(conf ? [`\ud83d\udcca M\u1ee9c t\u1ef1 tin: ${b(conf)}${against}`] : []),
-    ...(extras.hook ? ['', `\ud83d\udcdd ${esc(extras.hook)}`] : []),
-    '',
-    html ? `\ud83d\udd17 <a href="${link}">Xem nh\u1eadn \u0111\u1ecbnh chi ti\u1ebft</a>` : `\ud83d\udd17 Xem nh\u1eadn \u0111\u1ecbnh chi ti\u1ebft: ${link}`,
+    ...(extras.hook ? [`📝 ${esc(extras.hook)}`, ''] : []),
+    html ? `🔗 <a href="${link}">Nhận định chi tiết</a>` : `🔗 Nhận định chi tiết: ${link}`,
     cardFooter(pick),
   ].join('\n');
 }
