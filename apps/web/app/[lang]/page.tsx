@@ -38,7 +38,7 @@ function formatPostDate(iso: string | null, lang: Lang): string {
     day: "numeric",
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: "Asia/Ho_Chi_Minh",
   }).format(new Date(iso));
 }
 
@@ -178,7 +178,7 @@ export default async function Home({ params }: Props) {
     new Intl.DateTimeFormat(lang === "vi" ? "vi-VN" : lang, {
       day: "numeric",
       month: "short",
-      timeZone: "UTC",
+      timeZone: "Asia/Ho_Chi_Minh",
     }).format(new Date(iso));
 
   return (
