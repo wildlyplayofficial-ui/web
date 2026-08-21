@@ -818,7 +818,7 @@ const vi: Dict = {
     scoutLabel: "The Scout",
     halfWin: "thắng nửa",
     halfLoss: "thua nửa",
-    confidence: "Độ tự tin",
+    confidence: "Mức tự tin",
     confLow: "Thấp",
     confMedium: "Trung bình",
     confHigh: "Cao",

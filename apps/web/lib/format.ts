@@ -29,21 +29,23 @@ export const locales: Record<Lang, string> = {
   es: "es-419",
 };
 
-/** Kickoff shown in UTC for a global audience (and stable server rendering). */
+/** Kickoff shown in Vietnam time for the VI surface, UTC elsewhere (stable server rendering). */
 export function formatKickoff(iso: string, lang: Lang): string {
   const date = new Date(iso);
+  const zone = lang === "vi" ? "Asia/Ho_Chi_Minh" : "UTC";
+  const suffix = lang === "vi" ? "giờ VN" : "UTC";
   const day = new Intl.DateTimeFormat(locales[lang], {
     day: "numeric",
     month: "short",
-    timeZone: "UTC",
+    timeZone: zone,
   }).format(date);
   const time = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "UTC",
+    timeZone: zone,
   }).format(date);
-  return `${day} · ${time} UTC`;
+  return `${day} · ${time} ${suffix}`;
 }
 
 /** D1 (§9): publish-proof timestamp — always includes the year so archive picks stay unambiguous. */

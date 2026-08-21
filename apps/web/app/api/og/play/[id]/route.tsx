@@ -16,6 +16,16 @@ const CONF_LABEL: Record<Confidence, { en: string; vi: string }> = {
   high: { en: "High", vi: "Cao" },
 };
 
+/** Vietnamese league names for the OG card (default: original name). */
+const LEAGUE_VI: Record<string, string> = {
+  "Premier League": "Ngoại hạng Anh",
+  "Champions League": "Cúp C1 châu Âu",
+  "Europa League": "Cúp C2 châu Âu",
+  "Europa Conference League": "Cúp C3 châu Âu",
+  "FA Cup": "Cúp FA",
+  "EFL Cup": "Cúp Liên đoàn Anh",
+};
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -31,8 +41,10 @@ export async function GET(
 
   const conf = pick.confidence ? CONF_LABEL[pick.confidence] : null;
   const confText = conf
-    ? ` · ${vi ? "Độ tự tin" : "Confidence"}: ${vi ? conf.vi : conf.en}`
+    ? ` · ${vi ? "Mức tự tin" : "Confidence"}: ${vi ? conf.vi : conf.en}`
     : "";
+
+  const leagueLabel = vi ? LEAGUE_VI[pick.league] ?? pick.league : pick.league;
 
   // Featured pick gets the club's cartoon when we have art for it — home team
   // leads, away as fallback. No art yet → text-only card (selection + odds
@@ -46,7 +58,7 @@ export async function GET(
       mark={mark}
       eyebrow={vi ? "Trận tâm điểm" : "Featured pick"}
       title={`${pick.home_team} vs ${pick.away_team}`}
-      topRight={pick.league}
+      topRight={leagueLabel}
       badge={`${pick.selection}${confText}`}
       detail={[{ label: vi ? "Khởi tranh" : "Kick-off", value: formatKickoff(pick.kickoff_utc, vi ? "vi" : "en") }]}
       player={player}
