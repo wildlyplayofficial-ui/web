@@ -10,11 +10,11 @@ import { LiveClock } from "@/components/live-clock";
 import { StatusBadge } from "@/components/status-badge";
 import { TeamLogo } from "@/components/team-logo";
 import { permanentRedirect } from "next/navigation";
-import { buildMatchSlug, buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
+import { buildPlaySlug, getPick, getPickBySlug, getPost, getThesisTranslations, getVoteCounts } from "@/lib/data";
 import { getBoothForPick } from "@/lib/booth-data";
 import { BoothSection } from "@/components/booth-section";
 import { teamFlag } from "@/lib/flags";
-import { badgeFor, formatKickoff, formatOdds, formatPostedAt, formatUnits, marketLabels } from "@/lib/format";
+import { badgeFor, formatKickoff, formatPostedAt, marketLabels } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -51,16 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const translations = await getThesisTranslations([pick.id]);
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
   const image = `/api/og/play/${pick.id}`;
-  // Canonical points at the /match hub: both URLs now carry the same content
-  // (Booth shared), so consolidate ranking there (Nick + Jane 3/7).
   const alternates = buildAlternates(`/play/${slug}`, lang);
-  alternates.canonical = buildAlternates(`/match/${buildMatchSlug(pick.home_team, pick.away_team, pick.kickoff_utc)}`, lang).canonical;
-  // Picks are EN/ES-only — no Vietnamese pick page (odds language, VN law). Keep
-  // en/th/es hreflang; drop vi + x-default so the English odds page isn't declared
-  // the Vietnamese/default version. Bare /play/ 301s to /en/play/ in proxy.ts.
-  alternates.languages = Object.fromEntries(
-    Object.entries(alternates.languages).filter(([k]) => k !== "vi" && k !== "x-default"),
-  );
   return {
     title,
     description,
@@ -119,7 +110,6 @@ export default async function PlayDetail({ params }: Props) {
   const totalVotes = votes.follow + votes.fade + votes.skip;
   const homeFlag = teamFlag(pick.home_team);
   const awayFlag = teamFlag(pick.away_team);
-  const clv = pick.odds_close !== null ? (pick.odds_publish / pick.odds_close - 1) * 100 : null;
   const schema = JSON.stringify(buildSportsEventSchema(pick)).replace(/</g, "\u003c");
 
   return (
@@ -167,16 +157,7 @@ export default async function PlayDetail({ params }: Props) {
           {dict.play.market} <strong className="text-ink">{marketLabels[pick.market]}</strong>
           {pick.line !== null && (<>{" \u00b7 "}{dict.play.line} <strong className="text-ink">{pick.line}</strong></>)}
           {" \u00b7 "}
-          {dict.pick.odds} <strong className="text-ink">{formatOdds(pick.odds_publish)}</strong>
-          {" \u00b7 "}
-          {dict.pick.stake} <strong className="text-ink">{pick.stake_units}u</strong>
-          {pick.odds_close !== null && clv !== null && (
-            <>{" \u00b7 "}{dict.play.closing} <strong className="text-ink">{formatOdds(pick.odds_close)}</strong>{" "}
-              <strong className={clv > 0 ? "text-brand" : clv < 0 ? "text-loss" : "text-muted"}>
-                CLV {clv > 0 ? "+" : clv < 0 ? "\u2212" : ""}{Math.abs(clv).toFixed(1)}%
-              </strong>
-            </>
-          )}
+          {"\u0110\u01a1n v\u1ecb: "}<strong className="text-ink">{pick.stake_units}</strong>
         </span>
         {pick.publish_score_home !== null && pick.publish_score_away !== null && (
           <span className="rounded-md border border-line bg-card px-2.5 py-1 text-muted">
@@ -213,10 +194,7 @@ export default async function PlayDetail({ params }: Props) {
           <div className="mt-3 flex flex-wrap items-center gap-x-8 gap-y-2">
             <p className="font-display text-2xl font-bold">{dict.pick.finalScore} {pick.home_score}&ndash;{pick.away_score}</p>
             <p className="text-sm text-muted">{dict.play.rawOutcome}: <strong className="text-ink">{dict.outcome[pick.raw_outcome]}</strong></p>
-            <p className={`font-display text-xl font-bold ${pick.units_pl > 0 ? "text-brand" : pick.units_pl < 0 ? "text-loss" : "text-muted"}`}>{formatUnits(pick.units_pl)}</p>
           </div>
-          <p className="mt-4 text-xs text-muted">{dict.archive.unitsNote}</p>
-          {pick.odds_close !== null && <p className="mt-1 text-xs text-muted">{dict.play.clvNote}</p>}
         </section>
       )}
 
@@ -242,11 +220,6 @@ export default async function PlayDetail({ params }: Props) {
                 </span>
               ))}
             </div>
-            {pick.status === "won" && pick.units_pl !== null && pick.stake_units > 0 && (
-              <p className="mt-3 text-sm font-semibold text-brand">
-                {dict.crowd.followersWon.replace("{units}", formatUnits(pick.units_pl / pick.stake_units))}
-              </p>
-            )}
             {pick.status === "lost" && (
               <p className="mt-3 text-sm font-semibold text-loss">{dict.crowd.followersLost}</p>
             )}

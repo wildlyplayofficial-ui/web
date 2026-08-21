@@ -38,16 +38,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
-  // ── /play/ picks are the EN/ES product (odds language). After the VI-default
-  // flip the bare URL is Vietnamese — serving English betting content there both
-  // mislabels it as VI and puts odds language on the VN surface (VN law). 301 the
-  // bare /play → /en/play so the lang label matches the content. (Nick 16/8)
-  if (pathname === "/play" || pathname.startsWith("/play/")) {
-    const url = request.nextUrl.clone();
-    url.pathname = `/en${pathname}`;
-    return NextResponse.redirect(url, 301);
-  }
-
   // ── TMA routes: pass through unchanged (no lang rewrite) ──
   if (pathname.startsWith("/tma")) {
     const response = NextResponse.next();
