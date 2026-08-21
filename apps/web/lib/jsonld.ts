@@ -7,14 +7,23 @@
 import { SITE_NAME, SITE_URL, SAME_AS } from "@/lib/brand";
 const BASE = SITE_URL;
 
-export function buildOrganization() {
+/** Mô tả thực thể theo ngôn ngữ — AI Overview trả lời bằng tiếng người dùng, để
+ *  đúng ngôn ngữ thì AI dễ lấy đúng câu mô tả mình (Jane 21/8). */
+const ORG_DESCRIPTION: Record<string, string> = {
+  vi: "Nhận định bóng đá, tin chuyển nhượng và tỉ số trực tiếp — cập nhật mỗi ngày, ghi rõ nguồn.",
+  en: "Daily football match previews, transfer news and live scores — clearly sourced football analysis.",
+  th: "พรีวิวและวิเคราะห์ฟุตบอล ข่าวย้ายทีม และผลบอลสด — อัปเดตทุกวัน พร้อมอ้างอิงแหล่งที่มา",
+  es: "Previas y análisis de fútbol, noticias de fichajes y resultados en vivo — con fuentes citadas.",
+};
+
+export function buildOrganization(lang = "en") {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
     url: BASE,
     logo: `${BASE}/icons/icon-512x512.png`,
-    description: "Handpicked plays for the global crowd. Transparent sports picks with full public track record.",
+    description: ORG_DESCRIPTION[lang] ?? ORG_DESCRIPTION.en,
     sameAs: [...SAME_AS],
   };
 }

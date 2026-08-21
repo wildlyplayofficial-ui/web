@@ -8,6 +8,7 @@ import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { COMPETITION_LOGOS } from "@/lib/competition-logos";
 import { LANGS, type Lang } from "@/lib/i18n";
+import { buildOrganization, buildWebSite } from "@/lib/jsonld";
 
 export async function generateStaticParams() {
   return LANGS.map((lang) => ({ lang }));
@@ -41,6 +42,16 @@ export default async function LangLayout({
 
   return (
     <>
+      {/* Entity signals (AEO): giúp AI/Google hiểu đúng banhbong là trang bóng đá,
+          không phải "trang kèo". Site-wide vì mô tả CẢ TRANG, không phải bài lẻ. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganization(lang)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSite()) }}
+      />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg"
