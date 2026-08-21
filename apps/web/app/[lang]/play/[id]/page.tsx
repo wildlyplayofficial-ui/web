@@ -19,6 +19,15 @@ import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Nhãn loại dự đoán tiếng Việt cho trang /play (Nick 21/8: handicap = "kèo chấp", totals giữ Over/Under). */
+const MARKET_VI: Record<string, string> = {
+  ah: "Kèo chấp",
+  ou: "Over/Under",
+  "1x2": "1X2",
+  btts: "BTTS",
+  other: "Đặc biệt",
+};
+
 /** Resolve pick from either UUID or SEO slug. Redirects UUID -> slug with 308. */
 async function resolvePickFromId(id: string, lang: string) {
   if (UUID_RE.test(id)) {
@@ -154,7 +163,7 @@ export default async function PlayDetail({ params }: Props) {
           {pick.selection}
         </span>
         <span className="text-muted">
-          {dict.play.market} <strong className="text-ink">{marketLabels[pick.market]}</strong>
+          {dict.play.market} <strong className="text-ink">{lang === "vi" ? MARKET_VI[pick.market] ?? marketLabels[pick.market] : marketLabels[pick.market]}</strong>
           {pick.line !== null && (<>{" \u00b7 "}{dict.play.line} <strong className="text-ink">{pick.line}</strong></>)}
           {" \u00b7 "}
           {"\u0110\u01a1n v\u1ecb: "}<strong className="text-ink">{pick.stake_units}</strong>
