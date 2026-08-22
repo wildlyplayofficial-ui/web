@@ -178,6 +178,27 @@ export interface MatchData {
   posts: Post[];
 }
 
+/** Mirrors the `fixtures` table — the full schedule (772+ rows, all leagues), independent
+ *  of whether a pick or watching entry exists for the match. Backbone of the /nhan-dinh
+ *  pSEO pillar (Jane 22/8): every scheduled match gets a real page from this alone. */
+export interface Fixture {
+  id: string;
+  slug: string;
+  competitionId: string;
+  competitionName: string;
+  homeTeam: string;
+  awayTeam: string;
+  kickoffUtc: string;
+  status: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  venue: string | null;
+  /** Set when a /match page exists for this same fixture (a pick or watching entry) —
+   *  used to cross-link "nhận định" (editorial) to "pick" (betting analysis) per Nick's
+   *  split (22/8): the two are different content, never merged into one page. */
+  matchSlug: string | null;
+}
+
 /** Mirrors the `track_record` view. Display rule (decision #2): half-win counts
  *  as WON / half-loss as LOST in W-L-P, while units_pl keeps the real AH math. */
 export interface TrackRecord {

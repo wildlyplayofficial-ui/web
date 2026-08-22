@@ -7,7 +7,7 @@ import ligue1Season from "./data/ligue1-2026-27-season.json";
 import { getSupabase } from "./supabase";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
-import type { MatchData, Pick, Post, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
+import type { Fixture, MatchData, Pick, Post, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
 
 /**
  * Data layer. Every function queries Supabase when configured and falls back
@@ -878,4 +878,73 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
 export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v2"], {
   revalidate: 300,
   tags: ["picks", "watching", "matches"],
+});
+
+// ── Fixtures (pSEO pillar /nhan-dinh, Jane 22/8) ──────────────────────────────
+// `fixtures` already holds the full schedule (772+ rows) independent of picks/watching —
+// the point of this pillar is a real page for every scheduled match, not just the ones
+// someone hand-picked. See lib/types.ts `Fixture` for why matchSlug is separate.
+
+async function getFixtureBySlugImpl(slug: string): Promise<Fixture | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("fixtures")
+    .select("id, slug, competition_id, home_team_name, away_team_name, kickoff_utc, status, home_score, away_score, venue, odds_api_event_id")
+    .eq("slug", slug)
+    .single();
+  if (error || !data) return null;
+
+  const { data: comp } = await supabase
+    .from("competitions")
+    .select("name")
+    .eq("id", data.competition_id)
+    .single();
+
+  // Cross-link to /match only if a pick or watching entry actually exists for this
+  // fixture — a bare fixtures row is NOT enough (that's the whole point of this table).
+  // picks.fixture_id is the odds-api event id (see apps/worker api-routes.ts), NOT
+  // fixtures.id (a UUID) — match on odds_api_event_id, falling back to team-name match
+  // for fixtures without an odds-api id.
+  const [pickRes, watchRes] = await Promise.all([
+    data.odds_api_event_id
+      ? supabase.from("picks").select("id").eq("fixture_id", data.odds_api_event_id).limit(1)
+      : Promise.resolve({ data: [] as { id: string }[] }),
+    supabase.from("watching").select("id").ilike("home_team", data.home_team_name).ilike("away_team", data.away_team_name).limit(1),
+  ]);
+  const hasMatchPage = (pickRes.data?.length ?? 0) > 0 || (watchRes.data?.length ?? 0) > 0;
+
+  return {
+    id: data.id as string,
+    slug: data.slug as string,
+    competitionId: data.competition_id as string,
+    competitionName: (comp?.name as string) ?? "",
+    homeTeam: cleanTeamName(data.home_team_name as string),
+    awayTeam: cleanTeamName(data.away_team_name as string),
+    kickoffUtc: data.kickoff_utc as string,
+    status: data.status as string,
+    homeScore: data.home_score as number | null,
+    awayScore: data.away_score as number | null,
+    venue: data.venue as string | null,
+    matchSlug: hasMatchPage ? slug : null,
+  };
+}
+
+export const getFixtureBySlug = unstable_cache(getFixtureBySlugImpl, ["fixture-by-slug"], {
+  revalidate: 300,
+  tags: ["fixtures"],
+});
+
+async function getAllFixtureSlugsImpl(): Promise<{ slug: string; updated: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase.from("fixtures").select("slug, updated_at");
+  if (error) return [];
+  return (data ?? []).map((r) => ({ slug: r.slug as string, updated: r.updated_at as string }));
+}
+
+export const getAllFixtureSlugs = unstable_cache(getAllFixtureSlugsImpl, ["fixture-slugs"], {
+  revalidate: 300,
+  tags: ["fixtures"],
 });
