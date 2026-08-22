@@ -153,6 +153,18 @@ export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'no
 
 export interface Store {
   insertPick(pick: NewPick): Promise<PickRow>;
+  /** Duplicate-insert guard (22/8, Jane): the Hull-MU incident was 2 independent entry
+   *  points (bot /pick + dashboard POST /api/pick) both calling insertPick with zero
+   *  coordination, 6s apart. Returns the existing published pick for the same
+   *  home/away/market/selection within the last `withinMinutes`, or null. */
+  findRecentDuplicatePick(
+    homeTeam: string, awayTeam: string, market: string, selection: string, withinMinutes: number,
+  ): Promise<PickRow | null>;
+  /** Scheduled kickoff (ISO) from the `fixtures` table for a home/away pair near
+   *  `aroundIso` (±36h) — the sanity source for hand-typed /pick kickoffs (the
+   *  Hull vs MU pick shipped 18:00 VN instead of 18:30, 22/8). Null when no
+   *  confident single match. NEVER throws. */
+  findFixtureKickoff(homeTeam: string, awayTeam: string, aroundIso: string): Promise<string | null>;
   getPick(id: string): Promise<PickRow | null>;
   updatePick(id: string, patch: Partial<PickRow>): Promise<PickRow>;
   /** Optional author filter — the credibility firewall (§12.A item 1/6): callers computing
@@ -202,6 +214,22 @@ export class MemoryStore implements Store {
     const row: PickRow = { id: randomUUID(), ...pick };
     this.picks.set(row.id, row);
     return row;
+  }
+
+  async findRecentDuplicatePick(
+    homeTeam: string, awayTeam: string, market: string, selection: string, withinMinutes: number,
+  ): Promise<PickRow | null> {
+    const cutoff = Date.now() - withinMinutes * 60_000;
+    const match = [...this.picks.values()].find((p) =>
+      p.home_team === homeTeam && p.away_team === awayTeam && p.market === market &&
+      p.selection === selection && p.status === 'published' &&
+      p.published_at !== null && new Date(p.published_at).getTime() >= cutoff,
+    );
+    return match ?? null;
+  }
+
+  async findFixtureKickoff(): Promise<string | null> {
+    return null; // mock mode has no fixtures table
   }
 
   async getPick(id: string): Promise<PickRow | null> {
@@ -350,6 +378,43 @@ class SupabaseStore implements Store {
     const { data, error } = await this.db.from('picks').insert(pick).select().single();
     if (error) throw new Error(`insertPick failed: ${error.message}`);
     return data as PickRow;
+  }
+
+  async findRecentDuplicatePick(
+    homeTeam: string, awayTeam: string, market: string, selection: string, withinMinutes: number,
+  ): Promise<PickRow | null> {
+    const cutoff = new Date(Date.now() - withinMinutes * 60_000).toISOString();
+    const { data, error } = await this.db
+      .from('picks').select('*')
+      .eq('home_team', homeTeam).eq('away_team', awayTeam)
+      .eq('market', market).eq('selection', selection)
+      .eq('status', 'published').gte('published_at', cutoff)
+      .limit(1).maybeSingle();
+    if (error) throw new Error(`findRecentDuplicatePick failed: ${error.message}`);
+    return (data as PickRow) ?? null;
+  }
+
+  async findFixtureKickoff(homeTeam: string, awayTeam: string, aroundIso: string): Promise<string | null> {
+    try {
+      const around = new Date(aroundIso).getTime();
+      if (Number.isNaN(around)) return null;
+      const from = new Date(around - 36 * 3600_000).toISOString();
+      const to = new Date(around + 36 * 3600_000).toISOString();
+      // Loose ilike on both names: fixtures store full names ("Manchester United"),
+      // picks often carry short forms — match on the longest word of each side.
+      const key = (s: string) => (s.split(/\s+/).sort((a, b) => b.length - a.length)[0] ?? s);
+      const { data, error } = await this.db
+        .from('fixtures')
+        .select('kickoff_utc')
+        .ilike('home_team_name', `%${key(homeTeam)}%`)
+        .ilike('away_team_name', `%${key(awayTeam)}%`)
+        .gte('kickoff_utc', from)
+        .lte('kickoff_utc', to);
+      if (error || !data || data.length !== 1) return null; // ambiguous → stay silent
+      return (data[0] as { kickoff_utc: string }).kickoff_utc;
+    } catch {
+      return null;
+    }
   }
 
   async getPick(id: string): Promise<PickRow | null> {

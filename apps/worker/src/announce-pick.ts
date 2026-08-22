@@ -255,6 +255,14 @@ async function broadcast(
         detail,
       });
       log.info(`${detail} for ${pick.id} posted to Facebook (${fbId})`);
+      if (detail === 'pick announce') {
+        // Pick card lên Story luôn (Peter 22/8 — trước giờ phải đăng tay). Fire-and-forget:
+        // Story chết không được kéo theo pick announce.
+        const { postFacebookStory } = await import('./announce');
+        void postFacebookStory(deps.facebook, ogCardUrl)
+          .then((sid) => log.info(`FB Story for ${pick.id} posted (${sid})`))
+          .catch((err) => log.warn(`FB Story failed for ${pick.id} — FB post already live:`, err));
+      }
     } catch (err) {
       log.warn(`facebook ${detail} failed for ${pick.id} — pick state already saved:`, err);
     }

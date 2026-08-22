@@ -94,6 +94,33 @@ export async function postPhotoToFacebook(
   return body.id ?? '';
 }
 
+/** Đăng Story lên FB Page: upload ảnh published=false rồi publish qua /photo_stories
+ *  (flow chạy tay thành công cho pick Hull-MU 22/8 — nay tự động). Throws on API error. */
+export async function postFacebookStory(
+  fb: { pageId: string; pageToken: string },
+  imageUrl: string,
+): Promise<string> {
+  const up = await fetch(`https://graph.facebook.com/v19.0/${fb.pageId}/photos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: imageUrl, published: false, access_token: fb.pageToken }),
+  });
+  const upBody = (await up.json()) as { id?: string; error?: { message?: string } };
+  if (!up.ok || upBody.error || !upBody.id) {
+    throw new Error(`FB story photo upload failed: ${upBody.error?.message ?? `HTTP ${up.status}`}`);
+  }
+  const res = await fetch(`https://graph.facebook.com/v19.0/${fb.pageId}/photo_stories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ photo_id: upBody.id, access_token: fb.pageToken }),
+  });
+  const body = (await res.json()) as { post_id?: string; error?: { message?: string } };
+  if (!res.ok || body.error) {
+    throw new Error(`FB story publish failed: ${body.error?.message ?? `HTTP ${res.status}`}`);
+  }
+  return body.post_id ?? '';
+}
+
 /** R7: SETTLED carries the OG data-card in settled state (WIN/LOSS/PUSH badge + updated record). */
 export function resultCardUrl(siteUrl: string, pick: PickRow): string {
   // lang=vi: same as announce-pick.ts — without it the result announce shipped the

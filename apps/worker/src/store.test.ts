@@ -156,6 +156,37 @@ describe('MemoryStore.updatePostBody (REQ 5: note localization)', () => {
   });
 });
 
+describe('MemoryStore.findRecentDuplicatePick (22/8: Hull-MU incident — 2 entry points, zero coordination)', () => {
+  it('finds a published pick with the same home/away/market/selection within the window', async () => {
+    const store = new MemoryStore();
+    const row = await store.insertPick(pick('curator', 'published', { published_at: new Date().toISOString() }));
+    const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'Mexico -1.25', 10);
+    expect(dup?.id).toBe(row.id);
+  });
+
+  it('returns null when the selection differs (not a real duplicate)', async () => {
+    const store = new MemoryStore();
+    await store.insertPick(pick('curator', 'published', { published_at: new Date().toISOString() }));
+    const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'South Africa +1.25', 10);
+    expect(dup).toBeNull();
+  });
+
+  it('returns null when the earlier pick is outside the time window', async () => {
+    const store = new MemoryStore();
+    const old = new Date(Date.now() - 20 * 60_000).toISOString(); // 20 min ago
+    await store.insertPick(pick('curator', 'published', { published_at: old }));
+    const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'Mexico -1.25', 10);
+    expect(dup).toBeNull();
+  });
+
+  it('ignores non-published statuses (void/settled picks are not "duplicates" to block)', async () => {
+    const store = new MemoryStore();
+    await store.insertPick(pick('curator', 'won', { published_at: new Date().toISOString() }));
+    const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'Mexico -1.25', 10);
+    expect(dup).toBeNull();
+  });
+});
+
 describe('MemoryStore.expireWatching — closing note (Nick 4/7 item ①)', () => {
   it('expires without a note by default', async () => {
     const store = new MemoryStore();

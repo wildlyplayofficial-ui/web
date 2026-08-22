@@ -69,8 +69,8 @@ const fbPageToken = process.env.FB_PAGE_TOKEN;
 if (!fbPageId || !fbPageToken) log.warn('FB_PAGE_ID/FB_PAGE_TOKEN unset — Facebook posting disabled');
 const facebook = fbPageId && fbPageToken ? { pageId: fbPageId, pageToken: fbPageToken } : undefined;
 
-const translateThesis = anthropicApiKey
-  ? (pick: PickRow) => publishThesisTranslations({ store, env: aiEnv }, pick)
+const translateThesis = anthropicApiKey || process.env.GROQ_API_KEY
+  ? (pick: PickRow) => publishThesisTranslations({ store, env: aiEnv, revalidate }, pick)
   : undefined;
 const analysisEnv = { apiKey: anthropicApiKey, model: process.env.ANALYSIS_MODEL };
 // Post Restructure v1 (R6): preview + analysis articles are web/SEO-only — no announce deps.
