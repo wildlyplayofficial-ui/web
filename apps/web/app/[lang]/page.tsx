@@ -4,6 +4,7 @@ import {
   getActiveWatching,
   getSettledPicks,
   getTodaysNoPlays,
+  getRecentRecapPosts,
   getTodaysPicks,
   getTrackRecordForAuthor,
 } from "@/lib/data";
@@ -70,7 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, recapPosts] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -81,6 +82,7 @@ export default async function Home({ params }: Props) {
       getStandingsCompetitions(),
       getAnalysisArticles(undefined, 12),
       getNewsItems(undefined, 6),
+      getRecentRecapPosts(lang, 2),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -160,12 +162,35 @@ export default async function Home({ params }: Props) {
   const preseason =
     daysToOpen !== null && picks.length === 0 && noPlays.length === 0 && watching.length === 0;
 
-  // Featured story: hand-picked marquee ONLY (Nick 17/8: "em chọn tay bài nào lên
-  // đó thay vì để bài mới nhất tự nhảy vào") — no newest-article fallback.
-  const hot = articles.find((a) => a.tier === "T2_marquee") ?? null;
-  const hotHero = hot ? hot.hero_image ?? `/api/og/analysis/${hot.slug}?locale=${lang}` : "";
-  const hotExcerpt = hot ? hot.meta_description || analysisExcerpt(hot.body) : "";
-  const restArticles = articles.filter((a) => a.slug !== hot?.slug).slice(0, 6);
+  // Khối nổi bật = 2 bài NHÌN LẠI (recap) GẦN NHẤT, bài mới trước (Nick 22/8,
+  // thay luật marquee chọn tay 17/8). Recap sống ở 2 bảng: analysis_articles
+  // (desk viết) và posts (auto-recap của worker sau /score) — gộp cả 2 rồi xếp
+  // theo published_at. Hero: desk có hero_image/og analysis; post dùng og editorial.
+  type RecapCard = { slug: string; title: string; league: string; published_at: string; hero: string; excerpt: string };
+  const recaps: RecapCard[] = [
+    ...articles
+      .filter((a) => a.kind === "recap")
+      .map((a): RecapCard => ({
+        slug: a.slug,
+        title: a.title,
+        league: a.league,
+        published_at: a.published_at,
+        hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+        excerpt: a.meta_description || analysisExcerpt(a.body),
+      })),
+    ...recapPosts.map((p): RecapCard => ({
+      slug: p.slug,
+      title: p.title,
+      league: "",
+      published_at: p.published_at ?? "",
+      hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}`,
+      excerpt: p.meta_description ?? "",
+    })),
+  ]
+    .sort((a, b) => b.published_at.localeCompare(a.published_at))
+    .slice(0, 2);
+  const hot = recaps[0] ?? null;
+  const restArticles = articles.filter((a) => !recaps.some((r) => r.slug === a.slug)).slice(0, 6);
   // Nhận định mới nhất — lấp ô trống cột phải (Nick 20/8, Cách A). Bài dự đoán/nhận
   // định (kind preview|analysis) — loại đã hiện ở lead/2 thẻ compact, tối đa 4, text-only.
   const shownSlugs = new Set(
@@ -331,39 +356,48 @@ export default async function Home({ params }: Props) {
         </section>
       )}
 
-      {/* 2b. Featured story — BELOW the pick/watching/noplay content (Nick 17/8:
-          "Khối đó phải nằm dưới /pick /watching /noplay"). Hand-picked marquee only;
-          hidden when Jane hasn't flagged one. No pick-vocabulary badges here. */}
-      {hot && (
+      {/* 2b. Hai bài NHÌN LẠI gần nhất — BELOW the pick/watching/noplay content.
+          Nick 22/8: "Hai bài nhìn lại gần nhất phải hiện ở đây. Bài mới ở
+          trên/trái, bài cũ ở dưới/phải" (replaces the 17/8 hand-picked marquee). */}
+      {recaps.length > 0 && (
         <section className="pt-4 pb-10">
-          <Link
-            href={withLang(`/analysis/${hot.slug}`, lang)}
-            prefetch={false}
-            className="group grid overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60 md:grid-cols-[1.1fr_1fr]"
-          >
-            <div
-              className="relative aspect-[1.9/1] min-h-[200px] bg-cover bg-center md:aspect-auto md:min-h-[280px]"
-              style={{ backgroundImage: `url(${hotHero})` }}
-              aria-hidden
-            />
-            <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
-              <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
-                ◆ {dict.home.featuredStory}
-              </span>
-              <h2 className="line-clamp-2 font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
-                {hot.title}
-              </h2>
-              <p className="text-sm text-muted">
-                {hot.league}
-                <span className="mx-2">·</span>
-                {formatPostDate(hot.published_at, lang)}
-              </p>
-              {hotExcerpt && <p className="text-sm text-muted line-clamp-2">{hotExcerpt}</p>}
-              <span className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-                {dict.home.viewAnalysisCta} &rarr;
-              </span>
-            </div>
-          </Link>
+          <div className="grid gap-5 md:grid-cols-2">
+            {recaps.map((r, i) => (
+              <Link
+                key={r.slug}
+                href={withLang(`/analysis/${r.slug}`, lang)}
+                prefetch={false}
+                className="group flex flex-col overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60"
+              >
+                <div
+                  className="relative aspect-[1.9/1] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${r.hero})` }}
+                  aria-hidden
+                />
+                <div className="flex flex-1 flex-col gap-2.5 p-5 md:p-6">
+                  <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
+                    ◆ {i === 0 ? dict.home.featuredStory : dict.analysis.tabs.recap}
+                  </span>
+                  <h2 className="line-clamp-2 font-display text-xl font-bold leading-tight transition-colors group-hover:text-brand md:text-2xl">
+                    {r.title}
+                  </h2>
+                  <p className="text-sm text-muted">
+                    {r.league && (
+                      <>
+                        {r.league}
+                        <span className="mx-2">·</span>
+                      </>
+                    )}
+                    {formatPostDate(r.published_at, lang)}
+                  </p>
+                  {r.excerpt && <p className="text-sm text-muted line-clamp-2">{r.excerpt}</p>}
+                  <span className="mt-auto inline-flex w-fit items-center gap-2 pt-1 font-display text-sm font-semibold text-brand transition-transform group-hover:-translate-y-0.5">
+                    {dict.home.viewAnalysisCta} &rarr;
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
