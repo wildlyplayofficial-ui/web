@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled } from "@/lib/data";
+import { getAllMatchSlugs, getAllFixtureSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs } from "@/lib/news";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
@@ -29,7 +29,7 @@ function alternates(path: string, langs: readonly string[] = LANGS): MetadataRou
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, matches, guides, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
+  const [posts, matches, fixtures, guides, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllFixtureSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -162,5 +162,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  // pSEO pillar (Jane 22/8): 1 URL per scheduled fixture, independent of picks —
+  // the whole point of the /nhan-dinh route (see lib/data.ts getAllFixtureSlugs).
+  const nhanDinhRoutes: MetadataRoute.Sitemap = fixtures.map((f) => ({
+    url: `${BASE}/nhan-dinh/${f.slug}`,
+    lastModified: new Date(f.updated),
+    changeFrequency: "weekly",
+    priority: 0.6,
+    alternates: alternates(`/nhan-dinh/${f.slug}`),
+  }));
+
+  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...nhanDinhRoutes, ...standingsRoutes];
 }
