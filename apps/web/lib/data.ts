@@ -332,6 +332,38 @@ export const getGuides = unstable_cache(getGuidesImpl, ["guides"], {
   tags: ["posts"],
 });
 
+/** Newest published recap posts (worker auto-recaps live in `posts`, not
+ *  `analysis_articles`) — for the homepage "recent recaps" block (Nick 22/8).
+ *  Same lang-preference/dedup dance as getGuides. */
+async function getRecentRecapPostsImpl(lang: Lang, limit: number): Promise<Post[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("status", "published")
+    .eq("type", "recap")
+    .in("lang", ["en", lang])
+    .order("published_at", { ascending: false })
+    .limit(limit * 8); // headroom: rows are per-language duplicates of each slug
+  if (error) throw new Error(`getRecentRecapPosts: ${error.message}`);
+  const bySlug = new Map<string, Post>();
+  for (const post of (data ?? []) as Post[]) {
+    const existing = bySlug.get(post.slug);
+    if (!existing || (post.lang === lang && existing.lang !== lang)) {
+      if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
+    }
+  }
+  return [...bySlug.values()]
+    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
+    .slice(0, limit);
+}
+
+export const getRecentRecapPosts = unstable_cache(getRecentRecapPostsImpl, ["recent-recaps"], {
+  revalidate: 300,
+  tags: ["posts"],
+});
+
 /** Published transparency reports for a language, newest first. */
 async function getReportsImpl(lang: Lang): Promise<Post[]> {
   const supabase = getSupabase();
