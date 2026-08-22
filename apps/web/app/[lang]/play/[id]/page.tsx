@@ -63,7 +63,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : `${pick.home_team} vs ${pick.away_team} — Prediction & Analysis`);
   const translations = await getThesisTranslations([pick.id]);
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
-  const image = `/api/og/play/${pick.id}`;
+  // ?lang=vi: without it FB/Zalo scrape the English card even on the Vietnamese
+  // page (Nick caught this live 22/8 — Hull vs MU card showed "Featured Pick").
+  const image = lang === "vi" ? `/api/og/play/${pick.id}?lang=vi` : `/api/og/play/${pick.id}`;
   const alternates = buildAlternates(`/play/${slug}`, lang);
   return {
     title,
