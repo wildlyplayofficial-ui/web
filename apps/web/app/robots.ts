@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/brand";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: { userAgent: "*", allow: "/", disallow: "/api/" },
     sitemap: [
-      "https://www.wildlyplay.com/sitemap.xml",
-      "https://www.wildlyplay.com/news-sitemap.xml",
+      `${SITE_URL}/sitemap.xml`,
+      `${SITE_URL}/news-sitemap.xml`,
     ],
   };
 }

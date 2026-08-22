@@ -49,7 +49,7 @@ function buildRegenAllPrompt(
   picks: Record<string, unknown>[],
 ): string {
   return `<role>
-You write ${TYPE_DESC[type]} articles for the WildlyPlay newsroom (wildlyplay.com/news).
+You write ${TYPE_DESC[type]} articles for the banhbong.net newsroom (banhbong.net/news).
 </role>
 
 <context>
@@ -115,7 +115,7 @@ ${body}
 
 function buildCuratorNotePrompt(picks: Record<string, unknown>[]): string {
   return `<role>
-You write the Curator's Note for WildlyPlay articles — the Curator's honest perspective.
+You write the Curator's Note for banhbong.net articles — the Curator's honest perspective.
 </role>
 
 <context>

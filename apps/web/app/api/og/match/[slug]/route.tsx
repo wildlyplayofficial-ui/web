@@ -1,6 +1,6 @@
 import { getMatchBySlug } from "@/lib/data";
 import { formatKickoff } from "@/lib/format";
-import { OgCard, ogResponse } from "../../_shared";
+import { OgCard, ogResponse, loadMarkDataUri } from "../../_shared";
 
 /**
  * Dynamic share image (PNG 1200x630) for /match hub pages.
@@ -27,8 +27,10 @@ export async function GET(
     label = "Watching";
   }
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={label}
       title={`${match.homeTeam} vs ${match.awayTeam}`}
       topRight={match.league || null}

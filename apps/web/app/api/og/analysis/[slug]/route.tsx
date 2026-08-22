@@ -1,5 +1,6 @@
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
-import { OgCard, ogResponse } from "../../_shared";
+import { OgCard, ogResponse, loadMarkDataUri } from "../../_shared";
+import { SITE_NAME, DESK } from "@/lib/brand";
 
 /**
  * Dynamic share image (PNG 1200x630) for Desk-authored analysis articles.
@@ -11,6 +12,8 @@ const KIND_BADGE: Record<string, string> = {
   preview: "PREVIEW",
   recap: "RECAP",
   roundup: "ROUNDUP",
+  analysis: "ANALYSIS",
+  news: "NEWS",
 };
 
 export async function GET(
@@ -37,13 +40,15 @@ export async function GET(
   });
   const badgeLabel = KIND_BADGE[article.kind] ?? article.kind.toUpperCase();
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={badgeLabel}
       title={article.title}
       topRight={article.league || null}
-      footer="wildlyplay.com"
-      footerRight={`WildlyPlay Desk (AI) · ${dateLine}`}
+      footer={SITE_NAME}
+      footerRight={`${DESK} (AI) · ${dateLine}`}
     />,
     { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
   );

@@ -121,7 +121,7 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
     : [];
 
   return [
-    'You write pre-match analysis articles for the WildlyPlay newsroom (wildlyplay.com/news), a football picks site by "The Curator".',
+    'You write pre-match analysis articles for the banhbong.net newsroom (banhbong.net/news), a football picks site by "The Curator".',
     '',
     'Match:',
     `- ${topic.home_team} vs ${topic.away_team}`,

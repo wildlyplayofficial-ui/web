@@ -4,7 +4,6 @@ import { parseAllowlist } from './allowlist';
 import { announceResult } from './announce';
 import { createBot } from './bot';
 import { fetchOddsPayload } from './clv';
-import { startWeeklyDigest } from './digest';
 import { findEvent, type MatchQuery } from './event-lookup';
 import { trackFailure } from './job-tracker';
 import { onWarn } from './log';
@@ -21,7 +20,6 @@ import { publishAnalysisForPick, startAnalysisCron } from './news';
 import { computeRecord, generateRecap, generateRecapArticle } from './recap';
 import { publishPreview } from './preview';
 import { publishThesisTranslations } from './translate';
-import type { AnnounceArticleDeps } from './announce-article';
 import { getFinalScore } from './scores';
 import { createStore, type PickRow } from './store';
 import { log } from './log';
@@ -37,6 +35,7 @@ import { ingestFixtures } from './fixture-ingest';
 import { linkPickToFixture, linkWatchingToFixture } from './fixture-link';
 import { enqueueJob, processJobs, retryStaleJobs, type HandlerMap } from './job-queue';
 import { startNewsGenCron } from './news-gen';
+import { startNewsEngineCron } from './news-engine-cron';
 
 const token = process.env.CURATOR_BOT_TOKEN;
 if (!token) {
@@ -64,14 +63,14 @@ const recapArticle = anthropicApiKey
       return generateRecapArticle(aiEnv, pick, computeRecord(settled));
     }
   : undefined;
-const siteUrl = process.env.SITE_URL ?? 'https://www.wildlyplay.com';
+const siteUrl = process.env.SITE_URL ?? 'https://www.banhbong.net';
 const fbPageId = process.env.FB_PAGE_ID;
 const fbPageToken = process.env.FB_PAGE_TOKEN;
 if (!fbPageId || !fbPageToken) log.warn('FB_PAGE_ID/FB_PAGE_TOKEN unset — Facebook posting disabled');
 const facebook = fbPageId && fbPageToken ? { pageId: fbPageId, pageToken: fbPageToken } : undefined;
 
-const translateThesis = anthropicApiKey
-  ? (pick: PickRow) => publishThesisTranslations({ store, env: aiEnv }, pick)
+const translateThesis = anthropicApiKey || process.env.GROQ_API_KEY
+  ? (pick: PickRow) => publishThesisTranslations({ store, env: aiEnv, revalidate }, pick)
   : undefined;
 const analysisEnv = { apiKey: anthropicApiKey, model: process.env.ANALYSIS_MODEL };
 // Post Restructure v1 (R6): preview + analysis articles are web/SEO-only — no announce deps.
@@ -127,9 +126,6 @@ if (oddsApiKey) {
 } else {
   log.warn('ODDS_API_KEY unset — auto-settlement disabled, use /score');
 }
-
-// Weekly digest (batch 4): Sundays 13:00 UTC → TG channel + FB Page.
-const stopDigest = startWeeklyDigest({ api: bot.api, store, channelChatId, siteUrl, facebook });
 
 // Analysis cron (M5): auto-generate analysis articles, ENV-driven cadence.
 // Separate env from recap — analysis uses Sonnet (not RECAP_MODEL which is Haiku).
@@ -228,6 +224,15 @@ const stopNewsGen = persistDb && newsGenEnabled
 if (!persistDb) log.warn('news-gen: disabled (missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY)');
 if (persistDb && !newsGenEnabled) log.info('news-gen: disabled (NEWS_GEN_ENABLED !== "true") — /news retired, see /analysis migration');
 
+// ── News engine (SPEC-wp-auto-news-2026-08-16): 05:00 + 17:00 VN auto articles ──
+// NEWS_ENGINE_MODE: unset = off · 'dry' = generate + log only (the spec's 1-day trial) · 'live' = publish.
+const newsEngineMode = process.env.NEWS_ENGINE_MODE;
+const stopNewsEngine = newsEngineMode === 'dry' || newsEngineMode === 'live'
+  ? startNewsEngineCron({ mode: newsEngineMode })
+  : () => {};
+if (newsEngineMode !== 'dry' && newsEngineMode !== 'live')
+  log.info('news-engine: off (NEWS_ENGINE_MODE unset — set dry|live, see SPEC-wp-auto-news)');
+
 // ── Durable job queue: recover stale + process every 60s ──
 const jobHandlers: HandlerMap = {};
 let jobQueueTimer: ReturnType<typeof setInterval> | null = null;
@@ -248,7 +253,6 @@ if (persistDb) {
     if (!w) throw new Error(`watching ${watchingId} not found`);
     await publishWatchingNews({
       store, env: aiEnv, revalidateUrl: siteUrl,
-      card: { api: bot.api, channelChatId, siteUrl, facebook },
       db: persistDb ?? undefined,
     }, w, reason);
   };
@@ -264,8 +268,7 @@ if (persistDb) {
     const pick = await store.getPick(pickId);
     if (!pick) throw new Error(`pick ${pickId} not found`);
     const { publishPostmortemArticle } = await import('./postmortem-article');
-    const articleDeps: AnnounceArticleDeps = { api: bot.api, channelChatId, store, siteUrl, facebook };
-    await publishPostmortemArticle({ store, env: aiEnv, revalidateUrl: siteUrl, announceArticle: articleDeps }, pick);
+    await publishPostmortemArticle({ store, env: aiEnv, revalidateUrl: siteUrl }, pick);
   };
 
   void retryStaleJobs(persistDb);
@@ -308,7 +311,7 @@ const server = createServer(async (req, res) => {
   // Auth check — fail CLOSED: a missing/empty REVALIDATE_SECRET must reject every
   // request, not wave them all through. The old `WEBHOOK_SECRET && ...` form meant a
   // dropped env var silently opened every worker endpoint (including /api/analysis,
-  // which publishes under the "WildlyPlay Desk" byline) with no error to notice.
+  // which publishes under the "Banh Bóng Desk" byline) with no error to notice.
   if (!WEBHOOK_SECRET || req.headers['x-webhook-secret'] !== WEBHOOK_SECRET) {
     res.writeHead(401).end('Unauthorized');
     return;
@@ -373,7 +376,6 @@ const server = createServer(async (req, res) => {
         void translateWatchingNote({ store, env: aiEnv }, watching);
         void publishWatchingNews({
           store, env: aiEnv, revalidateUrl: siteUrl,
-          card: { api: bot.api, channelChatId, siteUrl, facebook },
         }, watching);
       }
       void revalidate(['watching']);
@@ -505,10 +507,10 @@ async function shutdown(signal: string): Promise<void> {
   clearInterval(persistTimer);
   if (jobQueueTimer) clearInterval(jobQueueTimer);
   stopPoller();
-  stopDigest();
   stopAnalysis();
   stopBuzz();
   stopNewsGen();
+  stopNewsEngine();
   await bot.stop();
   log.info('shutdown complete');
   process.exit(0);

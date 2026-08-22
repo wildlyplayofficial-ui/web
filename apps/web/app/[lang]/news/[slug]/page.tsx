@@ -12,7 +12,7 @@ import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/li
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: item.published_at,
       images: item.hero_card_url
         ? [{ url: item.hero_card_url, width: 1200, height: 630 }]
-        : [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+        : [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -69,12 +69,12 @@ function buildArticleSchema(
     mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
     author: {
       "@type": "Organization",
-      name: item.byline || "WildlyPlay News",
+      name: item.byline || "banhbong.net News",
       url: BASE,
     },
     publisher: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
@@ -125,7 +125,7 @@ export default async function NewsDetail({ params }: Props) {
         </h1>
         <p className="mt-3 text-sm text-muted">
           <LocalDate iso={item.published_at} locale={locales[lang]} format="long" />
-          {" \u00b7 "}{item.byline || "WildlyPlay News"}
+          {" \u00b7 "}{item.byline || "banhbong.net News"}
         </p>
         {kickoffUtc && (
           <p className="mt-1 text-sm text-muted">
@@ -136,7 +136,7 @@ export default async function NewsDetail({ params }: Props) {
 
       <div className="mt-6 overflow-hidden rounded-card">
         <img
-          src={item.hero_card_url || `/api/og/news/${slug}`}
+          src={item.hero_card_url || `/api/og/news/${slug}?locale=${lang}`}
           alt={headline}
           width={1200}
           height={630}

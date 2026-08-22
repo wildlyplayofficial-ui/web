@@ -1,10 +1,9 @@
 /**
  * Post-mortem newsroom article: when Curator /approve a pick,
- * generate a public post-mortem article (4 languages) + distribute.
+ * generate a public post-mortem article (4 languages) and publish it on the web.
  */
 import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
 import { parseAnalysisSection } from './news';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -19,7 +18,7 @@ export function buildPostmortemArticlePrompt(pick: PickRow): string {
   const review = pick.postmortem_approved || pick.postmortem_draft || '';
 
   return `<role>
-You write post-match review articles for the WildlyPlay newsroom.
+You write post-match review articles for the banhbong.net newsroom.
 </role>
 
 <context>
@@ -66,7 +65,6 @@ export interface PostmortemArticleDeps {
   store: Store;
   env: { apiKey: string | undefined; model?: string };
   revalidateUrl?: string;
-  announceArticle?: AnnounceArticleDeps;
 }
 
 export async function publishPostmortemArticle(
@@ -126,9 +124,6 @@ export async function publishPostmortemArticle(
 
     for (const post of posts) await deps.store.insertPost(post);
     log.info(`postmortem-article: published ${posts.length} posts for ${score}`);
-
-    const enPost = posts.find((p) => p.lang === 'en');
-    if (enPost && deps.announceArticle) void announceArticle(deps.announceArticle, enPost);
 
     if (deps.revalidateUrl) {
       const rev = createRevalidator({ siteUrl: deps.revalidateUrl, secret: process.env.REVALIDATE_SECRET });

@@ -89,3 +89,26 @@ export const getAllAnalysisArticleSlugs = unstable_cache(
   ["analysis-article-slugs"],
   { revalidate: 3600, tags: ["analysis-articles"] },
 );
+
+/** Bài NHẬN ĐỊNH gắn nhãn 1 đội (hub /doi). Cột `teams` chưa có → trả rỗng. */
+async function getAnalysisByTeamImpl(team: string, limit = 40): Promise<AnalysisArticle[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("analysis_articles")
+    .select("*")
+    .contains("teams", [team])
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    if (error.code === "42703" || error.message.includes("column") || error.message.includes("does not exist")) return [];
+    throw new Error(`getAnalysisByTeam: ${error.message}`);
+  }
+  return (data ?? []) as AnalysisArticle[];
+}
+
+export const getAnalysisByTeam = unstable_cache(getAnalysisByTeamImpl, ["analysis-by-team"], {
+  revalidate: 300,
+  tags: ["analysis-articles"],
+});

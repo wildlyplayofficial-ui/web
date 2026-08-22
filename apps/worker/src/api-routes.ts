@@ -89,6 +89,18 @@ export async function handleApiRoute(
     if (!result.ok) { json(res, 422, { ok: false, error: 'parse_failed', errors: result.errors }); return true; }
 
     try {
+      // Duplicate guard (22/8: Hull-MU incident — bot + dashboard both inserted the
+      // same pick 6s apart, zero coordination). Reject before any event lookup/insert.
+      const dup = await deps.store.findRecentDuplicatePick(
+        result.pick.homeTeam, result.pick.awayTeam, result.pick.market, result.pick.selection, 10,
+      );
+      if (dup) {
+        json(res, 409, {
+          ok: false, error: 'duplicate_pick', existingId: dup.id,
+          match: `${dup.home_team} vs ${dup.away_team}`, selection: dup.selection,
+        });
+        return true;
+      }
       let autoEvent: EventMatch | null = null;
       if (result.pick.eventId === null && deps.findEvent) {
         autoEvent = await deps.findEvent(result.pick);
@@ -175,7 +187,6 @@ export async function handleApiRoute(
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row);
       void publishWatchingNews({
         store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-        card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
       }, row as unknown as import('./store').WatchingRow, watching.reason);
     }
     if (deps.aiEnv?.apiKey) {
@@ -203,7 +214,6 @@ export async function handleApiRoute(
     if (deps.aiEnv?.apiKey) {
       void publishNoPlayArticle({
         store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-        card: { api: deps.announceDeps.api, channelChatId: deps.announceDeps.channelChatId, siteUrl: deps.siteUrl },
       }, noplay);
     }
     json(res, 200, {

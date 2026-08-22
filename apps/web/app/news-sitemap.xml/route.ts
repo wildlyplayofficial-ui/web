@@ -1,6 +1,7 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs } from "@/lib/news";
+import { SITE_URL, SITE_NAME } from "@/lib/brand";
 
 /**
  * GET /news-sitemap.xml — Google News sitemap for recent articles.
@@ -8,7 +9,7 @@ import { getAllNewsItemSlugs } from "@/lib/news";
  * Covers /analysis/ (posts + desk articles) AND /news/ (news_items).
  */
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -38,7 +39,7 @@ export async function GET(): Promise<Response> {
     <loc>${BASE}/${p.path}/${p.slug}</loc>
     <news:news>
       <news:publication>
-        <news:name>WildlyPlay</news:name>
+        <news:name>${SITE_NAME}</news:name>
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>${new Date(p.updated).toISOString()}</news:publication_date>

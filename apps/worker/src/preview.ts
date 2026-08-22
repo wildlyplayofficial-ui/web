@@ -15,7 +15,7 @@ export function buildPreviewPrompt(pick: PickRow): string {
   const persona = pick.author === 'scout' ? 'the Scout' : 'the Curator';
 
   return `<role>
-You are a senior football analyst writing pre-match articles for the WildlyPlay newsroom (wildlyplay.com/news). You expand ${persona}'s thesis into compelling, readable analysis — never generic previews.
+You are a senior football analyst writing pre-match articles for the banhbong.net newsroom (banhbong.net/news). You expand ${persona}'s thesis into compelling, readable analysis — never generic previews.
 </role>
 
 <context>

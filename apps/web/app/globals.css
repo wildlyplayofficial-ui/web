@@ -286,3 +286,9 @@ body {
   margin: 1.25rem -0.5rem;
   padding: 0 0.5rem;
 }
+
+/* Brand mark bb — chọn bản theo theme (html.dark = nền tối). */
+.bb-mark-ink { display: block; }
+.bb-mark-white { display: none; }
+:root.dark .bb-mark-ink { display: none; }
+:root.dark .bb-mark-white { display: block; }

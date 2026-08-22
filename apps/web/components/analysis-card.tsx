@@ -10,6 +10,8 @@ const KIND_COLORS: Record<string, string> = {
   preview: "border-blue-400/40 text-blue-400",
   recap: "border-emerald-400/40 text-emerald-400",
   roundup: "border-amber-400/40 text-amber-400",
+  analysis: "border-amber-400/40 text-amber-400",
+  news: "border-indigo-soft/40 text-indigo-soft",
 };
 
 function formatDate(iso: string, lang: Lang): string {
@@ -59,7 +61,7 @@ export function AnalysisCard({
         {/* Ô list 120px. Ảnh vuông tối giản (thumb_image, chỉ logo, có lề) thì LẤP ĐẦY
             bằng object-cover — crest ở giữa nên không cắt vào. Không có thì rơi về
             banner với object-contain: banner 1200x630 dồn vào ô hẹp thì nhoè, nhưng
-            contain giữ trọn logo WildlyPlay ở mép (cover sẽ cắt ~15% mỗi bên). */}
+            contain giữ trọn logo banhbong.net ở mép (cover sẽ cắt ~15% mỗi bên). */}
         <div className="w-[120px] shrink-0 self-stretch bg-card-hover">
           <img
             src={article.thumb_image ?? hero}
@@ -101,7 +103,8 @@ export function AnalysisCard({
             {formatDate(article.published_at, lang)}
           </time>
         </div>
-        <h3 className="mt-3 font-display text-lg font-bold transition-colors group-hover:text-brand">
+        {/* 2 dòng: thẻ này giờ đứng trong lưới 3 cột nên tiêu đề dài làm cao thấp lệch nhau. */}
+        <h3 className="mt-3 line-clamp-2 font-display text-lg font-bold transition-colors group-hover:text-brand">
           {article.title}
         </h3>
         {excerpt && <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>}

@@ -8,7 +8,6 @@ import { PickCard } from "@/components/pick-card";
 import { HotPickCard } from "@/components/hot-pick-card";
 import { WatchingTeaser } from "@/components/watching-teaser";
 import { teamFlag } from "@/lib/flags";
-import { TEST_SEED_PICK, TEST_SEED_PREDICTED } from "@/lib/test-seed";
 import {
   buildMatchSlug,
   buildPlaySlug,
@@ -38,13 +37,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: dict.board.seoDescription,
     alternates: buildAlternates("/daily-board", lang),
     openGraph: {
-      title: `${dict.board.title} | WildlyPlay`,
+      title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${dict.board.title} | WildlyPlay`,
+      title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: "/api/og/home", width: 1200, height: 630 }],
     },
@@ -66,10 +65,9 @@ export default async function DailyBoard({ params }: Props) {
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
 
-  // Hero prediction — top curator pick, or the in-code test seed pre-season.
-  // TEST SEED — remove when real picks flow (see lib/test-seed.ts).
-  const heroPick = picks[0] ?? TEST_SEED_PICK;
-  const heroPredicted = picks.length > 0 ? null : TEST_SEED_PREDICTED;
+  // Hero prediction — top curator pick, or nothing. NEVER a fabricated seed:
+  // no real pick = the card is omitted below (the old test-seed rendered a fake match).
+  const heroPick = picks[0] ?? null;
   const restPicks = picks.slice(1);
   const [votes, translations] = await Promise.all([
     getVoteCounts(allPicks.map((p) => p.id)),
@@ -134,18 +132,29 @@ export default async function DailyBoard({ params }: Props) {
         )}
       />
 
-      {/* 2a. Hot pick hero — top curator pick, or the pre-season test seed.
-          TEST SEED: when picks.length === 0 this renders the in-code Arsenal vs
-          Man City 1–1 seed. Restore the honest empty state here when the seed is removed. */}
-      <section className="pb-8">
-        <HotPickCard
-          pick={heroPick}
-          predicted={heroPredicted}
-          lang={lang}
-          href={withLang(picks.length > 0 ? `/play/${buildPlaySlug(heroPick)}` : "/analysis", lang)}
-          ctaLabel={dict.home.viewAnalysisCta}
-        />
-      </section>
+      {/* 2a. Hot pick hero — top curator pick. Omitted when there is none (never a
+          fabricated seed). */}
+      {heroPick && (
+        <section className="pb-8">
+          <HotPickCard
+            pick={heroPick}
+            predicted={null}
+            lang={lang}
+            href={withLang(`/play/${buildPlaySlug(heroPick)}`, lang)}
+            ctaLabel={dict.home.viewAnalysisCta}
+          />
+        </section>
+      )}
+
+      {/* 2a-empty. No pick today — honest empty state, never a fabricated seed. */}
+      {!heroPick && (
+        <section className="pb-8">
+          <div className="rounded-card border border-dashed border-brand/30 bg-brand-dim/20 px-5 py-10 text-center">
+            <h2 className="font-display text-xl font-bold text-ink">{dict.board.emptyTitle}</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted">{dict.board.emptyBody}</p>
+          </div>
+        </section>
+      )}
 
       {/* 2b. Remaining curator picks (kickoff-ordered). */}
       {restPicks.length > 0 && (
@@ -208,7 +217,7 @@ export default async function DailyBoard({ params }: Props) {
           </div>
 
           <p className="inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
-            <span className="text-muted">The Scout</span>
+            <span className="text-muted">Trợ lý AI</span>
             <span className="font-semibold text-ink">
               {scoutRecord.wins}-{scoutRecord.losses}-{scoutRecord.pushes}
             </span>
@@ -267,7 +276,7 @@ export default async function DailyBoard({ params }: Props) {
                     {p.home_team} {p.home_score ?? ""}&ndash;{p.away_score ?? ""} {p.away_team}
                   </span>
                   <span className="block truncate text-sm text-muted">
-                    {p.selection} · {(p.author ?? "curator") === "scout" ? "The Scout" : "The Curator"}
+                    {p.selection} · {(p.author ?? "curator") === "scout" ? "Trợ lý AI" : "Admin"}
                   </span>
                 </span>
                 <span className={`shrink-0 font-display text-sm font-semibold ${(p.units_pl ?? 0) >= 0 ? "text-brand" : "text-loss"}`}>
@@ -291,7 +300,7 @@ export default async function DailyBoard({ params }: Props) {
           {dict.board.trackRecordCta} &rarr;
         </Link>
         <a
-          href="https://t.me/wildlyplay"
+          href="https://t.me/banhbongnet"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-display font-semibold text-bg transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,230,118,0.3)]"
@@ -301,11 +310,11 @@ export default async function DailyBoard({ params }: Props) {
       </section>
       <p className="pb-14 text-center text-sm text-muted">
         <Link href={withLang("/analysis", lang)} className="font-semibold text-brand hover:underline">
-          Deep-dive analysis &rarr;
+          {lang === "vi" ? "Phân tích chuyên sâu" : "Deep-dive analysis"} &rarr;
         </Link>
         <span className="mx-3 text-line">·</span>
         <Link href={withLang("/guides", lang)} className="font-semibold text-brand hover:underline">
-          Betting guides &rarr;
+          {lang === "vi" ? "Hướng dẫn" : "Betting guides"} &rarr;
         </Link>
       </p>
     </div>

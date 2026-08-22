@@ -3,11 +3,12 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import type { ReactElement, ReactNode } from "react";
 import { BRAND_GREEN } from "@/lib/team-palette";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 /**
- * Shared building blocks for every WildlyPlay OG card (1200×630).
+ * Shared building blocks for every banhbong.net OG card (1200×630).
  * Client-approved look: brand-green gradient card, gold eyebrow, white title,
- * a cartoon player anchored bottom-right (generic cards), wildlyplay.com footer.
+ * a cartoon player anchored bottom-right (generic cards), banhbong.net footer.
  *
  * Three concerns live here so all 9 generators stay DRY and consistent:
  *   1. loadOgFonts()      — Space Grotesk (Latin + Vietnamese) with a safe fallback
@@ -72,6 +73,23 @@ async function loadPlayerOnce(): Promise<string | null> {
 export function loadPlayerDataUri(): Promise<string | null> {
   if (!playerPromise) playerPromise = loadPlayerOnce();
   return playerPromise;
+}
+
+// ── Brand mark bb (white, transparent) for the card's top-left, inlined as data URI. ──
+let markPromise: Promise<string | null> | undefined;
+
+async function loadMarkOnce(): Promise<string | null> {
+  try {
+    const buf = await readFile(join(process.cwd(), "public/brand/bb-mark-white.png"));
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+export function loadMarkDataUri(): Promise<string | null> {
+  if (!markPromise) markPromise = loadMarkOnce();
+  return markPromise;
 }
 
 // ── Per-team cartoon: public/og/players/{slug}.png, inlined as a data URI.
@@ -166,7 +184,7 @@ export type OgCardProps = {
   detail?: OgDetail[] | null;
   /** Small muted text in the top-right of the content column (e.g. league). */
   topRight?: string | null;
-  /** Footer wordmark link (left). Defaults to "wildlyplay.com". */
+  /** Footer wordmark link (left). Defaults to "banhbong.net". */
   footer?: string;
   /** Small muted note on the footer right. */
   footerRight?: string | null;
@@ -174,6 +192,8 @@ export type OgCardProps = {
   player?: string | null;
   /** Show the bottom-right player (generic cards). Defaults to false. */
   showPlayer?: boolean;
+  /** Base64 data URI of the bb mark; when set, replaces the top-left wordmark (Nick 19/8: chữ banhbong.net đã có ở footer). */
+  mark?: string | null;
 };
 
 function autoTitleSize(title: string): number {
@@ -197,10 +217,11 @@ export function OgCard(props: OgCardProps): ReactNode {
     chips,
     detail,
     topRight,
-    footer = "wildlyplay.com",
+    footer = "banhbong.net",
     footerRight,
     player,
     showPlayer = false,
+    mark,
   } = props;
 
   const withPlayer = showPlayer && Boolean(player);
@@ -242,10 +263,15 @@ export function OgCard(props: OgCardProps): ReactNode {
       >
         {/* Top: wordmark + optional top-right note */}
         <div style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", fontSize: 40, fontWeight: 700 }}>
-            <span style={{ color: "#ffffff" }}>Wildly</span>
-            <span style={{ color: LIGHT_GREEN }}>Play</span>
-          </div>
+          {mark ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={mark} alt="" width={63} height={60} style={{ width: 63, height: 60 }} />
+          ) : (
+            <div style={{ display: "flex", fontSize: 40, fontWeight: 700 }}>
+              <span style={{ color: "#ffffff" }}>{WORDMARK_A}</span>
+              <span style={{ color: LIGHT_GREEN }}>{WORDMARK_B}</span>
+            </div>
+          )}
           {topRight ? (
             <div style={{ display: "flex", fontSize: 20, fontWeight: 500, color: "rgba(255,255,255,0.82)" }}>
               {topRight}

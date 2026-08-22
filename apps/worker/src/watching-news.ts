@@ -3,13 +3,9 @@
  * auto-generate a neutral pre-match preview article for SEO and publish to /news.
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
-import type { Api } from 'grammy';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang, VI_LEXICON_RULE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
-import { buildArticleLink } from './announce-article';
-import { postToFacebook } from './announce-pick';
-import { postPhotoToFacebook } from './announce';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -30,7 +26,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
   const kickoff = new Date(w.kickoff_utc).toISOString().slice(0, 16).replace('T', ' ');
 
   return [
-    'You write neutral, informative pre-match preview articles for the WildlyPlay newsroom (wildlyplay.com/news).',
+    'You write neutral, informative pre-match preview articles for the banhbong.net newsroom (banhbong.net/news).',
     '',
     'Match:',
     `- ${w.home_team} vs ${w.away_team}`,
@@ -154,79 +150,12 @@ export function buildPresencePosts(w: WatchingRow): NewPost[] {
 
 // ── Publish ─────────────────────────────────────────────────────────────────
 
-export interface WatchingCardDeps {
-  api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
-  channelChatId: string | undefined;
-  siteUrl: string;
-  /** WATCHING FB post — same fail-safe rule as the TG card; skipped when unset. */
-  facebook?: { pageId: string; pageToken: string };
-}
-
 export interface WatchingNewsDeps {
   store: Store;
   env: { apiKey: string | undefined; model?: string };
   revalidateUrl?: string;
-  /** Post Restructure v1 §2.4: 3-line WATCHING card (TG only, replaces the article announce). */
-  card?: WatchingCardDeps;
   /** Optional Supabase client for player_photos lookup. If omitted, no hero image is injected. */
   db?: SupabaseClient;
-}
-
-/** 3-line 👀 WATCHING card (Post Restructure Spec v1 §2.4, locked 3/7 — TG only).
- *  R5: the middle line is the hand-written one-sentence reason. NEVER w.note —
- *  the note feeds the article prompt and can be a long analysis/excerpt. */
-export function formatWatchingMessage(
-  w: WatchingRow,
-  siteUrl: string,
-  slug: string,
-  reason?: string | null,
-): string {
-  const ko = new Date(w.kickoff_utc).toISOString().slice(11, 16);
-  return [
-    `\u{1F440} Watching \u2014 ${w.home_team} vs ${w.away_team} \u00b7 ${w.league} \u00b7 KO ${ko} UTC`,
-    ...(reason ? [reason] : []),
-    `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
-  ].join('\n');
-}
-
-/** Send the WATCHING card to the TG channel. Fire-and-forget — never throws. */
-async function sendWatchingCard(
-  deps: WatchingCardDeps,
-  w: WatchingRow,
-  slug: string,
-  reason?: string | null,
-): Promise<void> {
-  const msg = formatWatchingMessage(w, deps.siteUrl, slug, reason);
-  const imageUrl = `${deps.siteUrl}/images/wildlyplay_watching.png`;
-
-  // TG channel card — independent fail-safe.
-  if (deps.channelChatId) {
-    try {
-      try {
-        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
-      } catch {
-        await deps.api.sendMessage(deps.channelChatId, msg);
-      }
-      log.info(`watching card sent for ${w.home_team} vs ${w.away_team}`);
-    } catch (err) {
-      log.warn(`watching card failed for ${w.home_team} vs ${w.away_team} — article already published:`, err);
-    }
-  }
-
-  // FB post — same restore Nick asked for; never blocks the TG card (own try/catch).
-  if (deps.facebook) {
-    try {
-      try {
-        await postPhotoToFacebook(deps.facebook, imageUrl, msg);
-      } catch (err) {
-        log.warn(`watching FB photo failed for ${w.home_team} vs ${w.away_team} — falling back to link post:`, err);
-        await postToFacebook(deps.facebook, msg, buildArticleLink(deps.siteUrl, slug, 'facebook'));
-      }
-      log.info(`watching FB post sent for ${w.home_team} vs ${w.away_team}`);
-    } catch (err) {
-      log.warn(`watching FB post failed for ${w.home_team} vs ${w.away_team} — TG card already sent:`, err);
-    }
-  }
 }
 
 /** Generate + publish a news article for a /watching entry. Fire-and-forget: never throws.
@@ -273,15 +202,22 @@ export async function publishWatchingNews(
     // Skip for presence cards — minimal render, no hero image needed.
     if (deps.db && !watching.presence) {
       try {
+        // Only self-hosted photos (relative storage paths, real author + licence credit).
+        // The bulk of player_photos holds absolute thesportsdb URLs credited "TheSportsDB" —
+        // not a free licence, not an author credit — those must never enter an article.
         const { data: photos } = await deps.db
           .from('player_photos')
           .select('player_name, image_url, credit')
           .or(`team.ilike.%${watching.home_team}%,team.ilike.%${watching.away_team}%`)
+          .not('image_url', 'ilike', 'http%')
           .limit(1);
         if (photos?.length) {
           const p = photos[0] as { player_name: string; image_url: string; credit: string };
           const storageBase = `${process.env.SUPABASE_URL}/storage/v1/object/public`;
-          const heroMd = `![${p.player_name}](${storageBase}/${p.image_url})\n*${p.credit}*\n\n`;
+          // Guard the join: an already-absolute image_url must be used as-is — prefixing it
+          // produced the broken double-URL hero (Arsenal–Coventry, 17 Aug).
+          const src = /^https?:\/\//i.test(p.image_url) ? p.image_url : `${storageBase}/${p.image_url}`;
+          const heroMd = `![${p.player_name}](${src})\n*${p.credit}*\n\n`;
           for (const post of posts) {
             post.body_md = heroMd + post.body_md;
           }
@@ -316,7 +252,6 @@ export async function publishWatchingNews(
     }
     if (failedLangs.length) log.warn(`watching-news: published ${published}/${posts.length} for ${watching.home_team} vs ${watching.away_team}, failed langs [${failedLangs.join(',')}]`);
     else log.info(`watching-news: ✅ published ${published}${watching.presence ? ' PRESENCE (minimal)' : ''} posts for ${watching.home_team} vs ${watching.away_team} → /analysis/${slug}`);
-    if (deps.card) await sendWatchingCard(deps.card, watching, slug, reason);
 
     if (deps.revalidateUrl) {
       const revalidate = createRevalidator({

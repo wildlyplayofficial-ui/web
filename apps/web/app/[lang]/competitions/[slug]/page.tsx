@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
-      title: `${title} | WildlyPlay`,
+      title: `${title} | banhbong.net`,
       description,
       images: [{ url: `/api/og/editorial?title=${encodeURIComponent(compName)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
     },

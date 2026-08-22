@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.stats.title,
     description: dict.stats.subtitle,
-    openGraph: { title: `${dict.stats.title} | WildlyPlay`, description: dict.stats.subtitle, images: [{ url: "/api/og/record?page=stats", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.stats.title} | banhbong.net`, description: dict.stats.subtitle, images: [{ url: "/api/og/record?page=stats", width: 1200, height: 630 }] },
     alternates: buildAlternates("/stats", lang),
   };
 }
@@ -157,7 +157,7 @@ export default async function StatsPage({ params }: Props) {
       </section>
 
       <div className="mb-6 text-center">
-        <h2 className="font-display text-2xl font-bold text-brand">Main Picks &middot; The Curator</h2>
+        <h2 className="font-display text-2xl font-bold text-brand">{lang === "vi" ? "Nhận định chính" : "Main Picks"} &middot; Admin</h2>
         <p className="mt-2 text-xs text-muted">Real analyst &middot; highest conviction &middot; primary ledger</p>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
@@ -195,10 +195,10 @@ export default async function StatsPage({ params }: Props) {
         <section className="mt-14 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
           <div className="text-center">
             <h2 className="font-display text-2xl font-bold text-[#6b9e9e]">
-              Alternative Picks &middot; The Scout
+              {lang === "vi" ? "Nhận định phụ" : "Alternative Picks"} &middot; Trợ lý AI
             </h2>
             <p className="mt-2 text-xs text-muted">
-              Fictional, AI-operated WildlyPlay persona &middot; lower confidence &middot; separate ledger
+              {lang === "vi" ? "Nhân vật giả tưởng do AI vận hành của banhbong.net · độ tin cậy thấp hơn · sổ theo dõi riêng" : "Fictional, AI-operated banhbong.net persona · lower confidence · separate ledger"}
             </p>
           </div>
 

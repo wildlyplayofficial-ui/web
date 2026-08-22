@@ -54,12 +54,12 @@ export interface AboutCopy {
 
 export const copy: Record<Lang, AboutCopy> = {
   en: {
-    title: "About WildlyPlay",
-    metaTitle: "About WildlyPlay — Curator-Led Football Picks, Public Track Record",
+    title: "About banhbong.net",
+    metaTitle: "About banhbong.net — Curator-Led Football Picks, Public Track Record",
     metaDescription:
-      "WildlyPlay is a curator-led football picks site. A human picks every match; AI writes the analysis, settles results, and archives every pick publicly, forever.",
+      "banhbong.net is a curator-led football picks site. A human picks every match; AI writes the analysis, settles results, and archives every pick publicly, forever.",
     intro:
-      "WildlyPlay is a curator-led football picks site. A human \u2014 The Curator \u2014 picks the matches and the angles. AI operates everything else: it writes the analysis, publishes, settles the result and archives every pick publicly, forever. Human picks, AI operates \u2014 disclosed on every single play.",
+      "banhbong.net is a curator-led football picks site. A human \u2014 The Curator \u2014 picks the matches and the angles. AI operates everything else: it writes the analysis, publishes, settles the result and archives every pick publicly, forever. Human picks, AI operates \u2014 disclosed on every single play.",
     cards: [
       {
         heading: "Curated, not predicted",
@@ -116,7 +116,7 @@ export const copy: Record<Lang, AboutCopy> = {
       { name: "Poisson model", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
     ],
     responsibleTitle: "Responsible play",
-    responsibleBody: "WildlyPlay is entertainment. We share perspectives \u2014 never financial advice. If gambling stops being fun, reach out.",
+    responsibleBody: "banhbong.net is entertainment. We share perspectives \u2014 never financial advice. If gambling stops being fun, reach out.",
     helplines: [
       { name: "BeGambleAware", detail: "begambleaware.org (UK)" },
       { name: "NCPG", detail: "1-800-522-4700 (US)" },
@@ -126,12 +126,12 @@ export const copy: Record<Lang, AboutCopy> = {
     contactBody: "Follow us or drop a message on any of these channels.",
   },
   vi: {
-    title: "Về WildlyPlay",
-    metaTitle: "Về WildlyPlay — Nhận định bóng đá do người tuyển chọn, thành tích công khai",
+    title: "Về banhbong.net",
+    metaTitle: "Về banhbong.net — Nhận định bóng đá do người tuyển chọn, thành tích công khai",
     metaDescription:
-      "WildlyPlay là trang phân tích bóng đá do con người tuyển chọn. Mỗi trận được nghiên cứu và lập luận; AI viết nhận định, lưu trữ công khai mọi dự đoán, minh bạch từ ngày đầu.",
+      "banhbong.net là trang phân tích bóng đá do con người tuyển chọn. Mỗi trận được nghiên cứu và lập luận; AI viết nhận định, lưu trữ công khai mọi dự đoán, minh bạch từ ngày đầu.",
     intro:
-      "WildlyPlay là trang nhận định bóng đá do con người thực hiện. Admin là người chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn.",
+      "banhbong.net là trang nhận định bóng đá do con người thực hiện. Admin là người chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn.",
     cards: [
       {
         heading: "Nhận định có lập luận, không đoán mò",
@@ -153,9 +153,9 @@ export const copy: Record<Lang, AboutCopy> = {
         description: "Một con người thật nghiên cứu mỗi trận, tìm góc nhìn và gửi nhận định. Admin là cổng con người — mọi nhận định bắt đầu từ quyết định của con người. Thành tích theo dõi riêng, minh bạch từ ngày đầu.",
       },
       {
-        name: "The Scout",
+        name: "Trợ lý AI",
         role: "AI vận hành · Độ tin cậy thấp hơn",
-        description: "Persona do AI vận hành công khai, chạy phân tích riêng. The Scout có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Admin.",
+        description: "Persona do AI vận hành công khai, chạy phân tích riêng. Trợ lý AI có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Admin.",
       },
     ],
     promiseTitle: "Cam kết",
@@ -188,7 +188,7 @@ export const copy: Record<Lang, AboutCopy> = {
       { name: "Mô hình Poisson", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
     ],
     responsibleTitle: "Theo dõi có trách nhiệm",
-    responsibleBody: "WildlyPlay mang tính phân tích thể thao và giải trí. Chúng tôi chia sẻ góc nhìn — không phải lời mời hay hướng dẫn cá cược, không phải lời khuyên tài chính. Nếu việc theo dõi không còn lành mạnh, hãy tìm hỗ trợ.",
+    responsibleBody: "banhbong.net mang tính phân tích thể thao và giải trí. Chúng tôi chia sẻ góc nhìn — không phải lời mời hay hướng dẫn cá cược, không phải lời khuyên tài chính. Nếu việc theo dõi không còn lành mạnh, hãy tìm hỗ trợ.",
     helplines: [
       { name: "BeGambleAware", detail: "begambleaware.org (UK)" },
       { name: "NCPG", detail: "1-800-522-4700 (US)" },
@@ -198,13 +198,13 @@ export const copy: Record<Lang, AboutCopy> = {
     contactBody: "Theo dõi hoặc nhắn tin trên các kênh sau.",
   },
   th: {
-    title: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a WildlyPlay",
+    title: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a banhbong.net",
     // TH gi\u1ecdng ph\u00e2n t\u00edch (Route A). \u26a0\ufe0f C\u1ea6N native Thai review tr\u01b0\u1edbc production.
-    metaTitle: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a WildlyPlay \u2014 \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e42\u0e14\u0e22\u0e19\u0e31\u0e01\u0e04\u0e31\u0e14\u0e40\u0e25\u0e37\u0e2d\u0e01 \u0e2a\u0e16\u0e34\u0e15\u0e34\u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a",
+    metaTitle: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a banhbong.net \u2014 \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e42\u0e14\u0e22\u0e19\u0e31\u0e01\u0e04\u0e31\u0e14\u0e40\u0e25\u0e37\u0e2d\u0e01 \u0e2a\u0e16\u0e34\u0e15\u0e34\u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a",
     metaDescription:
-      "WildlyPlay \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e17\u0e38\u0e01\u0e01\u0e32\u0e23\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1c\u0e48\u0e32\u0e19\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 AI \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e01\u0e32\u0e23\u0e04\u0e32\u0e14\u0e01\u0e32\u0e23\u0e13\u0e4c\u0e44\u0e27\u0e49\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b",
+      "banhbong.net \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e17\u0e38\u0e01\u0e01\u0e32\u0e23\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e1c\u0e48\u0e32\u0e19\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 AI \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e01\u0e32\u0e23\u0e04\u0e32\u0e14\u0e01\u0e32\u0e23\u0e13\u0e4c\u0e44\u0e27\u0e49\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b",
     intro:
-      "WildlyPlay \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e04\u0e19\u0e2b\u0e19\u0e36\u0e48\u0e07\u0e04\u0e19 \u2014 Admin \u2014 \u0e40\u0e1b\u0e47\u0e19\u0e1c\u0e39\u0e49\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e41\u0e25\u0e30\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e2a\u0e48\u0e27\u0e19 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e17\u0e38\u0e01\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e17\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e37\u0e2d: \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e1c\u0e22\u0e41\u0e1e\u0e23\u0e48 \u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e1c\u0e25 \u0e41\u0e25\u0e30\u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e44\u0e27\u0e49\u0e15\u0e48\u0e2d\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b \u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e40\u0e25\u0e37\u0e2d\u0e01 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 \u2014 \u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22\u0e44\u0e27\u0e49\u0e43\u0e19\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14",
+      "banhbong.net \u0e04\u0e37\u0e2d\u0e40\u0e27\u0e47\u0e1a\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e17\u0e35\u0e48\u0e04\u0e31\u0e14\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u0e04\u0e19\u0e2b\u0e19\u0e36\u0e48\u0e07\u0e04\u0e19 \u2014 Admin \u2014 \u0e40\u0e1b\u0e47\u0e19\u0e1c\u0e39\u0e49\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e41\u0e25\u0e30\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e2a\u0e48\u0e27\u0e19 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e17\u0e38\u0e01\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e17\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e37\u0e2d: \u0e40\u0e02\u0e35\u0e22\u0e19\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c \u0e40\u0e1c\u0e22\u0e41\u0e1e\u0e23\u0e48 \u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e1c\u0e25 \u0e41\u0e25\u0e30\u0e40\u0e01\u0e47\u0e1a\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e44\u0e27\u0e49\u0e15\u0e48\u0e2d\u0e2a\u0e32\u0e18\u0e32\u0e23\u0e13\u0e30\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b \u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e40\u0e25\u0e37\u0e2d\u0e01 AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 \u2014 \u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22\u0e44\u0e27\u0e49\u0e43\u0e19\u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14",
     cards: [
       {
         heading: "\u0e04\u0e31\u0e14\u0e2a\u0e23\u0e23 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e17\u0e33\u0e19\u0e32\u0e22",
@@ -261,7 +261,7 @@ export const copy: Record<Lang, AboutCopy> = {
       { name: "\u0e42\u0e21\u0e40\u0e14\u0e25 Poisson", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
     ],
     responsibleTitle: "\u0e40\u0e25\u0e48\u0e19\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e23\u0e31\u0e1a\u0e1c\u0e34\u0e14\u0e0a\u0e2d\u0e1a",
-    responsibleBody: "WildlyPlay \u0e40\u0e1b\u0e47\u0e19\u0e04\u0e27\u0e32\u0e21\u0e1a\u0e31\u0e19\u0e40\u0e17\u0e34\u0e07 \u0e40\u0e23\u0e32\u0e41\u0e1a\u0e48\u0e07\u0e1b\u0e31\u0e19\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u2014 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e17\u0e32\u0e07\u0e01\u0e32\u0e23\u0e40\u0e07\u0e34\u0e19 \u0e2b\u0e32\u0e01\u0e01\u0e32\u0e23\u0e1e\u0e19\u0e31\u0e19\u0e44\u0e21\u0e48\u0e2a\u0e19\u0e38\u0e01\u0e2d\u0e35\u0e01\u0e15\u0e48\u0e2d\u0e44\u0e1b \u0e42\u0e1b\u0e23\u0e14\u0e02\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e0a\u0e48\u0e27\u0e22\u0e40\u0e2b\u0e25\u0e37\u0e2d",
+    responsibleBody: "banhbong.net \u0e40\u0e1b\u0e47\u0e19\u0e04\u0e27\u0e32\u0e21\u0e1a\u0e31\u0e19\u0e40\u0e17\u0e34\u0e07 \u0e40\u0e23\u0e32\u0e41\u0e1a\u0e48\u0e07\u0e1b\u0e31\u0e19\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u2014 \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e17\u0e32\u0e07\u0e01\u0e32\u0e23\u0e40\u0e07\u0e34\u0e19 \u0e2b\u0e32\u0e01\u0e01\u0e32\u0e23\u0e1e\u0e19\u0e31\u0e19\u0e44\u0e21\u0e48\u0e2a\u0e19\u0e38\u0e01\u0e2d\u0e35\u0e01\u0e15\u0e48\u0e2d\u0e44\u0e1b \u0e42\u0e1b\u0e23\u0e14\u0e02\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e0a\u0e48\u0e27\u0e22\u0e40\u0e2b\u0e25\u0e37\u0e2d",
     helplines: [
       { name: "BeGambleAware", detail: "begambleaware.org (UK)" },
       { name: "NCPG", detail: "1-800-522-4700 (US)" },
@@ -271,12 +271,12 @@ export const copy: Record<Lang, AboutCopy> = {
     contactBody: "\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e2b\u0e23\u0e37\u0e2d\u0e2a\u0e48\u0e07\u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e1c\u0e48\u0e32\u0e19\u0e0a\u0e48\u0e2d\u0e07\u0e17\u0e32\u0e07\u0e40\u0e2b\u0e25\u0e48\u0e32\u0e19\u0e35\u0e49",
   },
   es: {
-    title: "Acerca de WildlyPlay",
-    metaTitle: "Acerca de WildlyPlay — Picks de fútbol de un curador, historial público",
+    title: "Acerca de banhbong.net",
+    metaTitle: "Acerca de banhbong.net — Picks de fútbol de un curador, historial público",
     metaDescription:
-      "WildlyPlay es un sitio de picks de fútbol dirigido por un curador. Un humano elige cada partido; la IA escribe el análisis, liquida resultados y archiva cada pick públicamente, para siempre.",
+      "banhbong.net es un sitio de picks de fútbol dirigido por un curador. Un humano elige cada partido; la IA escribe el análisis, liquida resultados y archiva cada pick públicamente, para siempre.",
     intro:
-      "WildlyPlay es un sitio de picks de f\u00fatbol dirigido por un curador. Un humano \u2014 The Curator \u2014 elige los partidos y los \u00e1ngulos. La IA opera todo lo dem\u00e1s: escribe el an\u00e1lisis, publica, liquida el resultado y archiva cada pick p\u00fablicamente, para siempre. Picks humanos, operaci\u00f3n por IA \u2014 declarado en cada jugada.",
+      "banhbong.net es un sitio de picks de f\u00fatbol dirigido por un curador. Un humano \u2014 The Curator \u2014 elige los partidos y los \u00e1ngulos. La IA opera todo lo dem\u00e1s: escribe el an\u00e1lisis, publica, liquida el resultado y archiva cada pick p\u00fablicamente, para siempre. Picks humanos, operaci\u00f3n por IA \u2014 declarado en cada jugada.",
     cards: [
       {
         heading: "Curado, no predicho",
@@ -333,7 +333,7 @@ export const copy: Record<Lang, AboutCopy> = {
       { name: "Modelo Poisson", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
     ],
     responsibleTitle: "Juego responsable",
-    responsibleBody: "WildlyPlay es entretenimiento. Compartimos perspectivas \u2014 nunca asesor\u00eda financiera. Si el juego deja de ser divertido, busca ayuda.",
+    responsibleBody: "banhbong.net es entretenimiento. Compartimos perspectivas \u2014 nunca asesor\u00eda financiera. Si el juego deja de ser divertido, busca ayuda.",
     helplines: [
       { name: "BeGambleAware", detail: "begambleaware.org (UK)" },
       { name: "NCPG", detail: "1-800-522-4700 (US)" },

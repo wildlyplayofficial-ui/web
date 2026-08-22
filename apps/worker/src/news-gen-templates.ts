@@ -54,28 +54,28 @@ const PREVIEW = {
     intro: (d: PreviewData) => `${d.home} face ${d.away} in the ${d.competition} on ${d.dateUtc}.`,
     form: (team: string, form: string) => `Recent form — ${team}: ${form}.`,
     pick: (author: string, url: string) => `${author} has published a pick for this match: ${url}`,
-    outro: 'Follow live scores and updates on WildlyPlay.',
+    outro: 'Follow live scores and updates on banhbong.net.',
   },
   vi: {
     headline: (d: PreviewData) => `Nhận định: ${d.home} vs ${d.away} — ${d.competition}`,
     intro: (d: PreviewData) => `${d.home} gặp ${d.away} tại ${d.competition} vào ngày ${d.dateUtc}.`,
     form: (team: string, form: string) => `Phong độ gần đây — ${team}: ${form}.`,
     pick: (author: string, url: string) => `${author} đã đăng nhận định cho trận này: ${url}`,
-    outro: 'Theo dõi tỷ số trực tiếp và cập nhật trên WildlyPlay.',
+    outro: 'Theo dõi tỷ số trực tiếp và cập nhật trên banhbong.net.',
   },
   th: {
     headline: (d: PreviewData) => `พรีวิว: ${d.home} พบ ${d.away} — ${d.competition}`,
     intro: (d: PreviewData) => `${d.home} พบกับ ${d.away} ในศึก ${d.competition} วันที่ ${d.dateUtc}`,
     form: (team: string, form: string) => `ฟอร์มล่าสุด — ${team}: ${form}`,
     pick: (author: string, url: string) => `${author} ได้เผยแพร่ทีเด็ดสำหรับแมตช์นี้: ${url}`,
-    outro: 'ติดตามผลบอลสดและอัปเดตได้ที่ WildlyPlay',
+    outro: 'ติดตามผลบอลสดและอัปเดตได้ที่ banhbong.net',
   },
   es: {
     headline: (d: PreviewData) => `Previa: ${d.home} vs ${d.away} — ${d.competition}`,
     intro: (d: PreviewData) => `${d.home} se enfrenta a ${d.away} en ${d.competition} el ${d.dateUtc}.`,
     form: (team: string, form: string) => `Forma reciente — ${team}: ${form}.`,
     pick: (author: string, url: string) => `${author} ha publicado un pick para este partido: ${url}`,
-    outro: 'Sigue los resultados en directo y las novedades en WildlyPlay.',
+    outro: 'Sigue los resultados en directo y las novedades en banhbong.net.',
   },
 } as const;
 
@@ -140,25 +140,25 @@ const STANDINGS = {
     headline: (d: StandingsData) => `${d.competition} standings update — ${d.dateUtc}`,
     intro: (d: StandingsData) => `Top of the ${d.competition} table as of ${d.dateUtc}:`,
     row: (r: StandingsRowData) => `${r.rank}. ${r.name} — ${r.points} pts (${r.played} played)`,
-    outro: 'Full table on WildlyPlay.',
+    outro: 'Full table on banhbong.net.',
   },
   vi: {
     headline: (d: StandingsData) => `Cập nhật bảng xếp hạng ${d.competition} — ${d.dateUtc}`,
     intro: (d: StandingsData) => `Nhóm dẫn đầu bảng xếp hạng ${d.competition} tính đến ngày ${d.dateUtc}:`,
     row: (r: StandingsRowData) => `${r.rank}. ${r.name} — ${r.points} điểm (${r.played} trận)`,
-    outro: 'Xem bảng xếp hạng đầy đủ trên WildlyPlay.',
+    outro: 'Xem bảng xếp hạng đầy đủ trên banhbong.net.',
   },
   th: {
     headline: (d: StandingsData) => `อัปเดตตารางคะแนน ${d.competition} — ${d.dateUtc}`,
     intro: (d: StandingsData) => `อันดับต้นตารางคะแนน ${d.competition} ณ วันที่ ${d.dateUtc}:`,
     row: (r: StandingsRowData) => `${r.rank}. ${r.name} — ${r.points} คะแนน (${r.played} นัด)`,
-    outro: 'ดูตารางคะแนนเต็มได้ที่ WildlyPlay',
+    outro: 'ดูตารางคะแนนเต็มได้ที่ banhbong.net',
   },
   es: {
     headline: (d: StandingsData) => `Actualización de la clasificación de ${d.competition} — ${d.dateUtc}`,
     intro: (d: StandingsData) => `La parte alta de la clasificación de ${d.competition} a fecha ${d.dateUtc}:`,
     row: (r: StandingsRowData) => `${r.rank}. ${r.name} — ${r.points} pts (${r.played} PJ)`,
-    outro: 'Consulta la tabla completa en WildlyPlay.',
+    outro: 'Consulta la tabla completa en banhbong.net.',
   },
 } as const;
 

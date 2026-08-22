@@ -8,7 +8,7 @@ const body = readFileSync(bodyFile, 'utf8');
 
 const row = {
   slug, kind: 'preview', tier: 'T2_marquee', league: 'Premier League',
-  byline: 'WildlyPlay Desk', author_type: 'desk_ai', title, body, status,
+  byline: 'Banh Bóng Desk', author_type: 'desk_ai', title, body, status,
 };
 if (status === 'published') row.published_at = publishedAt;
 

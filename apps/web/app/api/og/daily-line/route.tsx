@@ -2,7 +2,8 @@ import { ImageResponse } from "next/og";
 import { getServiceSupabase } from "@/lib/goalline/supabase";
 import type { DailyCard, CardMatch } from "@/lib/goalline/types";
 import { teamFlag } from "@/lib/flags";
-import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 /**
  * Daily Line share card image (1080x1080, square for social).
@@ -31,12 +32,14 @@ export async function GET(request: Request): Promise<Response> {
   // Fallback: no card param → branded Daily Line card (1200x630 og-safe)
   if (isNaN(cardNumber)) {
     const player = await loadPlayerDataUri();
+    const mark = await loadMarkDataUri();
     return ogResponse(
       <OgCard
+        mark={mark}
         eyebrow="Daily Line"
         title="Daily Line"
         sub="A daily Over/Under prediction game"
-        footer="wildlyplay.com/daily-line"
+        footer="banhbong.net/daily-line"
         footerRight="Pick your side, climb the leaderboard"
         player={player}
         showPlayer
@@ -106,8 +109,8 @@ export async function GET(request: Request): Promise<Response> {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", fontSize: 32, fontWeight: 700 }}>
-            <span style={{ color: C.ink }}>Wildly</span>
-            <span style={{ color: C.brand }}>Play</span>
+            <span style={{ color: C.ink }}>{WORDMARK_A}</span>
+            <span style={{ color: C.brand }}>{WORDMARK_B}</span>
           </div>
           <div style={{ display: "flex", fontSize: 22, color: C.muted }}>
             Daily Line · Card #{c.card_number}
@@ -260,7 +263,7 @@ export async function GET(request: Request): Promise<Response> {
             color: C.muted,
           }}
         >
-          wildlyplay.com/daily-line · Free prediction game
+          banhbong.net/daily-line · Free prediction game
         </div>
       </div>
     ),

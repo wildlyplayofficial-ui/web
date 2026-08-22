@@ -4,6 +4,7 @@
  * Language is carried via path prefix: /vi/, /th/, /es/. EN = default (no prefix).
  */
 
+import { SITE_URL } from "@/lib/brand";
 export type Lang = "en" | "vi" | "th" | "es";
 
 export const LANGS: readonly Lang[] = ["en", "vi", "th", "es"] as const;
@@ -21,7 +22,7 @@ export function withLang(href: string, lang: Lang): string {
   return `/${lang}${clean}`;
 }
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 
 /** Build hreflang alternates + self-canonical for a page path. */
 export function buildAlternates(path: string, currentLang: Lang = "vi"): {
@@ -87,6 +88,9 @@ export interface Dict {
   home: {
     seoDescription: string;
     latestAnalysis: string;
+    latestPredictions: string;
+    latestNews: string;
+    allNews: string;
     viewBoard: string;
     trustCurator: string;
     trustScout: string;
@@ -103,6 +107,7 @@ export interface Dict {
     predictedScore: string;
     superSunday: string;
     hotPick: string;
+    featuredStory: string;
     trackRecord: string;
     hitRate: string;
     viewAnalysisCta: string;
@@ -389,6 +394,9 @@ const en: Dict = {
   home: {
     seoDescription: "Free daily football picks by a human curator. Every play public forever — wins and losses. Match analysis, odds tools and betting guides across Premier League, La Liga, Serie A, Bundesliga and more.",
     latestAnalysis: "Latest analysis",
+    latestPredictions: "Latest predictions",
+    latestNews: "Latest news",
+    allNews: "All news",
     viewBoard: "View the Daily Board",
     trustCurator: "The Curator — real human, hand-picked plays",
     trustScout: "The Scout — openly AI, separate ledger, lower confidence",
@@ -405,6 +413,7 @@ const en: Dict = {
     predictedScore: "Predicted",
     superSunday: "Super Sunday",
     hotPick: "Hottest pick",
+    featuredStory: "Featured story",
     trackRecord: "Track record",
     hitRate: "Hit rate",
     viewAnalysisCta: "View analysis",
@@ -568,7 +577,7 @@ const en: Dict = {
   forum: {
     title: "Forum",
     comingSoon: "Coming soon",
-    body: "The WildlyPlay forum opens once the crowd is big enough. Until then, the conversation lives on Telegram.",
+    body: "The banhbong.net forum opens once the crowd is big enough. Until then, the conversation lives on Telegram.",
   },
   donate: {
     copy: "Copy address",
@@ -585,7 +594,7 @@ const en: Dict = {
     heading: "Alternative Picks \u00b7 The Scout",
     badge: "Lower Confidence",
     noPlay: "The Scout \u2014 no Alt play today.",
-    disclosure: "The Scout \u2014 a fictional, AI-operated WildlyPlay persona \u00b7 lower confidence \u00b7 separate ledger",
+    disclosure: "The Scout \u2014 a fictional, AI-operated banhbong.net persona \u00b7 lower confidence \u00b7 separate ledger",
   },
   watching: {
     title: "The Curator is watching",
@@ -690,9 +699,12 @@ const vi: Dict = {
   home: {
     seoDescription: "Nhận định bóng đá miễn phí mỗi ngày do người thật chọn. Mọi nhận định công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
     latestAnalysis: "Phân tích mới nhất",
+    latestPredictions: "Nhận định mới nhất",
+    latestNews: "Tin mới nhất",
+    allNews: "Tất cả tin",
     viewBoard: "Xem Bảng Dự Đoán Hôm Nay",
     trustCurator: "Admin — người thật, tự tay chọn trận",
-    trustScout: "The Scout — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
+    trustScout: "Trợ lý AI — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
     opensIn: "Khai mạc sau {n} ngày",
     seasonLive: "Mùa giải đã lăn bóng",
     preseasonTitle: "Mùa giải chưa khai mạc",
@@ -705,11 +717,12 @@ const vi: Dict = {
     scoreboardTitle: "Tỷ số & lịch đấu",
     predictedScore: "Dự đoán",
     superSunday: "Super Sunday",
-    hotPick: "Kèo hot nhất",
+    hotPick: "Nhận định nổi bật",
+    featuredStory: "Bài nổi bật",
     trackRecord: "Thành tích",
     hitRate: "Tỷ lệ thắng",
     viewAnalysisCta: "Xem phân tích",
-    telegramTitle: "Kèo lên Telegram trước",
+    telegramTitle: "Nhận định lên Telegram trước",
     telegramPitch: "Kèm số, lý do, và ‘no play’ rõ ràng.",
     joinTelegram: "Vào kênh Telegram",
   },
@@ -796,16 +809,16 @@ const vi: Dict = {
   },
   pick: {
     disclosure: "Người chọn trận, AI vận hành. Con người chọn trận này; AI viết, đăng và kết sổ.",
-    disclosureScout: "AI chọn trận, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.",
+    disclosureScout: "AI chọn trận, AI viết bài — Trợ lý AI là nhân vật AI thử nghiệm, không phải người thật.",
     odds: "Odds lúc đăng",
     stake: "Mức tham gia",
     finalScore: "FT",
     viewPlay: "Xem chi tiết nhận định",
     curator: "Admin",
-    scoutLabel: "The Scout",
+    scoutLabel: "Trợ lý AI",
     halfWin: "thắng nửa",
     halfLoss: "thua nửa",
-    confidence: "Độ tự tin",
+    confidence: "Mức tự tin",
     confLow: "Thấp",
     confMedium: "Trung bình",
     confHigh: "Cao",
@@ -863,13 +876,13 @@ const vi: Dict = {
     live: "LIVE",
     won: "THẮNG",
     lost: "THUA",
-    push: "HÒA KÈO",
+    push: "HOÀ",
     void: "HỦY",
   },
   forum: {
     title: "Diễn Đàn",
     comingSoon: "Sắp ra mắt",
-    body: "Diễn đàn WildlyPlay sẽ mở khi cộng đồng đủ lớn. Hiện tại, mọi thảo luận diễn ra trên Telegram.",
+    body: "Diễn đàn banhbong.net sẽ mở khi cộng đồng đủ lớn. Hiện tại, mọi thảo luận diễn ra trên Telegram.",
   },
   donate: {
     copy: "Sao chép địa chỉ",
@@ -883,19 +896,19 @@ const vi: Dict = {
     substitution: "Thay người",
   },
   scout: {
-    heading: "K\u00e8o Ph\u1ee5 \u00b7 The Scout",
+    heading: "K\u00e8o Ph\u1ee5 \u00b7 Trợ lý AI",
     badge: "\u0110\u1ed9 tin th\u1ea5p h\u01a1n",
-    noPlay: "The Scout \u2014 kh\u00f4ng c\u00f3 k\u00e8o ph\u1ee5 h\u00f4m nay.",
-    disclosure: "The Scout \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a WildlyPlay \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
+    noPlay: "Trợ lý AI \u2014 kh\u00f4ng c\u00f3 k\u00e8o ph\u1ee5 h\u00f4m nay.",
+    disclosure: "Trợ lý AI \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a banhbong.net \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
   },
   watching: {
     title: "Admin \u0111ang theo d\u00f5i",
     titlePast: "Admin \u0111\u00e3 theo d\u00f5i",
     note: "Ghi ch\u00fa t\u1eeb Admin",
-    titleScout: "Scout \u0111ang theo d\u00f5i",
-    titlePastScout: "Scout \u0111\u00e3 theo d\u00f5i",
-    noteScout: "Ghi ch\u00fa t\u1eeb Scout",
-    disclosureScout: "AI ch\u1ecdn k\u00e8o, AI vi\u1ebft b\u00e0i \u2014 Scout l\u00e0 nh\u00e2n v\u1eadt AI th\u1eed nghi\u1ec7m, kh\u00f4ng ph\u1ea3i ng\u01b0\u1eddi th\u1eadt.",
+    titleScout: "Trợ lý AI \u0111ang theo d\u00f5i",
+    titlePastScout: "Trợ lý AI \u0111\u00e3 theo d\u00f5i",
+    noteScout: "Ghi ch\u00fa t\u1eeb Trợ lý AI",
+    disclosureScout: "AI ch\u1ecdn k\u00e8o, AI vi\u1ebft b\u00e0i \u2014 Trợ lý AI l\u00e0 nh\u00e2n v\u1eadt AI th\u1eed nghi\u1ec7m, kh\u00f4ng ph\u1ea3i ng\u01b0\u1eddi th\u1eadt.",
     disclosureWatching: "B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng xu\u1ed1ng k\u00e8o \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.",
     badge: "THEO D\u00d5I \u00b7 KH\u00d4NG PH\u1ea2I PICK",
   },
@@ -903,8 +916,8 @@ const vi: Dict = {
     backToMatches: "Quay l\u1ea1i",
     curatorWatch: "Admin \u0111ang theo d\u00f5i",
     curatorPick: "K\u00e8o c\u1ee7a Admin",
-    scoutWatch: "Scout \u0111ang theo d\u00f5i",
-    scoutPick: "K\u00e8o c\u1ee7a Scout",
+    scoutWatch: "Trợ lý AI \u0111ang theo d\u00f5i",
+    scoutPick: "K\u00e8o c\u1ee7a Trợ lý AI",
     articles: "B\u00e0i vi\u1ebft v\u1ec1 tr\u1eadn",
     noContent: "Ch\u01b0a c\u00f3 n\u1ed9i dung cho tr\u1eadn n\u00e0y.",
     readArticle: "\u0110\u1ecdc b\u00e0i",
@@ -991,6 +1004,9 @@ const th: Dict = {
   home: {
     seoDescription: "ทีเด็ดบอลฟรีรายวันโดยคิวเรเตอร์มนุษย์ ทุกทีเด็ดเปิดเผยต่อสาธารณะตลอดไป ทั้งชนะและแพ้ วิเคราะห์แมตช์ เครื่องมืออัตราต่อรอง และคู่มือสำหรับพรีเมียร์ลีก ลาลีกา เซเรียอา บุนเดสลีกา และอีกมากมาย",
     latestAnalysis: "บทวิเคราะห์ล่าสุด",
+    latestPredictions: "ทำนายผลล่าสุด",
+    latestNews: "ข่าวล่าสุด",
+    allNews: "ข่าวทั้งหมด",
     viewBoard: "ดูบอร์ดประจำวัน",
     trustCurator: "Admin — คนจริง เลือกทีเด็ดด้วยมือ",
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
@@ -1007,6 +1023,7 @@ const th: Dict = {
     predictedScore: "ทำนายผล",
     superSunday: "Super Sunday",
     hotPick: "ทีเด็ดมาแรง",
+    featuredStory: "บทความเด่น",
     trackRecord: "สถิติผลงาน",
     hitRate: "อัตราชนะ",
     viewAnalysisCta: "อ่านบทวิเคราะห์",
@@ -1170,7 +1187,7 @@ const th: Dict = {
   forum: {
     title: "ฟอรั่ม",
     comingSoon: "เร็วๆ นี้",
-    body: "ฟอรั่ม WildlyPlay จะเปิดเมื่อคอมมูนิตี้ใหญ่พอ ตอนนี้พูดคุยกันได้ที่ Telegram",
+    body: "ฟอรั่ม banhbong.net จะเปิดเมื่อคอมมูนิตี้ใหญ่พอ ตอนนี้พูดคุยกันได้ที่ Telegram",
   },
   donate: {
     copy: "คัดลอกที่อยู่",
@@ -1187,7 +1204,7 @@ const th: Dict = {
     heading: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07 \u00b7 The Scout",
     badge: "\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32",
     noPlay: "The Scout \u2014 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49",
-    disclosure: "The Scout \u2014 \u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e21\u0e21\u0e15\u0e34 \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e02\u0e2d\u0e07 WildlyPlay \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u00b7 \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01",
+    disclosure: "The Scout \u2014 \u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e21\u0e21\u0e15\u0e34 \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e02\u0e2d\u0e07 banhbong.net \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u00b7 \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01",
   },
   watching: {
     title: "\u0e20\u0e31\u0e13\u0e11\u0e32\u0e23\u0e31\u0e01\u0e29\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e31\u0e1a\u0e15\u0e32",
@@ -1292,6 +1309,9 @@ const es: Dict = {
   home: {
     seoDescription: "Pronósticos de fútbol gratuitos diarios por un curador humano. Cada jugada pública para siempre — aciertos y fallos. Análisis de partidos, herramientas de cuotas y guías para Premier League, La Liga, Serie A, Bundesliga y más.",
     latestAnalysis: "Análisis recientes",
+    latestPredictions: "Pronósticos recientes",
+    latestNews: "Últimas noticias",
+    allNews: "Todas las noticias",
     viewBoard: "Ver la Pizarra Diaria",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
     trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
@@ -1308,6 +1328,7 @@ const es: Dict = {
     predictedScore: "Pronóstico",
     superSunday: "Super Sunday",
     hotPick: "Pick más caliente",
+    featuredStory: "Artículo destacado",
     trackRecord: "Historial",
     hitRate: "Tasa de acierto",
     viewAnalysisCta: "Ver análisis",
@@ -1473,7 +1494,7 @@ const es: Dict = {
   forum: {
     title: "Foro",
     comingSoon: "Muy pronto",
-    body: "El foro de WildlyPlay abrirá cuando la comunidad sea lo bastante grande. Hasta entonces, la conversación vive en Telegram.",
+    body: "El foro de banhbong.net abrirá cuando la comunidad sea lo bastante grande. Hasta entonces, la conversación vive en Telegram.",
   },
   donate: {
     copy: "Copiar dirección",
@@ -1490,7 +1511,7 @@ const es: Dict = {
     heading: "Picks Alternativos \u00b7 The Scout",
     badge: "Menor Confianza",
     noPlay: "The Scout \u2014 sin pick alternativo hoy.",
-    disclosure: "The Scout \u2014 personaje ficticio, operado por IA, de WildlyPlay \u00b7 menor confianza \u00b7 registro separado",
+    disclosure: "The Scout \u2014 personaje ficticio, operado por IA, de banhbong.net \u00b7 menor confianza \u00b7 registro separado",
   },
   watching: {
     title: "El Curator est\u00e1 observando",

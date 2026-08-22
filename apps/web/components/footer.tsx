@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDict, resolveLang, withLang } from "@/lib/i18n";
 import { trackTgFollowClick } from "@/lib/analytics";
+import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
+import { BrandMark } from "./brand-mark";
 
 export function Footer() {
   const params = useParams<{ lang: string }>();
@@ -28,9 +30,12 @@ export function Footer() {
     <footer className="mt-16 border-t border-line py-12">
       <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-5 text-center">
         <div>
-          <span className="font-display text-xl font-bold">
-            <span className="text-ink">Wildly</span>
-            <span className="text-brand">Play</span>
+          <span className="inline-flex items-center justify-center gap-2 font-display text-xl font-bold">
+            <BrandMark size={22} />
+            <span>
+              <span className="text-ink">{WORDMARK_A}</span>
+              <span className="text-brand">{WORDMARK_B}</span>
+            </span>
           </span>
           <p className="mt-2 text-sm text-muted">{dict.footerDisclaimer}</p>
         </div>
@@ -45,7 +50,7 @@ export function Footer() {
             </Link>
           ))}
           <a
-            href="https://t.me/wildlyplay"
+            href="https://t.me/banhbongnet"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted transition-colors hover:text-brand"
@@ -54,7 +59,7 @@ export function Footer() {
             Telegram
           </a>
         </nav>
-        <p className="text-xs text-muted">© 2026 WildlyPlay. All rights reserved.</p>
+        <p className="text-xs text-muted">© 2026 banhbong.net. All rights reserved.</p>
         <p className="text-xs text-muted/60">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
       </div>
     </footer>

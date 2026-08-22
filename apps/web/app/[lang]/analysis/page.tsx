@@ -54,14 +54,11 @@ const DESK_KIND_COLORS: Record<string, string> = {
   preview: "border-blue-400/40 text-blue-400",
   recap: "border-emerald-400/40 text-emerald-400",
   roundup: "border-amber-400/40 text-amber-400",
+  analysis: "border-amber-400/40 text-amber-400",
+  news: "border-indigo-soft/40 text-indigo-soft",
 };
 
 /** Badge labels for Desk article tiers. */
-const TIER_LABELS: Record<string, string> = {
-  T1_covered: "Covered",
-  T2_marquee: "Marquee",
-};
-
 const PICK_TYPES: PostType[] = ["preview", "recap"];
 const RAIL_COUNT = 5;
 const PAGE_SIZE = 10;
@@ -94,13 +91,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: dict.analysis.seoDescription,
     alternates: buildAlternates("/analysis", lang),
     openGraph: {
-      title: `${dict.analysis.title} | WildlyPlay`,
+      title: `${dict.analysis.title} | banhbong.net`,
       description: dict.analysis.seoDescription,
       images: [{ url: "/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${dict.analysis.title} | WildlyPlay`,
+      title: `${dict.analysis.title} | banhbong.net`,
       description: dict.analysis.seoDescription,
     },
   };
@@ -141,7 +138,7 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
       <img
-        src={`/api/og/news/${post.slug}`}
+        src={`/api/og/news/${post.slug}?locale=${lang}`}
         alt=""
         width={1200}
         height={630}
@@ -173,7 +170,6 @@ function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
   const excerpt = extractExcerpt(article.body);
   const kindLabel = article.kind.charAt(0).toUpperCase() + article.kind.slice(1);
   const badgeColor = DESK_KIND_COLORS[article.kind] ?? DESK_KIND_COLORS.roundup;
-  const tierLabel = TIER_LABELS[article.tier];
 
   return (
     <Link
@@ -193,11 +189,6 @@ function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
           <span className={`rounded-full border px-2 py-0.5 font-display font-semibold ${badgeColor}`}>
             {kindLabel}
           </span>
-          {tierLabel && (
-            <span className="rounded-full border border-brand/30 px-2 py-0.5 font-display font-semibold text-brand">
-              {tierLabel}
-            </span>
-          )}
           <span className="text-muted/70">{article.league}</span>
           <time dateTime={article.published_at} className="ml-auto shrink-0">
             {formatDate(article.published_at, lang)}

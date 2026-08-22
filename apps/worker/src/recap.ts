@@ -47,7 +47,7 @@ const DISCLOSURE: Record<AuthorType, Record<PostLang, string>> = {
   },
   fictional_ai: {
     en: 'AI-picked, AI-written — Scout is an experimental AI persona, not a real person.',
-    vi: 'AI chọn trận, AI viết bài — Scout là nhân vật AI thử nghiệm, không phải người thật.',
+    vi: 'AI chọn trận, AI viết bài — Trợ lý AI là nhân vật AI thử nghiệm, không phải người thật.',
     th: 'AI เลือกเดิมพัน เขียนโดย AI — Scout เป็นตัวละคร AI ทดลอง ไม่ใช่บุคคลจริง',
     es: 'Elegido por IA, escrito por IA — Scout es un personaje de IA experimental, no una persona real.',
   },
@@ -61,7 +61,7 @@ export function disclosureFor(authorType: AuthorType, lang: PostLang): string {
 /** Watching/no-play footer (Req 2): state-accurate — does NOT claim "chose this play". */
 const WATCHING_DISCLOSURE: Record<PostLang, string> = {
   en: 'AI-written coverage. No play taken \u2014 we\u2019re watching this match, not betting it.',
-  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng \u0111\u01b0a ra nh\u1eadn \u0111\u1ecbnh \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.',
+  vi: 'B\u00e0i vi\u1ebft b\u1edfi AI. B\u00e0i n\u00e0y ch\u1ec9 theo d\u00f5i di\u1ec5n bi\u1ebfn tr\u1eadn \u0111\u1ea5u, kh\u00f4ng \u0111\u01b0a ra l\u1ef1a ch\u1ecdn n\u00e0o.',
   th: '\u0e40\u0e19\u0e37\u0e49\u0e2d\u0e2b\u0e32\u0e40\u0e02\u0e35\u0e22\u0e19\u0e42\u0e14\u0e22 AI \u0e44\u0e21\u0e48\u0e21\u0e35\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19 \u2014 \u0e40\u0e23\u0e32\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e21\u0e15\u0e0a\u0e4c\u0e19\u0e35\u0e49 \u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19',
   es: 'Cobertura escrita por IA. No se ha tomado ninguna apuesta \u2014 seguimos este partido, no apostamos.',
 };
@@ -123,7 +123,8 @@ export const CLV_RULE =
  *  MỌI prompt sinh section tiếng Việt (recap, preview, analysis, post-mortem, no-play,
  *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
 export const VI_LEXICON_RULE =
-  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)';
+  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)\n' +
+  '- TÊN NHÂN VẬT BẢN VI (Nick chốt 21/8): trong section tiếng Việt gọi Curator là "Admin" và Scout là "Trợ lý AI" — TUYỆT ĐỐI KHÔNG để nguyên chữ "Curator" hay "Scout" trong bản VI. (Section EN/TH/ES giữ nguyên tên gốc.)';
 
 /** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
  *  football language ("closing stages", "closed out the win") never matches. */
@@ -147,7 +148,7 @@ export function buildRecapPrompt(pick: PickRow, record: SettledRecord): string {
 
   // 4 languages on the channel too (Nick 13/6) — same flag order as the newsroom articles.
   return `<role>
-You write post-match recaps for WildlyPlay's public Telegram channel. Short, honest, thesis-driven — every recap evaluates whether the pre-match read was right.
+You write post-match recaps for banhbong.net's public Telegram channel. Short, honest, thesis-driven — every recap evaluates whether the pre-match read was right.
 </role>
 
 <context>
@@ -306,7 +307,7 @@ export function buildRecapArticlePrompt(pick: PickRow, record: SettledRecord): s
   const pl = Number(pick.units_pl);
 
   return `<role>
-You write post-match articles for the WildlyPlay newsroom (wildlyplay.com/news). Longer-form, thesis-driven analysis — honest about wins and losses alike.
+You write post-match articles for the banhbong.net newsroom (banhbong.net/news). Longer-form, thesis-driven analysis — honest about wins and losses alike.
 </role>
 
 <context>

@@ -1,13 +1,10 @@
 /**
  * No-play article: when the Curator passes on a match via /noplay,
- * auto-generate a discipline-framed article (4 languages) and distribute.
+ * auto-generate a discipline-framed article (4 languages) and publish it on the web.
  * A failure must NEVER break the /noplay reply — every path logs and returns.
  */
-import type { Api } from 'grammy';
 import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL, VI_LEXICON_RULE } from './recap';
 import { parseAnalysisSection } from './news';
-import { buildArticleLink } from './announce-article';
-import { postPhotoToFacebook } from './announce';
 import type { NewPost, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -43,7 +40,7 @@ export function buildNoPlayPrompt(np: ParsedNoPlay): string {
   const watchingRule = np.watching ? '\n- Include a section about what could change the decision.' : '';
 
   return `<role>
-You are a senior football editorial writer for the WildlyPlay newsroom (wildlyplay.com/news). You write discipline-framed no-play articles — explaining why the Curator deliberately passes on a match.
+You are a senior football editorial writer for the banhbong.net newsroom (banhbong.net/news). You write discipline-framed no-play articles — explaining why the Curator deliberately passes on a match.
 </role>
 
 <context>
@@ -150,59 +147,10 @@ export function buildNoPlayPosts(np: ParsedNoPlay, text: string): NewPost[] {
 
 // ── Publish ────────────────────────────────────────────────────────────────
 
-export interface NoPlayCardDeps {
-  api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
-  channelChatId: string | undefined;
-  siteUrl: string;
-  facebook?: { pageId: string; pageToken: string };
-}
-
 export interface NoPlayArticleDeps {
   store: Store;
   env: { apiKey: string | undefined; model?: string };
   revalidateUrl?: string;
-  /** Post Restructure v1 §2.2: 3-line NO-PLAY card, verdict first (TG only — FB gets no-play singles only inside the weekly recap). */
-  card?: NoPlayCardDeps;
-}
-
-/** 3-line ⛔ NO-PLAY card (Post Restructure Spec v1 §2.2, Nick DUYỆT 3/7). Verdict = dedicated `verdict:` field (author-written), reason label as fallback — never the long-form `note:` (R5: never auto-truncate). */
-export function formatNoPlayMessage(np: ParsedNoPlay, siteUrl: string, slug: string): string {
-  const verdict = np.verdict ?? REASON_LABELS[np.reason];
-  return [
-    `\u26D4 NO-PLAY \u2014 ${np.homeTeam} vs ${np.awayTeam} \u00b7 ${np.league}`,
-    `${verdict} \u2014 why the Curator passes:`,
-    `\u{1F517} ${buildArticleLink(siteUrl, slug, 'telegram')}`,
-  ].join('\n');
-}
-
-/** Send the NO-PLAY card to TG channel + FB page. Fire-and-forget — never throws. */
-async function sendNoPlayCard(deps: NoPlayCardDeps, np: ParsedNoPlay, slug: string): Promise<void> {
-  const msg = formatNoPlayMessage(np, deps.siteUrl, slug);
-  const imageUrl = `${deps.siteUrl}/images/wildlyplay_noplay.png`;
-
-  // TG channel
-  if (deps.channelChatId) {
-    try {
-      try {
-        await deps.api.sendPhoto(deps.channelChatId, imageUrl, { caption: msg });
-      } catch {
-        await deps.api.sendMessage(deps.channelChatId, msg);
-      }
-      log.info(`no-play TG card sent for ${np.homeTeam} vs ${np.awayTeam}`);
-    } catch (err) {
-      log.warn(`no-play TG card failed for ${np.homeTeam} vs ${np.awayTeam}:`, err);
-    }
-  }
-
-  // FB page (restored — was removed in Post Restructure 3/7, Nick confirms no-play should post to FB)
-  if (deps.facebook) {
-    try {
-      await postPhotoToFacebook(deps.facebook, imageUrl, msg);
-      log.info(`no-play FB post sent for ${np.homeTeam} vs ${np.awayTeam}`);
-    } catch (err) {
-      log.warn(`no-play FB post failed for ${np.homeTeam} vs ${np.awayTeam}:`, err);
-    }
-  }
 }
 
 /** Generate + publish a no-play article. Fire-and-forget: never throws. */
@@ -233,7 +181,6 @@ export async function publishNoPlayArticle(
       await deps.store.insertPost(post);
     }
     log.info(`noplay-article: published ${posts.length} posts for ${noplay.homeTeam} vs ${noplay.awayTeam}`);
-    if (deps.card) await sendNoPlayCard(deps.card, noplay, slug);
 
     if (deps.revalidateUrl) {
       const revalidate = createRevalidator({

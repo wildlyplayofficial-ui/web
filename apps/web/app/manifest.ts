@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { SITE_NAME } from "@/lib/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "WildlyPlay",
-    short_name: "WildlyPlay",
+    name: SITE_NAME,
+    short_name: SITE_NAME,
     description: "Handpicked plays for the global crowd",
     start_url: "/",
     display: "standalone",

@@ -1,7 +1,7 @@
 import { getPick } from "@/lib/data";
 import { formatKickoff } from "@/lib/format";
 import type { Confidence } from "@/lib/types";
-import { OgCard, loadTeamPlayerDataUri, ogResponse } from "../../_shared";
+import { OgCard, loadTeamPlayerDataUri, ogResponse, loadMarkDataUri } from "../../_shared";
 
 /**
  * Share image (PNG 1200x630) for ANY non-draft pick. This is the ONLY card type
@@ -14,6 +14,16 @@ const CONF_LABEL: Record<Confidence, { en: string; vi: string }> = {
   low: { en: "Low", vi: "Thấp" },
   medium: { en: "Medium", vi: "Trung bình" },
   high: { en: "High", vi: "Cao" },
+};
+
+/** Vietnamese league names for the OG card (default: original name). */
+const LEAGUE_VI: Record<string, string> = {
+  "Premier League": "Ngoại hạng Anh",
+  "Champions League": "Cúp C1 châu Âu",
+  "Europa League": "Cúp C2 châu Âu",
+  "Europa Conference League": "Cúp C3 châu Âu",
+  "FA Cup": "Cúp FA",
+  "EFL Cup": "Cúp Liên đoàn Anh",
 };
 
 export async function GET(
@@ -31,8 +41,10 @@ export async function GET(
 
   const conf = pick.confidence ? CONF_LABEL[pick.confidence] : null;
   const confText = conf
-    ? ` · ${vi ? "Độ tự tin" : "Confidence"}: ${vi ? conf.vi : conf.en}`
+    ? ` · ${vi ? "Mức tự tin" : "Confidence"}: ${vi ? conf.vi : conf.en}`
     : "";
+
+  const leagueLabel = vi ? LEAGUE_VI[pick.league] ?? pick.league : pick.league;
 
   // Featured pick gets the club's cartoon when we have art for it — home team
   // leads, away as fallback. No art yet → text-only card (selection + odds
@@ -40,11 +52,13 @@ export async function GET(
   let player = await loadTeamPlayerDataUri(pick.home_team);
   if (!player) player = await loadTeamPlayerDataUri(pick.away_team);
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
-      eyebrow={vi ? "Kèo tâm điểm" : "Featured pick"}
+      mark={mark}
+      eyebrow={vi ? "Trận tâm điểm" : "Featured pick"}
       title={`${pick.home_team} vs ${pick.away_team}`}
-      topRight={pick.league}
+      topRight={leagueLabel}
       badge={`${pick.selection}${confText}`}
       detail={[{ label: vi ? "Khởi tranh" : "Kick-off", value: formatKickoff(pick.kickoff_utc, vi ? "vi" : "en") }]}
       player={player}

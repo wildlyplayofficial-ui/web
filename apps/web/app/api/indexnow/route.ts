@@ -4,8 +4,8 @@
  * Free, instant indexing for news/recap articles.
  */
 
-const INDEXNOW_KEY = "4c6e15b396a148b29b0e69e5abaf2835";
-const HOST = "www.wildlyplay.com";
+const INDEXNOW_KEY = "f29229590981931e9c15bc0efdb0dff0";
+const HOST = "www.banhbong.net";
 
 export async function POST(request: Request): Promise<Response> {
   const secret = request.headers.get("x-revalidate-secret");

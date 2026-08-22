@@ -1,1 +1,5 @@
 .vercel
+
+# temp scratch scripts
+_*.mjs
+node_modules/

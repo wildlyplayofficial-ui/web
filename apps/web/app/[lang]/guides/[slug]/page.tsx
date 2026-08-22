@@ -11,7 +11,7 @@ import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = "https://www.banhbong.net";
 
 /** Static concept-diagram SVGs for each guide topic (spec §4). */
 const GUIDE_DIAGRAMS: Record<string, string> = {
@@ -92,15 +92,15 @@ function buildArticleSchema(post: {
     dateModified: post.published_at ?? undefined,
     inLanguage: post.lang,
     mainEntityOfPage: `${BASE}${withLang(`/guides/${slug}`, lang)}`,
-    image: `${BASE}/api/og/news/${slug}`,
+    image: `${BASE}/api/og/news/${slug}?locale=${lang}`,
     author: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
     },
     publisher: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
@@ -144,7 +144,7 @@ export default async function GuidePage({ params }: Props) {
         {published && (
           <p className="mt-3 text-sm text-muted">
             <time dateTime={post.published_at ?? undefined}>{published}</time>
-            {" \u00b7 WildlyPlay"}
+            {" \u00b7 banhbong.net"}
           </p>
         )}
       </header>

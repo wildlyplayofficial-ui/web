@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.archive.title,
     description: dict.archive.subtitle,
-    openGraph: { title: `${dict.archive.title} | WildlyPlay`, description: dict.archive.subtitle, images: [{ url: "/api/og/record?page=archive", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.archive.title} | banhbong.net`, description: dict.archive.subtitle, images: [{ url: "/api/og/record?page=archive", width: 1200, height: 630 }] },
     alternates: buildAlternates("/archive", lang),
   };
 }
@@ -164,8 +164,8 @@ export default async function PlayArchive({ params, searchParams }: Props) {
       {filteredScout.length > 0 && (
         <section className="mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
           <div className="mb-4 text-center">
-            <h2 className="font-display text-xl font-bold text-[#6b9e9e]">The Scout</h2>
-            <p className="mt-1 text-xs text-muted">AI-operated · separate ledger · lower confidence</p>
+            <h2 className="font-display text-xl font-bold text-[#6b9e9e]">Trợ lý AI</h2>
+            <p className="mt-1 text-xs text-muted">{lang === "vi" ? "AI vận hành · sổ theo dõi riêng · độ tin cậy thấp hơn" : "AI-operated · separate ledger · lower confidence"}</p>
             <p className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
               <span className="font-semibold text-ink">{scoutRecord.wins}-{scoutRecord.losses}-{scoutRecord.pushes}</span>
               <span className={`font-semibold ${scoutRecord.units_pl >= 0 ? "text-brand" : "text-loss"}`}>{formatUnits(scoutRecord.units_pl)}</span>

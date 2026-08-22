@@ -49,41 +49,24 @@ function fakeApi() {
 }
 
 const CHANNEL = '-100123';
-const SITE = 'https://beta.wildlyplay.com';
+const SITE = 'https://beta.banhbong.net';
 const FB = { pageId: '111', pageToken: 'tok' };
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () => {
-  it('includes matchup, KO in UTC, pick block, play link and disclosure — no thesis dump', async () => {
+  it('renders only the hook + link + disclosure — the OG card carries the rest (Nick 21/8)', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick());
     const msg = formatPickMessage(pick, SITE);
-    expect(msg).toContain('\u{1F3AF} Mexico vs South Africa \u00b7 FIFA World Cup 2026 \u2014 Group A \u00b7 KO 19:00 UTC');
-    expect(msg).toContain('\u{1F449} Mexico -1.25 @ 2.05 \u00b7 1u');
     expect(msg).toContain(`${SITE}/play/mexico-vs-south-africa-mexico-1-25-2026-06-11`);
-    expect(msg).toContain('Human-picked \u00b7 Odds at publish \u00b7 Not financial advice');
-    expect(msg).not.toContain('test thesis'); // R2: card is scannable, thesis lives on the play page
-    expect(msg).not.toContain('sure win');
-    expect(msg).not.toContain('live @');
-    expect(msg).not.toContain('\u00b7 HIGH'); // none registered on this pick
-    expect(msg).not.toContain('\u00b7 MED');
-    expect(msg).not.toContain('\u00b7 LOW');
-  });
-
-  it('marks a running pick with the score at entry', async () => {
-    const store = new MemoryStore();
-    const pick = await store.insertPick(publishedPick({ publish_score_home: 1, publish_score_away: 0 }));
-    const msg = formatPickMessage(pick, SITE);
-    expect(msg).toContain('KO 19:00 UTC (live @ 1-0)');
-  });
-
-  it('shows the confidence line with the against-the-market cue (R3)', async () => {
-    const store = new MemoryStore();
-    const pick = await store.insertPick(publishedPick({ confidence: 'high' }));
-    expect(formatPickMessage(pick, SITE)).toContain('\u{1F449} Mexico -1.25 @ 2.05 \u00b7 1u \u00b7 HIGH');
-    expect(formatPickMessage(pick, SITE, { againstMarket: true }))
-      .toContain('\u00b7 HIGH \u00b7 \u26A0\uFE0F against market');
+    expect(msg).toContain('Nhận định chi tiết');
+    expect(msg).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
+    // caption KHÔNG lặp thông tin đã có trên thẻ hình
+    expect(msg).not.toContain('Mexico vs South Africa');
+    expect(msg).not.toContain('Mức tự tin');
+    expect(msg).not.toContain('@ 2.05');
+    expect(msg).not.toContain('test thesis');
   });
 
   it('renders the hand-written hook untouched and omits the line when absent (R5)', async () => {
@@ -100,10 +83,10 @@ describe('formatVoidMessage', () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick({ status: 'void' }));
     const msg = formatVoidMessage(pick, SITE);
-    expect(msg).toContain('PLAY VOIDED');
+    expect(msg).toContain('HỦY NHẬN ĐỊNH');
     expect(msg).toContain('Mexico vs South Africa');
-    expect(msg).toContain('Mexico -1.25 @ 2.05 — voided before kickoff.');
-    expect(msg).toContain('Does not count toward the record.');
+    expect(msg).toContain('Huỷ trước giờ đá — không tính vào thành tích.');
+    expect(msg).not.toContain('@ 2.05'); // VI-safe: no odds in void card
     expect(msg).toContain(`${SITE}/play/${pick.id}`);
   });
 });
@@ -117,7 +100,7 @@ describe('announceVoid', () => {
 
     await announceVoid({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
 
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, formatVoidMessage(pick, SITE));
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, formatVoidMessage(pick, SITE), { parse_mode: 'HTML' });
     expect(store.logs).toHaveLength(2);
     expect(store.logs[0]).toMatchObject({ pick_id: pick.id, channel: 'telegram', ok: true, detail: 'void announce' });
     expect(store.logs[1]).toMatchObject({ pick_id: pick.id, channel: 'facebook', external_id: '111_444', ok: true, detail: 'void announce' });
@@ -162,7 +145,7 @@ describe('announcePick', () => {
 
     await announcePick({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
 
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, formatPickMessage(pick, SITE));
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, formatPickMessage(pick, SITE, {}, true), { parse_mode: 'HTML' });
     expect(store.logs).toHaveLength(2);
     expect(store.logs[0]).toMatchObject({ pick_id: pick.id, channel: 'telegram', external_id: '100', ok: true, detail: 'pick announce' });
     expect(store.logs[1]).toMatchObject({ pick_id: pick.id, channel: 'facebook', external_id: '111_222', ok: true, detail: 'pick announce' });

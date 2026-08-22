@@ -151,7 +151,7 @@ const MIN_PUBLISH_BODY_LEN = 80;
 
 const SOURCE = 'LiveScore API';
 const SOURCE_URL = 'https://livescore-api.com/';
-const BYLINE = 'WildlyPlay News';
+const BYLINE = 'Banh Bóng News';
 const LS_TABLE = 'https://livescore-api.com/api-client/leagues/table.json';
 
 // ── Slugs ────────────────────────────────────────────────────────────────────

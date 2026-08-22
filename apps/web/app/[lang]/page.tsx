@@ -4,6 +4,7 @@ import {
   getActiveWatching,
   getSettledPicks,
   getTodaysNoPlays,
+  getRecentRecapPosts,
   getTodaysPicks,
   getTrackRecordForAuthor,
 } from "@/lib/data";
@@ -16,7 +17,7 @@ import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { HotPickCard } from "@/components/hot-pick-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
-import { TEST_SEED_PICK, TEST_SEED_PREDICTED } from "@/lib/test-seed";
+import { getNewsItems, getHeadline } from "@/lib/news";
 
 export const revalidate = 300;
 
@@ -38,7 +39,7 @@ function formatPostDate(iso: string | null, lang: Lang): string {
     day: "numeric",
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: "Asia/Ho_Chi_Minh",
   }).format(new Date(iso));
 }
 
@@ -50,17 +51,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: { absolute: `WildlyPlay — ${dict.tagline}` },
+    title: { absolute: `banhbong.net — ${dict.tagline}` },
     description: dict.home.seoDescription,
     alternates: buildAlternates("/", lang),
     openGraph: {
-      title: `WildlyPlay — ${dict.tagline}`,
+      title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `WildlyPlay — ${dict.tagline}`,
+      title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
     },
@@ -70,7 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, recapPosts] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -79,7 +80,9 @@ export default async function Home({ params }: Props) {
       getActiveWatching(),
       getCompetitionFixtures(EPL_LIVESCORE_ID),
       getStandingsCompetitions(),
-      getAnalysisArticles(undefined, 7),
+      getAnalysisArticles(undefined, 12),
+      getNewsItems(undefined, 6),
+      getRecentRecapPosts(lang, 2),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -135,10 +138,9 @@ export default async function Home({ params }: Props) {
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
 
-  // Predictions slot — the top curator pick, or the in-code test seed pre-season.
-  // TEST SEED — remove when real picks flow (see lib/test-seed.ts).
-  const heroPick = picks[0] ?? TEST_SEED_PICK;
-  const heroPredicted = picks.length > 0 ? null : TEST_SEED_PREDICTED;
+  // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
+  // no real pick = the card is omitted below (the old test-seed rendered a fake match).
+  const heroPick = picks[0] ?? null;
 
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
   const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
@@ -160,11 +162,49 @@ export default async function Home({ params }: Props) {
   const preseason =
     daysToOpen !== null && picks.length === 0 && noPlays.length === 0 && watching.length === 0;
 
-  // Super Sunday: the marquee article headlines the page; the rest fill the feed.
-  const hot = articles.find((a) => a.tier === "T2_marquee") ?? articles[0];
-  const hotHero = hot ? hot.hero_image ?? `/api/og/analysis/${hot.slug}?locale=${lang}` : "";
-  const hotExcerpt = hot ? hot.meta_description || analysisExcerpt(hot.body) : "";
-  const restArticles = articles.filter((a) => a.slug !== hot?.slug).slice(0, 6);
+  // Khối nổi bật = 2 bài NHÌN LẠI (recap) GẦN NHẤT, bài mới trước (Nick 22/8,
+  // thay luật marquee chọn tay 17/8). Recap sống ở 2 bảng: analysis_articles
+  // (desk viết) và posts (auto-recap của worker sau /score) — gộp cả 2 rồi xếp
+  // theo published_at. Hero: desk có hero_image/og analysis; post dùng og editorial.
+  type RecapCard = { slug: string; title: string; league: string; published_at: string; hero: string; excerpt: string };
+  const recaps: RecapCard[] = [
+    ...articles
+      .filter((a) => a.kind === "recap")
+      .map((a): RecapCard => ({
+        slug: a.slug,
+        title: a.title,
+        league: a.league,
+        published_at: a.published_at,
+        hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+        excerpt: a.meta_description || analysisExcerpt(a.body),
+      })),
+    ...recapPosts.map((p): RecapCard => ({
+      slug: p.slug,
+      title: p.title,
+      league: "",
+      published_at: p.published_at ?? "",
+      hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}`,
+      excerpt: p.meta_description ?? "",
+    })),
+  ]
+    .sort((a, b) => b.published_at.localeCompare(a.published_at))
+    .slice(0, 2);
+  const hot = recaps[0] ?? null;
+  const restArticles = articles.filter((a) => !recaps.some((r) => r.slug === a.slug)).slice(0, 6);
+  // Nhận định mới nhất — lấp ô trống cột phải (Nick 20/8, Cách A). Bài dự đoán/nhận
+  // định (kind preview|analysis) — loại đã hiện ở lead/2 thẻ compact, tối đa 4, text-only.
+  const shownSlugs = new Set(
+    [hot?.slug, ...restArticles.slice(0, 3).map((a) => a.slug)].filter(Boolean),
+  );
+  const predictions = articles
+    .filter((a) => (a.kind === "preview" || a.kind === "analysis") && !shownSlugs.has(a.slug))
+    .slice(0, 4);
+  const predDate = (iso: string) =>
+    new Intl.DateTimeFormat(lang === "vi" ? "vi-VN" : lang, {
+      day: "numeric",
+      month: "short",
+      timeZone: "Asia/Ho_Chi_Minh",
+    }).format(new Date(iso));
 
   return (
     <>
@@ -252,59 +292,10 @@ export default async function Home({ params }: Props) {
         </div>
       </section>
 
-      {/* 1b. Super Sunday: the single biggest thing after the hero. */}
-      {hot && (
-        <section className="pt-4 pb-10">
-          <Link
-            href={withLang(`/analysis/${hot.slug}`, lang)}
-            prefetch={false}
-            className="group grid overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60 md:grid-cols-[1.1fr_1fr]"
-          >
-            <div
-              className="relative min-h-[200px] bg-cover bg-center md:min-h-[280px]"
-              style={{ backgroundImage: `url(${hotHero})`, aspectRatio: "1.9 / 1" }}
-              aria-hidden
-            >
-              <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-bg">
-                ★ {dict.home.superSunday}
-              </span>
-            </div>
-            <div className="flex flex-col justify-center gap-3 p-6 md:p-8">
-              <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
-                ◆ {dict.home.hotPick}
-              </span>
-              <h2 className="font-display text-2xl font-bold leading-tight transition-colors group-hover:text-brand md:text-3xl">
-                {hot.title}
-              </h2>
-              <p className="text-sm text-muted">
-                {hot.league}
-                <span className="mx-2">·</span>
-                {formatPostDate(hot.published_at, lang)}
-              </p>
-              {hotExcerpt && <p className="text-sm text-muted line-clamp-2">{hotExcerpt}</p>}
-              <span className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-                {dict.home.viewAnalysisCta} &rarr;
-              </span>
-            </div>
-          </Link>
-        </section>
-      )}
-
-      {/* 1c. Hot pick prediction — the top curator pick, or the test seed pre-season. */}
-      <section className="pb-10">
-        <HotPickCard
-          pick={heroPick}
-          predicted={heroPredicted}
-          lang={lang}
-          href={withLang("/daily-board", lang)}
-          ctaLabel={dict.home.viewBoard}
-        />
-      </section>
-
-      {/* 2. Daily Board teaser — hoặc đếm ngược khai mạc khi bảng chưa có gì.
-          Hiện "0 · 0 · 0" giữa mùa nghỉ làm trang chủ trông như hỏng.
-          pt-6: hình sân ở hero bị cắt đúng mép section nên thẻ này dán sát vào
-          đường biên sân, nhìn như dính (Nick soi 8/8). */}
+      {/* Daily Board teaser — below the hero (Nick 17/8 order): the day's picks
+          are the first thing after the fixtures strip (Nick 16/8). Preseason
+          countdown when the board is empty, so the homepage doesn't read as
+          broken with "0 · 0 · 0" between seasons. */}
       <section className="pb-10 pt-6">
         {preseason ? (
           <Link
@@ -351,113 +342,203 @@ export default async function Home({ params }: Props) {
         )}
       </section>
 
-      {/* 3. Two-column portal — main: latest analysis + matches; sidebar: record + Telegram */}
-      <div className="grid gap-8 pb-10 lg:grid-cols-[1fr_320px]">
-        <div className="min-w-0">
-          {restArticles.length > 0 && (
-            <section className="pb-10">
-              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
-                <Link
-                  href={withLang("/analysis", lang)}
-                  prefetch={false}
-                  className="text-sm font-semibold text-brand hover:underline"
-                >
-                  {dict.nav.analysis} &rarr;
-                </Link>
-              </div>
-              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
-              {restArticles.length > 1 && (
-                <div className="mt-4 space-y-3">
-                  {restArticles.slice(1).map((a) => (
-                    <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          <HomeNextMatches
-            matches={stripMatches}
+      {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
+          (never a fabricated seed). */}
+      {heroPick && (
+        <section className="pb-10">
+          <HotPickCard
+            pick={heroPick}
+            predicted={null}
             lang={lang}
-            labels={{
-              title: dict.home.matchesTitle,
-              all: dict.home.allCompetitions,
-              finished: dict.home.finished,
-              noTime: dict.standings.provisionalTime,
-            }}
+            href={withLang("/daily-board", lang)}
+            ctaLabel={dict.home.viewBoard}
           />
-        </div>
+        </section>
+      )}
 
-        <aside className="space-y-6">
-          {/* Track record */}
-          <div className="rounded-card border border-line bg-card p-5">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className="font-display text-lg font-bold">{dict.home.trackRecord}</h2>
+      {/* 2b. Hai bài NHÌN LẠI gần nhất — BELOW the pick/watching/noplay content.
+          Nick 22/8: "Hai bài nhìn lại gần nhất phải hiện ở đây. Bài mới ở
+          trên/trái, bài cũ ở dưới/phải" (replaces the 17/8 hand-picked marquee). */}
+      {recaps.length > 0 && (
+        <section className="pt-4 pb-10">
+          <div className="grid gap-5 md:grid-cols-2">
+            {recaps.map((r, i) => (
               <Link
-                href={withLang("/track-record", lang)}
+                key={r.slug}
+                href={withLang(`/analysis/${r.slug}`, lang)}
                 prefetch={false}
-                className="text-sm font-semibold text-brand hover:underline"
+                className="group flex flex-col overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60"
               >
-                {dict.board.trackRecordCta} &rarr;
-              </Link>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <div>
-                <div className="font-display text-xl font-bold tabular-nums">
-                  {record.wins}-{record.losses}-{record.pushes}
-                </div>
-                <div className="mt-1 text-xs text-muted">W-D-L</div>
-              </div>
-              <div>
                 <div
-                  className={`font-display text-xl font-bold tabular-nums ${record.units_pl >= 0 ? "text-brand" : "text-loss"}`}
+                  className="relative aspect-[1.9/1] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${r.hero})` }}
+                  aria-hidden
+                />
+                <div className="flex flex-1 flex-col gap-2.5 p-5 md:p-6">
+                  <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
+                    ◆ {i === 0 ? dict.home.featuredStory : dict.analysis.tabs.recap}
+                  </span>
+                  <h2 className="line-clamp-2 font-display text-xl font-bold leading-tight transition-colors group-hover:text-brand md:text-2xl">
+                    {r.title}
+                  </h2>
+                  <p className="text-sm text-muted">
+                    {r.league && (
+                      <>
+                        {r.league}
+                        <span className="mx-2">·</span>
+                      </>
+                    )}
+                    {formatPostDate(r.published_at, lang)}
+                  </p>
+                  {r.excerpt && <p className="text-sm text-muted line-clamp-2">{r.excerpt}</p>}
+                  <span className="mt-auto inline-flex w-fit items-center gap-2 pt-1 font-display text-sm font-semibold text-brand transition-transform group-hover:-translate-y-0.5">
+                    {dict.home.viewAnalysisCta} &rarr;
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 3b. Matches strip — full container width, not boxed into the main column
+          (Nick 17/8: "kéo dài ra" — the column squeezed it to ~3 visible cards). */}
+      <HomeNextMatches
+        matches={stripMatches}
+        lang={lang}
+        labels={{
+          title: dict.home.matchesTitle,
+          all: dict.home.allCompetitions,
+          finished: dict.home.finished,
+          noTime: dict.standings.provisionalTime,
+        }}
+      />
+
+      {/* 3a. TIN MỚI NHẤT — news_items lên trang chủ (Nick 21/8: tin không lên
+          homepage vì trước chỉ query analysis_articles). Ngay dưới dải trận. */}
+      {newsItems.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestNews}</h2>
+            <Link
+              href={withLang("/news", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.home.allNews} &rarr;
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {newsItems.map((n) => (
+              <Link
+                key={n.id}
+                href={withLang(`/news/${n.slug}`, lang)}
+                prefetch={false}
+                className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
+              >
+                {n.hero_card_url && (
+                  <img
+                    src={n.hero_card_url}
+                    alt=""
+                    width={1200}
+                    height={630}
+                    className="w-full"
+                    loading="lazy"
+                  />
+                )}
+                <div className="p-4">
+                  <time className="text-xs text-muted" dateTime={n.published_at}>
+                    {formatPostDate(n.published_at, lang)}
+                  </time>
+                  <p className="mt-1.5 line-clamp-2 font-display text-sm font-bold leading-snug transition-colors group-hover:text-brand">
+                    {getHeadline(n, lang)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 3. Latest analysis — FULL WIDTH, ESPN style (Nick 17/8: "dùng toàn bộ chiều
+          ngang... theo kiểu ESPN"). Right sidebar dropped: the record box duplicated the
+          hero's record line; the Telegram CTA moved below as a thin band. */}
+      {restArticles.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestAnalysis}</h2>
+            <Link
+              href={withLang("/analysis", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.nav.analysis} &rarr;
+            </Link>
+          </div>
+          {/* Top: lead ~2/3 + up to 2 compact cards stacked in the right third
+              (fills the gap Nick flagged 17/8). Rest drop to a 3-up grid below. */}
+          <div className="grid gap-5 lg:grid-cols-3">
+            <div className="flex flex-col gap-5 lg:col-span-2">
+              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+              {/* Telegram CTA — lấp lỗ trống cột trái dưới thẻ nổi bật (Nick 21/8);
+                  mobile: xếp dọc, nút full-width. */}
+              <div className="flex flex-col gap-3 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+                <div>
+                  <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
+                  <p className="mt-1 text-sm text-muted">{dict.home.telegramPitch}</p>
+                </div>
+                <a
+                  href="https://t.me/banhbongnet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5 sm:w-auto"
                 >
-                  {formatUnits(record.units_pl)}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.archive.unitsPl}</div>
-              </div>
-              <div>
-                <div className="font-display text-xl font-bold tabular-nums">
-                  {record.settled > 0
-                    ? `${Math.round((record.wins / record.settled) * 100)}%`
-                    : "—"}
-                </div>
-                <div className="mt-1 text-xs text-muted">{dict.home.hitRate}</div>
+                  {dict.home.joinTelegram} &rarr;
+                </a>
               </div>
             </div>
-            {form.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {form.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={withLang(`/play/${p.id}`, lang)}
-                    prefetch={false}
-                    title={`${p.home_team} ${p.home_score ?? ""}-${p.away_score ?? ""} ${p.away_team}`}
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold transition-transform hover:-translate-y-0.5 ${formClass[p.status] ?? "border-line bg-card text-muted"}`}
-                  >
-                    {formLetter[p.status] ?? "–"}
-                  </Link>
+            {restArticles.length > 1 && (
+              <div className="flex flex-col gap-5">
+                {restArticles.slice(1, 3).map((a) => (
+                  <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
                 ))}
+                {predictions.length > 0 && (
+                  <div className="rounded-2xl border border-line bg-card/40 p-4">
+                    <h3 className="mb-2 font-display text-sm font-bold text-muted">
+                      {dict.home.latestPredictions}
+                    </h3>
+                    <ul className="flex flex-col divide-y divide-line">
+                      {predictions.map((a) => (
+                        <li key={a.slug}>
+                          <Link
+                            href={withLang(`/analysis/${a.slug}`, lang)}
+                            prefetch={false}
+                            className="group flex flex-col gap-1 py-2.5"
+                          >
+                            <span className="text-xs text-muted">
+                              {a.league} &middot; {predDate(a.published_at)}
+                            </span>
+                            <span className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-brand">
+                              {a.title}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
-
-          {/* Telegram CTA */}
-          <div className="rounded-card border border-brand/30 bg-brand-dim/40 p-5">
-            <h2 className="font-display text-lg font-bold">{dict.home.telegramTitle}</h2>
-            <p className="mt-2 text-sm text-muted">{dict.home.telegramPitch}</p>
-            <a
-              href="https://t.me/wildlyplay"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
-            >
-              {dict.home.joinTelegram} &rarr;
-            </a>
-          </div>
-        </aside>
-      </div>
+          {restArticles.length > 3 && (
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {restArticles.slice(3).map((a) => (
+                <AnalysisCard key={a.slug} article={a} lang={lang} variant="lead" />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllPickRefs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled } from "@/lib/data";
+import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs } from "@/lib/news";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
@@ -10,7 +11,7 @@ import { getStandingsCompetitions } from "@/lib/standings-extra";
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 const LANGS = ["en", "vi", "th", "es"] as const;
 
 // Ngày reposition VI-legal (28/7/2026) — set lastModified cho trang static/hub để
@@ -28,7 +29,7 @@ function alternates(path: string, langs: readonly string[] = LANGS): MetadataRou
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [picks, posts, matches, guides, reports, competitions, deskArticles, newsItems] = await Promise.all([getAllPickRefs(), getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs()]);
+  const [posts, matches, guides, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -55,13 +56,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
   ] as MetadataRoute.Sitemap).map((r) => ({ ...r, lastModified: VI_REPOSITION }));
 
-  const playRoutes: MetadataRoute.Sitemap = picks.map((p) => ({
-    url: `${BASE}/play/${p.slug}`,
-    lastModified: new Date(p.updated),
-    changeFrequency: "weekly",
-    priority: 0.6,
-    alternates: alternates(`/play/${p.slug}`),
-  }));
+  // /play/ pick pages: every settled play now lives on the prefix-less Vietnamese
+  // canonical (self-canonical, no /match override, no /en 301). Declare each so
+  // Google indexes the VI-safe pick surface. (Nick 21/8, retires the 16/8 rule)
+  const playRoutes: MetadataRoute.Sitemap = settledPicks.map((pick) => {
+    const slug = buildPlaySlug(pick);
+    return {
+      url: `${BASE}/play/${slug}`,
+      lastModified: new Date(pick.settled_at ?? pick.kickoff_utc),
+      changeFrequency: "weekly",
+      priority: 0.6,
+      alternates: alternates(`/play/${slug}`),
+    };
+  });
 
   const newsRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${BASE}/analysis/${p.slug}`,

@@ -1,4 +1,4 @@
-import { OgCard, loadPlayerDataUri, ogResponse } from "../_shared";
+import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
 
 /**
  * Guide/calculator OG card (1200×630) — branded green card with the player and
@@ -35,12 +35,14 @@ export async function GET(request: Request): Promise<Response> {
   const badge = data?.badge || searchParams.get("type")?.toUpperCase() || "GUIDE";
   const player = await loadPlayerDataUri();
 
+  const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
+      mark={mark}
       eyebrow={badge}
       title={title}
       noteBox={anchor || null}
-      footer="wildlyplay.com"
+      footer="banhbong.net"
       footerRight="Free betting education"
       player={player}
       showPlayer

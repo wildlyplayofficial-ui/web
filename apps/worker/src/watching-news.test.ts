@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, buildPresencePosts, publishWatchingNews, type WatchingCardDeps } from './watching-news';
+import { buildNewsSlug, buildWatchingNewsPrompt, buildNewsPosts, buildPresencePosts, publishWatchingNews } from './watching-news';
 import { disclosureFor, watchingDisclosureFor } from './recap';
 import { MemoryStore, type WatchingRow } from './store';
 
@@ -29,28 +29,28 @@ const FOUR_SECTIONS = [
   '[META_DESC] Preview of Mexico vs South Africa in the FIFA World Cup 2026 Group A opener at Estadio Azteca.',
   '[KEYWORD] Mexico vs South Africa preview',
   '',
-  'Mexico host South Africa in the World Cup 2026 opener. AI-written — WildlyPlay Newsroom',
+  'Mexico host South Africa in the World Cup 2026 opener. AI-written — banhbong.net Newsroom',
   '',
   '\u{1F1FB}\u{1F1F3}',
   '[META_TITLE] Trước trận Mexico vs Nam Phi - World Cup 2026',
   '[META_DESC] Nhận định trước trận Mexico gặp Nam Phi tại bảng A World Cup 2026.',
   '[KEYWORD] Mexico vs Nam Phi nhận định',
   '',
-  'Mexico đón tiếp Nam Phi trên sân nhà. AI-written — WildlyPlay Newsroom',
+  'Mexico đón tiếp Nam Phi trên sân nhà. AI-written — banhbong.net Newsroom',
   '',
   '\u{1F1F9}\u{1F1ED}',
   '[META_TITLE] พรีวิว เม็กซิโก vs แอฟริกาใต้ ฟุตบอลโลก 2026',
   '[META_DESC] วิเคราะห์ก่อนเกมเม็กซิโก พบ แอฟริกาใต้ ฟุตบอลโลก 2026 กลุ่มเอ',
   '[KEYWORD] เม็กซิโก vs แอฟริกาใต้ พรีวิว',
   '',
-  'เม็กซิโกเปิดบ้านรับแอฟริกาใต้ AI-written — WildlyPlay Newsroom',
+  'เม็กซิโกเปิดบ้านรับแอฟริกาใต้ AI-written — banhbong.net Newsroom',
   '',
   '\u{1F1EA}\u{1F1F8}',
   '[META_TITLE] Previa México vs Sudáfrica - Mundial 2026',
   '[META_DESC] Análisis previo del partido México contra Sudáfrica en el Grupo A del Mundial 2026.',
   '[KEYWORD] México vs Sudáfrica previa',
   '',
-  'México recibe a Sudáfrica en el inicio del Mundial. AI-written — WildlyPlay Newsroom',
+  'México recibe a Sudáfrica en el inicio del Mundial. AI-written — banhbong.net Newsroom',
 ].join('\n');
 
 describe('buildNewsSlug', () => {
@@ -294,8 +294,8 @@ describe('publishWatchingNews', () => {
   });
 
   // Regression: France-Morocco 09/07 — a single lang failing seo-lint (Thai katakana glitch)
-  // blocked the whole insert loop, so the TG card was never sent even though EN/VI/ES were fine.
-  it('publishes surviving langs and STILL sends the card when one lang is blocked', async () => {
+  // blocked the whole insert loop, so EN/VI/ES were lost too.
+  it('publishes surviving langs when one lang is blocked', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true, status: 200,
       json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
@@ -306,18 +306,10 @@ describe('publishWatchingNews', () => {
       if (post.lang === 'th') throw new Error("seo-lint BLOCK for news/x/th: unexpected script character '\u30F3'");
       return realInsert(post);
     });
-    const sendPhoto = vi.fn(async (_chat: string | number, _photo: unknown, _opts?: unknown) => ({ message_id: 1 }));
-    const sendMessage = vi.fn(async (_chat: string | number, _text: string) => ({ message_id: 1 }));
-    const api = { sendPhoto, sendMessage } as unknown as WatchingCardDeps['api'];
 
-    await publishWatchingNews(
-      { store, env: { apiKey: 'k' }, card: { api, channelChatId: '-100', siteUrl: 'https://x' } },
-      activeWatching(),
-    );
+    await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());
 
     expect(store.posts.map((p) => p.lang).sort()).toEqual(['en', 'es', 'vi']);
-    expect(sendPhoto).toHaveBeenCalledTimes(1);
-    expect(sendPhoto).toHaveBeenCalledWith('-100', expect.stringContaining('wildlyplay_watching'), expect.anything());
   });
 
   it('REQ 4: presence posts can be deleted by slug on unwatch', async () => {
@@ -365,29 +357,21 @@ describe('publishWatchingNews', () => {
     expect(store.posts).toHaveLength(4); // posts still intact
   });
 
-  it('skips the card when EVERY lang is blocked', async () => {
+  it('publishes nothing when EVERY lang is blocked', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true, status: 200,
       json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
     })));
     const store = new MemoryStore();
     store.insertPost = vi.fn(async () => { throw new Error('seo-lint BLOCK'); });
-    const sendPhoto = vi.fn(async (_chat: string | number, _photo: unknown, _opts?: unknown) => ({ message_id: 1 }));
-    const sendMessage = vi.fn(async (_chat: string | number, _text: string) => ({ message_id: 1 }));
-    const api = { sendPhoto, sendMessage } as unknown as WatchingCardDeps['api'];
 
-    await publishWatchingNews(
-      { store, env: { apiKey: 'k' }, card: { api, channelChatId: '-100', siteUrl: 'https://x' } },
-      activeWatching(),
-    );
+    await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());
 
     expect(store.posts).toHaveLength(0);
-    expect(sendPhoto).not.toHaveBeenCalled();
-    expect(sendMessage).not.toHaveBeenCalled();
   });
 
-  // Restore (Nick 09/07): watching cards used to go to FB too, before the 3/7 "TG only" change.
-  it('also posts the watching card to Facebook when facebook creds are set', async () => {
+  // Nick 21/8: /watching is web-only — only /pick and /void reach TG + FB.
+  it('never posts to Telegram or Facebook', async () => {
     const fbCalls: string[] = [];
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
       if (String(url).includes('graph.facebook.com')) {
@@ -397,21 +381,10 @@ describe('publishWatchingNews', () => {
       return { ok: true, status: 200, json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }) };
     }));
     const store = new MemoryStore();
-    const sendPhoto = vi.fn(async (_chat: string | number, _photo: unknown, _opts?: unknown) => ({ message_id: 1 }));
-    const sendMessage = vi.fn(async (_chat: string | number, _text: string) => ({ message_id: 1 }));
-    const api = { sendPhoto, sendMessage } as unknown as WatchingCardDeps['api'];
 
-    await publishWatchingNews(
-      {
-        store, env: { apiKey: 'k' },
-        card: { api, channelChatId: '-100', siteUrl: 'https://x', facebook: { pageId: 'PID', pageToken: 'TOK' } },
-      },
-      activeWatching(),
-    );
+    await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());
 
     expect(store.posts).toHaveLength(4);
-    expect(sendPhoto).toHaveBeenCalledTimes(1);
-    expect(fbCalls).toHaveLength(1);
-    expect(fbCalls[0]).toContain('/PID/photos');
+    expect(fbCalls).toHaveLength(0);
   });
 });

@@ -12,11 +12,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.calculators.oddsConverter} | WildlyPlay`,
+    title: `${dict.calculators.oddsConverter} | banhbong.net`,
     description: dict.calculators.oddsConverterDesc,
     alternates: buildAlternates("/calculators/odds-converter", lang),
     openGraph: {
-      title: `${dict.calculators.oddsConverter} | WildlyPlay`,
+      title: `${dict.calculators.oddsConverter} | banhbong.net`,
       description: dict.calculators.oddsConverterDesc,
       images: [{ url: "/api/og/guide?slug=odds-converter&title=Odds%20Converter", width: 1200, height: 630 }],
     },

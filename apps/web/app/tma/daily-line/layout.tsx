@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Daily Line | WildlyPlay",
+  title: "Daily Line | banhbong.net",
   description: "Pick Over or Under on today's combined goal line. Free prediction game.",
   robots: { index: false, follow: false },
 };

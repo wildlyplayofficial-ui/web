@@ -68,20 +68,22 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
   it('leads with the badge, pick block, FT score and units', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const text = formatResultMessage(pick);
-    expect(text).toContain('\u2705 WIN | Mexico -1.25 @ 2.05 \u2192 FT 3-0 \u00b7 +1.05u');
-    expect(text).toContain('Not financial advice');
-    expect(text).not.toContain('Record:');
+    expect(text).toContain('✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
+    expect(text).toContain('👉 Mexico -1.25 · Kết quả: 3-0');
+    expect(text).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
+    expect(text).not.toContain('Thành tích'); // no record line when summary absent
+    expect(text).not.toContain('@ 2.05'); // VI-safe: no odds
   });
 
   it('adds the record line when a summary is provided', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const text = formatResultMessage(pick, { wins: 3, losses: 1, pushes: 1, units: 2.35 });
-    expect(text).toContain('\u{1F4CA} Record: 3-1-1 \u00b7 +2.35u');
+    expect(text).toContain('📊 Thành tích: 3 đúng · 1 chưa trúng · 1 hòa');
   });
 
   it('marks half wins and losses next to the badge', () => {
     const pick = { ...settledPick({ raw_outcome: 'half_win', units_pl: 0.53 }), id: 'p1' } as PickRow;
-    expect(formatResultMessage(pick)).toContain('\u2705\u00bd HALF-WIN |');
+    expect(formatResultMessage(pick)).toContain('✅ NHẬN ĐỊNH ĐÚNG —');
   });
 
   it('formats units with sign', () => {
@@ -229,7 +231,7 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
 });
 
 describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)', () => {
-  const SITE = 'https://www.wildlyplay.com';
+  const SITE = 'https://www.banhbong.net';
   const FB = { pageId: '120', pageToken: 'tok' };
 
   afterEach(() => vi.unstubAllGlobals());
@@ -262,7 +264,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     );
 
     expect(api.sendPhoto).toHaveBeenNthCalledWith(
-      2, CHANNEL, `${SITE}/images/wildlyplay_settled_win.png`, { caption: expectedText(pick) });
+      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick) });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (banner)');
   });

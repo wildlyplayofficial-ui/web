@@ -4,21 +4,27 @@
  * Inject via <script type="application/ld+json"> in page metadata.
  */
 
-const BASE = "https://www.wildlyplay.com";
+import { SITE_NAME, SITE_URL, SAME_AS } from "@/lib/brand";
+const BASE = SITE_URL;
 
-export function buildOrganization() {
+/** Mô tả thực thể theo ngôn ngữ — AI Overview trả lời bằng tiếng người dùng, để
+ *  đúng ngôn ngữ thì AI dễ lấy đúng câu mô tả mình (Jane 21/8). */
+const ORG_DESCRIPTION: Record<string, string> = {
+  vi: "Nhận định bóng đá, tin chuyển nhượng và tỉ số trực tiếp — cập nhật mỗi ngày, ghi rõ nguồn.",
+  en: "Daily football match previews, transfer news and live scores — clearly sourced football analysis.",
+  th: "พรีวิวและวิเคราะห์ฟุตบอล ข่าวย้ายทีม และผลบอลสด — อัปเดตทุกวัน พร้อมอ้างอิงแหล่งที่มา",
+  es: "Previas y análisis de fútbol, noticias de fichajes y resultados en vivo — con fuentes citadas.",
+};
+
+export function buildOrganization(lang = "en") {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "WildlyPlay",
+    name: SITE_NAME,
     url: BASE,
     logo: `${BASE}/icons/icon-512x512.png`,
-    description: "Handpicked plays for the global crowd. Transparent sports picks with full public track record.",
-    sameAs: [
-      "https://t.me/wildlyplay",
-      "https://x.com/WildlyPlayGlob",
-      "https://facebook.com/wildlyplay",
-    ],
+    description: ORG_DESCRIPTION[lang] ?? ORG_DESCRIPTION.en,
+    sameAs: [...SAME_AS],
   };
 }
 
@@ -26,7 +32,7 @@ export function buildWebSite() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "WildlyPlay",
+    name: SITE_NAME,
     url: BASE,
     potentialAction: {
       "@type": "SearchAction",
@@ -51,8 +57,8 @@ export function buildNewsArticle(post: {
     url: `${BASE}${post.lang !== "en" ? `/${post.lang}` : ""}/news/${post.slug}`,
     datePublished: post.published_at,
     dateModified: post.published_at,
-    author: { "@type": "Organization", name: "The Curator @ WildlyPlay", url: BASE },
-    publisher: { "@type": "Organization", name: "WildlyPlay", url: BASE, logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` } },
+    author: { "@type": "Organization", name: `Admin @ ${SITE_NAME}`, url: BASE },
+    publisher: { "@type": "Organization", name: SITE_NAME, url: BASE, logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` } },
     description: post.meta_description ?? post.body_md.slice(0, 160),
     inLanguage: post.lang,
     isAccessibleForFree: true,
@@ -111,17 +117,14 @@ export function buildPerson() {
   return {
     "@context": "https://schema.org",
     "@type": "Person",
-    name: "The Curator",
+    name: "Admin",
     url: `${BASE}/about`,
     description:
-      "The human behind WildlyPlay's football picks. Every play is hand-researched and only posted when there's a genuine edge. Full public track record — wins and losses, from day one. Entertainment only.",
-    sameAs: [
-      "https://t.me/wildlyplay",
-      "https://x.com/WildlyPlayGlob",
-    ],
+      "The human behind banhbong.net's football picks. Every play is hand-researched and only posted when there's a genuine edge. Full public track record — wins and losses, from day one. Entertainment only.",
+    sameAs: [...SAME_AS],
     worksFor: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: SITE_NAME,
       url: BASE,
     },
   };

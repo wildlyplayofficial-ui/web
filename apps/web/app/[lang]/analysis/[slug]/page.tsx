@@ -10,10 +10,11 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { AnalysisArticle } from "@/lib/types";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
+import { SITE_URL, DESK } from "@/lib/brand";
 
 export const revalidate = 300;
 
-const BASE = "https://www.wildlyplay.com";
+const BASE = SITE_URL;
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -110,23 +111,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
     },
   };
 }
 
-/** Byline for a post: neutral "WildlyPlay" for general news coverage (no position),
+/** Byline for a post: neutral "banhbong.net" for general news coverage (no position),
  *  persona-specific for pick-driven content. */
 function postByline(post: { type: string; author?: string }): string {
-  if (post.type === "news" || post.type === "guide") return "WildlyPlay";
-  if (post.author === "scout") return "The Scout @ WildlyPlay";
-  return "The Curator @ WildlyPlay";
+  if (post.type === "news" || post.type === "guide") return "banhbong.net";
+  if (post.author === "scout") return "Trợ lý AI @ banhbong.net";
+  return "Admin @ banhbong.net";
 }
 
 function buildArticleSchema(
@@ -146,7 +147,7 @@ function buildArticleSchema(
     datePublished: publishedAt ?? undefined,
     dateModified: publishedAt ?? undefined,
     mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
-    image: imageUrl ?? `${BASE}/api/og/news/${slug}`,
+    image: imageUrl ?? `${BASE}/api/og/news/${slug}?locale=${lang}`,
     author: {
       "@type": "Organization",
       name: authorName,
@@ -154,7 +155,7 @@ function buildArticleSchema(
     },
     publisher: {
       "@type": "Organization",
-      name: "WildlyPlay",
+      name: "banhbong.net",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/icons/icon-512x512.png` },
     },
@@ -196,7 +197,7 @@ function DeskArticleView({
     article.meta_description?.trim()
       || article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
     article.published_at,
-    "WildlyPlay Desk",
+    DESK,
     article.slug,
     lang,
     article.hero_image ?? undefined,
@@ -236,7 +237,7 @@ function DeskArticleView({
         </p>
         {/* AI disclosure (spec section 2C) */}
         <p className="mt-1 text-xs text-muted/70 italic">
-          Phân tích do WildlyPlay Desk (AI) thực hiện
+          Phân tích do {DESK} (AI) thực hiện
         </p>
       </header>
 
@@ -301,7 +302,7 @@ function DeskArticleView({
 
       {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        Phân tích do WildlyPlay Desk (AI) thực hiện. {dict.analysis.disclaimer}
+        Phân tích do {DESK} (AI) thực hiện. {dict.analysis.disclaimer}
       </p>
     </article>
   );
@@ -376,7 +377,7 @@ export default async function AnalysisArticlePage({ params }: Props) {
       {/* Hero card */}
       <div className="mt-6 overflow-hidden rounded-card">
         <img
-          src={`/api/og/news/${slug}`}
+          src={`/api/og/news/${slug}?locale=${lang}`}
           alt={post.title}
           width={1200}
           height={630}
