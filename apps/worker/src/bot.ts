@@ -75,6 +75,36 @@ export function createBot(deps: BotDeps): Bot {
       warnings.push('⚠️ HIGH confidence at long odds (> 3.00) — unusual. Publish anyway.');
     }
 
+    // Duplicate guard (22/8: Hull-MU incident — bot + dashboard both inserted the
+    // same pick 6s apart, zero coordination). Reject before any event lookup/insert.
+    const dup = await deps.store.findRecentDuplicatePick(
+      result.pick.homeTeam, result.pick.awayTeam, result.pick.market, result.pick.selection, 10,
+    );
+    if (dup) {
+      const secondsAgo = dup.published_at ? Math.round((Date.now() - new Date(dup.published_at).getTime()) / 1000) : null;
+      await ctx.reply(
+        `⚠️ Pick trùng — đã có pick ${dup.id} (${dup.selection}) cho trận này` +
+        (secondsAgo !== null ? ` ${secondsAgo}s trước` : '') +
+        `. KHÔNG tạo pick mới.\nCần huỷ bản cũ thì /void ${dup.id} rồi /pick lại.`,
+      );
+      return;
+    }
+
+    // Kickoff sanity vs the fixtures schedule (Hull vs MU shipped 18:00 VN
+    // instead of 18:30, 22/8 — the field is hand-typed). Picks are immutable
+    // after publish, so correct BEFORE insert. Silent when no confident match.
+    let kickoffLine = '';
+    const schedKick = await deps.store.findFixtureKickoff(
+      result.pick.homeTeam, result.pick.awayTeam, result.pick.kickoffUtc,
+    );
+    if (schedKick !== null) {
+      const diffMin = Math.abs(new Date(schedKick).getTime() - new Date(result.pick.kickoffUtc).getTime()) / 60_000;
+      if (diffMin >= 5) {
+        kickoffLine = `\n⚠️ kickoff ${result.pick.kickoffUtc} lệch lịch fixtures — đã sửa thành ${schedKick}`;
+        result.pick.kickoffUtc = schedKick;
+      }
+    }
+
     // Picks are immutable after publish → look up the event id BEFORE insert.
     // findEvent never throws and returns null on any failure/ambiguity.
     let autoEvent: EventMatch | null = null;
@@ -91,7 +121,7 @@ export function createBot(deps: BotDeps): Bot {
     // Auto-link: if there's an active watching entry for the same match, mark it 'picked'.
     void linkWatchingForPick(deps.store, row, deps.revalidate);
     const warningLine = warnings.length > 0 ? '\n' + warnings.join('\n') : '';
-    await ctx.reply(confirmationCard(row) + lookupLine + warningLine);
+    await ctx.reply(confirmationCard(row) + lookupLine + kickoffLine + warningLine);
     if (deps.preview) void deps.preview(row); // newsroom preview — must not delay the confirmation
     if (deps.translateThesis) void deps.translateThesis(row); // thesis vi/th/es — same fire-and-forget
     // Nick 15/6: running picks (in-play, has publish_score) skip analysis — no SEO value for mid-match articles
