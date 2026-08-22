@@ -96,7 +96,9 @@ export async function postPhotoToFacebook(
 
 /** R7: SETTLED carries the OG data-card in settled state (WIN/LOSS/PUSH badge + updated record). */
 export function resultCardUrl(siteUrl: string, pick: PickRow): string {
-  return `${siteUrl}/api/og/play/${pick.id}`;
+  // lang=vi: same as announce-pick.ts — without it the result announce shipped the
+  // ENGLISH card (and a stale CDN copy of it). Jane caught this live on /score 22/8.
+  return `${siteUrl}/api/og/play/${pick.id}?lang=vi`;
 }
 
 export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise<void> {
