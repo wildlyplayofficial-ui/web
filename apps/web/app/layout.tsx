@@ -78,7 +78,7 @@ export default async function RootLayout({
                   "@type": "WebSite",
                   name: SITE_NAME,
                   url: SITE_URL,
-                  description: "Curator-led football picks, AI-operated. Every pick public forever.",
+                  description: "Football previews, analysis and live scores — every analysis we publish stays public.",
                   potentialAction: {
                     "@type": "SearchAction",
                     target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/matches?q={search_term_string}` },

@@ -138,7 +138,7 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
       <img
-        src={`/api/og/news/${post.slug}`}
+        src={`/api/og/news/${post.slug}?locale=${lang}`}
         alt=""
         width={1200}
         height={630}

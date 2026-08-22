@@ -255,12 +255,11 @@ export function createBot(deps: BotDeps): Bot {
       })();
     }
     // News article (SEO pre-match preview) — fire-and-forget, never throws.
-    // Post Restructure v1 §2.4: WATCHING card replaces the article announce (TG only).
+    // Web-only (Nick 21/8): /watching never posts to TG or FB.
     if (deps.aiEnv?.apiKey) {
       void publishWatchingNews(
         {
           store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-          card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl },
         },
         row as unknown as import('./store').WatchingRow,
         watching.reason,
@@ -295,12 +294,11 @@ export function createBot(deps: BotDeps): Bot {
       (noplay.note ? `\nnote: ${noplay.note}` : ''),
     );
     // Generate no-play article — fire-and-forget, never throws.
-    // NO-PLAY card → TG channel + FB page (Nick confirms both).
+    // Web-only (Nick 21/8): /noplay never posts to TG or FB.
     if (deps.aiEnv?.apiKey) {
       void publishNoPlayArticle(
         {
           store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
-          card: { api: bot.api, channelChatId: deps.channelChatId, siteUrl: deps.siteUrl, facebook: deps.facebook },
         },
         noplay,
       );

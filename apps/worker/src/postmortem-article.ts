@@ -1,10 +1,9 @@
 /**
  * Post-mortem newsroom article: when Curator /approve a pick,
- * generate a public post-mortem article (4 languages) + distribute.
+ * generate a public post-mortem article (4 languages) and publish it on the web.
  */
 import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
 import { parseAnalysisSection } from './news';
-import { announceArticle, type AnnounceArticleDeps } from './announce-article';
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { authorTypeOf } from './store';
 import { createRevalidator } from './revalidate';
@@ -66,7 +65,6 @@ export interface PostmortemArticleDeps {
   store: Store;
   env: { apiKey: string | undefined; model?: string };
   revalidateUrl?: string;
-  announceArticle?: AnnounceArticleDeps;
 }
 
 export async function publishPostmortemArticle(
@@ -126,10 +124,6 @@ export async function publishPostmortemArticle(
 
     for (const post of posts) await deps.store.insertPost(post);
     log.info(`postmortem-article: published ${posts.length} posts for ${score}`);
-
-    // Đăng bản tiếng Việt cho kênh (Nick 21/8); fallback EN nếu thiếu VI.
-    const announcePost = posts.find((p) => p.lang === 'vi') ?? posts.find((p) => p.lang === 'en');
-    if (announcePost && deps.announceArticle) void announceArticle(deps.announceArticle, announcePost);
 
     if (deps.revalidateUrl) {
       const rev = createRevalidator({ siteUrl: deps.revalidateUrl, secret: process.env.REVALIDATE_SECRET });

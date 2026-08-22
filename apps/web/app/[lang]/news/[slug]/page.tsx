@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: item.published_at,
       images: item.hero_card_url
         ? [{ url: item.hero_card_url, width: 1200, height: 630 }]
-        : [{ url: `/api/og/news/${slug}`, width: 1200, height: 630 }],
+        : [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -136,7 +136,7 @@ export default async function NewsDetail({ params }: Props) {
 
       <div className="mt-6 overflow-hidden rounded-card">
         <img
-          src={item.hero_card_url || `/api/og/news/${slug}`}
+          src={item.hero_card_url || `/api/og/news/${slug}?locale=${lang}`}
           alt={headline}
           width={1200}
           height={630}
