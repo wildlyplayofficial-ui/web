@@ -131,7 +131,7 @@ export const copy: Record<Lang, AboutCopy> = {
     metaDescription:
       "banhbong.net là trang phân tích bóng đá do con người tuyển chọn. Mỗi trận được nghiên cứu và lập luận; AI viết nhận định, lưu trữ công khai mọi dự đoán, minh bạch từ ngày đầu.",
     intro:
-      "banhbong.net là trang nhận định bóng đá do con người thực hiện. Admin là người chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn.",
+      "banhbong.net là trang nhận định bóng đá do con người thực hiện. Chú Tám Banh là người chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn.",
     cards: [
       {
         heading: "Nhận định có lập luận, không đoán mò",
@@ -148,19 +148,19 @@ export const copy: Record<Lang, AboutCopy> = {
     ],
     personas: [
       {
-        name: "Admin",
+        name: "Chú Tám Banh",
         role: "Người thật chọn trận",
-        description: "Một con người thật nghiên cứu mỗi trận, tìm góc nhìn và gửi nhận định. Admin là cổng con người — mọi nhận định bắt đầu từ quyết định của con người. Thành tích theo dõi riêng, minh bạch từ ngày đầu.",
+        description: "Chú Tám Banh là người thật đứng sau mọi nhận định trên banhbong.net — theo bóng đá châu Âu hơn 15 năm, chuyên Ngoại hạng Anh và các giải lớn châu Âu. Mỗi trận đều tự đọc số liệu, xem phong độ và đội hình rồi mới đặt bút. Không nhận định gượng ép: không thấy lợi thế thì ghi rõ là bỏ qua. Thành tích thắng thua công khai từ ngày đầu, không sửa, không xoá.",
       },
       {
         name: "Trợ lý AI",
         role: "AI vận hành · Độ tin cậy thấp hơn",
-        description: "Persona do AI vận hành công khai, chạy phân tích riêng. Trợ lý AI có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Admin.",
+        description: "Persona do AI vận hành công khai, chạy phân tích riêng. Trợ lý AI có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Chú Tám Banh.",
       },
     ],
     promiseTitle: "Cam kết",
     promises: [
-      "Admin là người đứng ra lựa chọn trận đấu có cơ sở, góc nhìn để phân tích. Thành tích của Admin được theo dõi riêng, minh bạch từ ngày đầu.",
+      "Chú Tám Banh là người đứng ra lựa chọn trận đấu có cơ sở, góc nhìn để phân tích. Thành tích của Chú Tám Banh được theo dõi riêng, minh bạch từ ngày đầu.",
       "Huy hiệu tính đúng-một-nửa là ĐÚNG, sai-một-nửa là SAI — nhưng chỉ số đơn vị được/mất theo chấp châu Á thực tế luôn hiển thị cạnh thành tích, không tô hồng.",
       "Nhận định trượt chúng tôi cũng đăng. Chỉ mang tính tham khảo, giải trí — không phải lời khuyên tài chính.",
     ],
