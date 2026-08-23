@@ -5,6 +5,7 @@ import {
   getSettledPicks,
   getTodaysNoPlays,
   getRecentRecapPosts,
+  getThesisTranslations,
   getTodaysPicks,
   getTrackRecordForAuthor,
 } from "@/lib/data";
@@ -141,6 +142,11 @@ export default async function Home({ params }: Props) {
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
   const heroPick = picks[0] ?? null;
+  // Bản dịch nhận định nằm ở bảng pick_content; cột `thesis` trên pick luôn là
+  // tiếng Anh. Không lấy bản dịch thì trang tiếng Việt hiện ruột tiếng Anh (Nick 23/8).
+  const heroThesis = heroPick
+    ? (await getThesisTranslations([heroPick.id]))[heroPick.id]?.[lang] ?? heroPick.thesis
+    : null;
 
   // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
   const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
@@ -352,6 +358,7 @@ export default async function Home({ params }: Props) {
             lang={lang}
             href={withLang("/daily-board", lang)}
             ctaLabel={dict.home.viewBoard}
+            thesisText={heroThesis ?? undefined}
           />
         </section>
       )}
