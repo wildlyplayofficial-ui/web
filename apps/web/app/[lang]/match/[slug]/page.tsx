@@ -114,18 +114,21 @@ export default async function MatchPage({ params }: Props) {
           </h1>
         </header>
         {ctx
-          ? <MatchFacts ctx={ctx} />
+          ? <MatchFacts ctx={ctx} lang={lang} />
           : <div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>}
       </article>
     );
   }
 
   const pickIds = match.picks.map((p) => p.id);
-  const [votes, translations, boothEntries] = await Promise.all([
+  const [votes, translations, boothEntries, ctx] = await Promise.all([
     getVoteCounts(pickIds),
     getThesisTranslations(pickIds),
     // Same Booth as /play so both URLs carry the same match content (Nick 3/7)
     match.picks.length > 0 ? getBoothForPick(match.picks[0].id) : Promise.resolve([]),
+    // Trang có dòng watching nhưng chưa có bài vẫn mỏng (đo 23/8: 96 chữ) — dữ
+    // liệu thật từ lịch/kèo bù vào, và có ích cả khi trang đã có nội dung.
+    getMatchContext(match.homeTeam, match.awayTeam, match.kickoffUtc.slice(0, 10)),
   ]);
   const homeFlag = teamFlag(match.homeTeam); const awayFlag = teamFlag(match.awayTeam);
   const homeBadge = teamBadge(match.homeTeam); const awayBadge = teamBadge(match.awayTeam);
@@ -182,7 +185,9 @@ export default async function MatchPage({ params }: Props) {
 
       {uniquePosts.length > 0 && (<section className="mt-8"><h2 className="mb-3 font-display text-lg font-bold">{dict.match.articles}</h2><ul className="flex flex-col gap-3">{uniquePosts.map((post) => (<li key={post.id} className="rounded-card border border-line bg-card p-4 shadow-card"><span className="mb-1 inline-block rounded-md bg-card px-2 py-0.5 text-xs font-semibold uppercase text-muted">{post.type}</span><p className="font-display font-bold"><Link href={withLang(`/analysis/${post.slug}`, lang)} className="transition-colors hover:text-brand">{post.title}</Link></p><Link href={withLang(`/analysis/${post.slug}`, lang)} className="mt-1 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">{dict.match.readArticle} &rarr;</Link></li>))}</ul></section>)}
 
-      {!match.watching && match.picks.length === 0 && uniquePosts.length === 0 && (<div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>)}
+      {ctx && <MatchFacts ctx={ctx} lang={lang} />}
+
+      {!ctx && !match.watching && match.picks.length === 0 && uniquePosts.length === 0 && (<div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>)}
     </article>
   );
 }

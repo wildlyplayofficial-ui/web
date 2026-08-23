@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { MatchContext } from "@/lib/match-context";
+import { withLang, type Lang } from "@/lib/i18n";
 
 /**
  * Khối dữ liệu thật cho trang trận: giờ Việt Nam, bảng xếp hạng, phong độ,
@@ -36,7 +38,7 @@ function FormRow({ label, form }: { label: string; form: NonNullable<MatchContex
   );
 }
 
-export function MatchFacts({ ctx }: { ctx: MatchContext }) {
+export function MatchFacts({ ctx, lang }: { ctx: MatchContext; lang: Lang }) {
   const kickoffVn = new Intl.DateTimeFormat("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh", weekday: "long", day: "2-digit", month: "2-digit",
     year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -102,6 +104,26 @@ export function MatchFacts({ ctx }: { ctx: MatchContext }) {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Các trận cùng vòng — vừa là dữ liệu thật, vừa nối trang trận với nhau
+          để Google không phải bò từng trang rời rạc */}
+      {ctx.sameRound.length > 0 && (
+        <section className="rounded-card border border-line bg-card p-5">
+          <h2 className="font-display text-lg font-bold">
+            {ctx.round ? `Các trận khác vòng ${ctx.round}` : "Các trận khác cùng vòng"}
+          </h2>
+          <ul className="mt-3 flex flex-col divide-y divide-line text-sm">
+            {ctx.sameRound.map((m) => (
+              <li key={m.slug} className="flex flex-wrap items-center gap-x-3 py-2">
+                <span className="min-w-[5.5rem] text-muted">{m.kickoffUtc.slice(0, 10)}</span>
+                <Link href={withLang(`/match/${m.slug}`, lang)} className="transition-colors hover:text-brand">
+                  {m.homeTeam} <span className="text-muted">vs</span> {m.awayTeam}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
