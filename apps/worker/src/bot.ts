@@ -245,6 +245,19 @@ export function createBot(deps: BotDeps): Bot {
       return;
     }
     const { watching } = result;
+    // Cùng cách vá như /pick: giờ đá gõ tay hay lệch lịch thật (Man City 12:30
+    // thay vì 13:00, Peter bắt 23/8 — /matches hiện sai giờ). Sửa trước khi ghi.
+    let kickoffNote = '';
+    const schedKick = await deps.store.findFixtureKickoff(
+      watching.homeTeam, watching.awayTeam, watching.kickoffUtc,
+    );
+    if (schedKick !== null) {
+      const diffMin = Math.abs(new Date(schedKick).getTime() - new Date(watching.kickoffUtc).getTime()) / 60_000;
+      if (diffMin >= 5) {
+        kickoffNote = `\n⚠️ kickoff ${watching.kickoffUtc} lệch lịch fixtures — đã sửa thành ${schedKick}`;
+        watching.kickoffUtc = schedKick;
+      }
+    }
     const row = await deps.store.insertWatching({
       home_team: watching.homeTeam,
       away_team: watching.awayTeam,
@@ -301,7 +314,7 @@ export function createBot(deps: BotDeps): Bot {
       `${row.home_team} vs ${row.away_team}\n` +
       `${row.league}\n` +
       `kickoff: ${row.kickoff_utc}` +
-      (row.note ? `\nnote: ${row.note}` : ''),
+      (row.note ? `\nnote: ${row.note}` : '') + kickoffNote,
     );
   });
 
