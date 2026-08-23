@@ -161,6 +161,21 @@ export function findInSeason(home: string, away: string, date: string) {
   return null;
 }
 
+/** Bỏ bản ghi trùng: bảng `fixtures` đang có 35 cặp trùng cùng một trận, 26 cặp
+ *  trong đó CẢ HAI dòng đều có tỷ số nên bảng xếp hạng đếm gấp đôi trận đó
+ *  (đo 23/8: Cúp C1 12 trận, Liga MX 9, MLS 3, World Cup 2 — 5 giải lớn sạch).
+ *  Giữ dòng có mã Livescore vì đó là dòng được đồng bộ thật. Pure. */
+export function dedupeFixtures(rows: FixtureRow[]): FixtureRow[] {
+  const best = new Map<string, FixtureRow>();
+  for (const r of rows) {
+    const key = [norm(r.home_team_name), norm(r.away_team_name)].sort().join("|")
+      + r.kickoff_utc.slice(0, 10);
+    const cur = best.get(key);
+    if (!cur || (!cur.livescore_match_id && r.livescore_match_id)) best.set(key, r);
+  }
+  return [...best.values()];
+}
+
 /** Bảng xếp hạng tính từ các trận ĐÃ có tỷ số của giải đó. Pure.
  *
  *  `allTeams` là danh sách đội đầy đủ của giải (lấy từ lịch mùa). Không truyền
@@ -282,7 +297,7 @@ export async function getMatchContext(
         .select("id, competition_id, home_team_name, away_team_name, kickoff_utc, venue, home_score, away_score, livescore_match_id")
         .eq("competition_id", fixture.competition_id)
     : null;
-  const all = (compRes?.data ?? []) as FixtureRow[];
+  const all = dedupeFixtures((compRes?.data ?? []) as FixtureRow[]);
 
   // So bằng tên đã chuẩn hoá: lịch tĩnh ghi "Atletico Madrid", CSDL có thể ghi
   // "Atlético Madrid" — so thẳng chuỗi là mất hàng.
