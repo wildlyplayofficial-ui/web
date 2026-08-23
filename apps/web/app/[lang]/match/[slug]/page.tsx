@@ -6,7 +6,9 @@ import { MatchCommentary } from "@/components/match-commentary";
 import { PickCard } from "@/components/pick-card";
 import { WatchingTeaser } from "@/components/watching-teaser";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { MatchFacts } from "@/components/match-facts";
 import { getBoothForPick } from "@/lib/booth-data";
+import { getMatchContext } from "@/lib/match-context";
 import { getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { teamBadge } from "@/lib/team-badges";
@@ -81,8 +83,29 @@ export default async function MatchPage({ params }: Props) {
     const homeName = deslug(homePart); const awayName = deslug(awayPart);
     const hf = teamFlag(homeName); const af = teamFlag(awayName);
     const hb = teamBadge(homeName); const ab = teamBadge(awayName);
+    // Trận chưa có nội dung biên tập vẫn phải dày: lấy lịch, bảng xếp hạng, phong
+    // độ, đối đầu, xác suất thị trường từ dữ liệu thật. Trước đây nhánh này chỉ
+    // in tên hai đội + "chưa có nội dung" = 96 chữ, và KHÔNG có cả SportsEvent
+    // (đo 23/8, 350 trang như vậy đang để index) — đúng thứ Google phạt tay.
+    const ctx = await getMatchContext(homePart, awayPart, datePart);
+    const emptySchema = ctx
+      ? JSON.stringify({
+          "@context": "https://schema.org", "@type": "SportsEvent",
+          name: `${ctx.homeTeam} vs ${ctx.awayTeam}`, startDate: ctx.kickoffUtc,
+          eventStatus: "https://schema.org/EventScheduled",
+          location: { "@type": "Place", name: ctx.venue || ctx.competitionId },
+          competitor: [
+            { "@type": "SportsTeam", name: ctx.homeTeam },
+            { "@type": "SportsTeam", name: ctx.awayTeam },
+          ],
+          organizer: { "@type": "Organization", name: "banhbong.net", url: BASE },
+        }).replace(/</g, "\\u003c")
+      : null;
     return (
       <article className="mx-auto max-w-[720px] px-5 py-12">
+        {emptySchema && (
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: emptySchema }} />
+        )}
         <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">&larr; {dict.match.backToMatches}</Link>
         <header className="mt-6">
           <p className="text-sm text-muted">{formatKickoff(datePart + "T00:00:00Z", lang)}</p>
@@ -90,7 +113,9 @@ export default async function MatchPage({ params }: Props) {
             {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName}<span className="mx-2 text-muted">vs</span>{ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
         </header>
-        <div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>
+        {ctx
+          ? <MatchFacts ctx={ctx} />
+          : <div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>}
       </article>
     );
   }
