@@ -25,6 +25,10 @@ export function buildThesisTranslationPrompt(pick: PickRow): string {
     '- Use the betting terminology that readers of each language actually use (e.g. natural Asian handicap terms).',
     '- This is a translation, not analysis: do NOT add opinions, hype or any promise of profit.',
     '- Output plain text only — no markdown, no commentary outside the four sections.',
+    // Nick chốt 23/8: bản tiếng Việt gọi Curator/Admin là "Chú Tám Banh", Scout là
+    // "Trợ lý AI". Không dặn thì máy dịch bê nguyên tên tiếng Anh vào bài (đo 23/8:
+    // 77 bài tiếng Việt đã đăng còn chữ "Admin").
+    '- Name rule for the Vietnamese section: write "Chú Tám Banh" wherever the English says the Curator or Admin, and "Trợ lý AI" wherever it says the Scout. Never leave the words Curator, Admin or Scout in the Vietnamese text.',
   ].join('\n');
 }
 
