@@ -9,6 +9,12 @@ export type Lang = "en" | "vi" | "th" | "es";
 
 export const LANGS: readonly Lang[] = ["en", "vi", "th", "es"] as const;
 
+/** Ngôn ngữ site CÔNG KHAI. Nick + Peter chốt 23/8/2026: bỏ hẳn ba bản ngoại ngữ,
+ *  chỉ làm tiếng Việt — site mới cần Google dồn sức bò 816 trang Việt thay vì chia
+ *  cho 3.264 trang bốn thứ tiếng. `LANGS` giữ nguyên vì dict + công cụ dịch trong
+ *  admin vẫn dùng; chỉ phần lộ ra ngoài (hreflang, sitemap, trang tĩnh) rút về VI. */
+export const PUBLIC_LANGS: readonly Lang[] = ["vi"] as const;
+
 export function resolveLang(value: string | string[] | undefined): Lang {
   return typeof value === "string" && (LANGS as readonly string[]).includes(value)
     ? (value as Lang)
@@ -30,15 +36,15 @@ export function buildAlternates(path: string, currentLang: Lang = "vi"): {
   languages: Record<string, string>;
 } {
   const clean = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
-  const selfUrl = currentLang === "vi" ? `${BASE}${clean || "/"}` : `${BASE}/${currentLang}${clean}`;
+  const viUrl = `${BASE}${clean || "/"}`;
+  // Site chỉ còn tiếng Việt (23/8): canonical luôn trỏ bản VI kể cả khi ai đó mở
+  // /en/... — cùng với 301 trong next.config, mọi tín hiệu dồn về một bản duy nhất.
+  // Khai hreflang cho ngôn ngữ không còn nội dung là tự bảo Google đi bò trang chết.
   return {
-    canonical: selfUrl,
+    canonical: viUrl,
     languages: {
-      "vi": `${BASE}${clean || "/"}`,
-      "en": `${BASE}/en${clean}`,
-      "th": `${BASE}/th${clean}`,
-      "es": `${BASE}/es${clean}`,
-      "x-default": `${BASE}${clean || "/"}`,
+      "vi": viUrl,
+      "x-default": viUrl,
     },
   };
 }

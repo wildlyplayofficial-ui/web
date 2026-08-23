@@ -12,7 +12,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 const BASE = SITE_URL;
-const LANGS = ["en", "vi", "th", "es"] as const;
+// Chỉ còn tiếng Việt (Nick + Peter chốt 23/8) — không khai hreflang cho ngôn ngữ
+// đã bỏ, nếu không Google vẫn bò /en /th /es rồi ăn 301 vô ích.
+const LANGS = ["vi"] as const;
 
 // Ngày reposition VI-legal (28/7/2026) — set lastModified cho trang static/hub để
 // Google biết nội dung vừa đổi và re-crawl bản VI mới sớm (trước chỉ có changeFrequency).

@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Bỏ hẳn ba bản ngoại ngữ (Nick + Peter chốt 23/8) — site chỉ còn tiếng Việt.
+      // 301 để gom hết tín hiệu về bản VI thay vì để 3.264 URL bốn thứ tiếng chia
+      // nhau ngân sách bò của một domain mới. Phải đặt TRƯỚC các luật khác có
+      // tiền tố :lang, nếu không luật kia bắt trước và bỏ sót.
+      { source: "/:lang(en|th|es)", destination: "/", statusCode: 301 },
+      { source: "/:lang(en|th|es)/:path*", destination: "/:path*", statusCode: 301 },
       // 308 permanent redirect old /goalline URLs to /daily-line
       { source: "/goalline", destination: "/daily-line", permanent: true },
       { source: "/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
