@@ -1,4 +1,10 @@
 import { getSupabase } from "./supabase";
+import { buildMatchSlug } from "./data";
+import eplSeason from "./data/epl-2026-27-season.json";
+import laligaSeason from "./data/laliga-2026-27-season.json";
+import serieaSeason from "./data/seriea-2026-27-season.json";
+import bundesligaSeason from "./data/bundesliga-2026-27-season.json";
+import ligue1Season from "./data/ligue1-2026-27-season.json";
 
 /**
  * Dữ liệu THẬT cho trang trận, lấy từ bảng fixtures + odds_snapshots.
@@ -52,9 +58,20 @@ export interface MatchOdds {
   capturedAt: string;
 }
 
+export interface RoundMatch {
+  slug: string;
+  homeTeam: string;
+  awayTeam: string;
+  kickoffUtc: string;
+}
+
 export interface MatchContext {
   fixtureId: string;
   competitionId: string;
+  /** Vòng đấu theo lịch mùa, null nếu trận không nằm trong 5 giải có lịch tĩnh */
+  round: string | null;
+  /** Các trận còn lại cùng vòng — dữ liệu thật, đồng thời là đường dẫn nội bộ */
+  sameRound: RoundMatch[];
   homeTeam: string;
   awayTeam: string;
   kickoffUtc: string;
@@ -102,16 +119,60 @@ export function norm(name: string): string {
     .join("");
 }
 
-/** Bảng xếp hạng tính từ các trận ĐÃ có tỷ số của giải đó. Pure. */
-export function buildStandings(rows: FixtureRow[]): StandingRow[] {
+interface SeasonFixture {
+  round: string;
+  date: string;
+  time: string;
+  homeName: string;
+  awayName: string;
+}
+
+/** Lịch cả mùa 5 giải, ĐÚNG nguồn mà sơ đồ web dùng để sinh slug (`lib/data.ts`).
+ *
+ *  Bảng `fixtures` trong CSDL thiếu nặng — La Liga 26/380, Serie A 15, Bundesliga
+ *  7, Ligue 1 16 — và giờ đá lệch một hai ngày so với lịch tĩnh. Hệ quả đo 23/8:
+ *  184/350 trang trận trong sơ đồ tra không ra trận nào. Đọc chung một nguồn với
+ *  sơ đồ thì slug luôn khớp. */
+const SEASONS: Array<[SeasonFixture[], string]> = [
+  [eplSeason, "epl-2026"],
+  [laligaSeason, "laliga-2026"],
+  [serieaSeason, "seriea-2026"],
+  [bundesligaSeason, "bundesliga-2026"],
+  [ligue1Season, "ligue1-2026"],
+];
+
+const seasonKickoff = (f: SeasonFixture) => `${f.date}T${f.time}:00Z`;
+
+/** Tìm trận trong lịch mùa: khớp tên đã chuẩn hoá, ngày lệch tối đa 2 hôm. */
+export function findInSeason(home: string, away: string, date: string) {
+  const target = Date.parse(`${date}T00:00:00Z`);
+  for (const [season, competitionId] of SEASONS) {
+    const hit = season
+      .filter((f) => norm(f.homeName) === norm(home) && norm(f.awayName) === norm(away)
+        && Math.abs(Date.parse(`${f.date}T00:00:00Z`) - target) <= 2 * 86_400_000)
+      .sort((a, b) => Math.abs(Date.parse(`${a.date}T00:00:00Z`) - target)
+        - Math.abs(Date.parse(`${b.date}T00:00:00Z`) - target))[0];
+    if (hit) return { hit, competitionId, season };
+  }
+  return null;
+}
+
+/** Bảng xếp hạng tính từ các trận ĐÃ có tỷ số của giải đó. Pure.
+ *
+ *  `allTeams` là danh sách đội đầy đủ của giải (lấy từ lịch mùa). Không truyền
+ *  thì mẫu số sai: CSDL Bundesliga mới có 7 trận, chỉ lộ mặt 14 đội, nên trang
+ *  hiện "hạng 3/14" trong khi giải có 18 đội (đo 23/8). */
+export function buildStandings(rows: FixtureRow[], allTeams: string[] = []): StandingRow[] {
   const table = new Map<string, Omit<StandingRow, "position">>();
   const seed = (team: string) => {
-    if (!table.has(team)) {
-      table.set(team, { team, played: 0, won: 0, drawn: 0, lost: 0, goalDiff: 0, points: 0 });
+    const key = norm(team);
+    if (!table.has(key)) {
+      table.set(key, { team, played: 0, won: 0, drawn: 0, lost: 0, goalDiff: 0, points: 0 });
     }
-    return table.get(team)!;
+    return table.get(key)!;
   };
   // Đội chưa đá trận nào vẫn phải có mặt trên bảng (P=0) — bỏ đi là bảng thiếu đội.
+  for (const t of allTeams) seed(t);
   for (const r of rows) { seed(r.home_team_name); seed(r.away_team_name); }
   for (const r of rows) {
     if (r.home_score === null || r.away_score === null) continue;
@@ -131,7 +192,7 @@ export function buildStandings(rows: FixtureRow[]): StandingRow[] {
 /** Phong độ một đội từ các trận đã đá, mới nhất trước. Pure. */
 export function buildForm(rows: FixtureRow[], team: string, limit = 5): TeamForm | null {
   const played = rows
-    .filter((r) => (r.home_team_name === team || r.away_team_name === team)
+    .filter((r) => (norm(r.home_team_name) === norm(team) || norm(r.away_team_name) === norm(team))
       && r.home_score !== null && r.away_score !== null)
     .sort((a, b) => b.kickoff_utc.localeCompare(a.kickoff_utc));
   if (played.length === 0) return null;
@@ -139,7 +200,7 @@ export function buildForm(rows: FixtureRow[], team: string, limit = 5): TeamForm
     played: played.length, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, recent: [],
   };
   for (const r of played) {
-    const isHome = r.home_team_name === team;
+    const isHome = norm(r.home_team_name) === norm(team);
     const gf = (isHome ? r.home_score : r.away_score) as number;
     const ga = (isHome ? r.away_score : r.home_score) as number;
     form.goalsFor += gf; form.goalsAgainst += ga;
@@ -176,10 +237,24 @@ export async function getMatchContext(
   if (error || !dayRows) return null;
 
   const target = Date.parse(dayStart);
-  const fixture = (dayRows as FixtureRow[])
+  const dbFixture = (dayRows as FixtureRow[])
     .filter((r) => norm(r.home_team_name) === norm(home) && norm(r.away_team_name) === norm(away))
     .sort((a, b) =>
       Math.abs(Date.parse(a.kickoff_utc) - target) - Math.abs(Date.parse(b.kickoff_utc) - target))[0];
+
+  // Lịch mùa bù cho những giải CSDL còn thiếu; CSDL vẫn được ưu tiên vì nó có
+  // tỷ số và giờ đã chốt.
+  const inSeason = findInSeason(home, away, date);
+  const fixture: FixtureRow | undefined = dbFixture ?? (inSeason ? {
+    id: "",
+    competition_id: inSeason.competitionId,
+    home_team_name: inSeason.hit.homeName,
+    away_team_name: inSeason.hit.awayName,
+    kickoff_utc: seasonKickoff(inSeason.hit),
+    venue: null,
+    home_score: null,
+    away_score: null,
+  } : undefined);
   if (!fixture) return null;
 
   // Toàn bộ trận cùng giải để tính bảng xếp hạng + phong độ.
@@ -189,15 +264,32 @@ export async function getMatchContext(
     .eq("competition_id", fixture.competition_id);
   const all = (compRows ?? []) as FixtureRow[];
 
-  const standings = buildStandings(all);
-  const homeStanding = standings.find((s) => s.team === fixture.home_team_name) ?? null;
-  const awayStanding = standings.find((s) => s.team === fixture.away_team_name) ?? null;
+  // So bằng tên đã chuẩn hoá: lịch tĩnh ghi "Atletico Madrid", CSDL có thể ghi
+  // "Atlético Madrid" — so thẳng chuỗi là mất hàng.
+  const seasonTeams = inSeason
+    ? [...new Set(inSeason.season.flatMap((f) => [f.homeName, f.awayName]))]
+    : [];
+  const standings = buildStandings(all, seasonTeams);
+  const homeStanding = standings.find((s) => norm(s.team) === norm(fixture.home_team_name)) ?? null;
+  const awayStanding = standings.find((s) => norm(s.team) === norm(fixture.away_team_name)) ?? null;
+
+  const sameRound: RoundMatch[] = inSeason
+    ? inSeason.season
+        .filter((f) => f.round === inSeason.hit.round && f !== inSeason.hit)
+        .sort((a, b) => seasonKickoff(a).localeCompare(seasonKickoff(b)))
+        .map((f) => ({
+          slug: buildMatchSlug(f.homeName, f.awayName, seasonKickoff(f)),
+          homeTeam: f.homeName,
+          awayTeam: f.awayName,
+          kickoffUtc: seasonKickoff(f),
+        }))
+    : [];
 
   // Đối đầu: mọi lần hai đội gặp nhau đã có tỷ số, gần nhất trước.
   const h2h: HeadToHead[] = all
     .filter((r) => r.id !== fixture.id && r.home_score !== null && r.away_score !== null
-      && ((r.home_team_name === fixture.home_team_name && r.away_team_name === fixture.away_team_name)
-        || (r.home_team_name === fixture.away_team_name && r.away_team_name === fixture.home_team_name)))
+      && ((norm(r.home_team_name) === norm(fixture.home_team_name) && norm(r.away_team_name) === norm(fixture.away_team_name))
+        || (norm(r.home_team_name) === norm(fixture.away_team_name) && norm(r.away_team_name) === norm(fixture.home_team_name))))
     .sort((a, b) => b.kickoff_utc.localeCompare(a.kickoff_utc))
     .slice(0, 5)
     .map((r) => ({
@@ -240,6 +332,8 @@ export async function getMatchContext(
     homeStanding,
     awayStanding,
     standingsSize: standings.length,
+    round: inSeason?.hit.round ?? null,
+    sameRound,
     h2h,
     odds,
   };
