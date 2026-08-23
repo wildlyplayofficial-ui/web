@@ -5,6 +5,7 @@ import serieaSeason from "./data/seriea-2026-27-season.json";
 import bundesligaSeason from "./data/bundesliga-2026-27-season.json";
 import ligue1Season from "./data/ligue1-2026-27-season.json";
 import { getSupabase } from "./supabase";
+import { viPersona, viPersonaFields } from "./persona";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
 import type { MatchData, Pick, Post, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
@@ -218,6 +219,9 @@ export const getPickById = unstable_cache(getPickByIdImpl, ["pick-by-id"], {
   tags: ["picks"],
 });
 
+/** Các trường chữ của bài có thể dính tên nhân vật cũ. */
+const POST_TEXT_FIELDS = ["title", "body_md", "meta_title", "meta_description"] as const;
+
 /** Published posts for a language, newest first. Falls back to EN when a VI version is missing. */
 async function getPostsImpl(lang: Lang): Promise<Post[]> {
   const supabase = getSupabase();
@@ -242,9 +246,10 @@ async function getPostsImpl(lang: Lang): Promise<Post[]> {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
     }
   }
-  return [...bySlug.values()].sort((a, b) =>
-    (b.published_at ?? "").localeCompare(a.published_at ?? ""),
-  );
+  return [...bySlug.values()]
+    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
+    // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
+    .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
 }
 
 export const getPosts = unstable_cache(getPostsImpl, ["posts"], {
@@ -267,7 +272,8 @@ async function getPostImpl(slug: string, lang: Lang): Promise<Post | null> {
     if (error) throw new Error(`getPost: ${error.message}`);
     candidates = (data ?? []) as Post[];
   }
-  return candidates.find((p) => p.lang === lang) ?? candidates.find((p) => p.lang === "en") ?? null;
+  const found = candidates.find((p) => p.lang === lang) ?? candidates.find((p) => p.lang === "en") ?? null;
+  return found ? viPersonaFields(found, POST_TEXT_FIELDS) : null;
 }
 
 export const getPost = unstable_cache(getPostImpl, ["post"], {
@@ -322,9 +328,10 @@ async function getGuidesImpl(lang: Lang): Promise<Post[]> {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
     }
   }
-  return [...bySlug.values()].sort((a, b) =>
-    (b.published_at ?? "").localeCompare(a.published_at ?? ""),
-  );
+  return [...bySlug.values()]
+    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
+    // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
+    .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
 }
 
 export const getGuides = unstable_cache(getGuidesImpl, ["guides"], {
@@ -384,9 +391,10 @@ async function getReportsImpl(lang: Lang): Promise<Post[]> {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
     }
   }
-  return [...bySlug.values()].sort((a, b) =>
-    (b.published_at ?? "").localeCompare(a.published_at ?? ""),
-  );
+  return [...bySlug.values()]
+    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
+    // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
+    .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
 }
 
 export const getReports = unstable_cache(getReportsImpl, ["reports"], {
@@ -522,7 +530,7 @@ async function getThesisTranslationsImpl(
   if (error) throw new Error(`getThesisTranslations: ${error.message}`);
   const map: Record<string, Partial<Record<Lang, string>>> = {};
   for (const row of (data ?? []) as { pick_id: string; lang: Lang; body_md: string }[]) {
-    (map[row.pick_id] ??= {})[row.lang] = row.body_md;
+    (map[row.pick_id] ??= {})[row.lang] = viPersona(row.body_md);
   }
   return map;
 }
