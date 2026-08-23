@@ -26,6 +26,7 @@ import { log } from './log';
 import { createClient } from '@supabase/supabase-js';
 import { persistMatchState, fetchLivescoreForPersist, seedFromGlMatches, detectFinishedMatches, getActiveCompetitionIds } from './persist-state';
 import { startBoothShadow } from './booth-shadow';
+import { startOddsCollector } from './odds-collect';
 import { createIndexNowPinger } from './indexnow';
 import { runDailyLineAlerts } from './dl-alerts';
 import { checkDailyLineHealth } from './dl-monitor';
@@ -206,6 +207,13 @@ if (siteUrl && process.env.REVALIDATE_SECRET) {
   void seedTick(); // immediate first tick
   log.info('seed-tick: cron started (every 30 min)');
 }
+
+// ── Kèo: chụp bảng kèo Bet365 mỗi 3 tiếng (Nick 23/8) ──
+// Nhà cung cấp xoá kèo ngay khi trận đá xong, nên không chạy đều thì mất vĩnh viễn.
+const stopOdds = persistDb && oddsApiKey
+  ? startOddsCollector({ apiKey: oddsApiKey, store: persistDb as never })
+  : () => {};
+if (!persistDb || !oddsApiKey) log.warn('odds-collect: disabled (thiếu SUPABASE_URL hoặc ODDS_API_KEY)');
 
 // ── The Booth P1a: shadow commentary gen (admin-only, NOT public) ──
 const stopBooth = persistDb && anthropicApiKey
@@ -511,6 +519,7 @@ async function shutdown(signal: string): Promise<void> {
   stopBuzz();
   stopNewsGen();
   stopNewsEngine();
+  stopOdds();
   await bot.stop();
   log.info('shutdown complete');
   process.exit(0);
