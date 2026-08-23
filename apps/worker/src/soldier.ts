@@ -14,6 +14,28 @@ export function soldierEnabled(): boolean {
   return Boolean(process.env.GROQ_API_KEY);
 }
 
+/** Đầu ra của model có DÙNG ĐƯỢC không — kiểm cả câu hỏng, không chỉ nội dung sai.
+ *
+ *  Vấp thật 23/8: lính trả về đúng ba chữ "Vào sáng ngày" cho phần mở bài và nó
+ *  LỌT LÊN BÀI ĐĂNG, vì bộ lọc lúc đó chỉ soi con số lạ. Câu cụt không có số nào
+ *  nên qua hết. Karpathy gọi đây là "lỗ phô mai": model giỏi phần khó nhưng hỏng
+ *  bất ngờ ở chỗ đơn giản, nên đầu ra phải kiểm tối thiểu trước khi dùng.
+ *
+ *  @param minChars độ dài tối thiểu chấp nhận được
+ *  @param mustInclude những từ BẮT BUỘC phải có (tên đội, tên đối tượng đang nói tới)
+ */
+export function isUsableText(
+  text: string | null | undefined,
+  { minChars = 60, mustInclude = [] as string[] } = {},
+): boolean {
+  if (!text) return false;
+  const t = text.trim();
+  if (t.length < minChars) return false;
+  // câu cụt: không có dấu kết thúc nào trong toàn bộ đoạn
+  if (!/[.!?…]/.test(t)) return false;
+  return mustInclude.every((w) => t.toLowerCase().includes(w.toLowerCase()));
+}
+
 export async function callSoldier(
   prompt: string,
   context: string,
