@@ -7,11 +7,13 @@ import { LiveTicker } from "@/components/live-ticker";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { COMPETITION_LOGOS } from "@/lib/competition-logos";
-import { LANGS, type Lang } from "@/lib/i18n";
+import { LANGS, PUBLIC_LANGS, type Lang } from "@/lib/i18n";
 import { buildOrganization, buildWebSite } from "@/lib/jsonld";
 
 export async function generateStaticParams() {
-  return LANGS.map((lang) => ({ lang }));
+  // Chỉ dựng sẵn bản tiếng Việt (23/8). /en /th /es đã 301 về VI trong
+  // next.config nên không cần trang tĩnh cho chúng nữa.
+  return PUBLIC_LANGS.map((lang) => ({ lang }));
 }
 
 /** Fetches active competitions for the header's Standings dropdown. */

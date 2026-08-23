@@ -123,11 +123,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /** Byline for a post: neutral "banhbong.net" for general news coverage (no position),
- *  persona-specific for pick-driven content. */
+ *  persona-specific for pick-driven content.
+ *  "Admin" đổi thành "Chú Tám Banh" (Nick chốt 23/8): Google yêu cầu tin tức có tên
+ *  tác giả thật thay vì chức danh chung, và tên này dễ gọi với người đọc Việt. */
 function postByline(post: { type: string; author?: string }): string {
   if (post.type === "news" || post.type === "guide") return "banhbong.net";
   if (post.author === "scout") return "Trợ lý AI @ banhbong.net";
-  return "Admin @ banhbong.net";
+  return "Chú Tám Banh @ banhbong.net";
 }
 
 function buildArticleSchema(
