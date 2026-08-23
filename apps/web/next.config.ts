@@ -50,6 +50,17 @@ const nextConfig: NextConfig = {
       { source: "/news/kelly-criterion-betting", destination: "/guides/kelly-criterion-betting", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/:lang/guides/what-is-devigging", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/kelly-criterion-betting", permanent: true },
+      // /giai/* là URL giải thời WildlyPlay, chưa từng được 301 sang IA mới.
+      // Hậu quả đo được 23/8: `site:banhbong.net` chỉ trả về ĐÚNG MỘT URL và URL đó
+      // là /giai/europa-league — đang 404. Thứ duy nhất Google biết về site là một
+      // trang hỏng. Europa League không có trang riêng nên trỏ về danh sách giải;
+      // các slug còn lại map 1-1 sang /competitions/.
+      { source: "/giai/europa-league", destination: "/competitions", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/giai/europa-league", destination: "/:lang/competitions", statusCode: 301 },
+      { source: "/giai", destination: "/competitions", statusCode: 301 },
+      { source: "/giai/:path*", destination: "/competitions/:path*", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/giai", destination: "/:lang/competitions", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/giai/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
       // RSS feed redirect — must come before the catch-all /news/:slug* below
       { source: "/news/rss.xml", destination: "/api/analysis/rss", statusCode: 301 },
       // /news mở lại thành mục riêng (Peter 8/8) — bỏ 4 dòng 301 catch-all cũ.
