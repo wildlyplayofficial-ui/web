@@ -89,6 +89,8 @@ export interface MatchContext {
 
 interface FixtureRow {
   id: string;
+  /** Có mã Livescore = giờ đã đồng bộ từ nguồn thật, không phải giờ tạm */
+  livescore_match_id?: string | null;
   competition_id: string;
   home_team_name: string;
   away_team_name: string;
@@ -125,6 +127,8 @@ interface SeasonFixture {
   time: string;
   homeName: string;
   awayName: string;
+  /** true = giờ mới là tạm tính, chưa được giải công bố */
+  provisional?: boolean;
 }
 
 /** Lịch cả mùa 5 giải, ĐÚNG nguồn mà sơ đồ web dùng để sinh slug (`lib/data.ts`).
@@ -216,8 +220,6 @@ export async function getMatchContext(
   home: string, away: string, date: string,
 ): Promise<MatchContext | null> {
   const supabase = getSupabase();
-  if (!supabase) return null;
-
   const shiftDay = (days: number) =>
     new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString();
   const dayStart = `${date}T00:00:00Z`;
@@ -229,15 +231,20 @@ export async function getMatchContext(
   // / `picks`, còn `fixtures` nhiều trận vẫn để giờ tạm 14:00 UTC, nên hai bên
   // lệch nhau một hai ngày. Đo 23/8: khoá cứng một ngày làm 49 trang mất sạch
   // dữ liệu (Man Utd–Ipswich slug 30/8 mà lịch ghi 29/8).
-  const { data: dayRows, error } = await supabase
-    .from("fixtures")
-    .select("id, competition_id, home_team_name, away_team_name, kickoff_utc, venue, home_score, away_score")
-    .gte("kickoff_utc", shiftDay(-2))
-    .lte("kickoff_utc", shiftDay(3));
-  if (error || !dayRows) return null;
+  //
+  // CSDL hỏng hay thiếu khoá thì bỏ qua, KHÔNG thoát: lịch mùa nằm ngay trong
+  // mã nguồn nên trang vẫn có giờ đá và các trận cùng vòng.
+  const dayRes = supabase
+    ? await supabase
+        .from("fixtures")
+        .select("id, competition_id, home_team_name, away_team_name, kickoff_utc, venue, home_score, away_score, livescore_match_id")
+        .gte("kickoff_utc", shiftDay(-2))
+        .lte("kickoff_utc", shiftDay(3))
+    : null;
+  const dayRows: FixtureRow[] = (dayRes?.error ? [] : dayRes?.data ?? []) as FixtureRow[];
 
   const target = Date.parse(dayStart);
-  const dbFixture = (dayRows as FixtureRow[])
+  const dbFixture = dayRows
     .filter((r) => norm(r.home_team_name) === norm(home) && norm(r.away_team_name) === norm(away))
     .sort((a, b) =>
       Math.abs(Date.parse(a.kickoff_utc) - target) - Math.abs(Date.parse(b.kickoff_utc) - target))[0];
@@ -257,19 +264,36 @@ export async function getMatchContext(
   } : undefined);
   if (!fixture) return null;
 
+  // GIỜ ĐÁ lấy của nguồn chắc hơn, không mặc định theo CSDL. Bảng `fixtures` có
+  // 350/380 trận EPL còn để giờ tạm 14:00 UTC, trong khi lịch mùa đã ghi giờ
+  // công bố (Man Utd–Ipswich: CSDL 29/8 14:00, lịch 30/8 15:30 và không phải
+  // giờ tạm). Đã đối chiếu 15 trận có mã Livescore: giờ lịch mùa khớp tuyệt đối,
+  // nên coi lịch mùa là UTC và tin nó khi CSDL chưa đồng bộ.
+  const kickoffUtc = dbFixture?.livescore_match_id
+    ? dbFixture.kickoff_utc
+    : inSeason && inSeason.hit.provisional === false
+      ? seasonKickoff(inSeason.hit)
+      : fixture.kickoff_utc;
+
   // Toàn bộ trận cùng giải để tính bảng xếp hạng + phong độ.
-  const { data: compRows } = await supabase
-    .from("fixtures")
-    .select("id, competition_id, home_team_name, away_team_name, kickoff_utc, venue, home_score, away_score")
-    .eq("competition_id", fixture.competition_id);
-  const all = (compRows ?? []) as FixtureRow[];
+  const compRes = supabase
+    ? await supabase
+        .from("fixtures")
+        .select("id, competition_id, home_team_name, away_team_name, kickoff_utc, venue, home_score, away_score, livescore_match_id")
+        .eq("competition_id", fixture.competition_id)
+    : null;
+  const all = (compRes?.data ?? []) as FixtureRow[];
 
   // So bằng tên đã chuẩn hoá: lịch tĩnh ghi "Atletico Madrid", CSDL có thể ghi
   // "Atlético Madrid" — so thẳng chuỗi là mất hàng.
   const seasonTeams = inSeason
     ? [...new Set(inSeason.season.flatMap((f) => [f.homeName, f.awayName]))]
     : [];
-  const standings = buildStandings(all, seasonTeams);
+  // Chưa đội nào đá thì KHÔNG có bảng xếp hạng: mọi đội 0 điểm, thứ tự chỉ là
+  // xếp theo tên, hiện lên thành "hạng 18/20" là bịa thứ hạng.
+  const standings = all.some((r) => r.home_score !== null && r.away_score !== null)
+    ? buildStandings(all, seasonTeams)
+    : [];
   const homeStanding = standings.find((s) => norm(s.team) === norm(fixture.home_team_name)) ?? null;
   const awayStanding = standings.find((s) => norm(s.team) === norm(fixture.away_team_name)) ?? null;
 
@@ -300,16 +324,18 @@ export async function getMatchContext(
   // Kèo 1x2 mới nhất — chỉ hiện số liệu thị trường, không nêu tên nhà cái,
   // không link, không mời chào (ranh giới đã chốt sau khi tra chính sách 23/8).
   let odds: MatchOdds | null = null;
-  const { data: oddsRows } = await supabase
-    .from("odds_snapshots")
-    .select("home_odds, draw_odds, away_odds, captured_at")
-    .eq("market", "ML")
-    .ilike("home_team", `%${fixture.home_team_name.split(" ")[0]}%`)
-    .gte("kickoff_utc", shiftDay(-2))
-    .lte("kickoff_utc", shiftDay(3))
-    .order("captured_at", { ascending: false })
-    .limit(1);
-  const o = oddsRows?.[0] as { home_odds: number; draw_odds: number; away_odds: number; captured_at: string } | undefined;
+  const oddsRes = supabase
+    ? await supabase
+        .from("odds_snapshots")
+        .select("home_odds, draw_odds, away_odds, captured_at")
+        .eq("market", "ML")
+        .ilike("home_team", `%${fixture.home_team_name.split(" ")[0]}%`)
+        .gte("kickoff_utc", shiftDay(-2))
+        .lte("kickoff_utc", shiftDay(3))
+        .order("captured_at", { ascending: false })
+        .limit(1)
+    : null;
+  const o = oddsRes?.data?.[0] as { home_odds: number; draw_odds: number; away_odds: number; captured_at: string } | undefined;
   if (o) {
     odds = {
       home: o.home_odds, draw: o.draw_odds, away: o.away_odds,
@@ -323,7 +349,7 @@ export async function getMatchContext(
     competitionId: fixture.competition_id,
     homeTeam: fixture.home_team_name,
     awayTeam: fixture.away_team_name,
-    kickoffUtc: fixture.kickoff_utc,
+    kickoffUtc,
     venue: fixture.venue,
     homeScore: fixture.home_score,
     awayScore: fixture.away_score,
