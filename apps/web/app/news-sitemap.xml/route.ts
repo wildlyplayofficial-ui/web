@@ -7,6 +7,10 @@ import { SITE_URL, SITE_NAME } from "@/lib/brand";
  * GET /news-sitemap.xml — Google News sitemap for recent articles.
  * Only includes articles from the last 48 hours (Google News requirement).
  * Covers /analysis/ (posts + desk articles) AND /news/ (news_items).
+ *
+ * news:language phải khớp ngôn ngữ của URL khai báo. URL ở đây là bản canonical
+ * không tiền tố = tiếng Việt, nhưng trước đây khai cứng "en" (20/20 bài, kiểm 23/8)
+ * → Google News xếp nhầm thị trường, bài tiếng Việt bị đẩy cho độc giả tiếng Anh.
  */
 
 const BASE = SITE_URL;
@@ -40,7 +44,7 @@ export async function GET(): Promise<Response> {
     <news:news>
       <news:publication>
         <news:name>${SITE_NAME}</news:name>
-        <news:language>en</news:language>
+        <news:language>vi</news:language>
       </news:publication>
       <news:publication_date>${new Date(p.updated).toISOString()}</news:publication_date>
       <news:title>${escapeXml(p.title)}</news:title>

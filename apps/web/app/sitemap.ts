@@ -18,6 +18,16 @@ const LANGS = ["en", "vi", "th", "es"] as const;
 // Google biết nội dung vừa đổi và re-crawl bản VI mới sớm (trước chỉ có changeFrequency).
 const VI_REPOSITION = new Date("2026-07-28");
 
+/** lastModified không bao giờ được ở TƯƠNG LAI: trang trận lấy ngày đá làm mốc sửa,
+ *  nên 203/816 URL khai ngày 24/8, 29/8… trong khi hôm nay 23/8 (kiểm 23/8/2026).
+ *  Google thấy lastmod không đáng tin thì bỏ qua lastmod của CẢ sitemap, mất luôn
+ *  tín hiệu "nội dung vừa cập nhật" cho những trang khai đúng. */
+function safeLastMod(value: string | number | Date | null | undefined): Date {
+  const d = value ? new Date(value) : new Date();
+  const now = new Date();
+  return Number.isNaN(d.getTime()) || d > now ? now : d;
+}
+
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
 function alternates(path: string, langs: readonly string[] = LANGS): MetadataRoute.Sitemap[number]["alternates"] {
   const clean = path === "/" ? "" : path;
@@ -63,7 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const slug = buildPlaySlug(pick);
     return {
       url: `${BASE}/play/${slug}`,
-      lastModified: new Date(pick.settled_at ?? pick.kickoff_utc),
+      lastModified: safeLastMod(pick.settled_at ?? pick.kickoff_utc),
       changeFrequency: "weekly",
       priority: 0.6,
       alternates: alternates(`/play/${slug}`),
@@ -72,7 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const newsRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${BASE}/analysis/${p.slug}`,
-    lastModified: new Date(p.updated),
+    lastModified: safeLastMod(p.updated),
     changeFrequency: "weekly",
     priority: 0.6,
     alternates: alternates(`/analysis/${p.slug}`),
@@ -80,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const matchRoutes: MetadataRoute.Sitemap = matches.map((m) => ({
     url: `${BASE}/match/${m.slug}`,
-    lastModified: new Date(m.updated),
+    lastModified: safeLastMod(m.updated),
     changeFrequency: "weekly",
     priority: 0.7,
     alternates: alternates(`/match/${m.slug}`),
@@ -91,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const langsWithoutVi = LANGS.filter((l) => l !== "vi");
   const guideRoutes: MetadataRoute.Sitemap = guides.map((g) => ({
     url: `${BASE}/guides/${g.slug}`,
-    lastModified: new Date(g.updated),
+    lastModified: safeLastMod(g.updated),
     changeFrequency: "monthly",
     priority: 0.7,
     alternates: alternates(
@@ -102,7 +112,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const reportRoutes: MetadataRoute.Sitemap = reports.map((r) => ({
     url: `${BASE}/transparency/${r.slug}`,
-    lastModified: new Date(r.updated),
+    lastModified: safeLastMod(r.updated),
     changeFrequency: "monthly",
     priority: 0.7,
     alternates: alternates(`/transparency/${r.slug}`),
@@ -110,7 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const deskRoutes: MetadataRoute.Sitemap = deskArticles.map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
-    lastModified: new Date(a.updated),
+    lastModified: safeLastMod(a.updated),
     changeFrequency: "weekly",
     priority: 0.7,
     alternates: alternates(`/analysis/${a.slug}`),
@@ -121,7 +131,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // orphaned from Google despite being live. Declare each one (Jane 15/8).
   const newsItemRoutes: MetadataRoute.Sitemap = newsItems.map((n) => ({
     url: `${BASE}/news/${n.slug}`,
-    lastModified: n.updated ? new Date(n.updated) : new Date(),
+    lastModified: safeLastMod(n.updated),
     changeFrequency: "weekly",
     priority: 0.7,
     alternates: alternates(`/news/${n.slug}`),

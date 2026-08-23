@@ -42,6 +42,14 @@ export const metadata: Metadata = {
     title: DEFAULT_TITLE,
     images: [{ url: "/og-home.png", width: 1200, height: 630 }],
   },
+  // Không có max-image-preview:large thì Google Discover gần như không lấy bài —
+  // Discover đang là nguồn traffic lớn nhất của báo mạng. Site trước đây không phát
+  // thẻ robots nào cả (kiểm 23/8), nên đây là một dòng mở lại cả một cửa.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
 };
 
 export default async function RootLayout({
