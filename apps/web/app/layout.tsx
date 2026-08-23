@@ -76,6 +76,11 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         {!isAdmin && <script dangerouslySetInnerHTML={{ __html: swScript }} />}
+        {/* Nút "nguồn ưu tiên" của Google: độc giả bấm chọn banhbong làm nguồn
+            ưu tiên thì bài của mình nổi hơn ở Tin hàng đầu, AI Mode và AI
+            Overviews cho chính họ. Script chính chủ Google, tải bất đồng bộ.
+            Tài liệu: developers.google.com/search/docs/appearance/preferred-sources */}
+        {!isAdmin && <script async src="https://news.google.com/swg/js/v1/publisher.js" />}
         {!isAdmin && (
           <script
             type="application/ld+json"

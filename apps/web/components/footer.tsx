@@ -59,6 +59,8 @@ export function Footer() {
             Telegram
           </a>
         </nav>
+        {/* Google tự dựng và tự dịch nút này; chỉ cần cái thẻ rỗng đúng tên */}
+        <div google-add-preferred-source-btn="" data-theme="dark" data-lang={lang} className="my-1" />
         <p className="text-xs text-muted">© 2026 banhbong.net. All rights reserved.</p>
         <p className="text-xs text-muted/60">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
       </div>
