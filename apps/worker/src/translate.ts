@@ -5,7 +5,7 @@
  * every path logs and returns (same contract as preview.ts).
  */
 import { callClaude, DEFAULT_MODEL, POST_FLAGS, splitLangSections } from './recap';
-import { callSoldier, soldierEnabled } from './soldier';
+import { callSoldier, isUsableText, soldierEnabled } from './soldier';
 import type { NewPickContent, PickRow, PostLang, Store } from './store';
 import { log } from './log';
 
@@ -80,8 +80,12 @@ export async function publishThesisTranslations(
       const text = await callSoldier(buildThesisTranslationPrompt(pick), `thesis translation pick ${pick.id}`, 1500);
       if (text !== null) {
         const soldierRows = buildThesisContentRows(pick, text, process.env.SOLDIER_MODEL ?? 'groq/gpt-oss-120b');
-        if (missingThesisLangs(soldierRows).length === 0) rows = soldierRows;
-        else log.warn(`soldier thesis translation for pick ${pick.id} incomplete (${soldierRows.map((r) => r.lang).join(', ') || 'none'}) — falling back to Claude`);
+        // Đủ 3 ngôn ngữ CHƯA phải là đạt: bản dịch cụt vẫn tính là "có mặt".
+        // Bản dịch trung thành thì không thể ngắn hơn nhiều so với bản gốc.
+        const minChars = Math.max(60, Math.round(pick.thesis.length * 0.45));
+        const badLangs = soldierRows.filter((r) => !isUsableText(r.body_md, { minChars })).map((r) => r.lang);
+        if (missingThesisLangs(soldierRows).length === 0 && badLangs.length === 0) rows = soldierRows;
+        else log.warn(`soldier thesis translation for pick ${pick.id} không dùng được (thiếu: ${missingThesisLangs(soldierRows).join(', ') || 'không'} · cụt: ${badLangs.join(', ') || 'không'}) — chuyển sang Claude`);
       }
     }
     for (let attempt = 1; rows.length === 0 || missingThesisLangs(rows).length > 0; attempt++) {
