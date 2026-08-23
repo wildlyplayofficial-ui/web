@@ -21,7 +21,9 @@ export async function GET(request: Request): Promise<Response> {
       title={title}
       sub={subtitle}
       footer="banhbong.net"
-      footerRight="Handpicked plays for the global crowd"
+      // Site chỉ còn tiếng Việt (Nick chốt 22/8) — dòng tiếng Anh này vẫn
+      // đang hiện trên thẻ chia sẻ của bài tiếng Việt (Nick chỉ ra 23/8).
+      footerRight="Nhận định bóng đá, phân tích bằng số liệu"
       player={player}
       showPlayer
     />,
