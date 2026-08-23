@@ -142,6 +142,7 @@ export default async function DailyBoard({ params }: Props) {
             lang={lang}
             href={withLang(`/play/${buildPlaySlug(heroPick)}`, lang)}
             ctaLabel={dict.home.viewAnalysisCta}
+            thesisText={translations[heroPick.id]?.[lang] ?? heroPick.thesis}
           />
         </section>
       )}

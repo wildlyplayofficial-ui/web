@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatKickoff } from "@/lib/format";
+import { formatKickoff, formatOdds } from "@/lib/format";
 import { getDict, type Lang } from "@/lib/i18n";
 import type { Pick } from "@/lib/types";
 import { TeamCrest } from "@/components/team-crest";
@@ -17,6 +17,7 @@ export function HotPickCard({
   lang,
   href,
   ctaLabel,
+  thesisText,
 }: {
   pick: Pick;
   /** Predicted correct score → renders the big scoreboard digits. Omit for a market pick. */
@@ -25,6 +26,8 @@ export function HotPickCard({
   /** Internal route for the title + CTA (play detail for real picks, a safe route for the seed). */
   href: string;
   ctaLabel: string;
+  /** Thesis in the page language (pick_content). Omit → the English thesis on the pick. */
+  thesisText?: string;
 }) {
   const dict = getDict(lang);
 
@@ -46,8 +49,11 @@ export function HotPickCard({
             {pick.selection}
           </span>
           {pick.confidence && <ConfidenceBadge level={pick.confidence} dict={dict} />}
+          <span className="text-sm text-muted">
+            {dict.pick.odds} <strong className="text-ink">{formatOdds(pick.odds_publish)}</strong>
+          </span>
         </div>
-        <p className="text-sm leading-relaxed text-muted line-clamp-3">{pick.thesis}</p>
+        <p className="text-sm leading-relaxed text-muted line-clamp-3">{thesisText ?? pick.thesis}</p>
         <Link
           href={href}
           className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-brand px-5 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5"
