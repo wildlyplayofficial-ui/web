@@ -99,6 +99,9 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
   // Normalize league names: strip group/round suffixes + unify WC variants
   const normalizeLeague = (l: string): string => {
     let n = l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
+    // Bỏ đuôi mùa giải: /watching ghi "Premier League 2026-27" còn lịch mùa ghi
+    // "Premier League" → bộ lọc mọc ra HAI giải cho cùng một giải (Peter bắt 23/8).
+    n = n.replace(/\s+\d{4}([-/]\d{2,4})?$/, "").trim();
     // Unify all World Cup variants to one canonical name
     if (/^(FIFA\s+)?World\s+Cup(\s+2026)?$/i.test(n)) n = "FIFA World Cup 2026";
     return n;
@@ -117,9 +120,14 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
 
   // Sort: upcoming first (kickoff ASC), then settled (kickoff DESC)
   const now = new Date().toISOString();
+  // Kết quả vòng vừa đá lên TRƯỚC lịch sắp tới: xếp mọi trận đã đá xuống cuối thì
+  // 30 ngày lịch đẩy chúng sang trang 2, người vào xem "kết quả hôm qua" không
+  // thấy gì (Peter bắt 23/8 — 5 trận Ngoại hạng Anh biến mất khỏi trang 1).
+  const vuaXong = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  const recent = filtered.filter((m) => m.kickoffUtc < now && m.kickoffUtc >= vuaXong).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
   const upcoming = filtered.filter((m) => m.kickoffUtc >= now).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
-  const settled = filtered.filter((m) => m.kickoffUtc < now).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
-  const matches = [...upcoming, ...settled];
+  const settled = filtered.filter((m) => m.kickoffUtc < vuaXong).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
+  const matches = [...recent, ...upcoming, ...settled];
 
   const totalPages = Math.ceil(matches.length / PER_PAGE);
   const pageMatches = matches.slice((page - 1) * PER_PAGE, page * PER_PAGE);

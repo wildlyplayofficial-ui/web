@@ -770,6 +770,11 @@ const TEAM_CANONICAL: Record<string, string> = {
   "Côte d'Ivoire": "Ivory Coast",
   "Cote d'Ivoire": "Ivory Coast",
   "DR Congo": "Congo DR",
+  // CLB: /watching gõ tay lệch tên với lịch mùa + bảng trực tiếp, làm một trận
+  // sinh HAI slug → hai thẻ trùng trên /matches và tỷ số trực tiếp không ghép
+  // được vào thẻ nào (Peter bắt 23/8: Man City vs Bournemouth hiện 2 thẻ).
+  "Bournemouth": "AFC Bournemouth",
+  "Atlanta United FC": "Atlanta United",
 };
 
 function cleanTeamName(name: string): string {
@@ -793,6 +798,7 @@ export interface MatchListEntry {
 async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
   const supabase = getSupabase();
   const slugMap = new Map<string, MatchListEntry>();
+  const trustMap = new Map<string, number>();
 
   const addEntry = (
     home: string, away: string, kickoff: string, updated: string,
@@ -801,16 +807,25 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     liveStatus: "live" | "ft" | null = null,
     minute: string | null = null,
     league: string = "",
+    // Độ tin của GIỜ đá: 0 = người gõ tay (/pick, /watching), 1 = lịch mùa.
+    // Nick gõ lệch 30 phút là chuyện thường (Man City 12:30 vs 13:00 thật), nên
+    // nguồn tin hơn được sửa giờ đè lên, kể cả khi bản ghi tay mới hơn.
+    kickoffTrust = 0,
   ) => {
     home = cleanTeamName(home);
     away = cleanTeamName(away);
     const s = `${slugify(home)}-vs-${slugify(away)}-${kickoff.slice(0, 10)}`;
     const existing = slugMap.get(s);
+    const bestTrust = Math.max(kickoffTrust, trustMap.get(s) ?? 0);
+    const bestKickoff = !existing || kickoffTrust >= (trustMap.get(s) ?? 0)
+      ? kickoff : existing.kickoffUtc;
+    trustMap.set(s, bestTrust);
+    if (existing) existing.kickoffUtc = bestKickoff;
     if (!existing || updated > existing.updated) {
       slugMap.set(s, {
         slug: s,
         updated,
-        kickoffUtc: kickoff,
+        kickoffUtc: bestKickoff,
         homeScore: homeScore ?? existing?.homeScore ?? null,
         awayScore: awayScore ?? existing?.awayScore ?? null,
         pickStatus: pickStatus ?? existing?.pickStatus ?? null,
@@ -900,7 +915,7 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
   for (const [mua, giai] of MUA) {
     for (const f of mua) {
       if (f.date < tuNgay || f.date > denNgay) continue;
-      addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, giai);
+      addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, giai, 1);
     }
   }
 
