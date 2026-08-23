@@ -93,6 +93,15 @@ export function trueProbabilities(
   return { home: raw[0] / total, draw: raw[1] / total, away: raw[2] / total, margin: total - 1 };
 }
 
+/** Tên đội rút về dạng so sánh được: bỏ dấu câu và bỏ hậu tố kiểu "FC", "AFC"
+ *  — slug ngoài đời có cả `liverpool-fc` lẫn `liverpool` cho cùng một đội. */
+const CLUB_SUFFIXES = new Set(["fc", "afc", "cf", "sc", "ac", "club"]);
+export function norm(name: string): string {
+  return name.toLowerCase().split(/[^a-z0-9]+/)
+    .filter((w) => w && !CLUB_SUFFIXES.has(w))
+    .join("");
+}
+
 /** Bảng xếp hạng tính từ các trận ĐÃ có tỷ số của giải đó. Pure. */
 export function buildStandings(rows: FixtureRow[]): StandingRow[] {
   const table = new Map<string, Omit<StandingRow, "position">>();
@@ -148,22 +157,29 @@ export async function getMatchContext(
   const supabase = getSupabase();
   if (!supabase) return null;
 
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const shiftDay = (days: number) =>
+    new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString();
   const dayStart = `${date}T00:00:00Z`;
-  const dayEnd = `${date}T23:59:59Z`;
 
   // Slug mất dấu và mất ký tự đặc biệt nên không so tên trực tiếp được — lấy
-  // theo NGÀY rồi khớp tên đã chuẩn hoá. Một ngày tối đa vài chục trận, rẻ.
+  // theo NGÀY rồi khớp tên đã chuẩn hoá.
+  //
+  // Cửa sổ ±2 ngày, không phải đúng một ngày: slug sinh từ giờ trong `watching`
+  // / `picks`, còn `fixtures` nhiều trận vẫn để giờ tạm 14:00 UTC, nên hai bên
+  // lệch nhau một hai ngày. Đo 23/8: khoá cứng một ngày làm 49 trang mất sạch
+  // dữ liệu (Man Utd–Ipswich slug 30/8 mà lịch ghi 29/8).
   const { data: dayRows, error } = await supabase
     .from("fixtures")
     .select("id, competition_id, home_team_name, away_team_name, kickoff_utc, venue, home_score, away_score")
-    .gte("kickoff_utc", dayStart)
-    .lte("kickoff_utc", dayEnd);
+    .gte("kickoff_utc", shiftDay(-2))
+    .lte("kickoff_utc", shiftDay(3));
   if (error || !dayRows) return null;
 
-  const fixture = (dayRows as FixtureRow[]).find(
-    (r) => norm(r.home_team_name) === norm(home) && norm(r.away_team_name) === norm(away),
-  );
+  const target = Date.parse(dayStart);
+  const fixture = (dayRows as FixtureRow[])
+    .filter((r) => norm(r.home_team_name) === norm(home) && norm(r.away_team_name) === norm(away))
+    .sort((a, b) =>
+      Math.abs(Date.parse(a.kickoff_utc) - target) - Math.abs(Date.parse(b.kickoff_utc) - target))[0];
   if (!fixture) return null;
 
   // Toàn bộ trận cùng giải để tính bảng xếp hạng + phong độ.
@@ -197,8 +213,8 @@ export async function getMatchContext(
     .select("home_odds, draw_odds, away_odds, captured_at")
     .eq("market", "ML")
     .ilike("home_team", `%${fixture.home_team_name.split(" ")[0]}%`)
-    .gte("kickoff_utc", dayStart)
-    .lte("kickoff_utc", dayEnd)
+    .gte("kickoff_utc", shiftDay(-2))
+    .lte("kickoff_utc", shiftDay(3))
     .order("captured_at", { ascending: false })
     .limit(1);
   const o = oddsRows?.[0] as { home_odds: number; draw_odds: number; away_odds: number; captured_at: string } | undefined;
