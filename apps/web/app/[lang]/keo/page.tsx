@@ -5,7 +5,7 @@ import {
   type MarketLine,
   type OddsBoardMatch,
 } from "@/lib/odds-data";
-import { formatKickoff } from "@/lib/format";
+import { locales } from "@/lib/format";
 import { resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
@@ -15,8 +15,10 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
  * số liệu tham khảo — không nút đăng ký/khuyến mãi nhà cái, không dẫn link cá
  * cược (ranh giới đã chốt cùng Nick/Peter khi bật tính năng).
  *
- * v1: bảng "Mở kèo → Hiện tại" đơn giản (chưa đủ lát cắt để vẽ biểu đồ đường
- * có ý nghĩa — nâng lên khi dữ liệu dày hơn).
+ * v1.1 (Nick 24/8): nhóm theo ngày (vừa là lịch thi đấu vừa là bảng kèo — coi
+ * ảnh mẫu tham khảo alo88r), kèo chạy tô xanh khi tăng/đỏ khi giảm, giờ đá to
+ * rõ thay vì chữ nhỏ mờ. CHƯA làm trong đợt này (cần "use client" riêng, xin
+ * làm PR sau để tách rủi ro): bộ lọc đội/giải/ngày, thu gọn-bấm-mở mỗi trận.
  */
 
 export const revalidate = 900;
@@ -58,23 +60,37 @@ function OddsCell({ label, value }: { label: string; value: number | null }) {
   );
 }
 
+/** Một mục kèo chạy: "Chủ 1.95→1.85", tô xanh khi số TĂNG, đỏ khi số GIẢM
+ *  (Nick 24/8) — không gắn nghĩa thắng/thua, chỉ tô theo chiều con số đổi. */
+function MoveItem({ label, from, to }: { label: string; from: number | null; to: number | null }) {
+  const fmt = (v: number | null) => (v != null ? v.toFixed(2) : "—");
+  const color = from != null && to != null && to !== from ? (to > from ? "text-brand" : "text-loss") : "text-ink";
+  return (
+    <span>
+      {label} {fmt(from)}→<span className={`font-semibold ${color}`}>{fmt(to)}</span>
+    </span>
+  );
+}
+
 function MoveNote({ line }: { line: MarketLine }) {
   const { open, current } = line;
-  const changed =
-    open.home_odds !== current.home_odds ||
-    open.draw_odds !== current.draw_odds ||
-    open.away_odds !== current.away_odds ||
-    open.over_odds !== current.over_odds ||
-    open.under_odds !== current.under_odds;
-  if (!changed) return <p className="mt-1 text-xs text-muted">Chưa đổi từ lúc mở kèo.</p>;
-  const fmt = (v: number | null) => (v != null ? v.toFixed(2) : "—");
-  const parts: string[] = [];
-  if (open.home_odds !== current.home_odds) parts.push(`Chủ ${fmt(open.home_odds)}→${fmt(current.home_odds)}`);
-  if (open.draw_odds !== current.draw_odds) parts.push(`Hòa ${fmt(open.draw_odds)}→${fmt(current.draw_odds)}`);
-  if (open.away_odds !== current.away_odds) parts.push(`Khách ${fmt(open.away_odds)}→${fmt(current.away_odds)}`);
-  if (open.over_odds !== current.over_odds) parts.push(`Tài ${fmt(open.over_odds)}→${fmt(current.over_odds)}`);
-  if (open.under_odds !== current.under_odds) parts.push(`Xỉu ${fmt(open.under_odds)}→${fmt(current.under_odds)}`);
-  return <p className="mt-1 text-xs text-brand">Kèo chạy: {parts.join(" · ")}</p>;
+  const pairs: Array<[string, number | null, number | null]> = [
+    ["Chủ", open.home_odds, current.home_odds],
+    ["Hòa", open.draw_odds, current.draw_odds],
+    ["Khách", open.away_odds, current.away_odds],
+    ["Tài", open.over_odds, current.over_odds],
+    ["Xỉu", open.under_odds, current.under_odds],
+  ];
+  const changed = pairs.filter(([, a, b]) => a !== b && a != null && b != null);
+  if (changed.length === 0) return <p className="mt-1 text-xs text-muted">Chưa đổi từ lúc mở kèo.</p>;
+  return (
+    <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
+      <span className="text-muted">Kèo chạy:</span>
+      {changed.map(([label, a, b]) => (
+        <MoveItem key={label} label={label} from={a} to={b} />
+      ))}
+    </p>
+  );
 }
 
 function MarketBlock({ market, lines }: { market: string; lines: MarketLine[] }) {
@@ -116,21 +132,42 @@ function MarketBlock({ market, lines }: { market: string; lines: MarketLine[] })
   );
 }
 
+/** Giờ đá — khối riêng, to rõ (Nick 24/8: "để ý cột đầu tiên... cần có thời
+ *  gian để user vừa có kèo vừa có lịch thi đấu"). Giờ theo NGÔN NGỮ TRANG
+ *  (bản vi ra giờ VN, còn lại UTC) — giữ đúng sửa của Gwen (PR #116 tương tự). */
+function KickoffBlock({ iso, lang }: { iso: string; lang: Lang }) {
+  const date = new Date(iso);
+  const zone = lang === "vi" ? "Asia/Ho_Chi_Minh" : "UTC";
+  const time = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: zone,
+  }).format(date);
+  return (
+    <div className="flex shrink-0 flex-col items-center rounded-lg bg-brand-dim/40 px-3 py-1.5">
+      <span className="font-display text-lg font-bold tabular-nums text-ink">{time}</span>
+      <span className="text-[10px] uppercase tracking-wide text-muted">
+        {lang === "vi" ? "giờ VN" : "UTC"}
+      </span>
+    </div>
+  );
+}
+
 function MatchCard({ match, lang }: { match: OddsBoardMatch; lang: Lang }) {
   return (
     <div className="rounded-card border border-line bg-card px-5 py-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted">
-          {leagueLabelForCompetition(match.competitionId)}
-        </span>
-        {/* Giờ theo NGÔN NGỮ TRANG: bản vi ra giờ VN, các bản khác ra UTC.
-            Đóng cứng "vi" thì trang /en, /th, /es đều ghi "giờ VN" — đúng kiểu
-            lỗi VI sót lại mà Nick từng bắt (PR #116). */}
-        <span className="text-xs text-muted">{formatKickoff(match.kickoffUtc, lang)}</span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <KickoffBlock iso={match.kickoffUtc} lang={lang} />
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-muted">{leagueLabelForCompetition(match.competitionId)}</p>
+            <h2 className="truncate font-display text-lg font-bold text-ink">
+              {match.homeTeam} vs {match.awayTeam}
+            </h2>
+          </div>
+        </div>
       </div>
-      <h2 className="mt-1 font-display text-lg font-bold text-ink">
-        {match.homeTeam} vs {match.awayTeam}
-      </h2>
 
       {match.trueProb && (
         <div className="mt-3 rounded-lg bg-brand-dim/30 px-4 py-3">
@@ -155,9 +192,44 @@ function MatchCard({ match, lang }: { match: OddsBoardMatch; lang: Lang }) {
   );
 }
 
+interface DayGroup {
+  dateKey: string;
+  matches: OddsBoardMatch[];
+}
+
+/** Nhóm theo NGÀY LỊCH THEO NGÔN NGỮ TRANG (vi → giờ VN, còn lại UTC) — cùng
+ *  cách làm với groupByLocalDate trong league-fixtures.tsx, để một trận 23:30
+ *  giờ VN không lọt sang nhóm ngày hôm sau theo UTC. */
+function groupByDate(matches: OddsBoardMatch[], lang: Lang): DayGroup[] {
+  const zone = lang === "vi" ? "Asia/Ho_Chi_Minh" : "UTC";
+  const groups = new Map<string, OddsBoardMatch[]>();
+  for (const m of matches) {
+    const d = new Date(m.kickoffUtc);
+    const key = new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+    const arr = groups.get(key);
+    if (arr) arr.push(m);
+    else groups.set(key, [m]);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([dateKey, dayMatches]) => ({ dateKey, matches: dayMatches }));
+}
+
+function formatDateHeading(dateKey: string, lang: Lang): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const parsed = new Date(Date.UTC(y, m - 1, d));
+  return new Intl.DateTimeFormat(locales[lang], {
+    weekday: "long",
+    day: "numeric",
+    month: "numeric",
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
 export default async function OddsBoardPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const matches = await getOddsBoard();
+  const days = groupByDate(matches, lang);
 
   return (
     <div className="mx-auto max-w-[900px] px-5 overflow-x-hidden">
@@ -179,9 +251,18 @@ export default async function OddsBoardPage({ params }: Props) {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-5 pb-10">
-          {matches.map((m) => (
-            <MatchCard key={m.eventId} match={m} lang={lang} />
+        <div className="flex flex-col gap-8 pb-10">
+          {days.map((day) => (
+            <section key={day.dateKey}>
+              <h2 className="mb-3 font-display text-base font-bold capitalize text-ink">
+                {formatDateHeading(day.dateKey, lang)}
+              </h2>
+              <div className="flex flex-col gap-5">
+                {day.matches.map((m) => (
+                  <MatchCard key={m.eventId} match={m} lang={lang} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
