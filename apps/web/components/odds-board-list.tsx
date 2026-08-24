@@ -190,19 +190,136 @@ function MatchRow({ match, lang }: { match: OddsBoardMatch; lang: Lang }) {
   );
 }
 
-export function OddsBoardList({ days, lang }: { days: DayGroup[]; lang: Lang }) {
+/** Chuẩn hoá để tìm không phân biệt hoa/thường, có dấu/không dấu (Arsenal ~ arsenal ~ ARSENAL). */
+function normalize(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+/** Bộ lọc đội/giải/ngày (Nick 24/8, mẫu tham khảo alo88r) — lọc ngay trên dữ liệu
+ *  đã tải sẵn (không gọi lại server), nên gõ/chọn là thấy kết quả tức thì. */
+function FilterBar({
+  search,
+  onSearch,
+  competition,
+  onCompetition,
+  competitions,
+  dateKey,
+  onDateKey,
+  dateOptions,
+}: {
+  search: string;
+  onSearch: (v: string) => void;
+  competition: string;
+  onCompetition: (v: string) => void;
+  competitions: string[];
+  dateKey: string;
+  onDateKey: (v: string) => void;
+  dateOptions: Array<{ dateKey: string; label: string }>;
+}) {
   return (
-    <div className="flex flex-col gap-8 pb-10">
-      {days.map((day) => (
-        <section key={day.dateKey}>
-          <h2 className="mb-3 font-display text-base font-bold capitalize text-ink">{day.heading}</h2>
-          <div className="flex flex-col gap-3">
-            {day.matches.map((m) => (
-              <MatchRow key={m.eventId} match={m} lang={lang} />
-            ))}
-          </div>
-        </section>
-      ))}
+    <div className="mb-6 rounded-card border border-line bg-card px-4 py-4">
+      <div className="flex flex-wrap gap-3">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+          placeholder="Tìm tên đội bóng"
+          className="min-w-[200px] flex-1 rounded-lg border border-line bg-transparent px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-brand"
+        />
+        <select
+          value={competition}
+          onChange={(e) => onCompetition(e.target.value)}
+          className="min-w-[200px] flex-1 rounded-lg border border-line bg-transparent px-3 py-2 text-sm text-ink focus:outline-none focus:ring-1 focus:ring-brand"
+        >
+          <option value="">Tất cả giải đấu</option>
+          {competitions.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+        <label className="flex items-center gap-1.5 text-sm text-ink">
+          <input
+            type="radio"
+            name="odds-date"
+            checked={dateKey === ""}
+            onChange={() => onDateKey("")}
+            className="accent-brand"
+          />
+          Tất cả
+        </label>
+        {dateOptions.map((d) => (
+          <label key={d.dateKey} className="flex items-center gap-1.5 text-sm text-ink">
+            <input
+              type="radio"
+              name="odds-date"
+              checked={dateKey === d.dateKey}
+              onChange={() => onDateKey(d.dateKey)}
+              className="accent-brand"
+            />
+            {d.label}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function OddsBoardList({ days, lang }: { days: DayGroup[]; lang: Lang }) {
+  const [search, setSearch] = useState("");
+  const [competition, setCompetition] = useState("");
+  const [dateKey, setDateKey] = useState("");
+
+  const competitions = [...new Set(days.flatMap((d) => d.matches.map((m) => leagueLabelForCompetition(m.competitionId))))].sort();
+  const dateOptions = days.map((d) => ({ dateKey: d.dateKey, label: d.heading.split(",")[1]?.trim() ?? d.heading }));
+
+  const needle = normalize(search.trim());
+  const filteredDays = days
+    .filter((d) => dateKey === "" || d.dateKey === dateKey)
+    .map((d) => ({
+      ...d,
+      matches: d.matches.filter((m) => {
+        if (competition && leagueLabelForCompetition(m.competitionId) !== competition) return false;
+        if (needle && !normalize(`${m.homeTeam} ${m.awayTeam}`).includes(needle)) return false;
+        return true;
+      }),
+    }))
+    .filter((d) => d.matches.length > 0);
+
+  return (
+    <div className="pb-10">
+      <FilterBar
+        search={search}
+        onSearch={setSearch}
+        competition={competition}
+        onCompetition={setCompetition}
+        competitions={competitions}
+        dateKey={dateKey}
+        onDateKey={setDateKey}
+        dateOptions={dateOptions}
+      />
+
+      {filteredDays.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted">Không có trận nào khớp bộ lọc.</p>
+      ) : (
+        <div className="flex flex-col gap-8">
+          {filteredDays.map((day) => (
+            <section key={day.dateKey}>
+              <h2 className="mb-3 font-display text-base font-bold capitalize text-ink">{day.heading}</h2>
+              <div className="flex flex-col gap-3">
+                {day.matches.map((m) => (
+                  <MatchRow key={m.eventId} match={m} lang={lang} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
