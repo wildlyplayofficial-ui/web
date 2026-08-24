@@ -267,7 +267,13 @@ export default async function Home({ params }: Props) {
           )}
           {form.length > 0 && (
             <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
-              <span className="text-muted">{dict.board.formTitle}</span>
+              {/* Nick 25/8: ghi rõ đây là sổ của ai. Khối này CHỈ lấy nhận định
+                  của curator (§7.1), nên để trống tên thì người xem tưởng trang
+                  giấu trận thua của Trợ lý AI — chính anh đã hiểu nhầm như vậy.
+                  Lấy tên từ dict cho khớp với chỗ khác, không đóng cứng chuỗi. */}
+              <span className="text-muted">
+                {dict.board.formTitle} — {dict.pick.curator}
+              </span>
               <div className="flex flex-wrap justify-center gap-1.5 py-1">
                 {form.map((p) => (
                   <Link
