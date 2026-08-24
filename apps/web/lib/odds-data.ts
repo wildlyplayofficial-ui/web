@@ -82,14 +82,27 @@ async function getOddsBoardImpl(): Promise<OddsBoardMatch[]> {
   const now = new Date().toISOString();
   const horizon = new Date(Date.now() + 4 * 24 * 3_600_000).toISOString();
 
-  const { data, error } = await supabase
-    .from("odds_snapshots")
-    .select("*")
-    .gte("kickoff_utc", now)
-    .lte("kickoff_utc", horizon)
-    .order("captured_at", { ascending: true });
-  if (error) throw new Error(`getOddsBoard: ${error.message}`);
-  const rows = (data ?? []) as OddsSnapshotRow[];
+  // Supabase trả tối đa 1000 dòng mỗi lần gọi và KHÔNG báo là đã cắt bớt.
+  // Cửa sổ 4 ngày đã hơn 4000 dòng (Jane đo thật 24/8), và job ghi thêm mỗi 3
+  // tiếng nên con số chỉ tăng — đặt một mức trần cao hơn chỉ dời ngày hỏng lại.
+  // Lấy theo từng trang tới khi hết thì không bao giờ mất dòng.
+  const TRANG = 1000;
+  const rows: OddsSnapshotRow[] = [];
+  for (let tu = 0; ; tu += TRANG) {
+    const { data, error } = await supabase
+      .from("odds_snapshots")
+      .select("*")
+      .gte("kickoff_utc", now)
+      .lte("kickoff_utc", horizon)
+      .order("captured_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(tu, tu + TRANG - 1);
+    if (error) throw new Error(`getOddsBoard: ${error.message}`);
+    const lo = (data ?? []) as OddsSnapshotRow[];
+    rows.push(...lo);
+    if (lo.length < TRANG) break;
+    if (tu > 100_000) break; // chặn vòng lặp chạy hoang, không phải giới hạn dữ liệu
+  }
   if (rows.length === 0) return [];
 
   // event_id -> rows
