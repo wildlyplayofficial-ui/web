@@ -79,11 +79,11 @@ function Muc({ hdp, totals = false }: { hdp: number | null; totals?: boolean }) 
 
 /** Một ô kèo hai vế (chấp: chủ/khách · tài xỉu: tài/xỉu). */
 function OChap({ line, totals = false }: { line?: MarketLine; totals?: boolean }) {
-  if (!line) return <td className="border-l border-line px-2 py-1" />;
+  if (!line) return <td className={`border-l border-line px-2 py-1 ${NEN_KEO}`} />;
   const c = line.current;
   const o = line.open;
   return (
-    <td className="border-l border-line px-2 py-1 align-top">
+    <td className={`border-l border-line px-2 py-1 align-top ${NEN_KEO}`}>
       <div className="flex items-baseline whitespace-nowrap">
         <Muc hdp={line.hdp} totals={totals} />
         <So hien={totals ? c.over_odds : c.home_odds} mo={totals ? o.over_odds : o.home_odds} />
@@ -98,17 +98,20 @@ function OChap({ line, totals = false }: { line?: MarketLine; totals?: boolean }
 
 /** Ô 1X2 — ba số chủ / hoà / khách xếp dọc, khớp ba dòng tên đội bên trái. */
 function O1x2({ line }: { line?: MarketLine }) {
-  if (!line) return <td className="border-l border-line px-2 py-1" />;
+  if (!line) return <td className={`border-l border-line px-2 py-1 ${NEN_KEO}`} />;
   const c = line.current;
   const o = line.open;
   return (
-    <td className="border-l border-line px-2 py-1 text-right align-top">
+    <td className={`border-l border-line px-2 py-1 text-right align-top ${NEN_KEO}`}>
       <div><SoThapPhan hien={c.home_odds} mo={o.home_odds} /></div>
       <div><SoThapPhan hien={c.away_odds} mo={o.away_odds} /></div>
       <div><SoThapPhan hien={c.draw_odds} mo={o.draw_odds} /></div>
     </td>
   );
 }
+
+/** Nền nhạt cho vùng soi kèo — Nick 25/8: nền trắng chói, cần dồn mắt vào đây. */
+const NEN_KEO = "bg-brand-dim/15";
 
 const COT = [
   "Chấp Toàn Trận", "Tài Xỉu Toàn Trận", "1X2 Toàn Trận",
@@ -172,10 +175,10 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
           )}
           <OChap line={chap[i]} />
           <OChap line={tx[i]} totals />
-          {i === 0 ? <O1x2 line={ml} /> : <td className="border-l border-line" />}
+          {i === 0 ? <O1x2 line={ml} /> : <td className={`border-l border-line ${NEN_KEO}`} />}
           <OChap line={chapH1[i]} />
           <OChap line={txH1[i]} totals />
-          {i === 0 ? <O1x2 line={mlH1} /> : <td className="border-l border-line" />}
+          {i === 0 ? <O1x2 line={mlH1} /> : <td className={`border-l border-line ${NEN_KEO}`} />}
         </tr>
       ))}
     </>
@@ -184,7 +187,7 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
 
 export function OddsTable({ days }: { days: DayGroup[] }) {
   return (
-    <div className="hidden overflow-x-auto rounded-card border border-line lg:block">
+    <div className="hidden overflow-x-auto rounded-card border border-line bg-card lg:block">
       <table className="w-full min-w-[1100px] table-fixed border-collapse text-sm">
         <thead>
           <tr className="bg-card text-[11px] uppercase tracking-wide text-muted">
