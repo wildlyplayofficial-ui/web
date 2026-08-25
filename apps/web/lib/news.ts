@@ -27,6 +27,8 @@ export interface NewsItem {
   published_at: string;
   status: string;
   created_at: string;
+  /** Slug các đội bài này nhắc tới, khớp TEAM_HUBS. Dùng để dẫn về hub /doi/<clb>. */
+  teams: string[] | null;
 }
 
 export function getHeadline(item: NewsItem, lang: Lang): string {
