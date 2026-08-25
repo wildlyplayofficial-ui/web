@@ -46,6 +46,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
     { url: `${BASE}/daily-board`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-board") },
+    // /keo bị bỏ quên khỏi sitemap từ lúc dựng trang (Gwen phát hiện 25/8): trang
+    // để index, follow và cập nhật mỗi 3 tiếng, nhưng không có mặt trong 829 URL
+    // của sitemap. Ưu tiên 0.9 ngang /daily-board vì cùng là trang trụ.
+    { url: `${BASE}/keo`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/keo") },
     { url: `${BASE}/daily-line`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-line") },
     { url: `${BASE}/daily-line/leaderboard`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/daily-line/leaderboard") },
     { url: `${BASE}/daily-line/archive`, changeFrequency: "daily", priority: 0.6, alternates: alternates("/daily-line/archive") },
