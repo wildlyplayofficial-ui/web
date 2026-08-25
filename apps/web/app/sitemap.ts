@@ -2,8 +2,9 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
 import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled } from "@/lib/data";
-import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
-import { getAllNewsItemSlugs } from "@/lib/news";
+import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
+import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
+import { TEAM_HUBS } from "@/lib/teams";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
 /** SEO: every settled play + published post + all 4 language variants. */
@@ -43,9 +44,33 @@ function alternates(path: string, langs: readonly string[] = LANGS): MetadataRou
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, matches, guides, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
+  // Hub theo CLB: CHỈ khai hub nào đủ bài để được index. Hub dưới ngưỡng tự đặt
+  // noindex (xem doi/[slug]/page.tsx), mà khai một trang noindex vào sitemap thì
+  // Search Console báo lỗi "Submitted URL marked noindex" — tự tạo lỗi cho mình.
+  // Ngưỡng 12 giữ khớp MIN_INDEX bên trang hub.
+  const HUB_MIN = 12;
+  const hubRoutes: MetadataRoute.Sitemap = (
+    await Promise.all(
+      TEAM_HUBS.map(async (t) => {
+        const [n, a] = await Promise.all([getNewsByTeam(t.slug, HUB_MIN), getAnalysisByTeam(t.slug, HUB_MIN)]);
+        if (n.length + a.length < HUB_MIN) return null;
+        return {
+          url: `${BASE}/doi/${t.slug}`,
+          changeFrequency: "daily" as const,
+          priority: 0.7,
+          alternates: alternates(`/doi/${t.slug}`),
+        };
+      }),
+    )
+  ).filter((x): x is NonNullable<typeof x> => x !== null);
+
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
     { url: `${BASE}/daily-board`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-board") },
+    // /keo bị bỏ quên khỏi sitemap từ lúc dựng trang (Gwen phát hiện 25/8): trang
+    // để index, follow và cập nhật mỗi 3 tiếng, nhưng không có mặt trong 829 URL
+    // của sitemap. Ưu tiên 0.9 ngang /daily-board vì cùng là trang trụ.
+    { url: `${BASE}/keo`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/keo") },
     { url: `${BASE}/daily-line`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-line") },
     { url: `${BASE}/daily-line/leaderboard`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/daily-line/leaderboard") },
     { url: `${BASE}/daily-line/archive`, changeFrequency: "daily", priority: 0.6, alternates: alternates("/daily-line/archive") },
@@ -174,5 +199,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
