@@ -11,6 +11,8 @@ import { COMPETITION_LOGOS } from "./competition-logos";
  */
 
 interface OddsSnapshotRow {
+  home_id: number | null;
+  away_id: number | null;
   event_id: number;
   competition_id: string;
   home_team: string;
@@ -57,6 +59,10 @@ export interface OddsBoardMatch {
   competitionId: string;
   homeTeam: string;
   awayTeam: string;
+  /** Mã đội của nhà cung cấp kèo — để lấy logo qua /api/team-logo/[id].
+   *  null với dòng thu trước 25/8 (lúc chưa có cột), lúc đó chỉ hiện tên. */
+  homeId: number | null;
+  awayId: number | null;
   kickoffUtc: string;
   /** Mỗi loại kèo → các mức chấp/tài-xỉu khác nhau, sắp theo hdp. */
   markets: Record<string, MarketLine[]>;
@@ -169,6 +175,8 @@ async function getOddsBoardImpl(): Promise<OddsBoardMatch[]> {
       competitionId: first.competition_id,
       homeTeam: first.home_team,
       awayTeam: first.away_team,
+      homeId: first.home_id ?? null,
+      awayId: first.away_id ?? null,
       kickoffUtc: first.kickoff_utc,
       markets,
       trueProb,

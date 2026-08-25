@@ -51,6 +51,11 @@ export interface OddsRow {
   competition_id: string;
   home_team: string;
   away_team: string;
+  /** Mã đội của nhà cung cấp — dùng lấy logo qua /api/team-logo/[id].
+   *  Ghép logo theo TÊN chỉ khớp 11/40 đội và từng gán nhầm "Sabah Masazir"
+   *  vào logo "Sabah" (hai CLB khác nước), nên phải lưu mã. */
+  home_id: number | null;
+  away_id: number | null;
   kickoff_utc: string;
   bookmaker: string;
   market: string;
@@ -63,7 +68,7 @@ export interface OddsRow {
   source_updated_at: string | null;
 }
 
-interface OddsEvent { id: number; home: string; away: string; date: string }
+interface OddsEvent { id: number; home: string; away: string; date: string; homeId?: number; awayId?: number }
 interface OddsMarket { name: string; updatedAt?: string; odds?: Record<string, unknown>[] }
 
 const num = (v: unknown): number | null =>
@@ -81,6 +86,8 @@ export function buildOddsRows(
         event_id: event.id,
         competition_id: competitionId,
         home_team: event.home,
+        home_id: event.homeId ?? null,
+        away_id: event.awayId ?? null,
         away_team: event.away,
         kickoff_utc: event.date,
         bookmaker: 'Bet365',

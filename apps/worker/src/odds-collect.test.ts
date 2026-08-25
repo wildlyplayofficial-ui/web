@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { buildOddsRows, collectOddsTick, trueProbabilities } from './odds-collect';
 
-const EVENT = { id: 72221170, home: 'Newcastle United', away: 'Liverpool FC', date: '2026-08-23T15:30:00Z' };
+const EVENT = { id: 72221170, home: 'Newcastle United', away: 'Liverpool FC', date: '2026-08-23T15:30:00Z', homeId: 2814, awayId: 2820 };
 
 describe('buildOddsRows', () => {
   it('giữ 4 loại kèo dùng cho trang, bỏ 115 loại phụ', () => {
@@ -20,6 +20,23 @@ describe('buildOddsRows', () => {
     expect(rows.map((r) => r.market)).toEqual([
       'ML', 'Spread', 'Totals', 'European Handicap', 'ML HT', 'Spread HT', 'Totals HT',
     ]);
+  });
+
+  it('lưu mã đội để lấy logo, thiếu mã thì để null chứ không đoán', () => {
+    const [r] = buildOddsRows(EVENT, 'epl-2026', [
+      { name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] },
+    ]);
+    expect(r.home_id).toBe(2814);
+    expect(r.away_id).toBe(2820);
+
+    // Nhà cung cấp không trả mã → null. KHÔNG được ghép logo theo tên thay thế:
+    // ghép tên từng gán "Sabah Masazir" vào logo "Sabah", hai CLB khác nước.
+    const { homeId: _h, awayId: _a, ...khongMa } = EVENT;
+    const [r2] = buildOddsRows(khongMa, 'epl-2026', [
+      { name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] },
+    ]);
+    expect(r2.home_id).toBeNull();
+    expect(r2.away_id).toBeNull();
   });
 
   it('đổi chuỗi kèo sang số, giữ null cho ô không có', () => {
