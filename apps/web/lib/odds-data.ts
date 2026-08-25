@@ -69,6 +69,9 @@ const LEAGUE_LABEL: Record<string, string> = {
   "seriea-2026": "Serie A",
   "bundesliga-2026": "Bundesliga",
   "ligue1-2026": "Ligue 1",
+  // Thiếu dòng này nên trang live hiện trơ mã "ucl-2026" cạnh mấy giải kia
+  // (Gwen thấy 25/8, ngay sau khi lên). Tên gọi lấy đúng như competition-logos.ts.
+  "ucl-2026": "Cúp C1",
 };
 
 export function leagueLabelForCompetition(competitionId: string): string {
