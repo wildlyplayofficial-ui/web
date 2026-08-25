@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 
-const BASE = "https://api.odds-api.io/v3";
+import { goiOdds, khoaOdds } from "@/lib/odds-key";
 
 /** Debug: test odds-api.io endpoints for WC. DELETE after mapping done. */
 export async function GET(request: Request) {
-  const apiKey = process.env.ODDS_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "ODDS_API_KEY not configured" }, { status: 503 });
+  if (khoaOdds().length === 0) return NextResponse.json({ error: "ODDS_API_KEY not configured" }, { status: 503 });
 
   const url = new URL(request.url);
   const step = url.searchParams.get("step") ?? "search";
@@ -14,7 +13,7 @@ export async function GET(request: Request) {
   try {
     if (step === "search") {
       // Search WC events by team name
-      const res = await fetch(`${BASE}/events/search?query=${encodeURIComponent(query)}&sport=football&apiKey=${apiKey}`, { cache: "no-store" });
+      const res = (await goiOdds(`events/search?query=${encodeURIComponent(query)}&sport=football`, { cache: "no-store" }))!;
       const data = await res.json();
       const events = Array.isArray(data) ? data.slice(0, 10) : data;
       return NextResponse.json({ events, status: res.status });
@@ -23,7 +22,7 @@ export async function GET(request: Request) {
     if (step === "odds") {
       const eventId = url.searchParams.get("eventId");
       if (!eventId) return NextResponse.json({ error: "eventId required" });
-      const res = await fetch(`${BASE}/odds?eventId=${eventId}&bookmakers=Sbobet&apiKey=${apiKey}`, { cache: "no-store" });
+      const res = (await goiOdds(`odds?eventId=${eventId}&bookmakers=Sbobet`, { cache: "no-store" }))!;
       const raw = await res.text();
       try {
         return NextResponse.json({ status: res.status, data: JSON.parse(raw) });

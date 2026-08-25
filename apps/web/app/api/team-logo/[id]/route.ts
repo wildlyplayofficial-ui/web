@@ -3,7 +3,7 @@
  * Validates that `id` is numeric and caches for 24 hours.
  */
 
-const ODDS_API_BASE = "https://api.odds-api.io/v3";
+import { goiOdds } from "@/lib/odds-key";
 
 export async function GET(
   _request: Request,
@@ -11,10 +11,6 @@ export async function GET(
 ): Promise<Response> {
   const { id } = await params;
 
-  const apiKey = process.env.ODDS_API_KEY;
-  if (!apiKey) {
-    return new Response(null, { status: 503 });
-  }
 
   // Participant IDs are positive integers.
   if (!/^\d{1,20}$/.test(id)) {
@@ -22,10 +18,8 @@ export async function GET(
   }
 
   try {
-    const res = await fetch(
-      `${ODDS_API_BASE}/participants/${id}/logo?apiKey=${apiKey}`,
-      { cache: "no-store" },
-    );
+    const res = await goiOdds(`participants/${id}/logo`, { cache: "no-store" });
+    if (!res) return new Response(null, { status: 503 });
 
     if (!res.ok) {
       return new Response(null, { status: 404 });
