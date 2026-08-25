@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getPost, getPostLangs, getMatchBySlug } from "@/lib/data";
+import { getPost, getPostLangs, getMatchBySlug, REPORT_SLUG_RE } from "@/lib/data";
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
@@ -32,7 +32,16 @@ async function resolveArticle(slug: string, lang: Lang) {
   const deskArticle = await getAnalysisArticleBySlug(slug);
   if (deskArticle) return { kind: "desk" as const, desk: deskArticle };
   const post = await getPost(slug, lang);
-  if (post) return { kind: "post" as const, post };
+  if (post) {
+    // Bài type=guide có nhà riêng (/guides, báo cáo tháng ở /transparency).
+    // Trước đây vẫn render thêm ở /analysis → 13 cặp URL trùng tự canonical
+    // về chính nó, tự cạnh tranh (kiểm kê 25/8). 301 về nhà thật.
+    if (post.type === "guide") {
+      const home = REPORT_SLUG_RE.test(slug) ? `/transparency/${slug}` : `/guides/${slug}`;
+      permanentRedirect(withLang(home, lang));
+    }
+    return { kind: "post" as const, post };
+  }
   return null;
 }
 
@@ -330,6 +339,15 @@ export default async function AnalysisArticlePage({ params }: Props) {
   // Fall back to posts table (existing behavior)
   const post = await getPost(slug, lang);
   if (!post) notFound();
+
+  // Bài type=guide có nhà riêng (/guides, báo cáo tháng ở /transparency). Redirect
+  // phải nằm Ở ĐÂY (page component) mới ra HTTP 308 thật — permanentRedirect trong
+  // resolveArticle chỉ chạy qua generateMetadata, mà Next 16 stream metadata nên
+  // nó bị hạ cấp thành <meta http-equiv=refresh> + HTTP 200 (đo local 25/8).
+  if (post.type === "guide") {
+    const home = REPORT_SLUG_RE.test(slug) ? `/transparency/${slug}` : `/guides/${slug}`;
+    permanentRedirect(withLang(home, lang));
+  }
 
   const published = post.published_at
     ? new Intl.DateTimeFormat(locales[lang], {

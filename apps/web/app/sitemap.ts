@@ -54,8 +54,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       TEAM_HUBS.map(async (t) => {
         const [n, a] = await Promise.all([getNewsByTeam(t.slug, HUB_MIN), getAnalysisByTeam(t.slug, HUB_MIN)]);
         if (n.length + a.length < HUB_MIN) return null;
+        // 4 hub /doi/ là nhóm URL duy nhất trong sitemap không khai lastmod (kiểm
+        // 25/8). Lấy bài mới nhất của hub làm mốc — hai mảng đã xếp published_at
+        // giảm dần nên phần tử đầu là bài mới nhất.
+        const newest = [n[0]?.published_at, a[0]?.updated_at ?? a[0]?.published_at]
+          .filter((d): d is string => Boolean(d))
+          .sort()
+          .pop();
         return {
           url: `${BASE}/doi/${t.slug}`,
+          lastModified: safeLastMod(newest),
           changeFrequency: "daily" as const,
           priority: 0.7,
           alternates: alternates(`/doi/${t.slug}`),
@@ -115,7 +123,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/analysis/${p.slug}`),
   }));
 
-  const matchRoutes: MetadataRoute.Sitemap = matches.map((m) => ({
+  // Trận TƯƠNG LAI xa hơn 14 ngày chưa vào sitemap — 154 trang rỗng tháng 9 đang
+  // hút crawl budget (kiểm kê 25/8). Tới gần ngày đá tự vào lại vì sitemap là
+  // force-dynamic. Trận sắp đá ≤14 ngày GIỮ (nhu cầu "mấy giờ/xem ở đâu" là thật —
+  // Jane 16/8 + trang top impression). Trận đã đá giữ (có tỷ số + match facts).
+  const HORIZON_MS = 14 * 24 * 3600 * 1000;
+  const cutoff = Date.now() + HORIZON_MS;
+  const matchRoutes: MetadataRoute.Sitemap = matches.filter((m) => {
+    const kick = Date.parse(m.kickoffUtc);
+    return Number.isNaN(kick) || kick <= cutoff;
+  }).map((m) => ({
     url: `${BASE}/match/${m.slug}`,
     lastModified: safeLastMod(m.updated),
     changeFrequency: "weekly",

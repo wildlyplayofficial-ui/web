@@ -302,7 +302,7 @@ export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
 });
 
 /** Transparency report slugs follow the pattern "month-year" (e.g., "june-2026"). */
-const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/;
+export const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/;
 
 /** Published guides for a language, newest first. Excludes transparency reports. */
 async function getGuidesImpl(lang: Lang): Promise<Post[]> {
@@ -454,8 +454,10 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
   const supabase = getSupabase();
   if (!supabase) {
     const seen = new Set<string>();
+    // Mock phải lọc guide y như query thật bên dưới — lệch nhau thì dev/test
+    // mock-mode lại thấy 13 cặp URL trùng mà production đã dọn.
     return mockPosts.filter((p) => {
-      if (seen.has(p.slug)) return false;
+      if (p.type === "guide" || seen.has(p.slug)) return false;
       seen.add(p.slug);
       return true;
     }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title }));
@@ -465,6 +467,9 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
     .select("slug, published_at, title")
     .eq("status", "published")
     .eq("lang", "en")
+    // type=guide đã có nhà riêng (/guides + /transparency). Đổ thêm sang
+    // /analysis tạo 13 cặp URL trùng tự cạnh tranh (kiểm kê 25/8) — loại hẳn.
+    .neq("type", "guide")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllPostSlugs: ${error.message}`);
   return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
@@ -693,6 +698,11 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       usa: ["usa", "united%states"],
       "south-korea": ["south%korea", "korea%republic"],
       czechia: ["czechia", "czech%republic"],
+      // Slug sinh từ TEAM_CANONICAL "Bosnia and Herzegovina", nhưng DB lưu
+      // "Bosnia Herzegovina"/"Bosnia & Herzegovina" — pattern có "and" không khớp
+      // nên trang /match/canada-vs-bosnia-and-herzegovina-2026-06-12 mất luôn
+      // pick + metadata dù pick tồn tại (đo 25/8).
+      "bosnia-and-herzegovina": ["bosnia%herzegovina"],
     };
     const homeVariants = REVERSE_SLUG[home] ?? [home.replace(/-/g, "%")];
     const awayVariants = REVERSE_SLUG[away] ?? [away.replace(/-/g, "%")];

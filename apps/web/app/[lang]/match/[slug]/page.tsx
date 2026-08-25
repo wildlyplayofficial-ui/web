@@ -29,7 +29,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
   const match = await getMatchBySlug(slug);
-  if (!match) return { title: "Not found" };
+  if (!match) {
+    // Trận chỉ có trong lịch mùa (chưa có pick/watching) hoặc slug không khớp tên
+    // đội trong DB (canada-vs-bosnia-and-herzegovina 12/6) vẫn render 200 với
+    // MatchFacts phía dưới, nhưng metadata rơi về "Not found": không canonical,
+    // title/og lấy của trang chủ (đo 25/8 — cả trang EPL tháng 9 cũng dính).
+    // Dựng title + canonical từ slug, đúng cách trang đang tự parse để render.
+    const vsIdx = slug.indexOf("-vs-");
+    const dateMatch = slug.match(/(\d{4}-\d{2}-\d{2})$/);
+    if (vsIdx < 0 || !dateMatch) return { title: "Not found" };
+    const deslug = (s: string) => s.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const homeName = deslug(slug.slice(0, vsIdx));
+    const awayName = deslug(slug.slice(vsIdx + 4, slug.length - dateMatch[1].length - 1));
+    if (!homeName || !awayName) return { title: "Not found" };
+    return {
+      title: `${homeName} vs ${awayName} \u2014 Preview, Pick & Result`,
+      description: `${homeName} vs ${awayName}. Expert prediction, odds analysis, and match result on banhbong.net.`,
+      alternates: buildAlternates(`/match/${slug}`, lang),
+    };
+  }
 
   const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Preview, Pick & Result`;
   const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on banhbong.net.`;
