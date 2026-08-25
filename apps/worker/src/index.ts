@@ -84,6 +84,12 @@ const publishAnalysis = anthropicApiKey
 
 // Event auto-attach at /pick time — gated on the same key as the poller.
 const oddsApiKey = process.env.ODDS_API_KEY;
+/** Nhiều khoá odds-api, ngăn bằng dấu phẩy. Nhà cung cấp chặn 100 lượt/giờ MỖI
+ *  KHOÁ; một nhịp thu đã sát trần nên có trận bị rớt (Nick 25/8). Có khoá thứ
+ *  hai thì gặp 429 tự đổi sang khoá đó thay vì bỏ trận.
+ *  Đặt ODDS_API_KEYS="key1,key2"; không đặt thì chạy như cũ với một khoá. */
+const oddsApiKeys = (process.env.ODDS_API_KEYS ?? oddsApiKey ?? '')
+  .split(',').map((k) => k.trim()).filter(Boolean);
 const lookupEvent = oddsApiKey
   ? (pick: MatchQuery) => findEvent({ apiKey: oddsApiKey }, pick)
   : undefined;
@@ -211,7 +217,7 @@ if (siteUrl && process.env.REVALIDATE_SECRET) {
 // ── Kèo: chụp bảng kèo Bet365 mỗi 3 tiếng (Nick 23/8) ──
 // Nhà cung cấp xoá kèo ngay khi trận đá xong, nên không chạy đều thì mất vĩnh viễn.
 const stopOdds = persistDb && oddsApiKey
-  ? startOddsCollector({ apiKey: oddsApiKey, store: persistDb as never })
+  ? startOddsCollector({ apiKey: oddsApiKeys, store: persistDb as never })
   : () => {};
 if (!persistDb || !oddsApiKey) log.warn('odds-collect: disabled (thiếu SUPABASE_URL hoặc ODDS_API_KEY)');
 
