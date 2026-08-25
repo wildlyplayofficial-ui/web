@@ -16,6 +16,13 @@ export const ODDS_LEAGUES: ReadonlyArray<readonly [slug: string, competitionId: 
   ['italy-serie-a', 'seriea-2026'],
   ['germany-bundesliga', 'bundesliga-2026'],
   ['france-ligue-1', 'ligue1-2026'],
+  // Nick chốt thêm Liga MX 25/8. Slug lấy từ /v3/leagues chứ không gõ theo trí
+  // nhớ — gõ sai thì job im lặng bỏ cả giải, không báo lỗi gì.
+  //
+  // ⚠️ THÁNG 1: Liga MX chia hai lượt, Apertura (7–12) và Clausura (1–5). Hết
+  // Apertura là slug này cạn trận, phải đổi sang 'mexico-liga-mx-clausura'
+  // (slug đó CHƯA tồn tại lúc 25/8, nhà cung cấp tạo khi tới mùa).
+  ['mexico-liga-mx-apertura', 'ligamx-2026'],
 ];
 
 // Toàn trận + HIỆP 1. Nick 25/8 muốn bảng kèo đủ cột như trang nhà cái quen
