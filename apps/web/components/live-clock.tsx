@@ -28,7 +28,8 @@ function formatMinute(minute: number, period: number): string {
   return `${minute}'`;
 }
 
-const POLL_INTERVAL = 60_000;
+/** Nick chốt 25/8: 120 giây. Hỏi dày hơn cũng vô ích — route đệm 120 giây. */
+const POLL_INTERVAL = 120_000;
 
 interface MatchApiEntry {
   homeTeam: string;
@@ -75,7 +76,7 @@ async function fetchMatchesFallback(homeTeam: string, awayTeam: string): Promise
 }
 
 /**
- * Live match clock badge. Polls /api/live-clock/[eventId] every 60 seconds.
+ * Live match clock badge. Polls /api/live-clock/[eventId] every 120 seconds.
  * Falls back to /api/matches (livescore-api) when odds-api has no data.
  * When showScore is true, also renders the live score (Nick 14/6).
  */

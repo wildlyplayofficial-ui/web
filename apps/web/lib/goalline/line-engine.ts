@@ -15,7 +15,7 @@ import { devig } from "@/lib/goalline/settlement";
  * the plan then picks up better books with no code change.
  */
 
-const ODDS_API_BASE = "https://api.odds-api.io/v3";
+import { goiOdds, khoaOdds } from "@/lib/odds-key";
 
 /** Livescore → odds-api team name aliases. */
 const SEARCH_ALIASES: Record<string, string> = {
@@ -74,17 +74,11 @@ function roundOdds(n: number): number {
 }
 
 /** Search events by team name — any competition. Never throws. */
-async function searchEvents(
-  teamName: string,
-  apiKey: string,
-): Promise<OddsApiEvent[]> {
+async function searchEvents(teamName: string): Promise<OddsApiEvent[]> {
   const query = searchName(teamName);
   try {
-    const res = await fetch(
-      `${ODDS_API_BASE}/events/search?query=${encodeURIComponent(query)}&sport=football&apiKey=${apiKey}`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return [];
+    const res = await goiOdds(`events/search?query=${encodeURIComponent(query)}&sport=football`, { cache: "no-store" });
+    if (!res?.ok) return [];
     const events = await res.json();
     if (!Array.isArray(events)) return [];
     // The World Cup slug filter used to hide malformed entries; without it we
@@ -145,15 +139,11 @@ function median(nums: number[]): number {
  */
 async function fetchTotalsOdds(
   eventId: string,
-  apiKey: string,
 ): Promise<{ overOdds: number; underOdds: number; point: number } | null> {
   let data: { bookmakers?: Record<string, unknown> };
   try {
-    const res = await fetch(
-      `${ODDS_API_BASE}/odds?eventId=${eventId}&apiKey=${apiKey}`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
+    const res = await goiOdds(`odds?eventId=${eventId}`, { cache: "no-store" });
+    if (!res?.ok) return null;
     data = (await res.json()) as { bookmakers?: Record<string, unknown> };
   } catch {
     return null;
@@ -210,7 +200,6 @@ async function fetchTotalsOdds(
  */
 async function findEventForMatch(
   match: { homeTeam: string; awayTeam: string; kickoffUtc: string },
-  apiKey: string,
 ): Promise<OddsApiEvent | null> {
   // Empty team names → stop. card-actions.ts calls in with "" / "" and without
   // this guard teamMatches would false-positive on the first event found.
@@ -222,7 +211,7 @@ async function findEventForMatch(
   // dedupe by event id, then apply the strict matcher.
   const byId = new Map<number, OddsApiEvent>();
   for (const teamName of [match.homeTeam, match.awayTeam]) {
-    for (const ev of await searchEvents(teamName, apiKey)) {
+    for (const ev of await searchEvents(teamName)) {
       byId.set(ev.id, ev);
     }
   }
@@ -262,16 +251,15 @@ function calibrateOdds(
 export async function deriveLineForMatches(
   matches: { id: string; homeTeam: string; awayTeam: string; kickoffUtc: string }[],
 ): Promise<DerivedLine | null> {
-  const apiKey = process.env.ODDS_API_KEY;
-  if (!apiKey) return null;
+  if (khoaOdds().length === 0) return null;
 
   const results: MatchLineResult[] = [];
 
   for (const m of matches) {
-    const event = await findEventForMatch(m, apiKey);
+    const event = await findEventForMatch(m);
     if (!event) return null;
 
-    const totals = await fetchTotalsOdds(String(event.id), apiKey);
+    const totals = await fetchTotalsOdds(String(event.id));
     if (!totals) return null;
 
     const { fairOver, fairUnder } = devig(totals.overOdds, totals.underOdds);

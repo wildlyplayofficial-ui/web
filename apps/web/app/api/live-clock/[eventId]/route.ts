@@ -1,10 +1,11 @@
 /**
  * Proxies live clock data from odds-api for a given event.
  * Returns the clock object (minute, period, running, statusDetail)
- * with 30-second cache headers for live data freshness.
+ * Đệm 120 giây (Nick chốt 25/8): 30 giây thì MỘT trận đang đá đã ngốn 120
+ * lượt/giờ, vượt trần 100 lượt/giờ của nhà cung cấp trước cả khi có trận thứ hai.
  */
 
-const ODDS_API_BASE = "https://api.odds-api.io/v3";
+import { goiOdds } from "@/lib/odds-key";
 
 export async function GET(
   _request: Request,
@@ -12,10 +13,6 @@ export async function GET(
 ): Promise<Response> {
   const { eventId } = await params;
 
-  const apiKey = process.env.ODDS_API_KEY;
-  if (!apiKey) {
-    return Response.json({ error: "ODDS_API_KEY not configured" }, { status: 503 });
-  }
 
   // Validate eventId is a numeric bigint (odds-api event IDs are integers).
   if (!/^\d{1,20}$/.test(eventId)) {
@@ -23,10 +20,10 @@ export async function GET(
   }
 
   try {
-    const res = await fetch(
-      `${ODDS_API_BASE}/events/${eventId}?apiKey=${apiKey}`,
-      { cache: "no-store" },
-    );
+    const res = await goiOdds(`events/${eventId}`, { cache: "no-store" });
+    if (!res) {
+      return Response.json({ error: "ODDS_API_KEY not configured" }, { status: 503 });
+    }
 
     if (!res.ok) {
       // Event not found or API error — return empty clock.
@@ -54,7 +51,7 @@ export async function GET(
     return Response.json(
       { clock: event.clock ?? null, status: event.status ?? null, scores: event.scores ?? null },
       {
-        headers: { "Cache-Control": "public, max-age=30, s-maxage=30" },
+        headers: { "Cache-Control": "public, max-age=120, s-maxage=120" },
       },
     );
   } catch {
