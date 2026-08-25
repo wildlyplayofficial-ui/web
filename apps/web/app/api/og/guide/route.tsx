@@ -37,9 +37,12 @@ export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const title = searchParams.get("title") || "Guide";
   const slug = searchParams.get("slug") || "";
+  const vi = searchParams.get("locale") === "vi";
   const data = ANCHORS[slug];
   const anchor = data?.anchor || searchParams.get("anchor") || "";
-  const badge = data?.badge || searchParams.get("type")?.toUpperCase() || "GUIDE";
+  const badgeEn = data?.badge || searchParams.get("type")?.toUpperCase() || "GUIDE";
+  // Bản /vi: nhãn tiếng Việt (Peter 25/8 — nhãn EN trên bài VI là lỗi)
+  const badge = vi ? (badgeEn === "CALCULATOR" ? "CÔNG CỤ" : "HƯỚNG DẪN") : badgeEn;
 
   const mark = await loadMarkDataUri();
   return ogResponse(
@@ -49,7 +52,6 @@ export async function GET(request: Request): Promise<Response> {
       title={title}
       noteBox={anchor || null}
       footer="banhbong.net"
-      footerRight="Free betting education"
     />,
     { headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800" } },
   );

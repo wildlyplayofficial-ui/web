@@ -16,16 +16,24 @@ const KIND_BADGE: Record<string, string> = {
   news: "NEWS",
 };
 
+// Bản /vi: nhãn tiếng Việt (Peter 25/8 — nhãn EN trên bài VI là lỗi)
+const KIND_BADGE_VI: Record<string, string> = {
+  preview: "NHẬN ĐỊNH",
+  recap: "TỔNG KẾT",
+  roundup: "ĐIỂM TIN",
+  analysis: "PHÂN TÍCH",
+  news: "TIN TỨC",
+};
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
   const { slug } = await params;
   const { searchParams } = new URL(request.url);
-  // `locale` (en|vi|th|es) and `v` (cache-bust token) keep URLs stable across
-  // langs/updates; the card copy is EN-only until i18n columns exist, so both
-  // are read but intentionally unused in rendering.
-  searchParams.get("locale");
+  // `locale` (en|vi|th|es) picks the badge language; `v` is a cache-bust token,
+  // read but unused in rendering.
+  const vi = searchParams.get("locale") === "vi";
   searchParams.get("v");
 
   // Data layer only returns published rows — drafts 404 here.
@@ -38,7 +46,7 @@ export async function GET(
     year: "numeric",
     timeZone: "UTC",
   });
-  const badgeLabel = KIND_BADGE[article.kind] ?? article.kind.toUpperCase();
+  const badgeLabel = (vi ? KIND_BADGE_VI[article.kind] : KIND_BADGE[article.kind]) ?? article.kind.toUpperCase();
 
   const mark = await loadMarkDataUri();
   return ogResponse(

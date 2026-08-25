@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.kelly} | banhbong.net`,
       description: dict.calculators.kellyDesc,
-      images: [{ url: "/api/og/guide?slug=kelly&title=Kelly%20Criterion%20Calculator", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=kelly&title=Kelly%20Criterion%20Calculator&locale=${lang}&v=2`, width: 1200, height: 630 }],
     },
   };
 }

@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.deVig} | banhbong.net`,
       description: dict.calculators.deVigDesc,
-      images: [{ url: "/api/og/guide?slug=de-vig&title=De-Vig%20Calculator", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=de-vig&title=De-Vig%20Calculator&locale=${lang}&v=2`, width: 1200, height: 630 }],
     },
   };
 }
