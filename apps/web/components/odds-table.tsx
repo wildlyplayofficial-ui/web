@@ -18,12 +18,56 @@ interface DayGroup {
   matches: OddsBoardMatch[];
 }
 
-/** Số kèo. Tăng so với lúc mở = xanh, giảm = đỏ, chưa đổi = chữ thường. */
+/** Đổi giá thập phân sang kiểu Malay — kiểu số mà bảng kèo VN quen dùng.
+ *
+ *  Nick 25/8: "odd số âm màu đỏ". Giá thập phân KHÔNG BAO GIỜ âm nên nếu cứ để
+ *  thập phân thì không có số nào đỏ; muốn có dấu âm thì phải đổi hệ.
+ *
+ *  Quy tắc: cửa dễ ăn (thập phân < 2) ra số DƯƠNG = đặt 1 ăn bấy nhiêu.
+ *  Cửa khó ăn (>= 2) ra số ÂM = phải đặt bấy nhiêu mới ăn 1.
+ */
+function sangMalay(d: number): number {
+  const loi = d - 1;
+  return loi <= 1 ? loi : -1 / loi;
+}
+
+/** Số kèo. Âm = đỏ (quy ước bảng kèo). Mũi tên nhỏ báo tăng/giảm so với lúc mở —
+ *  tách khỏi màu để hai thứ không giẫm nhau: MÀU nói dấu, MŨI TÊN nói biến động. */
 function So({ hien, mo }: { hien: number | null; mo?: number | null }) {
   if (hien == null) return <span className="text-muted">–</span>;
-  const mau =
-    mo == null || mo === hien ? "text-ink" : hien > mo ? "text-brand" : "text-loss";
-  return <span className={`tabular-nums font-semibold ${mau}`}>{hien.toFixed(2)}</span>;
+  const m = sangMalay(hien);
+  const chieu = mo == null || mo === hien ? "" : hien > mo ? "▲" : "▼";
+  return (
+    <span className="whitespace-nowrap">
+      <span className={`tabular-nums font-semibold ${m < 0 ? "text-loss" : "text-ink"}`}>
+        {m.toFixed(2)}
+      </span>
+      {chieu && (
+        <span className={`ml-0.5 text-[9px] ${hien > (mo ?? 0) ? "text-brand" : "text-muted"}`}>
+          {chieu}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** Cột 1X2 giữ GIÁ THẬP PHÂN, không đổi sang Malay.
+ *  Đọc kỹ ảnh mẫu Nick gửi: cột chấp và tài xỉu là số Malay (-0.98 / 0.92),
+ *  nhưng cột 1X2 vẫn là thập phân (2.36 / 3.35 / 3.05) và không có số âm.
+ *  Bảng nhà cái đâu cũng vậy — đổi cả cột 1X2 sang Malay là sai kiểu. */
+function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
+  if (hien == null) return <span className="text-muted">–</span>;
+  const chieu = mo == null || mo === hien ? "" : hien > mo ? "▲" : "▼";
+  return (
+    <span className="whitespace-nowrap">
+      <span className="tabular-nums font-semibold text-ink">{hien.toFixed(2)}</span>
+      {chieu && (
+        <span className={`ml-0.5 text-[9px] ${hien > (mo ?? 0) ? "text-brand" : "text-muted"}`}>
+          {chieu}
+        </span>
+      )}
+    </span>
+  );
 }
 
 /** Mức chấp / mức tài xỉu, in kèm dấu như bảng nhà cái. */
@@ -59,9 +103,9 @@ function O1x2({ line }: { line?: MarketLine }) {
   const o = line.open;
   return (
     <td className="border-l border-line px-2 py-1 text-right align-top">
-      <div><So hien={c.home_odds} mo={o.home_odds} /></div>
-      <div><So hien={c.away_odds} mo={o.away_odds} /></div>
-      <div><So hien={c.draw_odds} mo={o.draw_odds} /></div>
+      <div><SoThapPhan hien={c.home_odds} mo={o.home_odds} /></div>
+      <div><SoThapPhan hien={c.away_odds} mo={o.away_odds} /></div>
+      <div><SoThapPhan hien={c.draw_odds} mo={o.draw_odds} /></div>
     </td>
   );
 }
@@ -109,16 +153,20 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
   const mlH1 = match.markets["ML HT"]?.[0];
   const soDong = Math.max(1, chap.length, tx.length, chapH1.length, txH1.length);
   const { ngay, gio } = gioVN(match.kickoffUtc);
+  // Mức chấp chuẩn âm => chủ nhà chấp; dương => khách chấp; không có kèo chấp => không tô ai.
+  const mucChuan = chap[0]?.hdp ?? null;
+  const chuChap = mucChuan == null || mucChuan === 0 ? null : mucChuan < 0;
 
   return (
     <>
       {Array.from({ length: soDong }, (_, i) => (
         <tr key={i} className="border-t border-line align-top">
           {i === 0 && (
-            <td rowSpan={soDong} className="w-[280px] px-3 py-2 align-top">
+            <td rowSpan={soDong} className="w-[200px] px-3 py-2 align-top">
               <div className="text-[11px] text-muted tabular-nums">{ngay} · {gio}</div>
-              <div className="mt-0.5 font-semibold text-ink">{match.homeTeam}</div>
-              <div className="font-semibold text-ink">{match.awayTeam}</div>
+              {/* Đội CHẤP kèo tô đỏ (Nick 25/8). Mức chấp âm = đội chủ chấp. */}
+              <div className={`mt-0.5 font-semibold ${chuChap ? "text-loss" : "text-ink"}`}>{match.homeTeam}</div>
+              <div className={`font-semibold ${chuChap === false ? "text-loss" : "text-ink"}`}>{match.awayTeam}</div>
               <div className="text-muted">Hoà</div>
             </td>
           )}
@@ -137,10 +185,10 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
 export function OddsTable({ days }: { days: DayGroup[] }) {
   return (
     <div className="hidden overflow-x-auto rounded-card border border-line lg:block">
-      <table className="w-full min-w-[1000px] border-collapse text-sm">
+      <table className="w-full min-w-[1100px] table-fixed border-collapse text-sm">
         <thead>
           <tr className="bg-card text-[11px] uppercase tracking-wide text-muted">
-            <th className="px-3 py-2 text-left font-semibold">Trận Đấu</th>
+            <th className="w-[200px] px-3 py-2 text-left font-semibold">Trận Đấu</th>
             {COT.map((c) => (
               <th key={c} className="border-l border-line px-2 py-2 text-left font-semibold">{c}</th>
             ))}

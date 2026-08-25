@@ -92,11 +92,11 @@ export default async function OddsBoardPage({ params }: Props) {
   const days = groupByDate(matches, lang);
 
   return (
-    <div className="mx-auto max-w-[900px] px-5 overflow-x-hidden">
+    <div className="mx-auto max-w-[1360px] px-5">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Bảng Kèo", url: "/keo" }]} />
       <section className="pt-10 pb-6">
-        <h1 className="font-display text-3xl font-bold">Bảng Kèo Bóng Đá</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
+        <h1 className="text-center font-display text-3xl font-bold">Bảng Kèo Bóng Đá</h1>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted">
           Kèo 1X2, kèo châu Á, tài xỉu — cập nhật mỗi 3 tiếng. Bấm vào 1 trận để xem xác suất thực (đã bóc
           phần nhà cái giữ lại) và kèo đã chạy thế nào từ lúc mở tới giờ. Chỉ để tham khảo — banhbong.net
           không tổ chức cá cược.
