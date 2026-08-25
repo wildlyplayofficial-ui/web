@@ -104,6 +104,37 @@ describe('collectOddsTick — không được làm chết worker', () => {
     expect(s.inserted).toEqual([]);
   });
 
+  it('khoá đầu hết lượt (429) thì đổi sang khoá sau, không mất trận', async () => {
+    const s = store();
+    // Khoá 1 đã cạn 100 lượt/giờ; khoá 2 còn lượt.
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      const u = String(url);
+      if (u.includes('apiKey=het')) return { ok: false, status: 429 } as Response;
+      if (u.includes('events?')) return { ok: true, json: async () => [EVENT] } as Response;
+      return {
+        ok: true,
+        json: async () => ({ bookmakers: { Bet365: [{ name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] }] } }),
+      } as Response;
+    });
+    const n = await collectOddsTick({
+      apiKey: ['het', 'con'], store: s as never, fetchImpl: fetchImpl as never,
+      now: () => new Date('2026-08-23T07:00:00Z').getTime(),
+    });
+    expect(n).toBeGreaterThan(0);
+    // Sau khi đổi khoá thì không gọi lại khoá cạn nữa — đúng một lần chạm 429.
+    expect(fetchImpl.mock.calls.filter((c) => String(c[0]).includes('apiKey=het')).length).toBe(1);
+  });
+
+  it('mọi khoá đều hết lượt thì trả 0, không ném lỗi', async () => {
+    const s = store();
+    const fetchImpl = vi.fn(async () => ({ ok: false, status: 429 }) as Response);
+    await expect(collectOddsTick({
+      apiKey: ['a', 'b'], store: s as never, fetchImpl: fetchImpl as never,
+      now: () => Date.now(),
+    })).resolves.toBe(0);
+    expect(s.inserted).toEqual([]);
+  });
+
   it('bỏ qua trận quá xa (ngoài 4 ngày) để khỏi phí lượt gọi', async () => {
     const s = store();
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {

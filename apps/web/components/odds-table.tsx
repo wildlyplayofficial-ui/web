@@ -39,14 +39,12 @@ function So({ hien, mo }: { hien: number | null; mo?: number | null }) {
   const chieu = mo == null || mo === hien ? "" : hien > mo ? "▲" : "▼";
   return (
     <span className="whitespace-nowrap">
-      <span className={`tabular-nums font-semibold ${m < 0 ? "text-loss" : "text-ink"}`}>
+      <span className={`inline-block w-[40px] text-right tabular-nums font-semibold ${m < 0 ? "text-loss" : "text-ink"}`}>
         {m.toFixed(2)}
       </span>
-      {chieu && (
-        <span className={`ml-0.5 text-[9px] ${hien > (mo ?? 0) ? "text-brand" : "text-muted"}`}>
-          {chieu}
-        </span>
-      )}
+      <span className={`ml-0.5 inline-block w-[8px] text-[9px] ${hien > (mo ?? 0) ? "text-brand" : "text-muted"}`}>
+        {chieu}
+      </span>
     </span>
   );
 }
@@ -60,21 +58,27 @@ function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
   const chieu = mo == null || mo === hien ? "" : hien > mo ? "▲" : "▼";
   return (
     <span className="whitespace-nowrap">
-      <span className="tabular-nums font-semibold text-ink">{hien.toFixed(2)}</span>
-      {chieu && (
-        <span className={`ml-0.5 text-[9px] ${hien > (mo ?? 0) ? "text-brand" : "text-muted"}`}>
-          {chieu}
-        </span>
-      )}
+      <span className="inline-block w-[40px] text-right tabular-nums font-semibold text-ink">{hien.toFixed(2)}</span>
+      <span className={`ml-0.5 inline-block w-[8px] text-[9px] ${hien > (mo ?? 0) ? "text-brand" : "text-muted"}`}>
+        {chieu}
+      </span>
     </span>
   );
 }
 
-/** Mức chấp / mức tài xỉu, in kèm dấu như bảng nhà cái. */
-function Muc({ hdp, totals = false }: { hdp: number | null; totals?: boolean }) {
-  if (hdp == null) return null;
-  const chu = totals ? String(hdp) : hdp > 0 ? `+${hdp}` : String(hdp);
-  return <span className="mr-2 text-[11px] text-muted tabular-nums">{chu}</span>;
+/** Mức chấp / mức tài xỉu, in kèm dấu như bảng nhà cái.
+ *
+ *  Khung rộng CỐ ĐỊNH và giữ chỗ cả khi rỗng: dòng trên có nhãn ("-0.5"), dòng
+ *  dưới không — để nhãn co giãn thì hai số odds trong cùng ô lệch nhau
+ *  (Nick 25/8 chỉ trận Sabah Masazir: 0.82 và 0.98 không thẳng hàng). */
+function Muc({ chu }: { chu: string }) {
+  return <span className="mr-1.5 inline-block w-[30px] shrink-0 text-right text-[11px] text-muted tabular-nums">{chu}</span>;
+}
+
+/** Chữ nhãn mức: kèo chấp in dấu +/-, tài xỉu in số trần. */
+function nhanMuc(hdp: number | null, totals: boolean): string {
+  if (hdp == null) return "";
+  return totals ? String(hdp) : hdp > 0 ? `+${hdp}` : String(hdp);
 }
 
 /** Một ô kèo hai vế (chấp: chủ/khách · tài xỉu: tài/xỉu). */
@@ -85,11 +89,11 @@ function OChap({ line, totals = false }: { line?: MarketLine; totals?: boolean }
   return (
     <td className={`border-l border-line px-2 py-1 align-top ${NEN_KEO}`}>
       <div className="flex items-baseline whitespace-nowrap">
-        <Muc hdp={line.hdp} totals={totals} />
+        <Muc chu={nhanMuc(line.hdp, totals)} />
         <So hien={totals ? c.over_odds : c.home_odds} mo={totals ? o.over_odds : o.home_odds} />
       </div>
       <div className="flex items-baseline whitespace-nowrap">
-        <span className="mr-2 text-[11px] text-muted">{totals ? "x" : ""}</span>
+        <Muc chu={totals ? "x" : ""} />
         <So hien={totals ? c.under_odds : c.away_odds} mo={totals ? o.under_odds : o.away_odds} />
       </div>
     </td>

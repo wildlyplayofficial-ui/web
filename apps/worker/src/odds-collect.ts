@@ -101,7 +101,8 @@ export function trueProbabilities(
 }
 
 interface Deps {
-  apiKey: string;
+  /** Một hoặc nhiều khoá API. Nhiều khoá thì gặp 429 sẽ đổi sang khoá kế. */
+  apiKey: string | string[];
   /** Supabase client — chỉ dùng .from().insert(), giữ hẹp để test dễ. */
   store: { from: (t: string) => { insert: (rows: OddsRow[]) => Promise<{ error: { message: string } | null }> } };
   fetchImpl?: typeof fetch;
@@ -112,10 +113,25 @@ interface Deps {
 export async function collectOddsTick(deps: Deps): Promise<number> {
   const f = deps.fetchImpl ?? fetch;
   const now = (deps.now ?? Date.now)();
+  // Nhà cung cấp chặn ở 100 lượt/giờ MỖI KHOÁ. Một nhịp thu quét ~20 trận + 1
+  // lượt/giải nên đã sát trần — Nick 25/8 thấy trận Cúp C1 rớt vì lý do này.
+  // Có nhiều khoá thì gặp 429 chuyển sang khoá kế rồi gọi lại, thay vì bỏ trận.
+  const khoa = (Array.isArray(deps.apiKey) ? deps.apiKey : [deps.apiKey]).filter(Boolean);
+  if (khoa.length === 0) {
+    log.warn('odds-collect: không có khoá API nào — bỏ nhịp này');
+    return 0;
+  }
+  let i = 0;
   const api = async (path: string): Promise<unknown> => {
-    const res = await f(`https://api.odds-api.io/v3/${path}&apiKey=${deps.apiKey}`);
-    if (!res.ok) throw new Error(`odds-api ${res.status}`);
-    return res.json();
+    // Thử lần lượt từng khoá; chỉ đổi khoá khi bị chặn vì hết lượt (429).
+    for (let lan = 0; lan < khoa.length; lan++) {
+      const res = await f(`https://api.odds-api.io/v3/${path}&apiKey=${khoa[i]}`);
+      if (res.ok) return res.json();
+      if (res.status !== 429) throw new Error(`odds-api ${res.status}`);
+      log.warn(`odds-collect: khoá ${i + 1}/${khoa.length} hết lượt, đổi khoá`);
+      i = (i + 1) % khoa.length;
+    }
+    throw new Error('odds-api 429 — mọi khoá đều hết lượt');
   };
 
   const rows: OddsRow[] = [];
