@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getOddsBoard, type OddsBoardMatch } from "@/lib/odds-data";
 import { OddsBoard } from "@/components/odds-board";
+import { KeoSeoContent } from "@/components/keo-seo-content";
 import { locales } from "@/lib/format";
 import { resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -26,9 +27,11 @@ type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
-  const title = "Bảng Kèo Bóng Đá Hôm Nay — Kèo Mở, Kèo Hiện Tại, Xác Suất Thực";
+  // Kế hoạch SEO 25/8: cụm người dùng gõ là "kèo bóng đá hôm nay", không phải
+  // "bảng kèo". Đặt cụm đó lên đầu title và H1.
+  const title = "Kèo Bóng Đá Hôm Nay – Tỷ Lệ Kèo & Xác Suất Thực";
   const description =
-    "Kèo 1X2, kèo châu Á, tài xỉu các trận sắp đá — cập nhật mỗi 3 tiếng, kèm xác suất thực sau khi bóc phần nhà cái giữ lại. Chỉ để tham khảo.";
+    "Cập nhật kèo bóng đá hôm nay gồm kèo châu Á, tài xỉu và 1X2. Xem kèo mở, kèo hiện tại, biến động và xác suất thực sau khi loại margin.";
   return {
     title,
     description,
@@ -36,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${title} | banhbong.net`,
       description,
-      images: [{ url: `/api/og/editorial?title=${encodeURIComponent("Bảng Kèo Bóng Đá")}&subtitle=${encodeURIComponent("Kèo mở · kèo hiện tại · xác suất thực")}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent("Kèo Bóng Đá Hôm Nay")}&subtitle=${encodeURIComponent("Kèo mở · kèo hiện tại · xác suất thực")}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -94,7 +97,7 @@ export default async function OddsBoardPage({ params }: Props) {
     <div className="mx-auto max-w-[1360px] px-5">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Bảng Kèo", url: "/keo" }]} />
       <section className="pt-10 pb-6">
-        <h1 className="text-center font-display text-3xl font-bold">Bảng Kèo Bóng Đá</h1>
+        <h1 className="text-center font-display text-3xl font-bold">Kèo Bóng Đá Hôm Nay</h1>
         <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted">
           Kèo 1X2, kèo châu Á, tài xỉu — cập nhật mỗi 3 tiếng. Bấm vào 1 trận để xem xác suất thực (đã bóc
           phần nhà cái giữ lại) và kèo đã chạy thế nào từ lúc mở tới giờ. Chỉ để tham khảo — banhbong.net
@@ -116,6 +119,8 @@ export default async function OddsBoardPage({ params }: Props) {
               trong phần xoè ra. Không nhét 6 cột vào 390px.
               Bộ lọc nằm ở khung ngoài để CẢ HAI kiểu hiển thị dùng chung. */}
           <OddsBoard days={days} lang={lang} />
+          {/* Bài SEO nằm SAU bảng — người dùng gặp sản phẩm trước, nội dung sau. */}
+          <KeoSeoContent lang={lang} />
         </>
       )}
     </div>
