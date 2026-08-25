@@ -53,6 +53,7 @@ export interface Dict {
   nav: {
     board: string;
     dailyLine: string;
+    odds: string;
     archive: string;
     stats: string;
     matches: string;
@@ -361,6 +362,7 @@ const en: Dict = {
     archive: "Archive",
     stats: "Stats",
     matches: "Matches",
+    odds: "Odds",
     allMatches: "Our Matches",
     standings: "Standings",
     news: "News",
@@ -666,6 +668,7 @@ const vi: Dict = {
     archive: "Lưu Trữ",
     stats: "Thống Kê",
     matches: "Trận Đấu",
+    odds: "Kèo",
     allMatches: "Trận Của Chúng Ta",
     standings: "BXH",
     news: "Tin Tức",
@@ -971,6 +974,7 @@ const th: Dict = {
     archive: "คลังทีเด็ด",
     stats: "สถิติ",
     matches: "แมตช์",
+    odds: "ราคาต่อรอง",
     allMatches: "แมตช์ของเรา",
     standings: "ตารางคะแนน",
     news: "ข่าวสาร",
@@ -1276,6 +1280,7 @@ const es: Dict = {
     archive: "Archivo",
     stats: "Estadísticas",
     matches: "Partidos",
+    odds: "Cuotas",
     allMatches: "Nuestros Partidos",
     standings: "Clasificaci\u00f3n",
     news: "Noticias",
