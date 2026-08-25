@@ -18,7 +18,7 @@ import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { HotPickCard } from "@/components/hot-pick-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
-import { getNewsItems, getHeadline } from "@/lib/news";
+import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 
 export const revalidate = 300;
 
@@ -168,22 +168,31 @@ export default async function Home({ params }: Props) {
   const preseason =
     daysToOpen !== null && picks.length === 0 && noPlays.length === 0 && watching.length === 0;
 
-  // Khối nổi bật = 2 bài NHÌN LẠI (recap) GẦN NHẤT, bài mới trước (Nick 22/8,
-  // thay luật marquee chọn tay 17/8). Recap sống ở 2 bảng: analysis_articles
-  // (desk viết) và posts (auto-recap của worker sau /score) — gộp cả 2 rồi xếp
-  // theo published_at. Hero: desk có hero_image/og analysis; post dùng og editorial.
-  type RecapCard = { slug: string; title: string; league: string; published_at: string; hero: string; excerpt: string };
+  // Khối nổi bật = 2 bài MỚI NHẤT, BẤT KỂ LOẠI, gộp cả ba nguồn (Nick 25/8).
+  //
+  // Trước đây chỉ lấy bài NHÌN LẠI (recap). Hỏng ở chỗ: recap chỉ có khi trận đã
+  // đá xong và có tỷ số, nên vài ngày không trận là đầu trang đứng hình — Nick
+  // chụp lại 25/8, hai thẻ đầu vẫn là bài 22/8 và 23/8 trong khi tin 25/8 nằm
+  // dưới màn hình đầu.
+  //
+  // Buộc khối này vào MỘT loại nội dung là sai từ gốc: loại đó ngừng ra thì khối
+  // đứng. Nick chỉ ra tin chuyển nhượng cũng sẽ dính y hệt khi hết kỳ chuyển
+  // nhượng (30 ngày qua: 27/30 bài là chuyển nhượng, tức 90%).
+  //
+  // Nên gộp cả ba nguồn rồi xếp theo ngày đăng: mùa chuyển nhượng thì tin lên
+  // đầu, mùa giải chạy thì bài nhìn lại lên, lúc khác thì bài phân tích lên.
+  type RecapCard = { slug: string; title: string; league: string; published_at: string; hero: string; excerpt: string; href: string; nhan: string };
   const recaps: RecapCard[] = [
-    ...articles
-      .filter((a) => a.kind === "recap")
-      .map((a): RecapCard => ({
-        slug: a.slug,
-        title: a.title,
-        league: a.league,
-        published_at: a.published_at,
-        hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
-        excerpt: a.meta_description || analysisExcerpt(a.body),
-      })),
+    ...articles.map((a): RecapCard => ({
+      slug: a.slug,
+      title: a.title,
+      league: a.league,
+      published_at: a.published_at,
+      hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+      excerpt: a.meta_description || analysisExcerpt(a.body),
+      href: withLang(`/analysis/${a.slug}`, lang),
+      nhan: a.kind === "recap" ? dict.analysis.tabs.recap : dict.analysis.tabs.analysis,
+    })),
     ...recapPosts.map((p): RecapCard => ({
       slug: p.slug,
       title: p.title,
@@ -191,8 +200,21 @@ export default async function Home({ params }: Props) {
       published_at: p.published_at ?? "",
       hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}`,
       excerpt: p.meta_description ?? "",
+      href: withLang(`/analysis/${p.slug}`, lang),
+      nhan: dict.analysis.tabs.recap,
+    })),
+    ...newsItems.map((n): RecapCard => ({
+      slug: n.slug,
+      title: getHeadline(n, lang),
+      league: "",
+      published_at: n.published_at ?? "",
+      hero: n.hero_card_url ?? `/api/og/news/${n.slug}?locale=${lang}`,
+      excerpt: (getBody(n, lang) ?? "").slice(0, 160),
+      href: withLang(`/news/${n.slug}`, lang),
+      nhan: dict.home.latestNews,
     })),
   ]
+    .filter((x) => x.published_at)
     .sort((a, b) => b.published_at.localeCompare(a.published_at))
     .slice(0, 2);
   const hot = recaps[0] ?? null;
@@ -378,7 +400,9 @@ export default async function Home({ params }: Props) {
             {recaps.map((r, i) => (
               <Link
                 key={r.slug}
-                href={withLang(`/analysis/${r.slug}`, lang)}
+                // Không hardcode /analysis nữa: khối này giờ có cả bài tin, mà
+                // bài tin nằm ở /news — trỏ nhầm là ra trang 404.
+                href={r.href}
                 prefetch={false}
                 className="group flex flex-col overflow-hidden rounded-card border border-brand/40 bg-card shadow-raised transition-colors hover:border-brand/60"
               >
@@ -389,7 +413,7 @@ export default async function Home({ params }: Props) {
                 />
                 <div className="flex flex-1 flex-col gap-2.5 p-5 md:p-6">
                   <span className="font-display text-xs font-bold uppercase tracking-widest text-brand">
-                    ◆ {i === 0 ? dict.home.featuredStory : dict.analysis.tabs.recap}
+                    ◆ {i === 0 ? dict.home.featuredStory : r.nhan}
                   </span>
                   <h2 className="line-clamp-2 font-display text-xl font-bold leading-tight transition-colors group-hover:text-brand md:text-2xl">
                     {r.title}
