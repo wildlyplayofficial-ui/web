@@ -1,8 +1,13 @@
-import { OgCard, loadPlayerDataUri, ogResponse, loadMarkDataUri } from "../_shared";
+import { OgCard, ogResponse, loadMarkDataUri } from "../_shared";
 
 /**
- * Guide/calculator OG card (1200×630) — branded green card with the player and
- * a topic-specific anchor line (the concept-viz in text form).
+ * Guide/calculator OG card (1200×630) — thẻ xanh thương hiệu + một dòng "concept"
+ * riêng theo chủ đề (biểu đồ khái niệm ở dạng chữ).
+ *
+ * KHÔNG dùng ảnh cầu thủ ở đây (Peter bắt 25/8: "sao cứ dùng Haaland quài").
+ * public/og/player.png là MỘT ảnh cắm cứng dùng chung, nên bài "Tài Xỉu là gì"
+ * ra thẻ chia sẻ có Haaland áo Man City — người thấy tưởng bài về Man City.
+ * Bài dạy kiến thức để thẻ chữ, đúng nội dung hơn.
  * Query params: ?title=...&anchor=...&slug=...&type=guide|calculator
  */
 
@@ -20,6 +25,8 @@ const ANCHORS: Record<string, { anchor: string; badge: string }> = {
   "what-makes-a-good-tipster": { anchor: "Record  ·  CLV  ·  Reasoning  ·  Transparency", badge: "GUIDE" },
   "no-play-discipline": { anchor: "Evaluated  →  No edge found  →  PASS", badge: "GUIDE" },
   "responsible-play-guide": { anchor: "Set limits  ·  Never chase  ·  Stay in control", badge: "GUIDE" },
+  "tai-xiu-la-gi-cach-doc-keo-over-under": { anchor: "Tài 2.5  ·  Xỉu 2.5  ·  mốc 3.0 hoà kèo", badge: "GUIDE" },
+  "vi-sao-ty-le-keo-khac-nhau-giua-cac-nguon": { anchor: "Bet365 1.90  ·  Pinnacle 1.95  →  vì sao lệch", badge: "GUIDE" },
   // Calculators
   "de-vig": { anchor: "Home 1.85  ·  Away 2.05  →  True: 52.6% / 47.4%", badge: "CALCULATOR" },
   "odds-converter": { anchor: "1.75  =  -133  =  3/4  =  0.75", badge: "CALCULATOR" },
@@ -33,7 +40,6 @@ export async function GET(request: Request): Promise<Response> {
   const data = ANCHORS[slug];
   const anchor = data?.anchor || searchParams.get("anchor") || "";
   const badge = data?.badge || searchParams.get("type")?.toUpperCase() || "GUIDE";
-  const player = await loadPlayerDataUri();
 
   const mark = await loadMarkDataUri();
   return ogResponse(
@@ -44,8 +50,6 @@ export async function GET(request: Request): Promise<Response> {
       noteBox={anchor || null}
       footer="banhbong.net"
       footerRight="Free betting education"
-      player={player}
-      showPlayer
     />,
     { headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800" } },
   );
