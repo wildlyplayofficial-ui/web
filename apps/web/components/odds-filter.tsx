@@ -8,7 +8,7 @@
  * "cho tìm kiếm và filter"; nó có sẵn nhưng chỉ hiện trên điện thoại).
  * Tách ra đây để một bộ lọc điều khiển cả hai kiểu hiển thị.
  */
-import { leagueLabelForCompetition, type OddsBoardMatch } from "@/lib/odds-data";
+import { leagueLabelForCompetition, type MarketLine, type OddsBoardMatch } from "@/lib/odds-data";
 
 export interface DayGroup {
   dateKey: string;
@@ -115,3 +115,59 @@ export function FilterBar({
     </div>
   );
 }
+
+/** Nhà cái ra tới ~20 mức chấp và ~20 mức tài xỉu mỗi trận. Đổ hết thì một trận
+ *  chiếm gần 40 dòng. Bảng nhà cái thật chỉ hiện mức CHUẨN và vài mức kề.
+ *
+ *  Mức chuẩn = mức hai bên gần ngang giá nhất; đó là mức nhà cái coi là cân bằng.
+ *  Lấy cửa sổ quanh nó, giữ nguyên thứ tự mức chấp để đọc theo hàng dọc. */
+export function locMucChinh(lines: MarketLine[], soDong = 4): MarketLine[] {
+  if (lines.length <= soDong) return lines;
+  const lech = (l: MarketLine) => {
+    const c = l.current;
+    const a = c.home_odds ?? c.over_odds;
+    const b = c.away_odds ?? c.under_odds;
+    return a == null || b == null ? Number.POSITIVE_INFINITY : Math.abs(a - b);
+  };
+  let iChuan = 0;
+  lines.forEach((l, i) => {
+    if (lech(l) < lech(lines[iChuan])) iChuan = i;
+  });
+  const tu = Math.max(0, Math.min(iChuan - Math.floor(soDong / 2), lines.length - soDong));
+  return lines.slice(tu, tu + soDong);
+}
+
+/** Sáu cột bảng đang hiện. European Handicap KHÔNG nằm trong bảng. */
+const THI_TRUONG_TREN_BANG = ["ML", "Spread", "Totals", "ML HT", "Spread HT", "Totals HT"] as const;
+
+/** ĐÚNG những mức mà bảng phía trên đang hiện — không hơn.
+ *
+ *  Nick 25/8: "sao nhiều kèo không có ở trên lại có ở chi tiết, chỉ show đúng
+ *  các kèo ở trên thôi". Trước đây phần chi tiết đổ nguyên ~40 mức từ -1.5 tới
+ *  +1 trong khi bảng chỉ hiện 4 mức. */
+export function mucTheoBang(
+  markets: Record<string, MarketLine[]>,
+): Array<{ market: string; lines: MarketLine[] }> {
+  const ra: Array<{ market: string; lines: MarketLine[] }> = [];
+  for (const m of THI_TRUONG_TREN_BANG) {
+    const lines = markets[m] ?? [];
+    if (lines.length === 0) continue;
+    // Cột 1X2 trong bảng chỉ lấy dòng đầu, không có mức chấp.
+    ra.push({ market: m, lines: m === "ML" || m === "ML HT" ? lines.slice(0, 1) : locMucChinh(lines) });
+  }
+  return ra;
+}
+
+/** Đổi giá thập phân sang kiểu Malay — kiểu số mà bảng kèo VN quen dùng.
+ *
+ *  Nick 25/8: "odd số âm màu đỏ". Giá thập phân KHÔNG BAO GIỜ âm nên nếu cứ để
+ *  thập phân thì không có số nào đỏ; muốn có dấu âm thì phải đổi hệ.
+ *
+ *  Quy tắc: cửa dễ ăn (thập phân < 2) ra số DƯƠNG = đặt 1 ăn bấy nhiêu.
+ *  Cửa khó ăn (>= 2) ra số ÂM = phải đặt bấy nhiêu mới ăn 1.
+ */
+export function sangMalay(d: number): number {
+  const loi = d - 1;
+  return loi <= 1 ? loi : -1 / loi;
+}
+

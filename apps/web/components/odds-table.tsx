@@ -8,6 +8,7 @@ import {
   type OddsBoardMatch,
 } from "@/lib/odds-data";
 import { ChiTietTran } from "./odds-detail";
+import { locMucChinh, sangMalay } from "./odds-filter";
 
 /**
  * Bảng kèo kiểu trang nhà cái (Nick 25/8: "user quen nhìn kiểu này rồi").
@@ -28,19 +29,6 @@ interface DayGroup {
   dateKey: string;
   heading: string;
   matches: OddsBoardMatch[];
-}
-
-/** Đổi giá thập phân sang kiểu Malay — kiểu số mà bảng kèo VN quen dùng.
- *
- *  Nick 25/8: "odd số âm màu đỏ". Giá thập phân KHÔNG BAO GIỜ âm nên nếu cứ để
- *  thập phân thì không có số nào đỏ; muốn có dấu âm thì phải đổi hệ.
- *
- *  Quy tắc: cửa dễ ăn (thập phân < 2) ra số DƯƠNG = đặt 1 ăn bấy nhiêu.
- *  Cửa khó ăn (>= 2) ra số ÂM = phải đặt bấy nhiêu mới ăn 1.
- */
-function sangMalay(d: number): number {
-  const loi = d - 1;
-  return loi <= 1 ? loi : -1 / loi;
 }
 
 /** Số kèo. Âm = đỏ (quy ước bảng kèo). Mũi tên nhỏ báo tăng/giảm so với lúc mở —
@@ -139,28 +127,6 @@ function gioVN(iso: string): { ngay: string; gio: string } {
   const f = (o: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", ...o }).format(d);
   return { ngay: f({ day: "2-digit", month: "2-digit" }), gio: f({ hour: "2-digit", minute: "2-digit", hour12: false }) };
-}
-
-/** Nhà cái ra tới ~20 mức chấp và ~20 mức tài xỉu mỗi trận. Đổ hết thì một trận
- *  chiếm gần 40 dòng — trang dài 15.000 pixel cho 16 trận (Gwen đo 25/8 ngay sau
- *  khi lên). Bảng nhà cái thật chỉ hiện mức CHUẨN và vài mức kề.
- *
- *  Mức chuẩn = mức hai bên gần ngang giá nhất; đó là mức nhà cái coi là cân bằng.
- *  Lấy cửa sổ quanh nó, giữ nguyên thứ tự mức chấp để đọc theo hàng dọc. */
-function locMucChinh(lines: MarketLine[], soDong = 4): MarketLine[] {
-  if (lines.length <= soDong) return lines;
-  const lech = (l: MarketLine) => {
-    const c = l.current;
-    const a = c.home_odds ?? c.over_odds;
-    const b = c.away_odds ?? c.under_odds;
-    return a == null || b == null ? Number.POSITIVE_INFINITY : Math.abs(a - b);
-  };
-  let iChuan = 0;
-  lines.forEach((l, i) => {
-    if (lech(l) < lech(lines[iChuan])) iChuan = i;
-  });
-  const tu = Math.max(0, Math.min(iChuan - Math.floor(soDong / 2), lines.length - soDong));
-  return lines.slice(tu, tu + soDong);
 }
 
 function KhoiTran({ match }: { match: OddsBoardMatch }) {
