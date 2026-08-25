@@ -19,6 +19,7 @@ import { postPhotoToFacebook, postFacebookStory } from './announce';
 import { enrichPreviewP2, enrichResultP2, buildP2Row, type P2Deps, type P2EnrichInput, type P2ResultInput } from './news-gen-p2';
 import topTeamsJson from './data/top-teams.json';
 import rivalriesJson from './data/rivalries.json';
+import bylineJson from './data/byline.json';
 
 /** Values copied from apps/web/lib/news.ts NEWS_TYPES (by-convention contract — worker
  *  cannot import apps/web). Unit test asserts this stays a subset of the canonical list. */
@@ -152,7 +153,8 @@ const MIN_PUBLISH_BODY_LEN = 80;
 
 const SOURCE = 'LiveScore API';
 const SOURCE_URL = 'https://livescore-api.com/';
-const BYLINE = 'Banh Bóng News';
+/** Tên toà soạn: một nơi duy nhất quyết định (gương của apps/web/lib/brand.ts). */
+const BYLINE = bylineJson.news;
 const LS_TABLE = 'https://livescore-api.com/api-client/leagues/table.json';
 
 // ── Slugs ────────────────────────────────────────────────────────────────────

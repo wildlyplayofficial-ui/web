@@ -8,6 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, slugify } from './recap';
 import { log } from './log';
 import { NEWS_LANGS, type NewsLang, type Rendered } from './news-gen-templates';
+import bylineJson from './data/byline.json';
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
@@ -19,7 +20,9 @@ const SONNET_MODEL = 'claude-sonnet-4-6';
 const GUARDIAN_BASE = 'https://content.guardianapis.com/search';
 const GNEWS_RSS_BASE = 'https://news.google.com/rss/search';
 const P2_SOURCE = 'Guardian API + Google News';
-const P2_BYLINE = 'banhbong.net News';
+/** P1 và P2 ghi cùng một bảng nên phải cùng một tên toà soạn. Trước 25/8 chỗ này
+ *  gõ tay "banhbong.net News" — tên thứ ba trong repo, chưa kịp ra bài nào. */
+const P2_BYLINE = bylineJson.news;
 const P2_MAX_TOKENS = 6000;
 
 // ── Types ───────────────────────────────────────────────────────────────────
