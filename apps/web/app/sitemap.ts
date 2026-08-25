@@ -7,7 +7,7 @@ import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
-/** SEO: every settled play + published post + all 4 language variants. */
+/** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8). */
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -32,11 +32,11 @@ function safeLastMod(value: string | number | Date | null | undefined): Date {
 }
 
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
-function alternates(path: string, langs: readonly string[] = LANGS): MetadataRoute.Sitemap[number]["alternates"] {
+function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
   const clean = path === "/" ? "" : path;
   return {
     languages: Object.fromEntries(
-      langs.map((l) => [l, l === "vi" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
+      LANGS.map((l) => [l, l === "vi" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
     ),
   };
 }
@@ -140,19 +140,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/match/${m.slug}`),
   }));
 
-  // Guide: chỉ 6 bài nặng thuật ngữ cá cược mới loại 'vi' khỏi hreflang sitemap.
-  // Các guide còn lại khai đủ 4 ngôn ngữ. (Nick chốt danh sách 4/8)
-  const langsWithoutVi = LANGS.filter((l) => l !== "vi");
-  const guideRoutes: MetadataRoute.Sitemap = guides.map((g) => ({
-    url: `${BASE}/guides/${g.slug}`,
-    lastModified: safeLastMod(g.updated),
-    changeFrequency: "monthly",
-    priority: 0.7,
-    alternates: alternates(
-      `/guides/${g.slug}`,
-      VI_BLOCKED_GUIDE_SLUGS.has(g.slug) ? langsWithoutVi : LANGS,
-    ),
-  }));
+  // 6 guide nặng thuật ngữ cá cược đặt noindex ở bản VI (Nick chốt 4/8). Trước đây
+  // chúng vẫn nằm trong sitemap vì còn mang hreflang sang /en /th /es. Ba bản đó bỏ
+  // từ 23/8, nên nay chỉ còn khai một URL noindex trần — Search Console báo lỗi
+  // "Submitted URL marked noindex", tự tạo lỗi cho mình. Bỏ hẳn khỏi sitemap;
+  // trang vẫn sống, vẫn follow, chỉ không nộp cho Google nữa.
+  const guideRoutes: MetadataRoute.Sitemap = guides
+    .filter((g) => !VI_BLOCKED_GUIDE_SLUGS.has(g.slug))
+    .map((g) => ({
+      url: `${BASE}/guides/${g.slug}`,
+      lastModified: safeLastMod(g.updated),
+      changeFrequency: "monthly",
+      priority: 0.7,
+      alternates: alternates(`/guides/${g.slug}`),
+    }));
 
   const reportRoutes: MetadataRoute.Sitemap = reports.map((r) => ({
     url: `${BASE}/transparency/${r.slug}`,

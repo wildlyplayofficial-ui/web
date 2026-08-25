@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, PUBLIC_LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getNewsByTeam, getHeadline, type NewsItem } from "@/lib/news";
 import { getAnalysisByTeam } from "@/lib/analysis-articles";
 import type { AnalysisArticle } from "@/lib/types";
@@ -14,14 +14,14 @@ import { locales } from "@/lib/format";
 
 export const revalidate = 300;
 
-const LANGS: Lang[] = ["en", "vi", "th", "es"];
-
 /** Đủ bài mới cho Google index — dưới ngưỡng thì noindex để tránh "trang mỏng" dìm
  *  cả site (Jane 21/8). Tự bật index khi 1 đội tích đủ bài, không cần sửa tay. */
 const MIN_INDEX = 12;
 
 export function generateStaticParams() {
-  return LANGS.flatMap((lang) => TEAM_HUBS.map((t) => ({ lang, slug: t.slug })));
+  // Chỉ dựng bản tiếng Việt. /en /th /es đã 301 về VI từ 23/8 nên 3 bản kia là
+  // trang dựng ra không ai tới được — và layout cha cũng chỉ khai mỗi 'vi'.
+  return PUBLIC_LANGS.flatMap((lang) => TEAM_HUBS.map((t) => ({ lang, slug: t.slug })));
 }
 
 type Props = { params: Promise<{ lang: string; slug: string }> };

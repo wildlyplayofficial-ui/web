@@ -61,7 +61,10 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   const isAdmin = pathname.includes("/admin");
-  const lang = headersList.get("x-lang") || "en";
+  // Mặc định 'vi': site chỉ còn tiếng Việt, và proxy chỉ bỏ trống x-lang ở những
+  // đường không qua bộ lọc ngôn ngữ. Để 'en' là in ra <html lang="en"> trên trang
+  // tiếng Việt — Google đọc sai ngôn ngữ trang.
+  const lang = headersList.get("x-lang") || "vi";
 
   // Static inline scripts — hardcoded strings only, no user input (safe from XSS)
   const themeScript = '(function(){try{var t=localStorage.getItem("wp_theme");if(t==="light"){document.documentElement.classList.remove("dark")}else{document.documentElement.classList.add("dark");if(!t)localStorage.setItem("wp_theme","dark")}}catch(e){}})()';

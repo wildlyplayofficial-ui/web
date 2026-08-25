@@ -64,7 +64,7 @@ export async function GET(): Promise<Response> {
     <title>${SITE_NAME} Analysis</title>
     <link>${BASE}/analysis</link>
     <description>Match analysis, previews, recaps and post-mortems from ${SITE_NAME}.</description>
-    <language>en</language>
+    <language>vi</language>
     <lastBuildDate>${new Date(lastBuild).toUTCString()}</lastBuildDate>
     <atom:link href="${BASE}/api/analysis/rss" rel="self" type="application/rss+xml"/>
 ${rssItems.join("\n")}
