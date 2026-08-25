@@ -15,6 +15,7 @@ import {
   NEWS_LANGS, renderPreview, renderResult, renderStandings,
   type PreviewData, type ResultData, type StandingsData, type Rendered,
 } from './news-gen-templates';
+import { postPhotoToFacebook, postFacebookStory } from './announce';
 import { enrichPreviewP2, enrichResultP2, buildP2Row, type P2Deps, type P2EnrichInput, type P2ResultInput } from './news-gen-p2';
 import topTeamsJson from './data/top-teams.json';
 import rivalriesJson from './data/rivalries.json';
@@ -296,6 +297,41 @@ interface NewsGenDeps {
   revalidate: (tags: string[]) => Promise<void>;
   pingIndexNow: (paths: string[]) => Promise<void>;
   p2: P2Deps | null;
+  /** Có thì bài tin đăng xong tự lên Facebook: một bài trên bảng tin + một Story.
+   *  Không đặt thì tin vẫn web-only như cũ. */
+  facebook?: { pageId: string; pageToken: string };
+}
+
+/** Đăng một bài tin lên Facebook: bài trên bảng tin trước, rồi Story cùng ảnh đó.
+ *
+ *  Peter chốt 25/8: "đăng fb sẽ đăng bài + story bài đó". Trước đó Nick chốt 21/8
+ *  tin tức chỉ nằm trên web nên phần này từng bị gỡ khỏi code — Peter quyết bật
+ *  lại, đã báo Nick.
+ *
+ *  KHÔNG BAO GIỜ ném lỗi ra ngoài: Facebook hỏng thì bài vẫn phải lên web bình
+ *  thường, giống cách Story của pick đang làm. Story hỏng cũng không kéo theo bài
+ *  đã đăng trên bảng tin.
+ */
+async function dangLenFacebook(
+  deps: NewsGenDeps, slug: string, tieuDe: string,
+): Promise<void> {
+  const fb = deps.facebook;
+  if (!fb) return;
+  const anh = `${deps.siteUrl}/api/og/news/${slug}?locale=vi`;
+  const link = `${deps.siteUrl}/news/${slug}`;
+  try {
+    const id = await postPhotoToFacebook(fb, anh, `${tieuDe}\n\n${link}`);
+    log.info(`news-fb: đăng bài ${slug} (${id})`);
+  } catch (err) {
+    log.warn(`news-fb: đăng bài ${slug} hỏng —`, err);
+    return; // bài chưa lên thì đừng đăng Story trỏ tới nó
+  }
+  try {
+    const sid = await postFacebookStory(fb, anh);
+    log.info(`news-fb: đăng Story ${slug} (${sid})`);
+  } catch (err) {
+    log.warn(`news-fb: Story ${slug} hỏng (bài trên bảng tin vẫn sống) —`, err);
+  }
 }
 
 async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
@@ -306,6 +342,14 @@ async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): P
   if (deps.autopublish) {
     void deps.revalidate(['news']);
     void deps.pingIndexNow(rows.map((r) => `/news/${r.slug}`));
+    // Chỉ bài THẬT SỰ đăng mới lên Facebook — bài rớt cổng chất lượng thành
+    // draft thì không, không thì Facebook có link 404.
+    for (const r of rows) {
+      if (r.status !== 'published') continue;
+      const tieuDe = String(r.headline_vi ?? r.headline_en ?? '').trim();
+      if (!tieuDe) continue;
+      void dangLenFacebook(deps, String(r.slug), tieuDe);
+    }
   }
   return rows.length;
 }
@@ -648,6 +692,7 @@ export function startNewsGenCron(cfg: {
   sb: SupabaseClient; env: NodeJS.ProcessEnv; siteUrl: string;
   revalidate: (tags: string[]) => Promise<void>;
   pingIndexNow: (urls: string[]) => Promise<void>;
+  facebook?: { pageId: string; pageToken: string };
 }): () => void {
   const autopublish = cfg.env.NEWS_AUTOPUBLISH === 'true';
   // P2 deps: requires both Guardian + Anthropic keys — otherwise P2 is disabled (all previews stay P1)
@@ -660,7 +705,7 @@ export function startNewsGenCron(cfg: {
   else log.info('news-gen: P2 enrichment disabled (missing GUARDIAN_API_KEY or ANTHROPIC_API_KEY)');
   const deps: NewsGenDeps = {
     sb: cfg.sb, siteUrl: cfg.siteUrl, autopublish,
-    revalidate: cfg.revalidate, pingIndexNow: cfg.pingIndexNow,
+    revalidate: cfg.revalidate, pingIndexNow: cfg.pingIndexNow, facebook: cfg.facebook,
     p2: p2Deps,
   };
   const lsEnv = { key: cfg.env.LIVESCORE_API_KEY, secret: cfg.env.LIVESCORE_API_SECRET };
