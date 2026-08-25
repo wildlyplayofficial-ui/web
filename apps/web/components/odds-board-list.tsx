@@ -106,10 +106,11 @@ export function OddsBoardList({ days, lang }: { days: DayGroup[]; lang: Lang }) 
     <div className="flex flex-col gap-8 pb-10">
       {days.map((day) => (
         <section key={day.dateKey}>
-          {/* Ngày tháng là NHÃN GIAO DIỆN, không phải mục nội dung. Để H2 thì dàn
-              bài thành H1 → "Thứ Ba, 25/8" → ... → H2 bài SEO, máy đọc cấu trúc
-              tưởng trang nói về ngày tháng. Bản này còn nằm trong khối ẩn ở màn
-              rộng nên H2 vẫn vào dàn bài dù người dùng máy tính không thấy. */}
+          {/* Ngày tháng là NHÃN GIAO DIỆN, không phải mục nội dung — để H2 thì
+              dàn bài trang thành H1 → "Thứ Ba, 25/8" → "Thứ Tư, 26/8"..., máy đọc
+              cấu trúc tưởng trang nói về ngày tháng chứ không phải về kèo bóng đá.
+              Bản này lại nằm trong khối ẩn ở màn rộng, nên H2 vẫn vào dàn bài dù
+              người dùng máy tính không hề thấy. Giữ nguyên hình thức, chỉ đổi thẻ. */}
           <p className="mb-3 font-display text-base font-bold capitalize text-ink">{day.heading}</p>
           <div className="flex flex-col gap-3">
             {day.matches.map((m) => (
