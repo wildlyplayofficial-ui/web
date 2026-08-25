@@ -40,6 +40,7 @@ export function CompetitionNews({
                 iso={article.published_at}
                 locale={locales[lang]}
                 format="short"
+                timeZone="Asia/Ho_Chi_Minh"
                 className="text-xs text-muted"
               />
             )}

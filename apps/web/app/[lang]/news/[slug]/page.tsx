@@ -124,7 +124,14 @@ export default async function NewsDetail({ params }: Props) {
           {headline}
         </h1>
         <p className="mt-3 text-sm text-muted">
-          <LocalDate iso={item.published_at} locale={locales[lang]} format="long" />
+          {/* Ngày đăng ghim theo giờ VN — giờ toà soạn. Để nó chạy theo máy người
+              xem thì máy chủ in ngày khác trình duyệt, và Google đọc bản máy chủ. */}
+          <LocalDate
+            iso={item.published_at}
+            locale={locales[lang]}
+            format="long"
+            timeZone="Asia/Ho_Chi_Minh"
+          />
           {" \u00b7 "}{item.byline || "banhbong.net News"}
         </p>
         {kickoffUtc && (
