@@ -27,6 +27,8 @@ export interface AnalysisArticle {
   author_type: "desk_ai";
   match_id: string | null;
   linked_pick_id: string | null;
+  /** Slug/tên đội gắn bài (hub /doi + logo trên thẻ chia sẻ). DB đã có, có thể null ở bài cũ. */
+  teams?: string[] | null;
   hero_image: string | null;
   /** Ảnh vuông tối giản (chỉ logo đội, không chữ) cho ô thumbnail nhỏ trong danh
    *  sách. Bỏ trống thì rơi về hero_image/banner. Banner nhét vào ô ~120px thì nhoè

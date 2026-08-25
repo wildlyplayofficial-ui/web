@@ -202,7 +202,13 @@ function DeskArticleView({
     DESK,
     article.slug,
     lang,
-    article.hero_image ?? undefined,
+    // Ảnh schema phải là URL tuyệt đối và ĐÚNG route: bài desk không có hero từng
+    // trỏ /api/og/news/... → 404 (Gwen soi 25/8). Rơi về card /api/og/analysis.
+    article.hero_image
+      ? article.hero_image.startsWith("http")
+        ? article.hero_image
+        : `${BASE}${article.hero_image}`
+      : `${BASE}/api/og/analysis/${article.slug}?locale=${lang}`,
   );
 
   return (

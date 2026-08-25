@@ -58,6 +58,30 @@ export function loadOgFonts(): Promise<OgFonts | undefined> {
   return fontsPromise;
 }
 
+// ── Club crest → data URI (thẻ soi kèo cần logo 2 đội — Peter 25/8) ──
+const badgePromises = new Map<string, Promise<string | null>>();
+
+async function loadBadgeOnce(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Crest image (remote URL) as a cached base64 data URI, or null on any failure. */
+export function loadBadgeDataUri(url: string): Promise<string | null> {
+  let p = badgePromises.get(url);
+  if (!p) {
+    p = loadBadgeOnce(url);
+    badgePromises.set(url, p);
+  }
+  return p;
+}
+
 // ── Player mascot: inline as a data URI (most reliable inside ImageResponse). ──
 let playerPromise: Promise<string | null> | undefined;
 
@@ -184,6 +208,8 @@ export type OgCardProps = {
   detail?: OgDetail[] | null;
   /** Small muted text in the top-right of the content column (e.g. league). */
   topRight?: string | null;
+  /** Club crest data URIs shown as chips above the title (soi kèo cards). */
+  crests?: string[] | null;
   /** Footer wordmark link (left). Defaults to "banhbong.net". */
   footer?: string;
   /** Small muted note on the footer right. */
@@ -217,6 +243,7 @@ export function OgCard(props: OgCardProps): ReactNode {
     chips,
     detail,
     topRight,
+    crests,
     footer = "banhbong.net",
     footerRight,
     player,
@@ -307,6 +334,31 @@ export function OgCard(props: OgCardProps): ReactNode {
               {eyebrow}
             </div>
           </div>
+          {crests && crests.length ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 18, marginTop: 22 }}>
+              {crests.map((src, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                  {i > 0 ? (
+                    <div style={{ display: "flex", fontSize: 24, fontWeight: 700, color: "rgba(255,255,255,0.75)" }}>vs</div>
+                  ) : null}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 96,
+                      height: 96,
+                      backgroundColor: "#ffffff",
+                      borderRadius: 18,
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" width={72} height={72} style={{ width: 72, height: 72, objectFit: "contain" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <div
             style={{
               display: "flex",

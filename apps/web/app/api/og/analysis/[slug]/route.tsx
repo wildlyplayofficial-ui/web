@@ -1,5 +1,6 @@
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
-import { OgCard, ogResponse, loadMarkDataUri } from "../../_shared";
+import { OgCard, ogResponse, loadMarkDataUri, loadBadgeDataUri } from "../../_shared";
+import { teamBadge } from "@/lib/team-badges";
 import { SITE_NAME, DESK } from "@/lib/brand";
 
 /**
@@ -48,10 +49,23 @@ export async function GET(
   });
   const badgeLabel = (vi ? KIND_BADGE_VI[article.kind] : KIND_BADGE[article.kind]) ?? article.kind.toUpperCase();
 
+  // Logo 2 đội trên thẻ soi kèo (Peter 25/8: "bài soi kèo phải có logo").
+  // teams[] ghi tên hiển thị ("Real Madrid") — tra thẳng bảng badge theo tên.
+  const teamNames = (article.teams ?? []).slice(0, 2);
+  const crests = (
+    await Promise.all(
+      teamNames.map((t) => {
+        const url = teamBadge(t);
+        return url ? loadBadgeDataUri(url) : Promise.resolve(null);
+      }),
+    )
+  ).filter((x): x is string => Boolean(x));
+
   const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
       mark={mark}
+      crests={crests.length ? crests : null}
       eyebrow={badgeLabel}
       title={article.title}
       topRight={article.league || null}
