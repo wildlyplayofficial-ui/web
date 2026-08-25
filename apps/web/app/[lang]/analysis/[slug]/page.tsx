@@ -334,6 +334,15 @@ export default async function AnalysisArticlePage({ params }: Props) {
   const post = await getPost(slug, lang);
   if (!post) notFound();
 
+  // Bài type=guide có nhà riêng (/guides, báo cáo tháng ở /transparency). Redirect
+  // phải nằm Ở ĐÂY (page component) mới ra HTTP 308 thật — permanentRedirect trong
+  // resolveArticle chỉ chạy qua generateMetadata, mà Next 16 stream metadata nên
+  // nó bị hạ cấp thành <meta http-equiv=refresh> + HTTP 200 (đo local 25/8).
+  if (post.type === "guide") {
+    const home = REPORT_SLUG_RE.test(slug) ? `/transparency/${slug}` : `/guides/${slug}`;
+    permanentRedirect(withLang(home, lang));
+  }
+
   const published = post.published_at
     ? new Intl.DateTimeFormat(locales[lang], {
         day: "numeric",
