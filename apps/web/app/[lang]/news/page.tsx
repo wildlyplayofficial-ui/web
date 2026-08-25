@@ -422,11 +422,19 @@ export default async function NewsLanding({ params, searchParams }: Props) {
               href={noiBat.href}
               className="group flex flex-col overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40 lg:col-span-2"
             >
-              {/* Ảnh bọc div relative + img absolute: ảnh DỌC (cúp MLS) với
-                  flex-1 cũ tự kéo cột trái cao 1191px trong khi cột phải 450px
-                  (Jane đo 9/8) — absolute thì ảnh lấp theo khung, không đẩy
-                  ngược chiều cao thẻ */}
-              <div className="relative h-40 overflow-hidden sm:h-56 lg:min-h-56 lg:flex-1">
+              {/* Khung giữ ĐÚNG tỷ lệ ảnh hero (1200x630) nên object-cover không
+                  còn gì để cắt.
+
+                  Trước đây khung để chiều cao cố định: ảnh 2400x1260 (tỷ lệ 1.905)
+                  nhét vào khung 1.725 trên máy tính bị cắt ~9% bề ngang, khung
+                  3.473 trên máy tính bảng bị cắt ~45% chiều cao (Gwen đo 25/8).
+                  Ảnh hero vẽ sát mép — tên cầu thủ ở lề trái, chữ banhbong.net ở
+                  góc phải — nên cắt bên nào cũng mất chữ. Nick bắt được: "banhbong.net"
+                  cụt thành "banhbong.n".
+
+                  Vẫn giữ div relative + img absolute như cũ để ảnh DỌC (cúp MLS)
+                  không kéo dài thẻ (Jane đo 9/8). */}
+              <div className="relative aspect-[1200/630] overflow-hidden">
                 <img
                   src={anhNoiBat}
                   alt=""
