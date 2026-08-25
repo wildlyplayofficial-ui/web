@@ -19,6 +19,7 @@ import { HotPickCard } from "@/components/hot-pick-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
+import { getOddsBoard } from "@/lib/odds-data";
 
 export const revalidate = 300;
 
@@ -72,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, recapPosts] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -83,6 +84,7 @@ export default async function Home({ params }: Props) {
       getStandingsCompetitions(),
       getAnalysisArticles(undefined, 12),
       getNewsItems(undefined, 6),
+      getOddsBoard(),
       getRecentRecapPosts(lang, 2),
     ]);
 
@@ -217,6 +219,13 @@ export default async function Home({ params }: Props) {
     .filter((x) => x.published_at)
     .sort((a, b) => b.published_at.localeCompare(a.published_at))
     .slice(0, 2);
+  // Banner kèo — Peter 25/8: "trang chủ mình có gì đó move sang trang Dự đoán
+  // và kèo". Dự đoán đã có banner riêng từ trước; /keo thì KHÔNG xuất hiện ở đâu
+  // trên trang chủ, người dùng chỉ vào được qua thanh menu trên cùng.
+  const ngayVN = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(d);
+  const homNay = ngayVN(new Date());
+  const keoHomNay = oddsMatches.filter((m) => ngayVN(new Date(m.kickoffUtc)) === homNay).length;
+
   const hot = recaps[0] ?? null;
   const restArticles = articles.filter((a) => !recaps.some((r) => r.slug === a.slug)).slice(0, 6);
   // Nhận định mới nhất — lấp ô trống cột phải (Nick 20/8, Cách A). Bài dự đoán/nhận
@@ -375,6 +384,30 @@ export default async function Home({ params }: Props) {
           </Link>
         )}
       </section>
+
+      {/* 1b-bis. Banner Kèo — ngay dưới banner Dự đoán vì cùng nhóm "tra cứu trước
+          trận". Chỉ hiện khi thật sự có kèo; không có thì ẩn hẳn, đừng để banner
+          rỗng dẫn sang trang trống. */}
+      {oddsMatches.length > 0 && (
+        <section className="pb-10">
+          <Link
+            href={withLang("/keo", lang)}
+            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div>
+              <p className="font-display text-lg font-bold">{dict.home.oddsTitle}</p>
+              <p className="mt-1 text-sm text-muted">
+                {dict.home.oddsToday.replace("{n}", String(keoHomNay))}
+                <span className="mx-2">·</span>
+                {dict.home.oddsWindow.replace("{n}", String(oddsMatches.length))}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewOdds} &rarr;
+            </span>
+          </Link>
+        </section>
+      )}
 
       {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
           (never a fabricated seed). */}

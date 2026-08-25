@@ -99,6 +99,10 @@ export interface Dict {
     latestNews: string;
     allNews: string;
     viewBoard: string;
+    oddsTitle: string;
+    oddsToday: string;
+    oddsWindow: string;
+    viewOdds: string;
     trustCurator: string;
     trustScout: string;
     opensIn: string;
@@ -406,6 +410,10 @@ const en: Dict = {
     latestNews: "Latest news",
     allNews: "All news",
     viewBoard: "View the Daily Board",
+    oddsTitle: "Football Odds Board",
+    oddsToday: "{n} matches today",
+    oddsWindow: "{n} matches in the next 4 days",
+    viewOdds: "View the odds board",
     trustCurator: "The Curator — real human, hand-picked plays",
     trustScout: "The Scout — openly AI, separate ledger, lower confidence",
     opensIn: "Kicks off in {n} days",
@@ -712,6 +720,10 @@ const vi: Dict = {
     latestNews: "Tin mới nhất",
     allNews: "Tất cả tin",
     viewBoard: "Xem Bảng Dự Đoán Hôm Nay",
+    oddsTitle: "Bảng Kèo Bóng Đá",
+    oddsToday: "{n} trận hôm nay",
+    oddsWindow: "{n} trận trong 4 ngày tới",
+    viewOdds: "Xem bảng kèo",
     trustCurator: "Chú Tám Banh — người thật, tự tay chọn trận",
     trustScout: "Trợ lý AI — công khai là AI, sổ theo dõi riêng, độ tin cậy thấp hơn",
     opensIn: "Khai mạc sau {n} ngày",
@@ -1018,6 +1030,10 @@ const th: Dict = {
     latestNews: "ข่าวล่าสุด",
     allNews: "ข่าวทั้งหมด",
     viewBoard: "ดูบอร์ดประจำวัน",
+    oddsTitle: "ตารางราคาต่อรอง",
+    oddsToday: "{n} คู่วันนี้",
+    oddsWindow: "{n} คู่ใน 4 วันข้างหน้า",
+    viewOdds: "ดูตารางราคา",
     trustCurator: "Admin — คนจริง เลือกทีเด็ดด้วยมือ",
     trustScout: "The Scout — เป็น AI อย่างเปิดเผย บัญชีแยก ความมั่นใจต่ำกว่า",
     opensIn: "เปิดฤดูกาลอีก {n} วัน",
@@ -1324,6 +1340,10 @@ const es: Dict = {
     latestNews: "Últimas noticias",
     allNews: "Todas las noticias",
     viewBoard: "Ver la Pizarra Diaria",
+    oddsTitle: "Tabla de Cuotas",
+    oddsToday: "{n} partidos hoy",
+    oddsWindow: "{n} partidos en los próximos 4 días",
+    viewOdds: "Ver la tabla de cuotas",
     trustCurator: "The Curator — humano real, jugadas seleccionadas a mano",
     trustScout: "The Scout — abiertamente IA, historial separado, menor confianza",
     opensIn: "Arranca en {n} días",
