@@ -14,7 +14,11 @@
  *   runNewsTick({ mode: 'morning', dryRun: false });
  */
 
+import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
+
+// Tên toà soạn lấy từ hằng số dùng chung, không gõ tay ở đây.
+const BYLINES = JSON.parse(readFileSync(new URL('./src/data/byline.json', import.meta.url), 'utf8'));
 
 const SITE = process.env.SITE_URL || 'https://www.banhbong.net';
 const STORAGE = 'https://rtsyrktpodspdobelyqs.supabase.co/storage/v1/object/public/player-photos';
@@ -264,7 +268,7 @@ async function publish(sb, { slug, title, body, kind, league, heroImage, thumbIm
   const nowIso = new Date().toISOString();
   const { error } = await sb.from('analysis_articles').upsert({
     slug, kind, tier: 'T1_covered', league, title, body,
-    byline: 'Banh Bóng Desk', author_type: 'desk_ai',
+    byline: BYLINES.desk, author_type: 'desk_ai',
     hero_image: heroImage, thumb_image: thumbImage ?? null, match_id: matchId ?? null,
     status: 'published', published_at: nowIso,
   }, { onConflict: 'slug' });

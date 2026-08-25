@@ -9,6 +9,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { log } from './log';
+import bylineJson from './data/byline.json';
 
 // ── Types ──
 
@@ -103,7 +104,7 @@ function validatePayload(payload: Json): { ok: true; data: ValidatedPayload } | 
       title,
       league,
       body,
-      byline: typeof payload.byline === 'string' ? payload.byline.trim() : 'Banh Bóng Desk',
+      byline: typeof payload.byline === 'string' ? payload.byline.trim() : bylineJson.desk,
       match_id: typeof payload.match_id === 'string' ? payload.match_id : null,
       linked_pick_id: typeof payload.linked_pick_id === 'string' ? payload.linked_pick_id : null,
       hero_image: typeof payload.hero_image === 'string' ? payload.hero_image : null,

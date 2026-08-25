@@ -1,0 +1,5 @@
+{
+  "_": "Gương của apps/web/lib/brand.ts (DESK, NEWS_DESK). Worker không import được apps/web nên phải chép; src/byline.test.ts đọc cả hai file và chặn nếu lệch.",
+  "desk": "Banh Bóng Desk",
+  "news": "Banh Bóng News"
+}
