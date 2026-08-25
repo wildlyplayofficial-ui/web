@@ -33,7 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: withLang("/keo", lang) },
-    openGraph: { title: `${title} | banhbong.net`, description },
+    openGraph: {
+      title: `${title} | banhbong.net`,
+      description,
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent("Bảng Kèo Bóng Đá")}&subtitle=${encodeURIComponent("Kèo mở · kèo hiện tại · xác suất thực")}`, width: 1200, height: 630 }],
+    },
   };
 }
 
