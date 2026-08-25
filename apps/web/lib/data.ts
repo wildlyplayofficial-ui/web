@@ -302,7 +302,7 @@ export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
 });
 
 /** Transparency report slugs follow the pattern "month-year" (e.g., "june-2026"). */
-const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/;
+export const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/;
 
 /** Published guides for a language, newest first. Excludes transparency reports. */
 async function getGuidesImpl(lang: Lang): Promise<Post[]> {
@@ -465,6 +465,9 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
     .select("slug, published_at, title")
     .eq("status", "published")
     .eq("lang", "en")
+    // type=guide đã có nhà riêng (/guides + /transparency). Đổ thêm sang
+    // /analysis tạo 13 cặp URL trùng tự cạnh tranh (kiểm kê 25/8) — loại hẳn.
+    .neq("type", "guide")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllPostSlugs: ${error.message}`);
   return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
