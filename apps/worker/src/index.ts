@@ -217,7 +217,7 @@ if (siteUrl && process.env.REVALIDATE_SECRET) {
 // ── Kèo: chụp bảng kèo Bet365 mỗi 3 tiếng (Nick 23/8) ──
 // Nhà cung cấp xoá kèo ngay khi trận đá xong, nên không chạy đều thì mất vĩnh viễn.
 const stopOdds = persistDb && oddsApiKey
-  ? startOddsCollector({ apiKey: oddsApiKeys, store: persistDb as never })
+  ? startOddsCollector({ apiKey: oddsApiKeys, store: persistDb as never, revalidate })
   : () => {};
 if (!persistDb || !oddsApiKey) log.warn('odds-collect: disabled (thiếu SUPABASE_URL hoặc ODDS_API_KEY)');
 

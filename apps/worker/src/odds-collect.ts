@@ -122,6 +122,8 @@ interface Deps {
   store: { from: (t: string) => { insert: (rows: OddsRow[]) => Promise<{ error: { message: string } | null }> } };
   fetchImpl?: typeof fetch;
   now?: () => number;
+  /** Gọi sau khi ghi xong để bảng kèo hiện ngay, khỏi chờ hết 15 phút đệm. */
+  revalidate?: (tags: string[]) => Promise<void>;
 }
 
 /** Một nhịp thu thập. KHÔNG BAO GIỜ throw — kèo hỏng không được phép làm chết worker. */
@@ -188,6 +190,9 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
     written += Math.min(500, rows.length - i);
   }
   log.info(`odds-collect: ghi ${written} dòng kèo`);
+  // Bảng kèo đệm 15 phút. Không gọi chỗ này thì kèo vừa thu phải chờ hết đệm
+  // mới lên trang — Nick 25/8 vào xem ngay sau khi deploy vẫn thấy bảng cũ.
+  if (written > 0 && deps.revalidate) await deps.revalidate(['odds']);
   return written;
 }
 
