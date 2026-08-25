@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getPosts } from "@/lib/data";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
@@ -93,7 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.analysis.title} | banhbong.net`,
       description: dict.analysis.seoDescription,
-      images: [{ url: "/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -138,7 +139,7 @@ function PostCard({ post, lang }: { post: Post; lang: Lang }) {
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
       <img
-        src={`/api/og/news/${post.slug}?locale=${lang}`}
+        src={`/api/og/news/${post.slug}?locale=${lang}&v=${OG_VERSION}`}
         alt=""
         width={1200}
         height={630}
@@ -177,7 +178,7 @@ function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
       <img
-        src={article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}`}
+        src={article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}&v=${OG_VERSION}`}
         alt=""
         width={1200}
         height={630}

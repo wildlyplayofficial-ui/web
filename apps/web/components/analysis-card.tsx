@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OG_VERSION } from "@/lib/brand";
 import { locales } from "@/lib/format";
 import { withLang, type Lang } from "@/lib/i18n";
 import type { AnalysisArticle } from "@/lib/types";
@@ -47,7 +48,7 @@ export function AnalysisCard({
   variant?: "lead" | "list";
 }) {
   const href = withLang(`/analysis/${article.slug}`, lang);
-  const hero = article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}`;
+  const hero = article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}&v=${OG_VERSION}`;
   const kindLabel = article.kind.charAt(0).toUpperCase() + article.kind.slice(1);
   const badgeColor = KIND_COLORS[article.kind] ?? KIND_COLORS.roundup;
 

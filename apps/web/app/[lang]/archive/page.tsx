@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { ArchiveRow } from "@/components/archive-row";
 import { getArchiveMonths, getSettledPicks, getThesisTranslations, getTrackRecordForAuthor } from "@/lib/data";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.archive.title,
     description: dict.archive.subtitle,
-    openGraph: { title: `${dict.archive.title} | banhbong.net`, description: dict.archive.subtitle, images: [{ url: "/api/og/record?page=archive", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.archive.title} | banhbong.net`, description: dict.archive.subtitle, images: [{ url: `/api/og/record?page=archive&v=${OG_VERSION}`, width: 1200, height: 630 }] },
     alternates: buildAlternates("/archive", lang),
   };
 }

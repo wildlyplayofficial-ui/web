@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: item.published_at,
       images: item.hero_card_url
         ? [{ url: item.hero_card_url, width: 1200, height: 630 }]
-        : [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
+        : [{ url: `/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -144,7 +145,7 @@ export default async function NewsDetail({ params }: Props) {
 
       <div className="mt-6 overflow-hidden rounded-card">
         <img
-          src={item.hero_card_url || `/api/og/news/${slug}?locale=${lang}`}
+          src={item.hero_card_url || `/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`}
           alt={headline}
           width={1200}
           height={630}

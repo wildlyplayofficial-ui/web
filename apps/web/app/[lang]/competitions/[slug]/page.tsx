@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${title} | banhbong.net`,
       description,
-      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(compName)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(compName)}&subtitle=Standings%2C%20fixtures%2C%20and%20predictions&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }

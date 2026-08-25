@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import {
   getActiveWatching,
@@ -59,13 +60,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
-      images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/home?lang=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
-      images: [{ url: `/api/og/home?lang=${lang}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/home?lang=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -190,7 +191,7 @@ export default async function Home({ params }: Props) {
       title: a.title,
       league: a.league,
       published_at: a.published_at,
-      hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+      hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}&v=${OG_VERSION}`,
       excerpt: a.meta_description || analysisExcerpt(a.body),
       href: withLang(`/analysis/${a.slug}`, lang),
       nhan: a.kind === "recap" ? dict.analysis.tabs.recap : dict.analysis.tabs.analysis,
@@ -200,7 +201,7 @@ export default async function Home({ params }: Props) {
       title: p.title,
       league: "",
       published_at: p.published_at ?? "",
-      hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}`,
+      hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}&v=${OG_VERSION}`,
       excerpt: p.meta_description ?? "",
       href: withLang(`/analysis/${p.slug}`, lang),
       nhan: dict.analysis.tabs.recap,
@@ -210,7 +211,7 @@ export default async function Home({ params }: Props) {
       title: getHeadline(n, lang),
       league: "",
       published_at: n.published_at ?? "",
-      hero: n.hero_card_url ?? `/api/og/news/${n.slug}?locale=${lang}`,
+      hero: n.hero_card_url ?? `/api/og/news/${n.slug}?locale=${lang}&v=${OG_VERSION}`,
       excerpt: (getBody(n, lang) ?? "").slice(0, 160),
       href: withLang(`/news/${n.slug}`, lang),
       nhan: dict.home.latestNews,

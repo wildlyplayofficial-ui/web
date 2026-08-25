@@ -252,7 +252,10 @@ export function OgCard(props: OgCardProps): ReactNode {
   } = props;
 
   const withPlayer = showPlayer && Boolean(player);
-  const colWidth = withPlayer ? 660 : 1040;
+  // Thẻ chữ (không mascot) phải dùng trọn 1200px: cột 1040 cũ làm mọi phần tử
+  // căn phải dừng ở x=980 — lề phải 220px vs lề trái 60px, Nick 25/8: "chữ bị
+  // lệch qua trái". Có mascot thì cột hẹp 660 là chủ đích (ảnh chiếm bên phải).
+  const colWidth = withPlayer ? 660 : OG_WIDTH;
 
   return (
     <div

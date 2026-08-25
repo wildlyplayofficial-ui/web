@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: DESC,
       images: [
         {
-          url: `/api/og/guide?title=Over%2FUnder%20Poisson%20Calculator&type=calculator&locale=${lang}&v=2`,
+          url: `/api/og/guide?title=Over%2FUnder%20Poisson%20Calculator&type=calculator&locale=${lang}&v=${OG_VERSION}`,
           width: 1200,
           height: 630,
         },

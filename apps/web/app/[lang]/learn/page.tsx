@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.nav.learn} | banhbong.net`,
       description: dict.guides.subtitle,
-      images: [{ url: "/api/og/editorial?title=Learn&subtitle=Free%20guides%20and%20calculators%20to%20sharpen%20your%20edge", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=Learn&subtitle=Free%20guides%20and%20calculators%20to%20sharpen%20your%20edge&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }

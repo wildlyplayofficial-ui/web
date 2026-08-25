@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.kelly} | banhbong.net`,
       description: dict.calculators.kellyDesc,
-      images: [{ url: `/api/og/guide?slug=kelly&title=Kelly%20Criterion%20Calculator&locale=${lang}&v=2`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=kelly&title=Kelly%20Criterion%20Calculator&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }

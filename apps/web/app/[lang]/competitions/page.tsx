@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.standings.title} | banhbong.net`,
       description: dict.standings.subtitle,
-      images: [{ url: "/api/og/editorial?title=Competitions&subtitle=Standings%2C%20fixtures%2C%20and%20predictions%20by%20league", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=Competitions&subtitle=Standings%2C%20fixtures%2C%20and%20predictions%20by%20league&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     alternates: buildAlternates("/competitions", lang),
   };

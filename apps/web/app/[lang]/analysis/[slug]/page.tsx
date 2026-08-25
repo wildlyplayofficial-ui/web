@@ -10,7 +10,7 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { AnalysisArticle } from "@/lib/types";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
-import { SITE_URL, DESK } from "@/lib/brand";
+import { SITE_URL, DESK, OG_VERSION } from "@/lib/brand";
 
 export const revalidate = 300;
 
@@ -24,7 +24,7 @@ type Props = {
 /** Branded Desk OG card URL — `v` busts the CDN cache when the row updates. */
 function deskOgCard(desk: AnalysisArticle, lang: Lang): string {
   const v = Date.parse(desk.updated_at ?? desk.published_at) || 0;
-  return `/api/og/analysis/${desk.slug}?locale=${lang}&v=${v}`;
+  return `/api/og/analysis/${desk.slug}?locale=${lang}&v=${v}-${OG_VERSION}`;
 }
 
 /** Try Desk article first, then fall back to posts table. */
@@ -120,13 +120,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/news/${slug}?locale=${lang}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -158,7 +158,7 @@ function buildArticleSchema(
     datePublished: publishedAt ?? undefined,
     dateModified: publishedAt ?? undefined,
     mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
-    image: imageUrl ?? `${BASE}/api/og/news/${slug}?locale=${lang}`,
+    image: imageUrl ?? `${BASE}/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`,
     author: {
       "@type": "Organization",
       name: authorName,
@@ -217,7 +217,7 @@ function DeskArticleView({
       ? article.hero_image.startsWith("http")
         ? article.hero_image
         : `${BASE}${article.hero_image}`
-      : `${BASE}/api/og/analysis/${article.slug}?locale=${lang}`,
+      : `${BASE}/api/og/analysis/${article.slug}?locale=${lang}&v=${OG_VERSION}`,
   );
 
   return (
@@ -403,7 +403,7 @@ export default async function AnalysisArticlePage({ params }: Props) {
       {/* Hero card */}
       <div className="mt-6 overflow-hidden rounded-card">
         <img
-          src={`/api/og/news/${slug}?locale=${lang}`}
+          src={`/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`}
           alt={post.title}
           width={1200}
           height={630}

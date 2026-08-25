@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import { getOddsBoard, type OddsBoardMatch } from "@/lib/odds-data";
 import { OddsBoard } from "@/components/odds-board";
 import { KeoSeoContent } from "@/components/keo-seo-content";
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${title} | banhbong.net`,
       description,
-      images: [{ url: `/api/og/editorial?title=${encodeURIComponent("Kèo Bóng Đá Hôm Nay")}&subtitle=${encodeURIComponent("Kèo mở · kèo hiện tại · xác suất thực")}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent("Kèo Bóng Đá Hôm Nay")}&subtitle=${encodeURIComponent("Kèo mở · kèo hiện tại · xác suất thực")}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import { S } from "@/lib/goalline/strings";
 import { DailyLineNav } from "./components/daily-line-nav";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "Daily Line — a daily Over/Under prediction game on aggregate football goals. Pick your side, climb the leaderboard. Entertainment only.",
   openGraph: {
-    images: [{ url: "/api/og/daily-line", width: 1200, height: 630 }],
+    images: [{ url: `/api/og/daily-line?v=${OG_VERSION}`, width: 1200, height: 630 }],
   },
 };
 
