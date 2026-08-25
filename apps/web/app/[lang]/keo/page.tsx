@@ -3,6 +3,7 @@ import { getOddsBoard, type OddsBoardMatch } from "@/lib/odds-data";
 import { locales } from "@/lib/format";
 import { resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { OddsTable } from "@/components/odds-table";
 import { OddsBoardList } from "@/components/odds-board-list";
 
 /**
@@ -110,7 +111,15 @@ export default async function OddsBoardPage({ params }: Props) {
           </p>
         </div>
       ) : (
-        <OddsBoardList days={days} lang={lang} />
+        <>
+          {/* Nick chốt 25/8 (đường 2): màn hình rộng ra BẢNG 6 cột như trang
+              nhà cái quen thuộc; điện thoại giữ dòng gọn bấm-mở, hiệp 1 nằm
+              trong phần xoè ra. Không nhét 6 cột vào 390px. */}
+          <OddsTable days={days} />
+          <div className="lg:hidden">
+            <OddsBoardList days={days} lang={lang} />
+          </div>
+        </>
       )}
     </div>
   );

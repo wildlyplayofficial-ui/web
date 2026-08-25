@@ -23,6 +23,11 @@ const MARKET_LABEL: Record<string, string> = {
   Spread: "Kèo châu Á",
   Totals: "Tài / Xỉu",
   "European Handicap": "Kèo châu Âu",
+  // Nick chốt 25/8 (đường 2): điện thoại giữ dòng gọn, bấm vào mới thấy hiệp 1.
+  // Không đặt tên ở đây thì màn hình in ra "Spread HT" — mã của nhà cung cấp.
+  "ML HT": "1X2 hiệp 1",
+  "Spread HT": "Kèo châu Á hiệp 1",
+  "Totals HT": "Tài / Xỉu hiệp 1",
 };
 
 function pct(n: number): string {
