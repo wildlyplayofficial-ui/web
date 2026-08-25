@@ -66,6 +66,23 @@ function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
   );
 }
 
+/** Logo đội, lấy theo MÃ ĐỘI của nhà cung cấp kèo qua /api/team-logo/[id].
+ *
+ *  Không ghép theo tên: tên hai nhà cung cấp viết khác nhau nên chỉ khớp 11/40
+ *  đội, và cách ghép gần đúng từng gán "Sabah Masazir" vào logo "Sabah" — hai
+ *  câu lạc bộ khác nước. Gắn nhầm huy hiệu tệ hơn để trống.
+ *
+ *  Không có mã (dòng thu trước 25/8) thì chừa chỗ trống, KHÔNG đoán. */
+function LogoDoi({ id }: { id: number | null }) {
+  if (id == null) return <span className="inline-block w-[18px] shrink-0" aria-hidden />;
+  return (
+    <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm bg-white/95 p-[1px]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/api/team-logo/${id}`} alt="" width={16} height={16} loading="lazy" className="h-4 w-4 object-contain" />
+    </span>
+  );
+}
+
 /** Mức chấp / mức tài xỉu, in kèm dấu như bảng nhà cái.
  *
  *  Khung rộng CỐ ĐỊNH và giữ chỗ cả khi rỗng: dòng trên có nhãn ("-0.5"), dòng
@@ -155,8 +172,14 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
             <td rowSpan={soDong} className="w-[200px] px-3 py-2 align-top">
               <div className="text-[11px] text-muted tabular-nums">{ngay} · {gio}</div>
               {/* Đội CHẤP kèo tô đỏ (Nick 25/8). Mức chấp âm = đội chủ chấp. */}
-              <div className={`mt-0.5 font-semibold ${chuChap ? "text-loss" : "text-ink"}`}>{match.homeTeam}</div>
-              <div className={`font-semibold ${chuChap === false ? "text-loss" : "text-ink"}`}>{match.awayTeam}</div>
+              <div className={`mt-0.5 flex items-center gap-1.5 font-semibold ${chuChap ? "text-loss" : "text-ink"}`}>
+                <LogoDoi id={match.homeId} />
+                <span>{match.homeTeam}</span>
+              </div>
+              <div className={`flex items-center gap-1.5 font-semibold ${chuChap === false ? "text-loss" : "text-ink"}`}>
+                <LogoDoi id={match.awayId} />
+                <span>{match.awayTeam}</span>
+              </div>
               <div className="text-muted">Hoà</div>
               <div className="mt-1 text-[11px] text-brand">
                 {moRong ? "Thu gọn ▲" : "Xem chi tiết ▼"}
