@@ -135,6 +135,32 @@ describe('collectOddsTick — không được làm chết worker', () => {
     expect(s.inserted).toEqual([]);
   });
 
+  it('ghi xong thì báo web bỏ đệm, không ghi được thì không báo', async () => {
+    const goi: string[][] = [];
+    const revalidate = async (tags: string[]) => { goi.push(tags); };
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      if (String(url).includes('events?')) return { ok: true, json: async () => [EVENT] } as Response;
+      return {
+        ok: true,
+        json: async () => ({ bookmakers: { Bet365: [{ name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] }] } }),
+      } as Response;
+    });
+    const chung = {
+      apiKey: 'k', fetchImpl: fetchImpl as never,
+      now: () => new Date('2026-08-23T07:00:00Z').getTime(), revalidate,
+    };
+    await collectOddsTick({ ...chung, store: store() as never });
+    expect(goi).toEqual([['odds']]);
+
+    // Không thu được dòng nào thì đừng bắt web tính lại vô ích.
+    goi.length = 0;
+    await collectOddsTick({
+      ...chung, store: store() as never,
+      fetchImpl: (async () => ({ ok: false, status: 500 }) as Response) as never,
+    });
+    expect(goi).toEqual([]);
+  });
+
   it('bỏ qua trận quá xa (ngoài 4 ngày) để khỏi phí lượt gọi', async () => {
     const s = store();
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {

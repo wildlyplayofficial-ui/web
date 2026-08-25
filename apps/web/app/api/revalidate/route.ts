@@ -12,7 +12,10 @@ import { revalidateTag } from "next/cache";
 // "news" was missing: worker news-gen.ts calls revalidate(['news']) after every
 // news_item, but this endpoint rejected it (400) — so news relied on the 5-min
 // ISR window instead of refreshing on-demand. All 3 news_items caches tag "news".
-const ALLOWED_TAGS = ["picks", "posts", "votes", "matches", "watching", "analysis-articles", "news"] as const;
+// "odds" thiếu nốt: bảng kèo đệm 15 phút (lib/odds-data.ts tag "odds"), nên thu
+// xong phải chờ hết đệm mới thấy. Trận Cúp C1 và Liga MX vừa thêm 25/8 lên chậm
+// đúng vì lý do này.
+const ALLOWED_TAGS = ["picks", "posts", "votes", "matches", "watching", "analysis-articles", "news", "odds"] as const;
 
 function secretMatches(given: string | null): boolean {
   const expected = process.env.REVALIDATE_SECRET;
