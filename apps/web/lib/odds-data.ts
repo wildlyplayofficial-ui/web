@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
+import { COMPETITION_LOGOS } from "./competition-logos";
 
 /**
  * Trang Kèo (Nick 23/8): hiển thị kèo Bet365 hiện tại + kèo đã chạy thế nào từ
@@ -77,6 +78,23 @@ const LEAGUE_LABEL: Record<string, string> = {
 
 export function leagueLabelForCompetition(competitionId: string): string {
   return LEAGUE_LABEL[competitionId] ?? competitionId;
+}
+
+/** Mã giải của bảng kèo → slug logo trong kho competition-logos.
+ *  Nick 25/8: nhãn giải cần in đậm, to hơn và có logo bên cạnh. */
+const LEAGUE_LOGO_SLUG: Record<string, string> = {
+  "epl-2026": "premier-league",
+  "laliga-2026": "la-liga",
+  "seriea-2026": "serie-a",
+  "bundesliga-2026": "bundesliga",
+  "ligue1-2026": "ligue-1",
+  "ucl-2026": "champions-league",
+  "ligamx-2026": "liga-mx",
+};
+
+export function leagueLogoForCompetition(competitionId: string): string | null {
+  const slug = LEAGUE_LOGO_SLUG[competitionId];
+  return slug ? COMPETITION_LOGOS[slug] ?? null : null;
 }
 
 async function getOddsBoardImpl(): Promise<OddsBoardMatch[]> {

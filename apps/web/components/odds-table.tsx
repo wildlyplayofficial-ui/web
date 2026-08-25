@@ -1,5 +1,13 @@
-import { Fragment } from "react";
-import { leagueLabelForCompetition, type MarketLine, type OddsBoardMatch } from "@/lib/odds-data";
+"use client";
+
+import { Fragment, useState } from "react";
+import {
+  leagueLabelForCompetition,
+  leagueLogoForCompetition,
+  type MarketLine,
+  type OddsBoardMatch,
+} from "@/lib/odds-data";
+import { ChiTietTran } from "./odds-detail";
 
 /**
  * Bảng kèo kiểu trang nhà cái (Nick 25/8: "user quen nhìn kiểu này rồi").
@@ -10,6 +18,10 @@ import { leagueLabelForCompetition, type MarketLine, type OddsBoardMatch } from 
  *
  * Kèo hiệp 1 mới bắt đầu thu 25/8; trận thu trước mốc đó ba cột phải sẽ trống,
  * không phải lỗi (kèo quá khứ không mua lại được).
+ *
+ * Bấm vào một trận thì xoè ra xác suất thực + kèo đã chạy thế nào (Nick 25/8:
+ * "điều này chưa làm được" — câu mô tả dưới tiêu đề trang hứa từ trước mà bảng
+ * lớn chưa hề có, chỉ danh sách điện thoại mới có).
  */
 
 interface DayGroup {
@@ -152,6 +164,7 @@ function locMucChinh(lines: MarketLine[], soDong = 4): MarketLine[] {
 }
 
 function KhoiTran({ match }: { match: OddsBoardMatch }) {
+  const [moRong, setMoRong] = useState(false);
   const chap = locMucChinh(match.markets.Spread ?? []);
   const tx = locMucChinh(match.markets.Totals ?? []);
   const chapH1 = locMucChinh(match.markets["Spread HT"] ?? []);
@@ -167,7 +180,11 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
   return (
     <>
       {Array.from({ length: soDong }, (_, i) => (
-        <tr key={i} className="border-t border-line align-top">
+        <tr
+          key={i}
+          onClick={() => setMoRong((v) => !v)}
+          className="cursor-pointer border-t border-line align-top hover:bg-brand-dim/10"
+        >
           {i === 0 && (
             <td rowSpan={soDong} className="w-[200px] px-3 py-2 align-top">
               <div className="text-[11px] text-muted tabular-nums">{ngay} · {gio}</div>
@@ -175,6 +192,9 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
               <div className={`mt-0.5 font-semibold ${chuChap ? "text-loss" : "text-ink"}`}>{match.homeTeam}</div>
               <div className={`font-semibold ${chuChap === false ? "text-loss" : "text-ink"}`}>{match.awayTeam}</div>
               <div className="text-muted">Hoà</div>
+              <div className="mt-1 text-[11px] text-brand">
+                {moRong ? "Thu gọn ▲" : "Xem chi tiết ▼"}
+              </div>
             </td>
           )}
           <OChap line={chap[i]} />
@@ -185,6 +205,13 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
           {i === 0 ? <O1x2 line={mlH1} /> : <td className={`border-l border-line ${NEN_KEO}`} />}
         </tr>
       ))}
+      {moRong && (
+        <tr className="border-t border-line">
+          <td colSpan={7} className="bg-card/60 px-3 py-3">
+            <ChiTietTran match={match} />
+          </td>
+        </tr>
+      )}
     </>
   );
 }
@@ -211,8 +238,22 @@ export function OddsTable({ days }: { days: DayGroup[] }) {
             {day.matches.map((m) => (
               <Fragment key={m.eventId}>
                 <tr>
-                  <td colSpan={7} className="bg-card/60 px-3 py-1 text-[11px] font-semibold text-muted">
-                    {leagueLabelForCompetition(m.competitionId)}
+                  {/* Nick 25/8: nhãn giải in đậm, cỡ chữ lớn hơn, có logo bên cạnh. */}
+                  <td colSpan={7} className="bg-card/60 px-3 py-1.5">
+                    <span className="flex items-center gap-2 font-display text-sm font-bold text-ink">
+                      {leagueLogoForCompetition(m.competitionId) && (
+                        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded bg-white/95 p-[3px]">
+                          <img
+                            src={leagueLogoForCompetition(m.competitionId)!}
+                            alt=""
+                            width={16}
+                            height={16}
+                            className="h-4 w-4 object-contain"
+                          />
+                        </span>
+                      )}
+                      {leagueLabelForCompetition(m.competitionId)}
+                    </span>
                   </td>
                 </tr>
                 <KhoiTran match={m} />

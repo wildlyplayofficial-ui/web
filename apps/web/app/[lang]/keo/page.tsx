@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { getOddsBoard, type OddsBoardMatch } from "@/lib/odds-data";
+import { OddsBoard } from "@/components/odds-board";
 import { locales } from "@/lib/format";
 import { resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { OddsTable } from "@/components/odds-table";
-import { OddsBoardList } from "@/components/odds-board-list";
 
 /**
  * Trang Kèo (Nick 23/8) — kèo Bet365 hiện tại + kèo đã chạy thế nào từ lúc mở
@@ -114,11 +113,9 @@ export default async function OddsBoardPage({ params }: Props) {
         <>
           {/* Nick chốt 25/8 (đường 2): màn hình rộng ra BẢNG 6 cột như trang
               nhà cái quen thuộc; điện thoại giữ dòng gọn bấm-mở, hiệp 1 nằm
-              trong phần xoè ra. Không nhét 6 cột vào 390px. */}
-          <OddsTable days={days} />
-          <div className="lg:hidden">
-            <OddsBoardList days={days} lang={lang} />
-          </div>
+              trong phần xoè ra. Không nhét 6 cột vào 390px.
+              Bộ lọc nằm ở khung ngoài để CẢ HAI kiểu hiển thị dùng chung. */}
+          <OddsBoard days={days} lang={lang} />
         </>
       )}
     </div>
