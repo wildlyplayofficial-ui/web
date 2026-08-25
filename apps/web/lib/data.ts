@@ -454,8 +454,10 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
   const supabase = getSupabase();
   if (!supabase) {
     const seen = new Set<string>();
+    // Mock phải lọc guide y như query thật bên dưới — lệch nhau thì dev/test
+    // mock-mode lại thấy 13 cặp URL trùng mà production đã dọn.
     return mockPosts.filter((p) => {
-      if (seen.has(p.slug)) return false;
+      if (p.type === "guide" || seen.has(p.slug)) return false;
       seen.add(p.slug);
       return true;
     }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title }));
@@ -696,6 +698,11 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       usa: ["usa", "united%states"],
       "south-korea": ["south%korea", "korea%republic"],
       czechia: ["czechia", "czech%republic"],
+      // Slug sinh từ TEAM_CANONICAL "Bosnia and Herzegovina", nhưng DB lưu
+      // "Bosnia Herzegovina"/"Bosnia & Herzegovina" — pattern có "and" không khớp
+      // nên trang /match/canada-vs-bosnia-and-herzegovina-2026-06-12 mất luôn
+      // pick + metadata dù pick tồn tại (đo 25/8).
+      "bosnia-and-herzegovina": ["bosnia%herzegovina"],
     };
     const homeVariants = REVERSE_SLUG[home] ?? [home.replace(/-/g, "%")];
     const awayVariants = REVERSE_SLUG[away] ?? [away.replace(/-/g, "%")];
