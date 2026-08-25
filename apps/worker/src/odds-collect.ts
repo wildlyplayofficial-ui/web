@@ -23,6 +23,14 @@ export const ODDS_LEAGUES: ReadonlyArray<readonly [slug: string, competitionId: 
   // Apertura là slug này cạn trận, phải đổi sang 'mexico-liga-mx-clausura'
   // (slug đó CHƯA tồn tại lúc 25/8, nhà cung cấp tạo khi tới mùa).
   ['mexico-liga-mx-apertura', 'ligamx-2026'],
+  // Cúp C1 TRƯỚC GIỜ KHÔNG NẰM TRONG CRON — chỉ có trong collect-odds.mjs chạy
+  // tay. Nên kèo C1 trên bảng là ảnh chụp cũ của lần chạy tay, trận mới không
+  // bao giờ có kèo (Gwen tìm ra 25/8 khi truy trận C1 thứ 7 bị thiếu).
+  //
+  // ⚠️ Slug theo TỪNG VÒNG, không phải cả giải: hết vòng play-off (26/8) là
+  // slug này cạn trận, vòng phân hạng tháng 9 mang slug khác. Cùng loại bẫy
+  // với Apertura/Clausura ở trên.
+  ['international-clubs-uefa-champions-league-playoff-round', 'ucl-2026'],
 ];
 
 // Toàn trận + HIỆP 1. Nick 25/8 muốn bảng kèo đủ cột như trang nhà cái quen
