@@ -133,6 +133,42 @@ interface Deps {
   revalidate?: (tags: string[]) => Promise<void>;
 }
 
+/** Đếm số nhịp LIÊN TIẾP một giải trả về 0 trận sắp đá.
+ *
+ *  Vì sao cần: slug giải của nhà cung cấp gắn theo MÙA và theo VÒNG. Hết mùa là
+ *  slug cạn trận, API vẫn trả 200, không có lỗi nào — giải cứ thế lặng lẽ biến
+ *  mất khỏi bảng kèo. Đúng cách Cúp C1 bị rớt mà không ai biết (Gwen tìm ra
+ *  25/8), và tháng 1 Liga MX đổi Apertura sang Clausura sẽ dính y hệt.
+ *
+ *  log.warn có tiền tố "odds-collect:" nên tự chảy vào đường cảnh báo sẵn có
+ *  (onWarn → trackFailure trong index.ts), không cần dựng kênh báo mới. */
+const nhipRong = new Map<string, number>();
+
+/** Bao nhiêu nhịp liên tiếp thì kêu. 3 nhịp × 3 tiếng = 9 tiếng — đủ dài để bỏ
+ *  qua quãng nghỉ giữa tuần bình thường, đủ ngắn để không mất cả mùa giải. */
+const NGUONG_RONG = 3;
+
+/** Ghi nhận một giải vừa thu được bao nhiêu trận; kêu khi rỗng quá lâu. */
+export function ghiNhanSoTran(slug: string, soTran: number): void {
+  if (soTran > 0) {
+    nhipRong.delete(slug);
+    return;
+  }
+  const lan = (nhipRong.get(slug) ?? 0) + 1;
+  nhipRong.set(slug, lan);
+  if (lan === NGUONG_RONG) {
+    log.warn(
+      `odds-collect: giải "${slug}" đã ${lan} nhịp liền KHÔNG có trận nào. ` +
+      `Nhiều khả năng slug hết mùa/hết vòng — tra lại /v3/leagues rồi cập nhật ODDS_LEAGUES.`,
+    );
+  }
+}
+
+/** Chỉ dùng trong test — xoá bộ đếm giữa các ca. */
+export function xoaBoDemRong(): void {
+  nhipRong.clear();
+}
+
 /** Một nhịp thu thập. KHÔNG BAO GIỜ throw — kèo hỏng không được phép làm chết worker. */
 export async function collectOddsTick(deps: Deps): Promise<number> {
   const f = deps.fetchImpl ?? fetch;
@@ -171,6 +207,7 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
       const t = new Date(e.date).getTime();
       return t > now && t < now + HORIZON_MS;
     });
+    ghiNhanSoTran(slug, upcoming.length);
     for (const ev of upcoming) {
       try {
         const data = (await api(`odds?eventId=${ev.id}&bookmakers=Bet365`)) as
