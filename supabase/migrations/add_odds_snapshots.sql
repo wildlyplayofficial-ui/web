@@ -14,6 +14,7 @@ create table if not exists odds_snapshots (
   kickoff_utc   timestamptz not null,
   bookmaker     text        not null default 'Bet365',
   market        text        not null,              -- ML | Spread | Totals | European Handicap
+                                                   -- + bản hiệp 1: ML HT | Spread HT | Totals HT
   hdp           numeric,                           -- mức chấp / mức tài xỉu (null với ML)
   home_odds     numeric,
   draw_odds     numeric,

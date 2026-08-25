@@ -10,10 +10,16 @@ describe('buildOddsRows', () => {
       { name: 'Spread', odds: [{ hdp: 0.5, home: '1.925', away: '1.925' }] },
       { name: 'Totals', odds: [{ hdp: 2.5, over: '1.500', under: '2.500' }] },
       { name: 'European Handicap', odds: [{ hdp: 1, home: '1.833', draw: '4.333', away: '3.100' }] },
+      { name: 'ML HT', odds: [{ home: '2.500', draw: '2.100', away: '3.400' }] },
+      { name: 'Spread HT', odds: [{ hdp: 0.25, home: '1.900', away: '1.950' }] },
+      { name: 'Totals HT', odds: [{ hdp: 1.5, over: '2.100', under: '1.750' }] },
       { name: 'Player Tackles', odds: [{ label: 'Wataru Endo', hdp: 0.5, over: '1.050' }] },
       { name: 'Corners Totals', odds: [{ hdp: 10.5, over: '1.825', under: '1.975' }] },
     ]);
-    expect(rows.map((r) => r.market)).toEqual(['ML', 'Spread', 'Totals', 'European Handicap']);
+    // Giữ cả thị trường HIỆP 1, vẫn bỏ mấy thị trường phụ (cầu thủ, phạt góc).
+    expect(rows.map((r) => r.market)).toEqual([
+      'ML', 'Spread', 'Totals', 'European Handicap', 'ML HT', 'Spread HT', 'Totals HT',
+    ]);
   });
 
   it('đổi chuỗi kèo sang số, giữ null cho ô không có', () => {
