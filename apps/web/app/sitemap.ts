@@ -54,8 +54,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       TEAM_HUBS.map(async (t) => {
         const [n, a] = await Promise.all([getNewsByTeam(t.slug, HUB_MIN), getAnalysisByTeam(t.slug, HUB_MIN)]);
         if (n.length + a.length < HUB_MIN) return null;
+        // 4 hub /doi/ là nhóm URL duy nhất trong sitemap không khai lastmod (kiểm
+        // 25/8). Lấy bài mới nhất của hub làm mốc — hai mảng đã xếp published_at
+        // giảm dần nên phần tử đầu là bài mới nhất.
+        const newest = [n[0]?.published_at, a[0]?.updated_at ?? a[0]?.published_at]
+          .filter((d): d is string => Boolean(d))
+          .sort()
+          .pop();
         return {
           url: `${BASE}/doi/${t.slug}`,
+          lastModified: safeLastMod(newest),
           changeFrequency: "daily" as const,
           priority: 0.7,
           alternates: alternates(`/doi/${t.slug}`),
