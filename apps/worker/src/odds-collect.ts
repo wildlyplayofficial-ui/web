@@ -18,7 +18,16 @@ export const ODDS_LEAGUES: ReadonlyArray<readonly [slug: string, competitionId: 
   ['france-ligue-1', 'ligue1-2026'],
 ];
 
-const MARKETS = new Set(['ML', 'Spread', 'Totals', 'European Handicap']);
+// Toàn trận + HIỆP 1. Nick 25/8 muốn bảng kèo đủ cột như trang nhà cái quen
+// thuộc: chấp/tài xỉu/1X2 cho cả toàn trận lẫn hiệp 1. Tên thị trường hiệp 1
+// bên odds-api.io là "<tên> HT" (Jane tra thẳng /v3/markets 25/8).
+//
+// LƯU Ý: kèo quá khứ KHÔNG mua lại được. Ba thị trường HT chỉ có dữ liệu từ lúc
+// bật trở đi, nên vài ngày đầu cột hiệp 1 sẽ thưa hơn cột toàn trận — không phải lỗi.
+const MARKETS = new Set([
+  'ML', 'Spread', 'Totals', 'European Handicap',
+  'ML HT', 'Spread HT', 'Totals HT',
+]);
 /** Trận xa hơn 4 ngày kèo còn loãng và tốn lượt gọi (giới hạn 100/giờ). */
 const HORIZON_MS = 96 * 3_600_000;
 
