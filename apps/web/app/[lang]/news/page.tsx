@@ -494,7 +494,10 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                   href={c.href}
                   className="group overflow-hidden rounded-card border border-line bg-card shadow-card transition-colors hover:border-brand/40"
                 >
-                  <CardThumb c={c} className="aspect-video w-full" big />
+                  {/* Tỷ lệ đúng bằng ảnh hero (1200x630). aspect-video là 16/9 = 1.778,
+                      lệch với ảnh 1.905 nên cắt ~7% bề ngang — cùng kiểu lỗi
+                      nuốt chữ "banhbong.net" mà Nick bắt ở thẻ Tin nổi bật. */}
+                  <CardThumb c={c} className="aspect-[1200/630] w-full" big />
                   <div className="p-3.5">
                     <MetaRow c={c} lang={lang} />
                     <h2 className="mt-1.5 line-clamp-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-brand">
