@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfidenceBadge } from "@/components/confidence-badge";
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = (translations[pick.id]?.[lang] ?? pick.thesis).slice(0, 160);
   // ?lang=vi: without it FB/Zalo scrape the English card even on the Vietnamese
   // page (Nick caught this live 22/8 — Hull vs MU card showed "Featured Pick").
-  const image = lang === "vi" ? `/api/og/play/${pick.id}?lang=vi` : `/api/og/play/${pick.id}`;
+  const image = lang === "vi" ? `/api/og/play/${pick.id}?lang=vi&v=${OG_VERSION}` : `/api/og/play/${pick.id}?v=${OG_VERSION}`;
   const alternates = buildAlternates(`/play/${slug}`, lang);
   return {
     title,

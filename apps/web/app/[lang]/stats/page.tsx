@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import { getSettledPicks } from "@/lib/data";
 import { formatUnits, locales, marketLabels } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, type Lang } from "@/lib/i18n";
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.stats.title,
     description: dict.stats.subtitle,
-    openGraph: { title: `${dict.stats.title} | banhbong.net`, description: dict.stats.subtitle, images: [{ url: "/api/og/record?page=stats", width: 1200, height: 630 }] },
+    openGraph: { title: `${dict.stats.title} | banhbong.net`, description: dict.stats.subtitle, images: [{ url: `/api/og/record?page=stats&v=${OG_VERSION}`, width: 1200, height: 630 }] },
     alternates: buildAlternates("/stats", lang),
   };
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.title} | banhbong.net`,
       description: dict.calculators.subtitle,
-      images: [{ url: "/api/og/editorial?title=Free%20Betting%20Calculators&subtitle=De-vig%2C%20odds%20converter%2C%20and%20Kelly%20criterion", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=Free%20Betting%20Calculators&subtitle=De-vig%2C%20odds%20converter%2C%20and%20Kelly%20criterion&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",

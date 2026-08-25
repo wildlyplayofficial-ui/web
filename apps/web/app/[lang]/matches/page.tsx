@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getAllMatchSlugs } from "@/lib/data";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.matches.allMatches} | banhbong.net`,
       description: dict.matches.matchesSubtitle,
-      images: [{ url: "/api/og/editorial?title=Today%27s%20Matches&subtitle=World%20Cup%202026%20fixtures%20and%20predictions", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=Today%27s%20Matches&subtitle=World%20Cup%202026%20fixtures%20and%20predictions&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     alternates: buildAlternates("/matches", lang),
   };

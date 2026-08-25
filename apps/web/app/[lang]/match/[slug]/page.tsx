@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { BoothSection } from "@/components/booth-section";
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Preview, Pick & Result`;
   const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on banhbong.net.`;
-  const ogImage = `/api/og/match/${slug}`;
+  const ogImage = `/api/og/match/${slug}?v=${OG_VERSION}`;
 
   return {
     title,

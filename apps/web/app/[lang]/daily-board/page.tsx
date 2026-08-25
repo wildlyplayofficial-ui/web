@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { Suspense } from "react";
 import { DailyLineStrip } from "@/components/daily-line-strip";
@@ -39,13 +40,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
-      images: [{ url: "/api/og/home", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/home?v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
-      images: [{ url: "/api/og/home", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/home?v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }

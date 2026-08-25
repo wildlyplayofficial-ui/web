@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getGuides } from "@/lib/data";
 import { locales } from "@/lib/format";
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.guides.title} | banhbong.net`,
       description: dict.guides.seoDescription,
-      images: [{ url: "/api/og/editorial?title=Learn%20%E2%80%94%20Betting%20Guides&subtitle=Free%20guides%20to%20sharpen%20your%20edge", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=Learn%20%E2%80%94%20Betting%20Guides&subtitle=Free%20guides%20to%20sharpen%20your%20edge&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",

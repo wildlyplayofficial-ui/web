@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.news.title} | banhbong.net`,
       description: dict.news.subtitle,
-      images: [{ url: "/api/og/editorial?title=News&subtitle=Match%20news%20and%20updates", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=News&subtitle=Match%20news%20and%20updates&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     alternates: buildAlternates("/news", lang),
   };
@@ -292,7 +293,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         key: `i-${item.id}`,
         href: withLang(`/news/${item.slug}`, lang),
         title: tua,
-        thumb: item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(tua)}`,
+        thumb: item.hero_card_url ?? `/api/og/editorial?title=${encodeURIComponent(tua)}&v=${OG_VERSION}`,
         // Featured slot uses thumb only when anhThat is set. Without this, a news
         // item with a real hero (e.g. the Romero transfer card) fell back to the
         // generic league OG image in the "nổi bật" slot (Jane 15/8).
@@ -309,7 +310,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       key: `p-${post.id}`,
       href: withLang(`/analysis/${post.slug}`, lang),
       title: post.title,
-      thumb: `/api/og/news/${post.slug}?locale=${lang}`,
+      thumb: `/api/og/news/${post.slug}?locale=${lang}&v=${OG_VERSION}`,
       badge: dict.nav.news,
       date: post.published_at ?? "",
       phutDoc: phutDoc(post.body_md),
@@ -326,7 +327,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       key: `d-${a.id}`,
       href: withLang(`/analysis/${a.slug}`, lang),
       title: a.title,
-      thumb: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+      thumb: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}&v=${OG_VERSION}`,
       badge: tenGiaiViet.get(a.league) ?? a.league,
       date: a.published_at,
       phutDoc: phutDoc(a.body),
@@ -356,7 +357,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     ? ""
     : noiBat.anhThat
       ? noiBat.thumb
-      : `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=banhbong.net`;
+      : `/api/og/editorial?title=${encodeURIComponent(noiBat.badge)}&subtitle=banhbong.net&v=${OG_VERSION}`;
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">

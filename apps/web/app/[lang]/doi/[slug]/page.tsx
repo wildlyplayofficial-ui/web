@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
@@ -122,7 +123,7 @@ export default async function TeamHub({ params }: Props) {
         url: withLang(`/analysis/${a.slug}`, lang),
         title: a.title,
         date: a.published_at ?? null,
-        img: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}`,
+        img: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}&v=${OG_VERSION}`,
       }),
     ),
   ].sort((x, y) => (y.date ?? "").localeCompare(x.date ?? ""));

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import { buildPerson, buildOrganization, buildWebSite } from "@/lib/jsonld";
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // giữa câu như trước (intro.slice(0,160)).
     title: c.metaTitle,
     description: c.metaDescription,
-    openGraph: { title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: "/api/og/editorial?title=About%20banhbong.net&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.", width: 1200, height: 630 }] },
+    openGraph: { title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: `/api/og/editorial?title=About%20banhbong.net&subtitle=The%20Curator%20%E2%80%94%20human-picked.%20The%20Scout%20%E2%80%94%20openly%20AI.&v=${OG_VERSION}`, width: 1200, height: 630 }] },
     alternates: buildAlternates("/about", lang),
   };
 }
