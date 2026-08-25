@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { leagueLabelForCompetition, type MarketLine, type OddsBoardMatch } from "@/lib/odds-data";
 import type { Lang } from "@/lib/i18n";
+import { TeamCrest } from "@/components/team-crest";
 
 /**
  * Danh sách trận + kèo — CLIENT component (Nick 24/8: "bắt buộc phải gọn cho
@@ -140,8 +141,12 @@ function MatchRow({ match, lang }: { match: OddsBoardMatch; lang: Lang }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-medium text-muted">{leagueLabelForCompetition(match.competitionId)}</p>
-          <p className="truncate font-display text-base font-bold text-ink">
-            {match.homeTeam} vs {match.awayTeam}
+          <p className="flex items-center gap-1.5 truncate font-display text-base font-bold text-ink">
+            <TeamCrest name={match.homeTeam} />
+            <span className="truncate">
+              {match.homeTeam} vs {match.awayTeam}
+            </span>
+            <TeamCrest name={match.awayTeam} />
           </p>
         </div>
         {ml && (
