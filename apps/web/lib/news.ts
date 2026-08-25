@@ -79,14 +79,16 @@ async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: strin
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("news_items")
-    .select("slug, published_at, headline_en")
+    .select("slug, published_at, headline_vi, headline_en")
     .eq("status", "published")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllNewsItemSlugs: ${error.message}`);
   return (data ?? []).map((r) => ({
     slug: r.slug as string,
     updated: (r.published_at as string) ?? "",
-    title: (r.headline_en as string) ?? (r.slug as string),
+    // Tiêu đề tiếng Việt trước — news-sitemap khai news:language=vi nên đưa
+    // tiêu đề tiếng Anh vào là tự mâu thuẫn. Rơi về en rồi slug nếu thiếu.
+    title: (r.headline_vi as string) || (r.headline_en as string) || (r.slug as string),
   }));
 }
 
