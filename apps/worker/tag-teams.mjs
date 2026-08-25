@@ -40,10 +40,12 @@ function doiCuaBai(tieuDe, noiDung) {
   return ra;
 }
 
+// analysis_articles KHÔNG có cột id — khoá chính là slug (Gwen kiểm 25/8, script
+// bản đầu dùng id nên chết ngay ở bảng này). Mỗi bảng khai rõ khoá của mình.
 const BANG = [
-  { ten: 'news_items', cot: 'id,slug,headline_vi,headline_en,body_vi,body_en,teams',
+  { ten: 'news_items', khoa: 'id', cot: 'id,slug,headline_vi,headline_en,body_vi,body_en,teams',
     tieuDe: (r) => low(`${r.headline_vi || r.headline_en} ${r.slug}`), noiDung: (r) => low(r.body_vi || r.body_en) },
-  { ten: 'analysis_articles', cot: 'id,slug,title,body,teams',
+  { ten: 'analysis_articles', khoa: 'slug', cot: 'slug,title,body,teams',
     tieuDe: (r) => low(`${r.title} ${r.slug}`), noiDung: (r) => low(r.body) },
 ];
 
@@ -61,7 +63,7 @@ for (const b of BANG) {
     if (moi.length === cu.length && moi.every((x) => cu.includes(x))) continue;
     sua++;
     if (LIVE) {
-      const { error: e2 } = await sb.from(b.ten).update({ teams: moi }).eq('id', r.id);
+      const { error: e2 } = await sb.from(b.ten).update({ teams: moi }).eq(b.khoa, r[b.khoa]);
       if (e2) console.warn(`  ✗ ${r.slug}: ${e2.message}`);
     }
   }
