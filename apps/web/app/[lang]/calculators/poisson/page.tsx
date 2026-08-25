@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: DESC,
       images: [
         {
-          url: "/api/og/guide?title=Over%2FUnder%20Poisson%20Calculator&type=calculator",
+          url: `/api/og/guide?title=Over%2FUnder%20Poisson%20Calculator&type=calculator&locale=${lang}&v=2`,
           width: 1200,
           height: 630,
         },

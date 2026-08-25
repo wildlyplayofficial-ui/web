@@ -65,13 +65,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=2`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=2`, width: 1200, height: 630 }],
     },
   };
 }

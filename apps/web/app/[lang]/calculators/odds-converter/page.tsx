@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${dict.calculators.oddsConverter} | banhbong.net`,
       description: dict.calculators.oddsConverterDesc,
-      images: [{ url: "/api/og/guide?slug=odds-converter&title=Odds%20Converter", width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=odds-converter&title=Odds%20Converter&locale=${lang}&v=2`, width: 1200, height: 630 }],
     },
   };
 }
