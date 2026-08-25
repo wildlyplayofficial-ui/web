@@ -78,11 +78,33 @@ function gioVN(iso: string): { ngay: string; gio: string } {
   return { ngay: f({ day: "2-digit", month: "2-digit" }), gio: f({ hour: "2-digit", minute: "2-digit", hour12: false }) };
 }
 
+/** Nhà cái ra tới ~20 mức chấp và ~20 mức tài xỉu mỗi trận. Đổ hết thì một trận
+ *  chiếm gần 40 dòng — trang dài 15.000 pixel cho 16 trận (Gwen đo 25/8 ngay sau
+ *  khi lên). Bảng nhà cái thật chỉ hiện mức CHUẨN và vài mức kề.
+ *
+ *  Mức chuẩn = mức hai bên gần ngang giá nhất; đó là mức nhà cái coi là cân bằng.
+ *  Lấy cửa sổ quanh nó, giữ nguyên thứ tự mức chấp để đọc theo hàng dọc. */
+function locMucChinh(lines: MarketLine[], soDong = 4): MarketLine[] {
+  if (lines.length <= soDong) return lines;
+  const lech = (l: MarketLine) => {
+    const c = l.current;
+    const a = c.home_odds ?? c.over_odds;
+    const b = c.away_odds ?? c.under_odds;
+    return a == null || b == null ? Number.POSITIVE_INFINITY : Math.abs(a - b);
+  };
+  let iChuan = 0;
+  lines.forEach((l, i) => {
+    if (lech(l) < lech(lines[iChuan])) iChuan = i;
+  });
+  const tu = Math.max(0, Math.min(iChuan - Math.floor(soDong / 2), lines.length - soDong));
+  return lines.slice(tu, tu + soDong);
+}
+
 function KhoiTran({ match }: { match: OddsBoardMatch }) {
-  const chap = match.markets.Spread ?? [];
-  const tx = match.markets.Totals ?? [];
-  const chapH1 = match.markets["Spread HT"] ?? [];
-  const txH1 = match.markets["Totals HT"] ?? [];
+  const chap = locMucChinh(match.markets.Spread ?? []);
+  const tx = locMucChinh(match.markets.Totals ?? []);
+  const chapH1 = locMucChinh(match.markets["Spread HT"] ?? []);
+  const txH1 = locMucChinh(match.markets["Totals HT"] ?? []);
   const ml = match.markets.ML?.[0];
   const mlH1 = match.markets["ML HT"]?.[0];
   const soDong = Math.max(1, chap.length, tx.length, chapH1.length, txH1.length);
