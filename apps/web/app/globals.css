@@ -46,6 +46,11 @@
 
 /* Light mode (default) */
 :root {
+  /* Nút radio, ô chọn, thanh cuộn là widget GỐC của trình duyệt, không ăn class
+     Tailwind. Không khai color-scheme thì nền tối chúng vẫn vẽ kiểu SÁNG: 5 nút
+     radio trắng bóc trên nền tối, và danh sách xổ xuống cũng trắng
+     (Peter báo 25/8: "nó trắng bóc à"). */
+  color-scheme: light;
   --t-bg: #ffffff;
   --t-card: #f7f9f6;
   --t-card-hover: #f0f3ee;
@@ -76,6 +81,7 @@
 
 /* Dark mode */
 :root.dark {
+  color-scheme: dark;
   --t-bg: #0d1117;
   --t-card: #161b22;
   --t-card-hover: #1c2333;
