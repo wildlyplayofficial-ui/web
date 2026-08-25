@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getNewsItemBySlug, getHeadline, getBody, getKickoffByMatchId } from "@/lib/news";
+import { getTeamHub } from "@/lib/teams";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LocalDate } from "@/components/local-date";
 import { LocalKickoffTime } from "@/components/local-kickoff-time";
@@ -173,6 +174,22 @@ export default async function NewsDetail({ params }: Props) {
 
       {/* Internal links */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
+        {/* Dẫn về hub CLB bài này nhắc tới. Hai tác dụng: người đọc xem tiếp tin
+            cùng đội, và Googlebot có đường đi tới hub — hub mới mở hôm nay, chưa
+            được Google biết tới nên rất cần link trỏ vào. */}
+        {(item.teams ?? []).map((slug) => {
+          const hub = getTeamHub(slug);
+          if (!hub) return null;
+          return (
+            <Link
+              key={slug}
+              href={withLang(`/doi/${slug}`, lang)}
+              className="rounded-full border border-brand/40 bg-brand-dim/30 px-3 py-1.5 font-semibold text-brand transition-colors hover:border-brand"
+            >
+              {hub.name} &rarr;
+            </Link>
+          );
+        })}
         <Link href={withLang("/news", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
           {dict.news.title} &rarr;
         </Link>
