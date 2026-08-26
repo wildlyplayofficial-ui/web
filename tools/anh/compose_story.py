@@ -12,7 +12,6 @@ W, H = 1080, 1920
 VANG = (255, 214, 64)
 from fonts_bb import F, FS   # font tự tra theo hệ điều hành, xem fonts_bb.py
 
-import os as _os
 from brand_bb import _asset   # dùng chung: tìm asset trong repo trước
 
 
