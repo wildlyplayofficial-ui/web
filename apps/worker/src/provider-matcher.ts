@@ -54,13 +54,36 @@ async function getActiveCompetitions(sb: SupabaseClient): Promise<Competition[]>
   return (data ?? []) as Competition[];
 }
 
-/** Fetch odds-api events for a competition. */
-async function fetchOddsEvents(apiKey: string, league: string): Promise<OddsEvent[]> {
+/** Fetch odds-api events for a competition.
+ *  Nhà cung cấp chặn ở 100 lượt/giờ MỖI KHOÁ (gói free — email Odds-API.io 26/8).
+ *  Có nhiều khoá thì gặp 429 chuyển sang khoá kế rồi gọi lại, thay vì bỏ giải.
+ *  Cùng cách odds-collect.ts đang làm; trước đây hàm này chỉ cầm 1 khoá nên chỉ
+ *  với tới 100 trong tổng 300 lượt/giờ mình đang có. */
+async function fetchOddsEvents(
+  khoa: readonly string[],
+  league: string,
+  bd: { i: number },
+  fetchImpl: typeof fetch = fetch,
+): Promise<OddsEvent[]> {
+  if (khoa.length === 0) return [];
   try {
-    const res = await fetch(`https://api.odds-api.io/v3/events?sport=football&league=${league}&apiKey=${apiKey}`);
-    if (!res.ok) { log.warn(`provider-matcher: odds-api ${res.status} for ${league}`); return []; }
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    for (let lan = 0; lan < khoa.length; lan++) {
+      const res = await fetchImpl(
+        `https://api.odds-api.io/v3/events?sport=football&league=${league}&apiKey=${khoa[bd.i]}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      }
+      if (res.status !== 429) {
+        log.warn(`provider-matcher: odds-api ${res.status} for ${league}`);
+        return [];
+      }
+      log.warn(`provider-matcher: khoá ${bd.i + 1}/${khoa.length} hết lượt, đổi khoá`);
+      bd.i = (bd.i + 1) % khoa.length;
+    }
+    log.warn(`provider-matcher: bỏ ${league} — odds-api 429, mọi khoá đều hết lượt`);
+    return [];
   } catch { return []; }
 }
 
@@ -85,17 +108,21 @@ function nextDates(n: number): string[] {
 /** Run auto-matching for all active competitions. */
 export async function runProviderMatcher(
   sb: SupabaseClient,
-  oddsApiKey: string,
+  oddsApiKey: string | readonly string[],
   lsKey: string,
   lsSecret: string,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<void> {
+  // Nhận 1 khoá hoặc mảng khoá — chỗ gọi cũ truyền chuỗi vẫn chạy như trước.
+  const khoa = (Array.isArray(oddsApiKey) ? oddsApiKey : [oddsApiKey]).filter(Boolean) as string[];
+  const bd = { i: 0 };   // con trỏ khoá, giữ qua cả vòng để không quay lại khoá đã cạn
   const competitions = await getActiveCompetitions(sb);
   let total = 0;
 
   for (const comp of competitions) {
     if (!comp.livescore_id) continue;
 
-    const oddsEvents = comp.odds_api_key ? await fetchOddsEvents(oddsApiKey, comp.odds_api_key) : [];
+    const oddsEvents = comp.odds_api_key ? await fetchOddsEvents(khoa, comp.odds_api_key, bd, fetchImpl) : [];
     log.info(`provider-matcher: ${comp.id} — ${oddsEvents.length} odds events, fetching LS...`);
 
     // Primary source: livescore schedule (next 7 days, or dates from odds events)

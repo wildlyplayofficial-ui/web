@@ -179,10 +179,10 @@ void persistTick();
 if (persistDb) void seedFromGlMatches(persistDb);
 // M2: provider mapping — run on boot + every 6h
 if (persistDb && oddsApiKey && process.env.LIVESCORE_API_KEY && process.env.LIVESCORE_API_SECRET) {
-  void runProviderMatcher(persistDb, oddsApiKey, process.env.LIVESCORE_API_KEY, process.env.LIVESCORE_API_SECRET)
+  void runProviderMatcher(persistDb, oddsApiKeys, process.env.LIVESCORE_API_KEY, process.env.LIVESCORE_API_SECRET)
     .then(() => ingestFixtures(persistDb!));
   setInterval(async () => {
-    await runProviderMatcher(persistDb!, oddsApiKey!, process.env.LIVESCORE_API_KEY!, process.env.LIVESCORE_API_SECRET!);
+    await runProviderMatcher(persistDb!, oddsApiKeys, process.env.LIVESCORE_API_KEY!, process.env.LIVESCORE_API_SECRET!);
     await ingestFixtures(persistDb!);
   }, 6 * 3_600_000);
   log.info('provider-matcher: boot + every 6h');
