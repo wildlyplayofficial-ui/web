@@ -9,6 +9,7 @@ Dùng:
     d.text((x, y), 'CHUYỂN NHƯỢNG', font=F(96))
 """
 import os
+import sys
 from functools import lru_cache
 from PIL import ImageFont
 from fontTools.ttLib import TTFont
@@ -63,10 +64,17 @@ def _du_dau(duong):
 @lru_cache(maxsize=8)
 def duong_font(loai='dam'):
     thieu_dau = []
-    for d in UNG_VIEN[loai]:
+    for i, d in enumerate(UNG_VIEN[loai]):
         if not os.path.exists(d):
             continue
         if _du_dau(d):
+            # 2 ứng viên đầu là font DÙNG CHUNG (repo / bundled). Rơi xuống font hệ thống
+            # nghĩa là mỗi máy một tệp khác nhau → ảnh hai máy hết giống nhau. Phải KÊU TO,
+            # đừng im lặng: hỏng thầm kiểu này đã mất cả buổi sáng 26/8 để truy ra.
+            if i >= 2:
+                print(f'⚠️  CẢNH BÁO: dùng font HỆ THỐNG {d} cho "{loai}" — không phải font dùng chung. '
+                      f'Ảnh máy này sẽ KHÁC ảnh máy khác. Kiểm lại apps/web/app/api/og/_assets/ '
+                      f'hoặc thư mục fonts/ cạnh script.', file=sys.stderr)
             return d
         thieu_dau.append(d)
     raise RuntimeError(
