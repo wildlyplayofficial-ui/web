@@ -14,10 +14,20 @@ from PIL import ImageFont
 from fontTools.ttLib import TTFont
 
 # Chữ thử: đủ mặt dấu khó của tiếng Việt (Ư, Ợ, Ệ, Ỷ, Đ) — thiếu 1 trong số này là loại.
-THU = 'ƯỢỆỶĐăằẵịọủ'
+THU = 'ƯỢỆỶĐăằẵịọủ' + '→·+'   # 26/8: thêm KÝ HIỆU. Barlow Condensed đủ dấu tiếng Việt
+# nhưng THIẾU mũi tên → nên "Brighton → Man United" ra ô vuông trống. Phép thử chỉ đo
+# chữ cái thì không bắt được, phải đo cả ký hiệu mình thật sự dùng trên ảnh.
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_REPO_OG = os.path.normpath(os.path.join(_HERE, '..', '..', 'apps', 'web', 'app', 'api', 'og', '_assets'))
 
 UNG_VIEN = {
     'dam': [                                    # tiêu đề, tên cầu thủ
+        # Font TRONG REPO đứng đầu: hai máy nạp CÙNG MỘT TỆP thì ảnh giống hệt nhau.
+        # Font hệ thống chỉ là phương án chống gãy — mỗi máy một tệp khác nhau,
+        # dùng nó là hai bên hết đối chiếu được với nhau.
+        os.path.join(_REPO_OG, 'SpaceGrotesk-Bold.ttf'),
+        os.path.join(_HERE, 'fonts', 'SpaceGrotesk-Bold.ttf'),
         'C:/Windows/Fonts/arialbd.ttf',
         'C:/Windows/Fonts/segoeuib.ttf',
         '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
@@ -27,6 +37,8 @@ UNG_VIEN = {
         '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',
     ],
     'phu': [                                    # dòng phụ, tên miền
+        os.path.join(_REPO_OG, 'SpaceGrotesk-Medium.ttf'),
+        os.path.join(_HERE, 'fonts', 'SpaceGrotesk-Medium.ttf'),
         'C:/Windows/Fonts/segoeuib.ttf',
         'C:/Windows/Fonts/arialbd.ttf',
         '/System/Library/Fonts/Supplemental/Tahoma Bold.ttf',
