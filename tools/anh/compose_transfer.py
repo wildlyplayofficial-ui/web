@@ -87,18 +87,25 @@ def build(cartoon, badge_from, badge_to, name, line2, pill, out):
     # tên co lại nếu tràn khỏi tấm nền
     # Tên tự chọn cỡ LỚN NHẤT còn lọt 1240px — tên ngắn thì to, tên dài thì nhỏ.
     # Trước đây cố định 120px nên tên ngắn ("LIAM DELAP") để hở nửa hàng, ô giữa 72%.
-    fn = F(96)
-    for cs in range(190, 84, -4):
-        f0 = F(cs)
-        if d.textlength(name, font=f0) <= 1130:
-            fn = f0
-            break
+    RONG_TEN = 1130
+    fn = F(190)
+    wn = d.textlength(name, font=fn)
+    if wn > RONG_TEN:
+        fn = F(max(60, int(190 * RONG_TEN / wn)))
+        while d.textlength(name, font=fn) > RONG_TEN and fn.size > 60:
+            fn = F(fn.size - 2)
     lt(name, 230, 762 - fn.size // 2, fn)
     # dòng 2 cũng phải co: bản đầu 26/8 chữ "phụ phí" tràn khỏi tấm nền, đè lên vai cầu thủ
-    for cs2 in (52, 46, 42, 38, 34):
-        f2 = FS(cs2)
-        if d.textlength(line2, font=f2) <= 1240:
-            break
+    # Co theo TỈ LỆ chứ đừng dò trong danh sách cố định: đổi font là chữ rộng khác đi,
+    # danh sách cứng sẽ hết lựa chọn rồi âm thầm để chữ tràn ra ngoài tấm nền, đè lên cầu thủ.
+    # Dính đúng 26/8 lúc đổi Arial → Space Grotesk (Space Grotesk rộng hơn).
+    RONG = 1240
+    f2 = FS(52)
+    w2 = d.textlength(line2, font=f2)
+    if w2 > RONG:
+        f2 = FS(max(26, int(52 * RONG / w2)))
+        while d.textlength(line2, font=f2) > RONG and f2.size > 26:
+            f2 = FS(f2.size - 1)
     lt(line2, 230, 880, f2)
     pf = F(48); pw = d.textlength(pill, font=pf); x0, y0, ph = 230, 986, 96
     d.rounded_rectangle((x0+4, y0+6, x0+pw+110+4, y0+ph+6), radius=48, fill=(0, 0, 0, 80))
