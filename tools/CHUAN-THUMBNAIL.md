@@ -52,6 +52,7 @@ Lỗi lặp thấy được bằng mắt:
 | B6 | Dấu tiếng Việt đủ và đúng, không tràn, không cắt | Đo chiều rộng chữ |
 | B7 | Logo thật, **không để AI vẽ logo** | Nhìn |
 | B8 | **Người/vật đúng đội hiện tại** của bài | Đối chiếu nội dung bài |
+| B9 | **Mọi ký tự không phải chữ Latin phải kiểm bảng mã font TRƯỚC khi vẽ** | Script kiểm cmap |
 
 Không đạt bất kỳ luật nào = **không được đăng**.
 
@@ -99,6 +100,44 @@ Không đạt bất kỳ luật nào = **không được đăng**.
 
 Máy chấm được luật B1–B4, B6. Luật B5, B7, B8 và "có muốn bấm vào không" thì
 máy không chấm được — chỗ đó bắt buộc mắt người.
+
+### ⚠️ Luật B9 — ký tự lạ phải kiểm font trước khi vẽ
+
+Ba lần dính trong đúng một ngày (26/8), cùng một bệnh: **code giả định font có
+ký tự nào đó mà không kiểm**. Font thiếu ký tự KHÔNG làm gãy script — nó lặng
+lẽ vẽ ô vuông trống.
+
+| Ký tự | Font | Hậu quả |
+|---|---|---|
+| `✔` | Arial | bảng RTP ra ô vuông thay vì dấu tích |
+| `→` | Barlow Condensed | "Brighton → Man United" ra ô vuông giữa hai tên đội |
+| `◆` | Space Grotesk | đã biết từ đợt thẻ OG, phải vẽ hình thoi thay |
+
+**Nguy hiểm gấp đôi:** ô vuông trống lại được máy chấm tính là "có chi tiết" nên
+ảnh còn được ĐIỂM CAO hơn.
+
+**Cách làm đúng — chọn một trong hai:**
+1. **Kiểm bảng mã font trước** bằng `fontTools`: nạp `cmap`, thử mọi ký tự lạ
+   mình định dùng. Thiếu một cái là đổi font. Đây là cách `tools/anh/fonts_bb.py`
+   đang làm — phép thử gồm cả chữ có dấu lẫn ký hiệu `→ · +`.
+2. **VẼ ký tự đó bằng nét** thay vì gõ chữ. Dấu tích trong bảng RTP vẽ bằng hai
+   đoạn thẳng; hình thoi vẽ bằng hình vuông xoay. Cách này không phụ thuộc font.
+
+### ⚠️ Ca thật 26/8: máy chấm ĐẸP NHẤT mà ảnh HỎNG
+
+Thêm hoạ tiết sọc vào khối thông tin → điểm ra **28,6% / 3,3%**, đẹp nhất từ
+trước tới nay. Mở ảnh ra nhìn: sọc trắng **chạy ngang qua áo và cờ trên ngực
+cầu thủ** — khối vẽ đè lên nhân vật.
+
+Nguy hiểm ở chỗ máy cho điểm CÀNG CAO: sọc đè lên áo = thêm chi tiết = bớt
+"vùng phẳng". Thước hoạt động đúng như thiết kế, nhưng nó đo *độ chi tiết*, nó
+không biết chi tiết đó là hoạ tiết đang phá hỏng nhân vật.
+
+Sửa: đảo thứ tự lớp — vẽ khối trước, dán nhân vật sau.
+
+**Rút ra:** điểm số cao KHÔNG phải bằng chứng ảnh đẹp. Điểm số chỉ loại được
+ảnh trống. Bước mở ảnh ra nhìn không bao giờ bỏ được, kể cả khi máy khen hết
+lời — nhất là khi máy khen hết lời.
 
 ---
 
