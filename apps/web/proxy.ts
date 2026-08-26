@@ -1,30 +1,30 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const VALID_LANGS = new Set(["en", "vi", "th", "es"]);
 const LANG_PREFIX_RE = /^\/(en|vi|th|es)(\/|$)/;
 
 /**
  * Next.js 16 Proxy — path-based i18n routing.
  *
- * - /en/..., /th/..., /es/... -> pass through, set x-lang header
+ * Site chỉ còn tiếng Việt (Peter chốt 25/8, nối tiếp đợt gỡ 23/8): /en /th /es đã
+ * 301 về bản VI ngay trong next.config, nên tới đây pathname thực tế chỉ còn /vi
+ * hoặc không tiền tố.
+ *
  * - /vi/... -> 301 strip the prefix (Vietnamese is the prefix-less canonical)
  * - Unprefixed paths -> rewrite to /vi/... internally (URL stays the same for user)
- * - ?lang=<non-vi> on any path -> 301 redirect to /<lang>/path (migration from old query-param scheme)
- * - ?lang=vi on any path -> 301 redirect to strip the param (back to the bare canonical)
+ * - ?lang=... on any path -> 301 strip the param (back to the bare canonical)
  * - Admin/API routes pass through unchanged
  */
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // ── Legacy ?lang= migration: 301 redirect to path-based URL ──
-  const qLang = searchParams.get("lang");
-  if (qLang) {
+  // ── Legacy ?lang= migration: 301 về đúng URL canonical, MỘT nhịp ──
+  // Trước đây ?lang=th đẩy sang /th/<path>, rồi luật 301 trong next.config lại đẩy
+  // tiếp về /<path> — hai nhịp cho một lần chuyển (đo prod 26/8: /keo?lang=th ->
+  // /th/keo -> /keo). Site chỉ còn tiếng Việt nên bỏ thẳng tham số là xong.
+  if (searchParams.has("lang")) {
     const url = request.nextUrl.clone();
     url.searchParams.delete("lang");
-    if (qLang !== "vi" && VALID_LANGS.has(qLang) && !LANG_PREFIX_RE.test(pathname)) {
-      url.pathname = `/${qLang}${pathname}`;
-    }
     return NextResponse.redirect(url, 301);
   }
 

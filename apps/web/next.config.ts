@@ -3,9 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
-      // Serve /daily-line/* from /goalline/* code — with lang prefix support
-      { source: "/:lang(en|vi|th|es)/daily-line", destination: "/:lang/goalline" },
-      { source: "/:lang(en|vi|th|es)/daily-line/:path*", destination: "/:lang/goalline/:path*" },
+      // Serve /daily-line/* from /goalline/* code. Chỉ còn 'vi': proxy viết lại
+      // đường không tiền tố thành /vi/... trước khi tới đây, còn /en /th /es đã 301
+      // mất ở luật redirect bên dưới. Bỏ en|th|es khỏi đây để nếu luật 301 kia có
+      // hỏng thì cũng không còn đường nào render ra được trang ngoại ngữ.
+      { source: "/:lang(vi)/daily-line", destination: "/:lang/goalline" },
+      { source: "/:lang(vi)/daily-line/:path*", destination: "/:lang/goalline/:path*" },
     ];
   },
   async redirects() {

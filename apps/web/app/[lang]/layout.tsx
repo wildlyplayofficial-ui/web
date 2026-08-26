@@ -7,7 +7,7 @@ import { LiveTicker } from "@/components/live-ticker";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { COMPETITION_LOGOS } from "@/lib/competition-logos";
-import { LANGS, PUBLIC_LANGS, type Lang } from "@/lib/i18n";
+import { PUBLIC_LANGS, type Lang } from "@/lib/i18n";
 import { buildOrganization, buildWebSite } from "@/lib/jsonld";
 
 export async function generateStaticParams() {
@@ -40,7 +40,10 @@ export default async function LangLayout({
   params: Promise<{ lang: string }>;
 }>) {
   const { lang } = await params;
-  if (!(LANGS as readonly string[]).includes(lang)) notFound();
+  // Chốt theo PUBLIC_LANGS chứ không phải LANGS: LANGS vẫn giữ đủ 4 cho công cụ
+  // dịch trong admin, nhưng mặt web chỉ còn 'vi'. Nếu vì lý do gì đó luật 301 ở
+  // next.config không bắt được /en /th /es thì chặn ở đây, đừng render bản ngoại ngữ.
+  if (!(PUBLIC_LANGS as readonly string[]).includes(lang)) notFound();
 
   return (
     <>

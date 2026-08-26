@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getPost, getPostLangs } from "@/lib/data";
+import { getPost } from "@/lib/data";
 import { locales } from "@/lib/format";
-import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -27,14 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
   const canonical = `${BASE}${withLang(`/transparency/${slug}`, lang)}`;
 
-  const availableLangs = await getPostLangs(slug);
-  const languages: Record<string, string> = {};
-  for (const l of availableLangs) {
-    languages[l] = `${BASE}${withLang(`/transparency/${slug}`, l)}`;
-  }
-  if (availableLangs.includes("vi")) {
-    languages["x-default"] = `${BASE}/transparency/${slug}`;
-  }
+  // Chỉ khai hreflang bản tiếng Việt — xem ghi chú ở guides/[slug]/page.tsx.
+  const { languages } = buildAlternates(`/transparency/${slug}`, lang);
 
   return {
     title,
