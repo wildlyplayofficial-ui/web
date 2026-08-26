@@ -61,8 +61,16 @@ def cham(path):
     dat = tong <= NGUONG_PHANG and giua <= NGUONG_GIUA
     ten = path.split('/')[-1]
     print(f'{ten}')
-    print(f'   kích thước   {img.size[0]}x{img.size[1]}' +
-          ('' if img.size[0] >= 1200 else '   ⚠ nhỏ hơn 1200px, Facebook sẽ làm mờ'))
+    w, h = img.size
+    # Ngưỡng bề rộng chỉ áp cho ảnh NGANG (thẻ chia sẻ cần ≥1200).
+    # Ảnh DỌC 1080x1920 là ĐÚNG CHUẨN story của Facebook/Instagram — cảnh báo ở
+    # đây sẽ khiến người ta đi phóng ảnh lên 1200 và làm hỏng cái đang đúng.
+    # Jane chỉ ra 26/8, đúng lúc sắp có ca dùng thật lúc nửa đêm.
+    if w >= h:
+        canh = '' if w >= 1200 else '   ⚠ ảnh ngang nhỏ hơn 1200px, Facebook sẽ làm mờ'
+    else:
+        canh = '   (ảnh dọc — khổ story)' if w >= 1080 else '   ⚠ ảnh dọc nhỏ hơn 1080px'
+    print(f'   kích thước   {w}x{h}{canh}')
     print(f'   vùng phẳng   {tong:5.1f}%   (ngưỡng {NGUONG_PHANG:.0f}%)   {"đạt" if tong <= NGUONG_PHANG else "RỚT"}')
     print(f'   ô giữa       {giua:5.1f}%   (ngưỡng {NGUONG_GIUA:.0f}%)   {"đạt" if giua <= NGUONG_GIUA else "RỚT"}')
     print(f'   → {"ĐẠT máy chấm — giờ MỞ RA NHÌN trước khi đăng" if dat else "RỚT — làm lại, đừng đăng"}\n')
