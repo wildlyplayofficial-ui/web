@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getPost, getPostLangs, getMatchBySlug, REPORT_SLUG_RE } from "@/lib/data";
+import { getPost, getMatchBySlug, REPORT_SLUG_RE } from "@/lib/data";
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
@@ -97,14 +97,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
   const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
 
-  const availableLangs = await getPostLangs(slug);
-  const languages: Record<string, string> = {};
-  for (const l of availableLangs) {
-    languages[l] = `${BASE}${withLang(`/analysis/${slug}`, l)}`;
-  }
-  if (availableLangs.includes("vi")) {
-    languages["x-default"] = `${BASE}/analysis/${slug}`;
-  }
+  // Chỉ khai hreflang bản tiếng Việt — xem ghi chú ở guides/[slug]/page.tsx.
+  // Nhánh Desk phía trên đã dùng buildAlternates từ trước; nhánh posts thì chưa,
+  // nên 224/273 trang /analysis còn khai en/th/es (đo prod 26/8).
+  const { languages } = buildAlternates(`/analysis/${slug}`, lang);
 
   return {
     title,

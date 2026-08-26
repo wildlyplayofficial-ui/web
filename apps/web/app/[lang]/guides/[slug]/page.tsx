@@ -4,9 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getPost, getPostLangs } from "@/lib/data";
+import { getPost } from "@/lib/data";
 import { locales } from "@/lib/format";
-import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 
@@ -45,14 +45,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
   const canonical = `${BASE}${withLang(`/guides/${slug}`, lang)}`;
 
-  const availableLangs = await getPostLangs(slug);
-  const languages: Record<string, string> = {};
-  for (const l of availableLangs) {
-    languages[l] = `${BASE}${withLang(`/guides/${slug}`, l)}`;
-  }
-  if (availableLangs.includes("vi")) {
-    languages["x-default"] = `${BASE}/guides/${slug}`;
-  }
+  // hreflang chỉ khai bản tiếng Việt (Peter chốt 25/8, nối tiếp đợt gỡ 23/8). Bảng
+  // `posts` vẫn giữ hàng en/th/es cho công cụ dịch trong admin, nên getPostLangs trả
+  // về cả 4 — khai ra là trỏ Google vào /en /th /es đã 301, tự dựng chuỗi chuyển
+  // hướng cho chính mình. Đo trên prod 26/8: 690 thẻ hreflang hỏng trên 237 trang.
+  const { languages } = buildAlternates(`/guides/${slug}`, lang);
 
   return {
     title,
