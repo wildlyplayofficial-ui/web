@@ -40,8 +40,19 @@ export async function POST(request: Request): Promise<Response> {
 
   while (true) {
     const q = `key=${key}&secret=${secretKey}&competition_id=${CID}&from=${from}&to=${to}&page=${page}`;
-    const res = await lsFetch(`${LS}/scores/history.json?${q}`);
-    const data = await res.json();
+    // Lượt gọi này nằm trong vòng lặp KHÔNG có điểm dừng ngoài `break`. Từ 27/8
+    // lsFetch có hạn chờ nên nó ném lỗi thay vì treo — ném ở đây thì thoát cả
+    // hàm và mất luôn số đã gom được ở các trang trước. Hứng rồi break: giữ
+    // được phần đã lấy, và cái đã lấy vẫn đúng.
+    // Jane rà ra 27/8: đây là chỗ cuối trong app còn gọi nhà cung cấp mà trần.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any;
+    try {
+      const res = await lsFetch(`${LS}/scores/history.json?${q}`);
+      data = await res.json();
+    } catch {
+      break;
+    }
     if (!data.success || !data.data?.match?.length) break;
 
     for (const m of data.data.match) {
