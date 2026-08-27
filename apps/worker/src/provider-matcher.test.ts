@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { teamsMatch, tuTen } from './provider-matcher';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { describe, expect, it, vi } from 'vitest';
+import { log } from './log';
+import { lsFetch } from './ls-fetch';
+import { ghiMapping, runProviderMatcher, teamsMatch, tuTen } from './provider-matcher';
+
+vi.mock('./log');
+vi.mock('./ls-fetch', () => ({ lsFetch: vi.fn() }));
 
 /** Mọi cặp dưới đây là TÊN THẬT lấy từ hai nhà cung cấp lúc 11h ngày 27/8/2026,
  *  không phải tên bịa. Cách so cũ (so nguyên chuỗi) trượt 73/89 trận. */
@@ -98,5 +104,106 @@ describe('teamsMatch — rủi ro đã biết, chưa chặn ở tầng này', ()
   it('tên một từ LỌT vào tên hai từ — chỗ gọi phải chặn bằng giải và ngày', () => {
     expect(teamsMatch('Inter', 'Inter Miami')).toBe(true);
     expect(teamsMatch('Nottingham', 'Nottingham Forest')).toBe(true);
+  });
+});
+
+type Dong = Record<string, unknown>;
+type Hang = Parameters<typeof ghiMapping>[1];
+
+/** Fake supabase tối thiểu, GIỮ đúng khoá unique của bảng thật
+ *  (competition_id, home_team, away_team, kickoff_utc): chèn trùng thì trả lỗi
+ *  "duplicate key" y như Postgres — đúng lỗi prod 27/8/2026 15:41Z. `bang` là dữ liệu
+ *  sống, bài test soi thẳng vào đó. */
+function giaLapSb(banDau: Dong[], cuocThi: Dong[] = []) {
+  const bang: Dong[] = banDau.map((d, i) => ({ id: i + 1, ...d }));
+  let idKe = bang.length + 1;
+  const khoa = (r: Dong) => [r.competition_id, r.home_team, r.away_team, r.kickoff_utc].join('|');
+  const builder = (rows: Dong[]) => {
+    const loc: Array<(r: Dong) => boolean> = [];
+    let thaoTac: 'select' | 'update' | 'delete' = 'select';
+    let du: Dong = {};
+    const b: Record<string, unknown> = {};
+    b.select = () => b;
+    b.limit = () => b;
+    b.update = (v: Dong) => { thaoTac = 'update'; du = v; return b; };
+    b.delete = () => { thaoTac = 'delete'; return b; };
+    b.match = (obj: Dong) => { loc.push((r) => Object.entries(obj).every(([k, v]) => r[k] === v)); return b; };
+    b.eq = (k: string, v: unknown) => { loc.push((r) => r[k] === v); return b; };
+    b.is = b.eq;
+    b.insert = async (v: Dong) => {
+      if (rows.some((r) => khoa(r) === khoa(v))) {
+        return { error: { message: 'duplicate key value violates unique constraint "provider_mappings_competition_id_home_team_away_team_kickof_key"' } };
+      }
+      rows.push({ id: idKe++, ...v });
+      return { error: null };
+    };
+    b.then = (res: (v: unknown) => unknown) => {
+      const hits = rows.filter((r) => loc.every((f) => f(r)));
+      if (thaoTac === 'update') for (const r of hits) Object.assign(r, du);
+      if (thaoTac === 'delete') for (const r of hits) rows.splice(rows.indexOf(r), 1);
+      return Promise.resolve({ data: thaoTac === 'select' ? hits : null, error: null }).then(res);
+    };
+    return b;
+  };
+  const sb = { from: (table: string) => builder(table === 'competitions' ? cuocThi : bang) } as unknown as SupabaseClient;
+  return { sb, bang };
+}
+
+/** Dòng odds-only y như prod 27/8/2026: odds-api ghi "Celta Vigo"/"Osasuna" trùng khít
+ *  tên livescore, nên lượt chỉ-livescore chèn thêm là vỡ unique. */
+const dongOdds = {
+  competition_id: 'laliga-2026', home_team: 'Celta Vigo', away_team: 'Osasuna', kickoff_utc: '2026-08-27T18:30:00Z',
+  odds_api_event_id: 555, livescore_match_id: null, confidence: 'odds-only', slug: 'celta-vigo-vs-osasuna-2026-08-27',
+};
+const hangLs: Hang = { ...dongOdds, odds_api_event_id: null, livescore_match_id: '999', confidence: 'ls-only' };
+
+describe('ghiMapping — gộp theo khoá tự nhiên khi tên+giờ đã có (duplicate key 27/8/2026 15:41Z)', () => {
+  it('ls-only gặp dòng odds-only cùng tên cùng giờ → không chèn, dòng cũ nhận mã tỷ số, confidence auto, vẫn 1 dòng', async () => {
+    const { sb, bang } = giaLapSb([dongOdds]);
+    const { error } = await ghiMapping(sb, hangLs);
+    expect(error).toBeNull();
+    expect(bang).toHaveLength(1);
+    expect(bang[0]).toMatchObject({ odds_api_event_id: 555, livescore_match_id: '999', confidence: 'auto' });
+  });
+
+  it('odds gặp dòng ls-only cùng tên cùng giờ → dòng cũ nhận mã kèo, giữ mã tỷ số, confidence auto', async () => {
+    const { sb, bang } = giaLapSb([{ ...dongOdds, odds_api_event_id: null, livescore_match_id: '999', confidence: 'ls-only' }]);
+    const { error } = await ghiMapping(sb, dongOdds);
+    expect(error).toBeNull();
+    expect(bang).toHaveLength(1);
+    expect(bang[0]).toMatchObject({ odds_api_event_id: 555, livescore_match_id: '999', confidence: 'auto' });
+  });
+
+  it('trận khác hẳn → vẫn chèn dòng mới', async () => {
+    const { sb, bang } = giaLapSb([dongOdds]);
+    const { error } = await ghiMapping(sb, {
+      ...hangLs, home_team: 'Tijuana', away_team: 'Pumas', kickoff_utc: '2026-08-29T03:10:00Z',
+      livescore_match_id: '777', slug: 'tijuana-vs-pumas-2026-08-29',
+    });
+    expect(error).toBeNull();
+    expect(bang).toHaveLength(2);
+  });
+
+  it('lượt ls-only kế tiếp (odds-api vẫn 429) tìm theo mã tỷ số, giờ nhích vẫn 1 dòng và KHÔNG xoá mã kèo đã gộp', async () => {
+    const { sb, bang } = giaLapSb([{ ...dongOdds, livescore_match_id: '999', confidence: 'auto' }]);
+    const { error } = await ghiMapping(sb, { ...hangLs, kickoff_utc: '2026-08-27T18:40:00Z' });
+    expect(error).toBeNull();
+    expect(bang).toHaveLength(1);
+    expect(bang[0]).toMatchObject({ kickoff_utc: '2026-08-27T18:40:00Z', odds_api_event_id: 555, livescore_match_id: '999', confidence: 'auto' });
+  });
+});
+
+describe('runProviderMatcher — nhánh chỉ-livescore (odds-api 429 mọi khoá) không còn "ls-only upsert failed"', () => {
+  it('hết WARN → job-tracker/dl-monitor hết báo; dòng Celta Vigo vs Osasuna có cả 2 mã', async () => {
+    const { sb, bang } = giaLapSb([dongOdds], [{ id: 'laliga-2026', status: 'active', livescore_id: 1, odds_api_key: 'spain-laliga' }]);
+    const fetch429 = (async () => ({ ok: false, status: 429 })) as unknown as typeof fetch;
+    vi.mocked(lsFetch).mockResolvedValue({
+      json: async () => ({ success: true, data: { fixtures: [{ id: '999', fixture_id: '999', home_name: 'Celta Vigo', away_name: 'Osasuna', date: '2026-08-27', time: '18:30' }] } }),
+    } as unknown as Response);
+    await runProviderMatcher(sb, ['k1', 'k2'], 'ls-key', 'ls-secret', fetch429);
+    expect(lsFetch).toHaveBeenCalled();
+    expect(log.warn).not.toHaveBeenCalledWith(expect.stringContaining('upsert failed'));
+    expect(bang).toHaveLength(1);
+    expect(bang[0]).toMatchObject({ odds_api_event_id: 555, livescore_match_id: '999', confidence: 'auto' });
   });
 });
