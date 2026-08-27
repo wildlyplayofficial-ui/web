@@ -233,6 +233,17 @@ export default async function NewsLanding({ params, searchParams }: Props) {
 
   // Chip chỉ hiện giải THẬT SỰ có tin (Peter 9/8: "các giải khác chưa có" —
   // bấm chip ra trang trống là tệ nhất). NHA luôn hiện vì có bài Desk.
+  // KÊU TO khi chạm trần. Trần chỉ dời bức tường từ 30 ra 200 chứ không gỡ nó —
+  // vượt 200 là lỗi cũ quay lại y hệt: trang sau đứng yên, không báo gì. Với nhịp
+  // 2-3 bài/ngày thì cỡ 8 tháng nữa chạm, lúc đó không ai còn nhớ có cái trần này.
+  // Jane chỉ ra 27/8. Nhà mình có luật: chỗ nào có đường lui thì phải kêu khi dùng tới.
+  if (canLay >= TRAN_LAY && items.length >= TRAN_LAY) {
+    console.warn(
+      `[news] CHẠM TRẦN ${TRAN_LAY} bài ở trang ${page} — bài cũ hơn không hiện ra ` +
+      `và không có link nội bộ nào trỏ tới. Đổi sang lấy đúng lát cắt theo trang.`,
+    );
+  }
+
   const giaiCoTin = new Set(items.map((i) => i.competition_id).filter(Boolean));
   // Bài Desk mang league bằng TÊN — mở chip cho cả giải có bài Desk (9 bài
   // La Liga/Ligue 1 đăng 9/8 mà chip không mở là bài không có lối lọc).
