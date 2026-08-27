@@ -63,7 +63,7 @@ const TEN_CLB = [
 /** Bóc tên hai đội ra khỏi tiêu đề: "Nhận định: Chelsea vs Luton Town" → 2 tên.
  *  Cắt tiền tố loại bài trước dấu hai chấm, rồi tách ở " vs " / " gặp " / " - ".
  *  Không khớp thì trả mảng rỗng — thẻ vẫn dựng được, chỉ là không có ảnh đội. */
-export function bocTenDoi(title: string): string[] {
+function bocTenDoi(title: string): string[] {
   const than = title.includes(":") ? title.slice(title.indexOf(":") + 1) : title;
   const m = than.match(/^\s*(.+?)\s+(?:vs\.?|v\.?|gặp|-|–)\s+(.+?)\s*$/i);
   if (!m) return [];
