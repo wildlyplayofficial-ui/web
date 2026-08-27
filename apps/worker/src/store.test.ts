@@ -229,6 +229,34 @@ describe('MemoryStore.insertWatching — idempotent (27/8: autopilot gọi /watc
     expect(second.id).not.toBe(first.id);
     expect(store.watchings.size).toBe(2);
   });
+
+  it('marks the second insert with daCoSan so callers skip side effects', async () => {
+    const store = new MemoryStore();
+    await store.insertWatching(watching());
+
+    const second = await store.insertWatching(watching());
+
+    expect(second.daCoSan).toBe(true);
+  });
+
+  it('first insert has no marker and the stored row stays untouched after a repeat', async () => {
+    const store = new MemoryStore();
+    const first = await store.insertWatching(watching());
+
+    await store.insertWatching(watching());
+
+    expect(first.daCoSan).toBeUndefined();
+    expect(store.watchings.get(first.id)).not.toHaveProperty('daCoSan');
+  });
+
+  it('a different kickoff for the same teams carries no marker', async () => {
+    const store = new MemoryStore();
+    await store.insertWatching(watching());
+
+    const second = await store.insertWatching(watching({ kickoff_utc: '2026-06-18T19:00:00.000Z' }));
+
+    expect(second.daCoSan).toBeUndefined();
+  });
 });
 
 describe('MemoryStore.getWatchingById (27/8: job handlers tra theo id, không lọc qua getActiveWatching >1000 dòng)', () => {

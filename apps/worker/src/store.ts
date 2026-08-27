@@ -190,8 +190,9 @@ export interface Store {
   countPostsTodayByType(type: string): Promise<number>;
   /** All-time count of no-play articles for one author (§12.A item 3: per-author no-play tracking). */
   countNoPlayByAuthor(author: PickAuthor): Promise<number>;
-  /** Insert a new watching row. */
-  insertWatching(watching: NewWatching): Promise<WatchingRow>;
+  /** Insert a new watching row. Đã có dòng active cùng cặp đội + giờ đá thì trả lại dòng cũ
+   *  kèm `daCoSan: true` — chỗ gọi thấy cờ này thì KHÔNG chạy việc phụ (dịch note, buzz, bài tin). */
+  insertWatching(watching: NewWatching): Promise<WatchingRow & { daCoSan?: true }>;
   /** All active watching rows (status='active'). */
   getActiveWatching(): Promise<WatchingRow[]>;
   /** One watching row by id, any status — null if missing. Job handlers must use this,
@@ -295,14 +296,14 @@ export class MemoryStore implements Store {
     return this.posts.filter((p) => p.type === 'no-play' && p.lang === 'en' && p.author === author).length;
   }
 
-  async insertWatching(watching: NewWatching): Promise<WatchingRow> {
+  async insertWatching(watching: NewWatching): Promise<WatchingRow & { daCoSan?: true }> {
     // Cùng luật với bản thật, để bài kiểm chạy đúng thứ production chạy.
     const trung = [...this.watchings.values()]
       .filter((r) => r.status === 'active' && r.kickoff_utc === watching.kickoff_utc)
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
       .find((r) => chuanTenDoi(r.home_team) === chuanTenDoi(watching.home_team) &&
                    chuanTenDoi(r.away_team) === chuanTenDoi(watching.away_team));
-    if (trung) return trung;
+    if (trung) return { ...trung, daCoSan: true };
 
     const row: WatchingRow = {
       id: randomUUID(),
@@ -539,7 +540,7 @@ class SupabaseStore implements Store {
    *  phình từ 64 KB lên 6,15 MB. Chặn ở ĐÂY chứ không ở chỗ gọi — vì chính chỗ gọi mới
    *  là thứ hay mọc thêm, y như vụ trùng pick Hull-MU hôm 22/8 có hai lối vào độc lập.
    *  Đã có dòng ĐANG THEO DÕI cùng cặp đội và cùng giờ đá thì TRẢ LẠI dòng cũ, không đẻ thêm. */
-  async insertWatching(watching: NewWatching): Promise<WatchingRow> {
+  async insertWatching(watching: NewWatching): Promise<WatchingRow & { daCoSan?: true }> {
     const { data: dangCo, error: loiTra } = await this.db
       .from('watching').select('*')
       .eq('status', 'active')
@@ -553,7 +554,7 @@ class SupabaseStore implements Store {
     if (trung) {
       // Kêu lên chứ không im: im là đổi một kiểu hỏng thấy được lấy một kiểu không thấy được.
       log.info(`insertWatching: đã có dòng active ${trung.id} cho ${watching.home_team} vs ${watching.away_team} — trả lại dòng cũ, không thêm`);
-      return trung as WatchingRow;
+      return { ...(trung as WatchingRow), daCoSan: true };
     }
 
     const { data, error } = await this.db.from('watching').insert(watching).select().single();
