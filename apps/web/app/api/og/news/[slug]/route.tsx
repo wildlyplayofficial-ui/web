@@ -1,7 +1,11 @@
 import { getPost } from "@/lib/data";
 import { getHeadline, getNewsItemBySlug } from "@/lib/news";
 import { resolveLang, type Lang } from "@/lib/i18n";
-import { OgCard, ogResponse, loadMarkDataUri } from "../../_shared";
+import {
+  OgCard, ogResponse, loadMarkDataUri,
+  loadTeamPlayerDataUri, loadBadgeDataUri,
+} from "../../_shared";
+import { teamBadge } from "@/lib/team-badges";
 
 /**
  * Dynamic share image (PNG 1200x630) for news/article pages.
@@ -44,18 +48,78 @@ function typeLabel(type: string, lang: Lang): string {
   return TYPE_STATUS[type] ?? type.toUpperCase();
 }
 
+/** 20 đội có sẵn cartoon trong public/og/players/. Xếp tên DÀI trước để
+ *  "Manchester United" không bị "Manchester City" cướp mất khi dò chuỗi. */
+const TEN_DOI_CO_TRANH = [
+  "Manchester United", "Manchester City", "Tottenham Hotspur", "Nottingham Forest",
+  "Crystal Palace", "Aston Villa", "Coventry City", "Ipswich Town", "AFC Bournemouth",
+  "Newcastle", "Sunderland", "Liverpool", "Brentford", "Brighton", "Arsenal",
+  "Chelsea", "Everton", "Fulham", "Leeds", "Hull City",
+];
+
+/** Bóc tên hai đội ra khỏi tiêu đề: "Nhận định: Chelsea vs Luton Town" → 2 tên.
+ *  Cắt tiền tố loại bài trước dấu hai chấm, rồi tách ở " vs " / " gặp " / " - ".
+ *  Không khớp thì trả mảng rỗng — thẻ vẫn dựng được, chỉ là không có ảnh đội. */
+export function bocTenDoi(title: string): string[] {
+  const than = title.includes(":") ? title.slice(title.indexOf(":") + 1) : title;
+  const m = than.match(/^\s*(.+?)\s+(?:vs\.?|v\.?|gặp|-|–)\s+(.+?)\s*$/i);
+  if (!m) return [];
+  return [m[1], m[2]]
+    .map((t) => t.replace(/\s*\(.*?\)\s*/g, " ").trim())
+    .filter((t) => t.length >= 2 && t.length <= 40);
+}
+
 async function card(
   headline: string,
   type: string,
   lang: Lang,
   headers: Record<string, string>,
 ): Promise<Response> {
+  // Thẻ cũ chỉ có nền xanh + một dòng chữ: đo bằng tools/do-thumbnail.py ra
+  // 87,6% vùng phẳng / 71,1% ô giữa, ngưỡng là 55/60 — rớt nặng, và là ảnh
+  // trống nhất trong bộ. Peter chỉ ra 27/8. Lấp bằng thứ ĐÃ CÓ SẴN trong repo:
+  // cartoon riêng của đội (20 tệp) và logo CLB (192 tệp).
+  const teams = bocTenDoi(headline);
+
+  // Cartoon: thử hai đội bóc từ tiêu đề trước, không ra thì DÒ CẢ TIÊU ĐỀ.
+  // Bài "Liverpool nối lại đàm phán với PSG cho Bradley Barcola" không có chữ
+  // "vs" nên cách bóc theo cặp trả về rỗng.
+  let player: string | null = null;
+  for (const t of teams) {
+    player = await loadTeamPlayerDataUri(t);
+    if (player) break;
+  }
+  if (!player) {
+    const doiTrongTieuDe = TEN_DOI_CO_TRANH.find((d) =>
+      headline.toLowerCase().includes(d.toLowerCase()),
+    );
+    if (doiTrongTieuDe) player = await loadTeamPlayerDataUri(doiTrongTieuDe);
+  }
+  // KHÔNG rơi về mascot chung. Mascot là cầu thủ mặc áo Man City, dán nó lên bài
+  // về Liverpool là ảnh chửi nhau với nội dung — luật nhà: ảnh phải khớp bài.
+  // Không nhận ra đội thì để thẻ chữ, nền đã có hoạ tiết nên không trống.
+
+  // Logo: CHỈ hiện khi tra được CẢ HAI đội. Hiện mỗi một logo trong trận hai đội
+  // trông như thiên vị, thà không hiện.
+  let crests: string[] | null = null;
+  if (teams.length === 2) {
+    const urls = teams.map(teamBadge);
+    if (urls.every(Boolean)) {
+      const loaded = (await Promise.all(urls.map((u) => loadBadgeDataUri(u!))))
+        .filter((x): x is string => Boolean(x));
+      if (loaded.length === 2) crests = loaded;
+    }
+  }
+
   const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
       mark={mark}
       eyebrow={typeLabel(type, lang)}
       title={headline}
+      crests={crests}
+      player={player}
+      showPlayer={Boolean(player)}
       footer="banhbong.net"
       footerRight="banhbong.net News"
     />,

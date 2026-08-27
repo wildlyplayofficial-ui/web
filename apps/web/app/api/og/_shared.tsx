@@ -269,6 +269,54 @@ export function OgCard(props: OgCardProps): ReactNode {
         color: "#ffffff",
       }}
     >
+      {/* Hoạ tiết nền: sọc chéo mờ + hai vòng tròn viền, y như khuôn ảnh bìa
+          tools/anh/. Không có nó thì nửa trái là mảng xanh trơn — thẻ tin đo ra
+          87,6% vùng phẳng, rớt xa ngưỡng 55% (Peter chỉ ra 27/8).
+          Vẽ TRƯỚC ảnh cầu thủ để không có vệt nào chạy ngang qua áo — đúng lỗi
+          đã trả giá hôm 26/8 khi sọc đè lên người. */}
+      {/* Sọc chéo vẽ bằng div THẬT, không dùng repeating-linear-gradient:
+          bộ dựng ảnh BỎ QUA gradient lặp mà không báo lỗi — thử lần đầu điểm
+          không nhúc nhích một chút nào, đó là dấu hiệu nó bị nuốt. */}
+      {Array.from({ length: 26 }, (_, i) => (
+        <div
+          key={`soc-${i}`}
+          style={{
+            position: "absolute",
+            top: -180,
+            left: i * 62 - 220,
+            width: 20,
+            height: 1000,
+            display: "flex",
+            transform: "rotate(24deg)",
+            backgroundColor: i % 2 ? "rgba(255,255,255,0.055)" : "rgba(0,45,24,0.05)",
+          }}
+        />
+      ))}
+      <div
+        style={{
+          position: "absolute",
+          left: -150,
+          top: 120,
+          width: 520,
+          height: 520,
+          borderRadius: 260,
+          border: "3px solid rgba(255,255,255,0.10)",
+          display: "flex",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 240,
+          top: -170,
+          width: 380,
+          height: 380,
+          borderRadius: 190,
+          border: "3px solid rgba(255,255,255,0.07)",
+          display: "flex",
+        }}
+      />
+
       {withPlayer ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
