@@ -466,7 +466,11 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
     .from("posts")
     .select("slug, published_at, title")
     .eq("status", "published")
-    .eq("lang", "en")
+    // Lấy bản TIẾNG VIỆT: bảng posts có 1 dòng mỗi ngôn ngữ, lọc theo lang chỉ
+    // để mỗi slug ra đúng 1 dòng. Trước đây lọc "en" nên news-sitemap khai
+    // news:language=vi mà tiêu đề lại tiếng Anh (Gwen bắt 25/8, 10/10 bài).
+    // Slug giống nhau ở mọi ngôn ngữ nên sitemap chính không đổi gì.
+    .eq("lang", "vi")
     // type=guide đã có nhà riêng (/guides + /transparency). Đổ thêm sang
     // /analysis tạo 13 cặp URL trùng tự cạnh tranh (kiểm kê 25/8) — loại hẳn.
     .neq("type", "guide")
