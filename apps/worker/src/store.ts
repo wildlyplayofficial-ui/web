@@ -194,6 +194,10 @@ export interface Store {
   insertWatching(watching: NewWatching): Promise<WatchingRow>;
   /** All active watching rows (status='active'). */
   getActiveWatching(): Promise<WatchingRow[]>;
+  /** One watching row by id, any status — null if missing. Job handlers must use this,
+   *  not getActiveWatching()+find: PostgREST caps at 1000 rows, so once active rows
+   *  passed 1000 a freshly inserted row fell off the page and jobs failed "not found". */
+  getWatchingById(id: string): Promise<WatchingRow | null>;
   /** Expire a watching row by setting status='expired'. Optional closeNote for public closing line. */
   expireWatching(id: string, closeNote?: string): Promise<WatchingRow>;
   /** Link a watching row to a pick: status='picked' + pick_id. */
@@ -318,6 +322,10 @@ export class MemoryStore implements Store {
     return [...this.watchings.values()]
       .filter((w) => w.status === 'active')
       .sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc));
+  }
+
+  async getWatchingById(id: string): Promise<WatchingRow | null> {
+    return this.watchings.get(id) ?? null;
   }
 
   async expireWatching(id: string, closeNote?: string): Promise<WatchingRow> {
@@ -559,6 +567,12 @@ class SupabaseStore implements Store {
       .order('kickoff_utc', { ascending: true });
     if (error) throw new Error(`getActiveWatching failed: ${error.message}`);
     return (data ?? []) as WatchingRow[];
+  }
+
+  async getWatchingById(id: string): Promise<WatchingRow | null> {
+    const { data, error } = await this.db.from('watching').select('*').eq('id', id).maybeSingle();
+    if (error) throw new Error(`getWatchingById failed: ${error.message}`);
+    return (data as WatchingRow) ?? null;
   }
 
   async expireWatching(id: string, closeNote?: string): Promise<WatchingRow> {
