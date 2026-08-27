@@ -53,9 +53,11 @@ function typeLabel(type: string, lang: Lang): string {
  *  để chọn ảnh người. */
 const TEN_CLB = [
   "Manchester United", "Manchester City", "Tottenham Hotspur", "Nottingham Forest",
-  "Crystal Palace", "Aston Villa", "Real Madrid", "Atletico Madrid", "Bayern Munich",
+  "Crystal Palace", "Aston Villa", "Real Madrid", "Atletico Madrid",
   "Inter Miami", "Liverpool", "Barcelona", "Arsenal", "Chelsea", "Everton",
-  "Fulham", "Juventus", "Napoli", "Milan", "PSG", "Ajax", "Porto", "Benfica",
+  "Fulham", "Juventus", "Napoli", "Milan", "Ajax", "Benfica",
+  // Đã bỏ PSG, Bayern Munich, Porto: KHÔNG có trong bộ 192 logo nên tra ra rỗng,
+  // ba dòng chết. Jane rà ra 27/8.
 ];
 
 /** Bóc tên hai đội ra khỏi tiêu đề: "Nhận định: Chelsea vs Luton Town" → 2 tên.
@@ -113,8 +115,15 @@ async function card(
   // Không có cartoon (bài không phải trận đấu) thì lấp bằng HUY HIỆU CLB phóng
   // to, mờ. Bài nhắc CLB nào thì hiện CLB đó — trung thực, và lấp được mảng
   // trống 86,8% của thẻ chữ trơn.
+  // ⚠️ ĐIỀU KIỆN PHẢI CÓ CẢ `!crests`, không chỉ `!player`.
+  // Jane rà ra 27/8: bài "Nhận định: Real Madrid vs Barcelona" — bộ 20 cartoon
+  // không có đội nào của La Liga nên không có ảnh người, nhưng bộ 192 logo có
+  // CẢ HAI đội nên cặp logo nhỏ hiện lên. Rồi nhánh này chỉ hỏi "có người
+  // không", thấy không nên dán thêm huy hiệu Real Madrid TO MỜ phía sau.
+  // Ra thẻ: hai logo cân nhau + một huy hiệu Real Madrid to đùng — đúng cái
+  // thiên vị luật ngay dưới đây cấm, và rơi vào trận to nhất năm.
   let crestWatermark: string | null = null;
-  if (!player) {
+  if (!player && !crests) {
     const clb = TEN_CLB.find((d) => headline.toLowerCase().includes(d.toLowerCase()));
     const url = clb ? teamBadge(clb) : null;
     if (url) crestWatermark = await loadBadgeDataUri(url);
