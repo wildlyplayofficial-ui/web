@@ -14,7 +14,7 @@ export const revalidate = 3600;
 type Props = { params: Promise<{ lang: string; slug: string }> };
 
 async function resolveCompetition(slug: string) {
-  const competitions = await getStandingsCompetitions();
+  const competitions = await getStandingsCompetitions().catch(() => []);
   return competitions.find((c) => c.slug === slug) ?? null;
 }
 
@@ -48,7 +48,7 @@ export default async function FixturesPage({ params }: Props) {
   const flagEnabled = await isFeatureEnabled(flagKey);
   if (comp.status !== "active" && !flagEnabled) notFound();
 
-  const fixtureDays = await getCompetitionFixtures(comp.livescoreId);
+  const fixtureDays = await getCompetitionFixtures(comp.livescoreId).catch(() => []);
   const compName = localizedCompetitionName(slug, comp.name, lang);
 
   return (

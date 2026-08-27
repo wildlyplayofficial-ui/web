@@ -14,7 +14,7 @@ export const revalidate = 3600;
 type Props = { params: Promise<{ lang: string; slug: string }> };
 
 async function resolveCompetition(slug: string) {
-  const competitions = await getStandingsCompetitions();
+  const competitions = await getStandingsCompetitions().catch(() => []);
   return competitions.find((c) => c.slug === slug) ?? null;
 }
 
@@ -55,8 +55,8 @@ export default async function FormPage({ params }: Props) {
   if (comp.status !== "active" && !flagEnabled) notFound();
 
   const [tableRows, formMap] = await Promise.all([
-    fetchCompetitionTable(comp.livescoreId),
-    getCompetitionForm(comp.livescoreId),
+    fetchCompetitionTable(comp.livescoreId).catch(() => []),
+    getCompetitionForm(comp.livescoreId).catch((): Record<string, string> => ({})),
   ]);
 
   const rows = tableRows

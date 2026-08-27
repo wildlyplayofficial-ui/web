@@ -37,7 +37,7 @@ const DEFAULT_COLORS = { border: "border-line", bg: "bg-card", text: "text-muted
 export default async function CompetitionsHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const competitions = await getStandingsCompetitions();
+  const competitions = await getStandingsCompetitions().catch(() => []);
   const active = competitions.filter((c) => c.status === "active" && c.slug);
 
   return (

@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AboutPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const c = copy[lang];
-  const competitions = await getStandingsCompetitions();
+  const competitions = await getStandingsCompetitions().catch(() => []);
 
   return (
     <div className="mx-auto max-w-[800px] px-5 py-12">

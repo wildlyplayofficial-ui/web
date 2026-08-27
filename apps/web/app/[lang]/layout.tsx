@@ -18,7 +18,12 @@ export async function generateStaticParams() {
 
 /** Fetches active competitions for the header's Standings dropdown. */
 async function HeaderWithData() {
-  const comps = await getStandingsCompetitions();
+  // ⚠️ ĐÂY LÀ LAYOUT — chạy trên MỌI trang. Không hứng lỗi thì một lượt gọi
+  // hỏng là TOÀN BỘ site trả 500, không riêng trang nào.
+  // Từ 27/8 lsFetch có hạn chờ 10 giây nên lượt quá hạn NÉM LỖI thay vì treo.
+  // Đây gần như chắc chắn là cái 500 lúc 13h41 Jane bắt được.
+  // Hỏng thì thanh menu thiếu mục bảng xếp hạng, phần còn lại của site vẫn chạy.
+  const comps = await getStandingsCompetitions().catch(() => []);
   const competitions = comps
     .filter((c) => c.status === "active")
     .map((c) => ({

@@ -38,14 +38,14 @@ type Props = {
 // (ISR keeps them fresh via `revalidate`). Feature-flagged/inactive slugs stay
 // on-demand — `dynamicParams` is left at its default (true) for this segment.
 export async function generateStaticParams() {
-  const competitions = await getStandingsCompetitions();
+  const competitions = await getStandingsCompetitions().catch(() => []);
   return competitions
     .filter((c) => c.status === "active" && c.slug)
     .map((c) => ({ slug: c.slug }));
 }
 
 async function resolveCompetition(slug: string) {
-  const competitions = await getStandingsCompetitions();
+  const competitions = await getStandingsCompetitions().catch(() => []);
   return competitions.find((c) => c.slug === slug) ?? null;
 }
 
@@ -101,12 +101,12 @@ export default async function StandingSlugPage({ params }: Props) {
   const showQualification = EURO_LEAGUES.has(slug);
 
   const [tableRows, knockoutRounds, fixtureDays, formMap, deskArticles] = await Promise.all([
-    fetchCompetitionTable(comp.livescoreId),
-    isWorldCup ? getKnockoutRounds(comp.livescoreId) : Promise.resolve([]),
+    fetchCompetitionTable(comp.livescoreId).catch(() => []),
+    isWorldCup ? getKnockoutRounds(comp.livescoreId).catch(() => []) : Promise.resolve([]),
     // League schedule-by-date: non-WC competitions only (WC uses the bracket).
-    isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId),
+    isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId).catch(() => []),
     // livescore's table has no form for leagues — derive it from results.
-    isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId),
+    isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId).catch((): Record<string, string> => ({})),
     getAnalysisArticles(undefined, 30),
   ]);
 
