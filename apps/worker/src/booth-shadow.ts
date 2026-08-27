@@ -14,6 +14,7 @@ import { detectNewEvents } from './booth-detector';
 import { generateBoothExchange } from './booth-gen';
 import { lintBoothOutput } from './booth-lint';
 import { log } from './log';
+import { layHet } from './phan-trang';
 
 const DEBOUNCE_MS = 90_000; // No 2 exchanges within 90s per match
 
@@ -45,13 +46,14 @@ function getState(matchId: string): MatchState {
 async function getLivePickMatches(
   supabase: SupabaseClient,
 ): Promise<Array<{ pick: PickRow; eventsUrl: string; matchId: string }>> {
-  // Get published (unsettled) picks
-  const { data: picks } = await supabase
+  // Get published (unsettled) picks — phân trang qua trần 1000 của PostgREST, order('id') để trang ổn định
+  const picks = await layHet<PickRow>(() => supabase
     .from('picks')
     .select('*')
     .eq('status', 'published')
-    .not('thesis', 'is', null);
-  if (!picks?.length) return [];
+    .not('thesis', 'is', null)
+    .order('id'));
+  if (!picks.length) return [];
 
   // Get live matches
   const { data: matches } = await supabase
