@@ -87,7 +87,7 @@ export function HotPickCard({
           </div>
           {!predicted && (
             <span className="font-display text-xs font-semibold uppercase tracking-widest text-muted">
-              vs
+              {" vs "}
             </span>
           )}
           <div className="flex items-center gap-2.5">

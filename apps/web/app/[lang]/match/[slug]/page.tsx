@@ -129,7 +129,7 @@ export default async function MatchPage({ params }: Props) {
         <header className="mt-6">
           <p className="text-sm text-muted">{formatKickoff(datePart + "T00:00:00Z", lang)}</p>
           <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-            {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName}<span className="mx-2 text-muted">vs</span>{ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
+            {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName} <span className="text-muted">vs</span> {ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
         </header>
         {ctx
@@ -172,7 +172,7 @@ export default async function MatchPage({ params }: Props) {
       <header className="mt-6">
         <p className="text-sm text-muted">{match.league}{match.league ? " \u00b7 " : ""}{formatKickoff(match.kickoffUtc, lang)}</p>
         <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-          {homeBadge ? <img src={homeBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}{match.homeTeam}<span className="mx-2 text-muted">vs</span>{awayBadge ? <img src={awayBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}{match.awayTeam}
+          {homeBadge ? <img src={homeBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : homeFlag ? <span className="mr-1.5">{homeFlag}</span> : null}{match.homeTeam} <span className="text-muted">vs</span> {awayBadge ? <img src={awayBadge} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : awayFlag ? <span className="mr-1.5">{awayFlag}</span> : null}{match.awayTeam}
         </h1>
         {match.picks.some((p) => p.home_score !== null) && (() => {
           const pick = match.picks.find((p) => p.home_score !== null)!;
