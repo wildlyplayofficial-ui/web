@@ -226,9 +226,11 @@ export default async function NewsLanding({ params, searchParams }: Props) {
     getNewsItems(league, canLay),
     getPosts(lang),
     getAnalysisArticles(undefined, canLay),
-    getStandingsCompetitions(),
-    fetchCompetitionTable(EPL_LIVESCORE_ID),
-    getCompetitionFixtures(EPL_LIVESCORE_ID),
+    // Ba lượt gọi nhà cung cấp NGOÀI — hứng lỗi để hạn chờ 6 giây không hạ cả
+    // trang. Cùng lý do với trang chủ, xem chú thích trong ls-fetch.ts.
+    getStandingsCompetitions().catch(() => []),
+    fetchCompetitionTable(EPL_LIVESCORE_ID).catch(() => []),
+    getCompetitionFixtures(EPL_LIVESCORE_ID).catch(() => []),
   ]);
 
   // Chip chỉ hiện giải THẬT SỰ có tin (Peter 9/8: "các giải khác chưa có" —

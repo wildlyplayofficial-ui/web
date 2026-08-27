@@ -81,8 +81,12 @@ export default async function Home({ params }: Props) {
       getSettledPicks(),
       getTodaysNoPlays(),
       getActiveWatching(),
-      getCompetitionFixtures(EPL_LIVESCORE_ID),
-      getStandingsCompetitions(),
+      // Hai lượt này gọi nhà cung cấp NGOÀI. Từ 27/8 lsFetch có hạn chờ 6 giây,
+      // nên quá hạn nó NÉM LỖI thay vì treo. Không hứng ở đây thì cả trang chủ
+      // 500 — đổi một kiểu hỏng lấy một kiểu hỏng khác. Hứng rồi thì mất dải
+      // trận, phần còn lại của trang vẫn lên.
+      getCompetitionFixtures(EPL_LIVESCORE_ID).catch(() => []),
+      getStandingsCompetitions().catch(() => []),
       getAnalysisArticles(undefined, 12),
       getNewsItems(undefined, 6),
       getOddsBoard(),
