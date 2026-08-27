@@ -36,8 +36,40 @@ function canonical(name: string): string {
   return ALIASES[n] ?? n;
 }
 
-function teamsMatch(a: string, b: string): boolean {
-  return canonical(a) === canonical(b);
+/** Chữ chỉ LOẠI HÌNH câu lạc bộ, không phải tên riêng. Hai nhà cung cấp tuỳ hứng
+ *  thêm bớt: odds ghi "Liverpool FC", livescore ghi "Liverpool". */
+const CHU_THUA = new Set([
+  'fc', 'afc', 'cf', 'sc', 'ac', 'ss', 'as', 'us', 'cd', 'ud', 'rc', 'bk', 'if',
+  'sk', 'fk', 'sv', 'vfb', 'vfl', 'tsg', 'fsv', 'rb', 'ssc', 'ca', 'club', 'calcio',
+  'de', 'the', 'deportivo',
+]);
+
+/** Tiếng Đức viết được hai kiểu: Mönchengladbach → Monchengladbach (odds) hoặc
+ *  Moenchengladbach (livescore). Gộp về một mối. */
+function gopDuc(s: string): string {
+  return s.replace(/oe/g, 'o').replace(/ue/g, 'u').replace(/ae/g, 'a').replace(/ss/g, 's');
+}
+
+/** Tên đội tách thành tập TỪ, đã bỏ chữ thừa và số năm thành lập ("Como 1907"). */
+export function tuTen(name: string): Set<string> {
+  return new Set(
+    gopDuc(canonical(name))
+      .split(' ')
+      .filter((w) => w && !CHU_THUA.has(w) && !/^\d+$/.test(w)),
+  );
+}
+
+/** Khớp khi tập từ của tên NGẮN nằm trọn trong tên DÀI.
+ *  So nguyên chuỗi thì trượt 82% (đo 27/8/2026 trên 89 trận của 5 giải: chỉ 16 ghép
+ *  được). So theo từ thì 86/89. Ghép được "Sassuolo Calcio"↔"Sassuolo",
+ *  "Real Betis Seville"↔"Real Betis", "Como 1907"↔"Como".
+ *  KHÔNG khớp "Manchester City"↔"Manchester United" vì không bên nào là tập con. */
+export function teamsMatch(a: string, b: string): boolean {
+  const A = tuTen(a), B = tuTen(b);
+  if (A.size === 0 || B.size === 0) return false;
+  const [nho, lon] = A.size <= B.size ? [A, B] : [B, A];
+  for (const w of nho) if (!lon.has(w)) return false;
+  return true;
 }
 
 function sameDay(a: string, b: string): boolean {
@@ -47,6 +79,56 @@ function sameDay(a: string, b: string): boolean {
 interface Competition { id: string; livescore_id: number; odds_api_key: string }
 interface OddsEvent { id: number; home: string; away: string; date: string }
 interface LsFixture { id: string; fixture_id: string; home_name: string; away_name: string; date: string; time: string }
+
+interface HangMapping {
+  competition_id: string;
+  home_team: string;
+  away_team: string;
+  kickoff_utc: string;
+  odds_api_event_id: number | null;
+  livescore_match_id: string | null;
+  confidence: string;
+  slug: string;
+}
+
+/** Ghi một trận vào provider_mappings, lấy MÃ NHÀ CUNG CẤP làm khoá.
+ *
+ *  Trước đây dùng upsert với khoá `competition_id,home_team,away_team,kickoff_utc`.
+ *  Giờ đá KHÔNG phải là thứ đứng yên: 26-27/8/2026 Liga MX nhích giờ 5-10 phút giữa
+ *  hai lần chạy, thế là mỗi lần nhích lại đẻ một dòng MỚI thay vì sửa dòng cũ —
+ *  cùng một trận, cùng một mã tỷ số, hai dòng, hai giờ đá khác nhau.
+ *  Mã nhà cung cấp thì đứng yên, nên lấy nó làm khoá.
+ *
+ *  Ghép được rồi thì DỌN LUÔN dòng thừa: dòng ls-only cũ mang cùng mã tỷ số bị xoá,
+ *  vì thông tin của nó đã nằm trọn trong dòng vừa ghi. Không dọn thì dòng cũ ở lại
+ *  mãi và lịch thi đấu vẫn hiện hai lần.
+ */
+async function ghiMapping(sb: SupabaseClient, hang: HangMapping): Promise<{ error: { message: string } | null }> {
+  const boc = hang.odds_api_event_id
+    ? { odds_api_event_id: hang.odds_api_event_id }
+    : { livescore_match_id: hang.livescore_match_id };
+  const day = { ...hang, updated_at: new Date().toISOString() };
+
+  const { data: cu } = await sb.from('provider_mappings').select('id')
+    .match({ competition_id: hang.competition_id, ...boc }).limit(1);
+
+  const { error } = cu?.length
+    ? await sb.from('provider_mappings').update(day).eq('id', cu[0].id)
+    : await sb.from('provider_mappings').insert(day);
+  if (error) return { error };
+
+  if (hang.odds_api_event_id && hang.livescore_match_id) {
+    const { data: thua } = await sb.from('provider_mappings').select('id')
+      .eq('competition_id', hang.competition_id)
+      .eq('livescore_match_id', hang.livescore_match_id)
+      .is('odds_api_event_id', null);
+    for (const r of thua ?? []) {
+      await sb.from('provider_mappings').delete().eq('id', r.id);
+      log.info(`provider-matcher: dọn dòng thừa ${r.id} — đã gộp vào dòng có cả kèo lẫn tỷ số`);
+    }
+  }
+  return { error: null };
+}
 
 /** Fetch active competitions from DB. */
 async function getActiveCompetitions(sb: SupabaseClient): Promise<Competition[]> {
@@ -138,13 +220,19 @@ export async function runProviderMatcher(
     if (oddsEvents.length > 0) {
       // Cross-match: odds-api events enriched with livescore IDs
       for (const odds of oddsEvents) {
-        const ls = lsFixtures.find((f) =>
+        // Ghép NHẦM hại hơn không ghép: nó gắn tỷ số trực tiếp của trận khác vào.
+        // Nên khi có từ 2 trận cùng khớp thì BỎ, thà thiếu còn hơn sai.
+        const ungVien = lsFixtures.filter((f) =>
           teamsMatch(odds.home, f.home_name) &&
           teamsMatch(odds.away, f.away_name) &&
           sameDay(odds.date, `${f.date}T${f.time || '00:00'}Z`),
         );
+        if (ungVien.length > 1) {
+          log.warn(`provider-matcher: BỎ ${odds.home} vs ${odds.away} — ${ungVien.length} trận cùng khớp, mập mờ`);
+        }
+        const ls = ungVien.length === 1 ? ungVien[0] : undefined;
         const slug = `${canonical(odds.home).replace(/\s+/g, '-')}-vs-${canonical(odds.away).replace(/\s+/g, '-')}-${odds.date.slice(0, 10)}`;
-        await sb.from('provider_mappings').upsert({
+        await ghiMapping(sb, {
           competition_id: comp.id,
           home_team: odds.home,
           away_team: odds.away,
@@ -153,8 +241,7 @@ export async function runProviderMatcher(
           livescore_match_id: ls ? String(ls.id || ls.fixture_id) : null,
           confidence: ls ? 'auto' : 'odds-only',
           slug,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'competition_id,home_team,away_team,kickoff_utc' });
+        });
         total++;
       }
     } else {
@@ -168,7 +255,7 @@ export async function runProviderMatcher(
         const hhmm = ls.time?.match(/^(\d{2}:\d{2})/)?.[1] ?? '00:00';
         const kickoff = `${isoDate}T${hhmm}:00Z`;
         const slug = `${canonical(ls.home_name).replace(/\s+/g, '-')}-vs-${canonical(ls.away_name).replace(/\s+/g, '-')}-${isoDate}`;
-        const { error } = await sb.from('provider_mappings').upsert({
+        const { error } = await ghiMapping(sb, {
           competition_id: comp.id,
           home_team: ls.home_name,
           away_team: ls.away_name,
@@ -177,8 +264,7 @@ export async function runProviderMatcher(
           livescore_match_id: String(ls.id || ls.fixture_id),
           confidence: 'ls-only',
           slug,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'competition_id,home_team,away_team,kickoff_utc' });
+        });
         if (error) log.warn(`provider-matcher: ls-only upsert failed for ${comp.id} ${ls.home_name} vs ${ls.away_name} (${kickoff}): ${error.message}`);
         else { total++; lsOk++; }
       }
