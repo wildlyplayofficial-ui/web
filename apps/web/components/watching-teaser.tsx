@@ -88,8 +88,8 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
       <div className="flex items-center justify-between gap-3">
         <p className="font-display text-base font-bold">
           {homeFlag && <span className="mr-1">{homeFlag}</span>}
-          {item.home_team}
-          <span className="mx-2 text-muted">vs</span>
+          {item.home_team}{" "}
+          <span className="text-muted">vs</span>{" "}
           {awayFlag && <span className="mr-1">{awayFlag}</span>}
           {item.away_team}
         </p>

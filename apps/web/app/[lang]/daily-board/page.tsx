@@ -189,8 +189,8 @@ export default async function DailyBoard({ params }: Props) {
               >
                 <p className="font-display text-base font-bold">
                   {teamFlag(w.home_team) && <span className="mr-1">{teamFlag(w.home_team)}</span>}
-                  {w.home_team}
-                  <span className="mx-2 text-muted">vs</span>
+                  {w.home_team}{" "}
+                  <span className="text-muted">vs</span>{" "}
                   {teamFlag(w.away_team) && <span className="mr-1">{teamFlag(w.away_team)}</span>}
                   {w.away_team}
                   <span className="ml-2 text-sm font-normal text-muted">{w.league}</span>

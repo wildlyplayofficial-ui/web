@@ -171,8 +171,8 @@ function CrestThumb({ title, className, big = false }: { title: string; classNam
       <span className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
         <CrestOrInitial name={doi[0]} />
         <span className="line-clamp-1 text-[11px] font-semibold text-muted">{doi[0]}</span>
-      </span>
-      <span className="font-display text-xs font-bold text-muted">VS</span>
+      </span>{" "}
+      <span className="font-display text-xs font-bold text-muted">VS</span>{" "}
       <span className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
         <CrestOrInitial name={doi[1]} />
         <span className="line-clamp-1 text-[11px] font-semibold text-muted">{doi[1]}</span>
@@ -619,8 +619,8 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                         )}
                         <div className="mt-1 flex items-center gap-1.5">
                           <TeamCrest name={m.homeName} />
-                          <span className="truncate">{m.homeName}</span>
-                          <span className="text-muted">–</span>
+                          <span className="truncate">{m.homeName}</span>{" "}
+                          <span className="text-muted">–</span>{" "}
                           <TeamCrest name={m.awayName} />
                           <span className="truncate">{m.awayName}</span>
                         </div>
