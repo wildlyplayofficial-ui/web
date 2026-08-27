@@ -208,3 +208,25 @@ describe('MemoryStore.expireWatching — closing note (Nick 4/7 item ①)', () =
     expect(expired.close_note).toBe('Might, not is — turned out: not.');
   });
 });
+
+describe('MemoryStore.insertWatching — idempotent (27/8: autopilot gọi /watching mỗi 60s, 1123 dòng trùng)', () => {
+  it('inserting the same match twice returns the existing row and the count stays 1', async () => {
+    const store = new MemoryStore();
+    const first = await store.insertWatching(watching());
+
+    const second = await store.insertWatching(watching());
+
+    expect(second.id).toBe(first.id);
+    expect(store.watchings.size).toBe(1);
+  });
+
+  it('a different kickoff for the same teams creates a new row', async () => {
+    const store = new MemoryStore();
+    const first = await store.insertWatching(watching());
+
+    const second = await store.insertWatching(watching({ kickoff_utc: '2026-06-18T19:00:00.000Z' }));
+
+    expect(second.id).not.toBe(first.id);
+    expect(store.watchings.size).toBe(2);
+  });
+});

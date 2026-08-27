@@ -151,6 +151,15 @@ export type NewWatching = Omit<WatchingRow, 'id' | 'created_at' | 'author' | 'no
   presence?: boolean;
 };
 
+/** So khớp tên đội để bắt trùng. KHÔNG cắt "united"/"city" — cắt là Man Utd với
+ *  Man City thành MỘT (Jane trả giá 27/8 khi đồng bộ lịch FPL). Chỉ bỏ hậu tố loại hình CLB. */
+function chuanTenDoi(s: string): string {
+  return (s || '').toLowerCase()
+    .replace(/\b(fc|afc|cf|sc|ac)\b/g, ' ')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/).filter(Boolean).join(' ');
+}
+
 export interface Store {
   insertPick(pick: NewPick): Promise<PickRow>;
   /** Duplicate-insert guard (22/8, Jane): the Hull-MU incident was 2 independent entry
@@ -283,6 +292,14 @@ export class MemoryStore implements Store {
   }
 
   async insertWatching(watching: NewWatching): Promise<WatchingRow> {
+    // Cùng luật với bản thật, để bài kiểm chạy đúng thứ production chạy.
+    const trung = [...this.watchings.values()]
+      .filter((r) => r.status === 'active' && r.kickoff_utc === watching.kickoff_utc)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      .find((r) => chuanTenDoi(r.home_team) === chuanTenDoi(watching.home_team) &&
+                   chuanTenDoi(r.away_team) === chuanTenDoi(watching.away_team));
+    if (trung) return trung;
+
     const row: WatchingRow = {
       id: randomUUID(),
       created_at: new Date().toISOString(),
@@ -509,7 +526,28 @@ class SupabaseStore implements Store {
     return count ?? 0;
   }
 
+  /** ⛔ CHỐT CHỐNG TRÙNG (Nick + Jane, 27/8/2026). Insert thẳng đã đẻ ra 1123 dòng rác:
+   *  một bộ tự động trên máy khác gọi API mỗi 60 giây suốt 19 tiếng, trang /daily-board
+   *  phình từ 64 KB lên 6,15 MB. Chặn ở ĐÂY chứ không ở chỗ gọi — vì chính chỗ gọi mới
+   *  là thứ hay mọc thêm, y như vụ trùng pick Hull-MU hôm 22/8 có hai lối vào độc lập.
+   *  Đã có dòng ĐANG THEO DÕI cùng cặp đội và cùng giờ đá thì TRẢ LẠI dòng cũ, không đẻ thêm. */
   async insertWatching(watching: NewWatching): Promise<WatchingRow> {
+    const { data: dangCo, error: loiTra } = await this.db
+      .from('watching').select('*')
+      .eq('status', 'active')
+      .eq('kickoff_utc', watching.kickoff_utc)
+      .order('created_at', { ascending: true });
+    if (loiTra) throw new Error(`insertWatching precheck failed: ${loiTra.message}`);
+
+    const trung = (dangCo ?? []).find((r) =>
+      chuanTenDoi(r.home_team) === chuanTenDoi(watching.home_team) &&
+      chuanTenDoi(r.away_team) === chuanTenDoi(watching.away_team));
+    if (trung) {
+      // Kêu lên chứ không im: im là đổi một kiểu hỏng thấy được lấy một kiểu không thấy được.
+      log.info(`insertWatching: đã có dòng active ${trung.id} cho ${watching.home_team} vs ${watching.away_team} — trả lại dòng cũ, không thêm`);
+      return trung as WatchingRow;
+    }
+
     const { data, error } = await this.db.from('watching').insert(watching).select().single();
     if (error) throw new Error(`insertWatching failed: ${error.message}`);
     return data as WatchingRow;
