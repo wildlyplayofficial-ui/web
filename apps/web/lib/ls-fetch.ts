@@ -17,10 +17,17 @@ const SOURCE = "livescore-web";
  *  gọi kèm tham số lạ thì ra 200 sau 10,6 giây — chậm chứ không chết, đúng dáng
  *  chờ một lượt gọi không bao giờ trả.
  *
- *  6 giây là rộng rãi: đo 30 lượt song song từ máy hết 4 giây, tất cả 200.
+ *  VÌ SAO 10 GIÂY chứ không phải 6: Jane bắn đúng bộ lượt trang chủ từ Railway,
+ *  đo TỪNG lượt chứ không lấy trung bình — vì hạn giờ bắn theo từng lượt.
+ *    đợt nguội: lượt chậm nhất 5,22 giây (lịch epl-2026)
+ *    đợt nóng : 1,6 tới 2,2 giây cho cả đợt
+ *  Hôm nay nhà cung cấp KHOẺ mà lượt nguội đã chạm 87% của hạn 6 giây. Ngày nào
+ *  họ mệt hơn là bắn nhầm ngay, mà bắn nhầm thì dải trận biến mất im lặng.
+ *  Cán cân lệch rõ về phía nới: trần chỉ chạm tới khi ĐANG hỏng, còn hạn quá
+ *  chặt thì ăn nội dung ở MỌI lần dựng nguội.
  *  Chỗ gọi đã có .catch(() => []) nên quá hạn thì dải trận thiếu một giải,
  *  KHÔNG sập trang. Thiếu một giải còn hơn trắng trang. */
-const HAN_CHO_MS = 6000;
+const HAN_CHO_MS = 10_000;
 
 export function lsFetch(url: string | URL, init?: RequestInit): Promise<Response> {
   try {
