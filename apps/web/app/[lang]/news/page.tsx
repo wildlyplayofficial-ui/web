@@ -22,6 +22,12 @@ export const revalidate = 300;
 
 const EPL_LIVESCORE_ID = 2;
 
+/** Bao nhiêu thẻ nằm TRÊN danh sách (1 nổi bật + 6 headline + 6 lưới) và mỗi lần
+ *  "xem thêm" nối thêm bao nhiêu. Trần để một trang sâu không kéo cả kho về. */
+const TRUOC_LIST = 13;
+const PAGE_SIZE = 10;
+const TRAN_LAY = 200;
+
 type Props = {
   params: Promise<{ lang: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -209,10 +215,17 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const league = resolveLeague(sp.league);
   const page = Math.max(1, Number(sp.page) || 1);
   const dict = getDict(lang);
+  // Lấy BAO NHIÊU thì phải theo TRANG đang xem. Trước đây chặn cứng 30 cho cả hai
+  // nguồn, nên lật tới trang nào danh sách cũng chỉ có bấy nhiêu bài tin — 91 trên
+  // 121 bài tin không bao giờ hiện ra, thành bài mồ côi mà Google không có đường bò
+  // tới (đo 27/8/2026: trang 5, 13, 20, 99 đều trả đúng 30 bài tin).
+  // Sàn 30 để TRANG 1 giữ nguyên như trước bản vá: chip lọc giải sinh ra từ danh
+  // sách này, lấy ít hơn 30 là có giải biến mất khỏi thanh chip.
+  const canLay = Math.min(TRAN_LAY, Math.max(30, TRUOC_LIST + page * PAGE_SIZE));
   const [items, posts, deskArticles, competitions, eplTable, eplDays] = await Promise.all([
-    getNewsItems(league, 30),
+    getNewsItems(league, canLay),
     getPosts(lang),
-    getAnalysisArticles(undefined, 30),
+    getAnalysisArticles(undefined, canLay),
     getStandingsCompetitions(),
     fetchCompetitionTable(EPL_LIVESCORE_ID),
     getCompetitionFixtures(EPL_LIVESCORE_ID),
@@ -340,8 +353,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const noiBat = cards[0];
   const headline = cards.slice(1, 7);
   const luoi = cards.slice(7, 13);
-  const PAGE_SIZE = 10;
-  const listAll = cards.slice(13);
+  const listAll = cards.slice(TRUOC_LIST);
   const list = listAll.slice(0, page * PAGE_SIZE);
   const conNua = listAll.length > list.length;
 
