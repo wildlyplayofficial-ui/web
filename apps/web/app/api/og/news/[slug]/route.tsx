@@ -60,16 +60,37 @@ const TEN_CLB = [
   // ba dòng chết. Jane rà ra 27/8.
 ];
 
-/** Bóc tên hai đội ra khỏi tiêu đề: "Nhận định: Chelsea vs Luton Town" → 2 tên.
- *  Cắt tiền tố loại bài trước dấu hai chấm, rồi tách ở " vs " / " gặp " / " - ".
- *  Không khớp thì trả mảng rỗng — thẻ vẫn dựng được, chỉ là không có ảnh đội. */
-function bocTenDoi(title: string): string[] {
-  const than = title.includes(":") ? title.slice(title.indexOf(":") + 1) : title;
+/** Tách MỘT khúc tiêu đề ở " vs " / " gặp " / " - ", trả cặp tên hoặc rỗng. */
+function tachCap(than: string): string[] {
   const m = than.match(/^\s*(.+?)\s+(?:vs\.?|v\.?|gặp|-|–)\s+(.+?)\s*$/i);
   if (!m) return [];
-  return [m[1], m[2]]
+  const doi = [m[1], m[2]]
     .map((t) => t.replace(/\s*\(.*?\)\s*/g, " ").trim())
     .filter((t) => t.length >= 2 && t.length <= 40);
+  return doi.length === 2 ? doi : [];
+}
+
+/** Bóc tên hai đội ra khỏi tiêu đề: "Nhận định: Chelsea vs Luton Town" → 2 tên.
+ *  Tiêu đề thật có HAI kiểu: cặp đội nằm SAU dấu hai chấm ("Nhận định: A vs B")
+ *  và cặp đội nằm TRƯỚC ("A vs B: Chú Tám không chọn trận"). Bản cũ chỉ đọc
+ *  phía sau nên kiểu thứ hai mất cặp đội, rơi xuống nhánh huy hiệu nền và dán
+ *  MỘT logo lên thẻ trận hai đội — đúng cái luật ngay dưới đây cấm. Đo trên 35
+ *  og:title thật của banhbong.net: 5/35 thẻ dính, ví dụ "Fulham vs Chelsea: Chú
+ *  Tám Banh không chọn trận vì không có cơ sở" chỉ ra mỗi logo Chelsea.
+ *  Nên thử CẢ HAI phía, ưu tiên phía tra được huy hiệu cho CẢ HAI tên; không
+ *  phía nào tra đủ thì lấy cặp khớp đầu tiên (giữ nguyên nết cũ).
+ *  Không khớp thì trả mảng rỗng — thẻ vẫn dựng được, chỉ là không có ảnh đội. */
+function bocTenDoi(title: string): string[] {
+  const i = title.indexOf(":");
+  const khuc = i >= 0 ? [title.slice(i + 1), title.slice(0, i)] : [title];
+  let duPhong: string[] = [];
+  for (const than of khuc) {
+    const doi = tachCap(than);
+    if (doi.length !== 2) continue;
+    if (doi.every((t) => teamBadge(t))) return doi;
+    if (duPhong.length === 0) duPhong = doi;
+  }
+  return duPhong;
 }
 
 async function card(
