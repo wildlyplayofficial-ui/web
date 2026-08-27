@@ -48,13 +48,14 @@ function typeLabel(type: string, lang: Lang): string {
   return TYPE_STATUS[type] ?? type.toUpperCase();
 }
 
-/** 20 đội có sẵn cartoon trong public/og/players/. Xếp tên DÀI trước để
- *  "Manchester United" không bị "Manchester City" cướp mất khi dò chuỗi. */
-const TEN_DOI_CO_TRANH = [
+/** CLB có logo trong bộ 192, xếp tên DÀI trước để "Manchester United" không bị
+ *  "Manchester City" cướp khi dò chuỗi. Chỉ dùng làm huy hiệu nền, KHÔNG dùng
+ *  để chọn ảnh người. */
+const TEN_CLB = [
   "Manchester United", "Manchester City", "Tottenham Hotspur", "Nottingham Forest",
-  "Crystal Palace", "Aston Villa", "Coventry City", "Ipswich Town", "AFC Bournemouth",
-  "Newcastle", "Sunderland", "Liverpool", "Brentford", "Brighton", "Arsenal",
-  "Chelsea", "Everton", "Fulham", "Leeds", "Hull City",
+  "Crystal Palace", "Aston Villa", "Real Madrid", "Atletico Madrid", "Bayern Munich",
+  "Inter Miami", "Liverpool", "Barcelona", "Arsenal", "Chelsea", "Everton",
+  "Fulham", "Juventus", "Napoli", "Milan", "PSG", "Ajax", "Porto", "Benfica",
 ];
 
 /** Bóc tên hai đội ra khỏi tiêu đề: "Nhận định: Chelsea vs Luton Town" → 2 tên.
@@ -81,23 +82,21 @@ async function card(
   // cartoon riêng của đội (20 tệp) và logo CLB (192 tệp).
   const teams = bocTenDoi(headline);
 
-  // Cartoon: thử hai đội bóc từ tiêu đề trước, không ra thì DÒ CẢ TIÊU ĐỀ.
-  // Bài "Liverpool nối lại đàm phán với PSG cho Bradley Barcola" không có chữ
-  // "vs" nên cách bóc theo cặp trả về rỗng.
+  // Cartoon CHỈ dùng cho bài về TRẬN ĐẤU (tiêu đề dạng "A vs B").
+  //
+  // Peter loại 27/8: bài "Liverpool nối lại đàm phán với PSG cho Bradley Barcola"
+  // ra ảnh một cầu thủ Liverpool khác. Bài nói về Barcola — người trong ảnh
+  // KHÔNG phải người bài đang nói tới. Vẫn là ảnh nói dối, chỉ tinh vi hơn ca
+  // dán cầu thủ Man City lên bài Liverpool.
+  //
+  // Bài chuyển nhượng, bài giải thưởng, bài tin chung đều nói về MỘT NGƯỜI cụ
+  // thể. Dán cầu thủ bất kỳ cùng CLB vào là sai người. Không có ảnh đúng người
+  // thì để thẻ chữ — nền đã có hoạ tiết nên không trống.
   let player: string | null = null;
   for (const t of teams) {
     player = await loadTeamPlayerDataUri(t);
     if (player) break;
   }
-  if (!player) {
-    const doiTrongTieuDe = TEN_DOI_CO_TRANH.find((d) =>
-      headline.toLowerCase().includes(d.toLowerCase()),
-    );
-    if (doiTrongTieuDe) player = await loadTeamPlayerDataUri(doiTrongTieuDe);
-  }
-  // KHÔNG rơi về mascot chung. Mascot là cầu thủ mặc áo Man City, dán nó lên bài
-  // về Liverpool là ảnh chửi nhau với nội dung — luật nhà: ảnh phải khớp bài.
-  // Không nhận ra đội thì để thẻ chữ, nền đã có hoạ tiết nên không trống.
 
   // Logo: CHỈ hiện khi tra được CẢ HAI đội. Hiện mỗi một logo trong trận hai đội
   // trông như thiên vị, thà không hiện.
@@ -111,10 +110,21 @@ async function card(
     }
   }
 
+  // Không có cartoon (bài không phải trận đấu) thì lấp bằng HUY HIỆU CLB phóng
+  // to, mờ. Bài nhắc CLB nào thì hiện CLB đó — trung thực, và lấp được mảng
+  // trống 86,8% của thẻ chữ trơn.
+  let crestWatermark: string | null = null;
+  if (!player) {
+    const clb = TEN_CLB.find((d) => headline.toLowerCase().includes(d.toLowerCase()));
+    const url = clb ? teamBadge(clb) : null;
+    if (url) crestWatermark = await loadBadgeDataUri(url);
+  }
+
   const mark = await loadMarkDataUri();
   return ogResponse(
     <OgCard
       mark={mark}
+      crestWatermark={crestWatermark}
       eyebrow={typeLabel(type, lang)}
       title={headline}
       crests={crests}

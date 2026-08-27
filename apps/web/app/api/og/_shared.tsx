@@ -220,6 +220,9 @@ export type OgCardProps = {
   showPlayer?: boolean;
   /** Base64 data URI of the bb mark; when set, replaces the top-left wordmark (Nick 19/8: chữ banhbong.net đã có ở footer). */
   mark?: string | null;
+  /** Huy hiệu CLB phóng to làm nền mờ, cho thẻ KHÔNG có cartoon người.
+   *  Trung thực hơn dán một cầu thủ bất kỳ: bài nói về CLB thì hiện CLB. */
+  crestWatermark?: string | null;
 };
 
 function autoTitleSize(title: string): number {
@@ -249,6 +252,7 @@ export function OgCard(props: OgCardProps): ReactNode {
     player,
     showPlayer = false,
     mark,
+    crestWatermark,
   } = props;
 
   const withPlayer = showPlayer && Boolean(player);
@@ -316,6 +320,17 @@ export function OgCard(props: OgCardProps): ReactNode {
           display: "flex",
         }}
       />
+
+      {!withPlayer && crestWatermark ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={crestWatermark}
+          width={520}
+          height={520}
+          alt=""
+          style={{ position: "absolute", right: 40, bottom: 55, opacity: 0.22 }}
+        />
+      ) : null}
 
       {withPlayer ? (
         // eslint-disable-next-line @next/next/no-img-element
