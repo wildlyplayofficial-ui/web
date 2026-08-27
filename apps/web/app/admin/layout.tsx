@@ -19,12 +19,16 @@ export default async function AdminLayout({
   const user = await getAdminSession();
 
   // Not logged in — render children only (login page)
+  // ⚠️ min-h-full + flex-1 chứ KHÔNG phải h-full: từ 27/8/2026 thẻ body luôn mang
+  // class công khai `flex min-h-full flex-col`, vì bố cục gốc không còn đọc tiêu đề
+  // yêu cầu để biết đây là trang quản trị (đọc ở đó là cả site mất lưu đệm).
+  // Trong body dạng cột co giãn thì h-full không nở ra như trước, flex-1 mới nở.
   if (!user) {
-    return <div className="h-full bg-bg text-ink">{children}</div>;
+    return <div className="flex-1 min-h-full bg-bg text-ink">{children}</div>;
   }
 
   return (
-    <div className="flex h-full bg-bg text-ink">
+    <div className="flex flex-1 min-h-full bg-bg text-ink">
       {/* Sidebar */}
       <aside className="flex w-56 shrink-0 flex-col border-r border-line bg-card">
         <div className="border-b border-line px-4 py-4">

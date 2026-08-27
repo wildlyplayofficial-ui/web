@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { ClientChrome } from "@/components/client-chrome";
 import { Inter, Space_Grotesk, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
-import { SITE_NAME, SITE_URL, SAME_AS, DEFAULT_TITLE } from "@/lib/brand";
+import { SITE_NAME, SITE_URL, DEFAULT_TITLE } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -57,62 +57,35 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { headers } = await import("next/headers");
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
-  const isAdmin = pathname.includes("/admin");
-  // Mặc định 'vi': site chỉ còn tiếng Việt, và proxy chỉ bỏ trống x-lang ở những
-  // đường không qua bộ lọc ngôn ngữ. Để 'en' là in ra <html lang="en"> trên trang
-  // tiếng Việt — Google đọc sai ngôn ngữ trang.
-  const lang = headersList.get("x-lang") || "vi";
+  // ⛔ TUYỆT ĐỐI KHÔNG đọc headers()/cookies() trong tệp này (Jane 27/8/2026).
+  // Bố cục gốc bọc MỌI đường. Chạm tiêu đề yêu cầu ở đây là CẢ SITE render động:
+  // đo được hôm 27/8 là mọi trang, kể cả trang 404, đều trả `private, no-cache,
+  // no-store` và `X-Vercel-Cache: MISS`, nên `revalidate = 300` của trang chủ
+  // không bao giờ được dùng và trang chủ mất 15-19 giây MỖI lượt vào.
+  // Cần biết đường hiện tại thì hỏi ở phía trình duyệt — xem components/client-chrome.tsx.
+  // `lang` ghi cứng 'vi': PUBLIC_LANGS chỉ còn 'vi', và HtmlLang đã sửa lại phía
+  // trình duyệt khi chuyển trang.
 
   // Static inline scripts — hardcoded strings only, no user input (safe from XSS)
   const themeScript = '(function(){try{var t=localStorage.getItem("wp_theme");if(t==="light"){document.documentElement.classList.remove("dark")}else{document.documentElement.classList.add("dark");if(!t)localStorage.setItem("wp_theme","dark")}}catch(e){}})()';
-  const swScript = 'if("serviceWorker"in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js")})}';
 
   return (
-    <html lang={lang} className={`${inter.variable} ${spaceGrotesk.variable} ${notoSansThai.variable} dark h-full antialiased`} suppressHydrationWarning>
+    <html lang="vi" className={`${inter.variable} ${spaceGrotesk.variable} ${notoSansThai.variable} dark h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <meta name="theme-color" content="#00e676" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        {!isAdmin && <script dangerouslySetInnerHTML={{ __html: swScript }} />}
-        {!isAdmin && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify([
-                {
-                  "@context": "https://schema.org",
-                  "@type": "WebSite",
-                  name: SITE_NAME,
-                  url: SITE_URL,
-                  description: "Football previews, analysis and live scores — every analysis we publish stays public.",
-                  potentialAction: {
-                    "@type": "SearchAction",
-                    target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/matches?q={search_term_string}` },
-                    "query-input": "required name=search_term_string",
-                  },
-                },
-                {
-                  "@context": "https://schema.org",
-                  "@type": "Organization",
-                  name: SITE_NAME,
-                  url: SITE_URL,
-                  logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon-512x512.png` },
-                  description: "Daily football match previews, transfer news and live scores — clearly sourced football analysis, updated every day.",
-                  sameAs: [...SAME_AS],
-                },
-              ]),
-            }}
-          />
-        )}
+        {/* ⛔ KHÔNG in JSON-LD Organization/WebSite ở đây (Jane 27/8/2026).
+            app/[lang]/layout.tsx ĐÃ in đúng hai khối đó qua buildOrganization và
+            buildWebSite. Để cả hai chỗ là mọi trang công khai phát TRÙNG hai lần —
+            lỗi đang có sẵn từ trước, không phải do đợt sửa lưu đệm này.
+            Bỏ ở đây còn được thêm: trang quản trị thôi tự mô tả mình là trang tin. */}
       </head>
-      <body className={isAdmin ? "h-full font-sans" : "flex min-h-full flex-col font-sans"}>
+      <body className="flex min-h-full flex-col font-sans">
         {children}
-        {!isAdmin && <GoogleAnalytics gaId="G-HM4G87BT3Q" />}
+        <ClientChrome />
       </body>
     </html>
   );
