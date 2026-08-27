@@ -22,6 +22,12 @@ export const revalidate = 300;
 
 const EPL_LIVESCORE_ID = 2;
 
+/** Bao nhiêu thẻ nằm TRÊN danh sách (1 nổi bật + 6 headline + 6 lưới) và mỗi lần
+ *  "xem thêm" nối thêm bao nhiêu. Trần để một trang sâu không kéo cả kho về. */
+const TRUOC_LIST = 13;
+const PAGE_SIZE = 10;
+const TRAN_LAY = 200;
+
 type Props = {
   params: Promise<{ lang: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -209,10 +215,17 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const league = resolveLeague(sp.league);
   const page = Math.max(1, Number(sp.page) || 1);
   const dict = getDict(lang);
+  // Lấy BAO NHIÊU thì phải theo TRANG đang xem. Trước đây chặn cứng 30 cho cả hai
+  // nguồn, nên lật tới trang nào danh sách cũng chỉ có bấy nhiêu bài tin — 91 trên
+  // 121 bài tin không bao giờ hiện ra, thành bài mồ côi mà Google không có đường bò
+  // tới (đo 27/8/2026: trang 5, 13, 20, 99 đều trả đúng 30 bài tin).
+  // Sàn 30 để TRANG 1 giữ nguyên như trước bản vá: chip lọc giải sinh ra từ danh
+  // sách này, lấy ít hơn 30 là có giải biến mất khỏi thanh chip.
+  const canLay = Math.min(TRAN_LAY, Math.max(30, TRUOC_LIST + page * PAGE_SIZE));
   const [items, posts, deskArticles, competitions, eplTable, eplDays] = await Promise.all([
-    getNewsItems(league, 30),
+    getNewsItems(league, canLay),
     getPosts(lang),
-    getAnalysisArticles(undefined, 30),
+    getAnalysisArticles(undefined, canLay),
     getStandingsCompetitions(),
     fetchCompetitionTable(EPL_LIVESCORE_ID),
     getCompetitionFixtures(EPL_LIVESCORE_ID),
@@ -220,6 +233,17 @@ export default async function NewsLanding({ params, searchParams }: Props) {
 
   // Chip chỉ hiện giải THẬT SỰ có tin (Peter 9/8: "các giải khác chưa có" —
   // bấm chip ra trang trống là tệ nhất). NHA luôn hiện vì có bài Desk.
+  // KÊU TO khi chạm trần. Trần chỉ dời bức tường từ 30 ra 200 chứ không gỡ nó —
+  // vượt 200 là lỗi cũ quay lại y hệt: trang sau đứng yên, không báo gì. Với nhịp
+  // 2-3 bài/ngày thì cỡ 8 tháng nữa chạm, lúc đó không ai còn nhớ có cái trần này.
+  // Jane chỉ ra 27/8. Nhà mình có luật: chỗ nào có đường lui thì phải kêu khi dùng tới.
+  if (canLay >= TRAN_LAY && items.length >= TRAN_LAY) {
+    console.warn(
+      `[news] CHẠM TRẦN ${TRAN_LAY} bài ở trang ${page} — bài cũ hơn không hiện ra ` +
+      `và không có link nội bộ nào trỏ tới. Đổi sang lấy đúng lát cắt theo trang.`,
+    );
+  }
+
   const giaiCoTin = new Set(items.map((i) => i.competition_id).filter(Boolean));
   // Bài Desk mang league bằng TÊN — mở chip cho cả giải có bài Desk (9 bài
   // La Liga/Ligue 1 đăng 9/8 mà chip không mở là bài không có lối lọc).
@@ -340,8 +364,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
   const noiBat = cards[0];
   const headline = cards.slice(1, 7);
   const luoi = cards.slice(7, 13);
-  const PAGE_SIZE = 10;
-  const listAll = cards.slice(13);
+  const listAll = cards.slice(TRUOC_LIST);
   const list = listAll.slice(0, page * PAGE_SIZE);
   const conNua = listAll.length > list.length;
 
