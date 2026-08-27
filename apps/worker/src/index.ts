@@ -254,17 +254,23 @@ if (persistDb) {
   // Register handlers (closures capture store, aiEnv, etc.)
   jobHandlers['note-translate'] = async (payload) => {
     const { watchingId } = payload as { watchingId: string };
-    const all = await store.getActiveWatching();
-    const w = all.find((r) => r.id === watchingId);
+    const w = await store.getWatchingById(watchingId);
     if (!w) throw new Error(`watching ${watchingId} not found`);
+    if (w.status !== 'active') {
+      log.info(`note-translate: watching ${watchingId} không còn active (${w.status}) — bỏ qua`);
+      return;
+    }
     await translateWatchingNote({ store, env: aiEnv }, w);
   };
   jobHandlers['watching-news'] = async (payload) => {
     // reason = hand-written card hook (R5) — card-only, rides the payload since the row doesn't persist it
     const { watchingId, reason } = payload as { watchingId: string; reason?: string | null };
-    const all = await store.getActiveWatching();
-    const w = all.find((r) => r.id === watchingId);
+    const w = await store.getWatchingById(watchingId);
     if (!w) throw new Error(`watching ${watchingId} not found`);
+    if (w.status !== 'active') {
+      log.info(`watching-news: watching ${watchingId} không còn active (${w.status}) — bỏ qua`);
+      return;
+    }
     await publishWatchingNews({
       store, env: aiEnv, revalidateUrl: siteUrl,
       db: persistDb ?? undefined,

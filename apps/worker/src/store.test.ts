@@ -230,3 +230,33 @@ describe('MemoryStore.insertWatching — idempotent (27/8: autopilot gọi /watc
     expect(store.watchings.size).toBe(2);
   });
 });
+
+describe('MemoryStore.getWatchingById (27/8: job handlers tra theo id, không lọc qua getActiveWatching >1000 dòng)', () => {
+  it('returns the inserted row by id', async () => {
+    const store = new MemoryStore();
+    const row = await store.insertWatching(watching());
+
+    const found = await store.getWatchingById(row.id);
+
+    expect(found).toEqual(row);
+  });
+
+  it('returns null for an unknown id', async () => {
+    const store = new MemoryStore();
+    await store.insertWatching(watching());
+
+    const found = await store.getWatchingById('does-not-exist');
+
+    expect(found).toBeNull();
+  });
+
+  it('still returns the row when it is no longer active (handlers decide to skip, not fail)', async () => {
+    const store = new MemoryStore();
+    const row = await store.insertWatching(watching());
+    await store.expireWatching(row.id);
+
+    const found = await store.getWatchingById(row.id);
+
+    expect(found?.status).toBe('expired');
+  });
+});
