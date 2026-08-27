@@ -7,6 +7,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { RawOutcome } from '@wildlyplay/settlement';
 import type { Market, PickAuthor } from './parse-pick';
 import { log } from './log';
+import { NGON_NGU } from './ngon-ngu';
 import { layHet } from './phan-trang';
 
 export type { PickAuthor } from './parse-pick';
@@ -187,7 +188,7 @@ export interface Store {
   listPickContentPickIds(): Promise<Set<string>>;
   /** Distinct slugs for a given post type (dedup before AI generation). */
   listPostSlugsByType(type: string): Promise<Set<string>>;
-  /** Count posts of a type published today (UTC), lang='en' to count per-article not per-row. */
+  /** Count posts of a type published today (UTC), lọc lang=NGON_NGU[0] để đếm per-article not per-row. */
   countPostsTodayByType(type: string): Promise<number>;
   /** All-time count of no-play articles for one author (§12.A item 3: per-author no-play tracking). */
   countNoPlayByAuthor(author: PickAuthor): Promise<number>;
@@ -289,12 +290,12 @@ export class MemoryStore implements Store {
     const startOfDay = new Date();
     startOfDay.setUTCHours(0, 0, 0, 0);
     return this.posts.filter((p) =>
-      p.type === type && p.lang === 'en' && p.published_at && new Date(p.published_at) >= startOfDay
+      p.type === type && p.lang === NGON_NGU[0] && p.published_at && new Date(p.published_at) >= startOfDay
     ).length;
   }
 
   async countNoPlayByAuthor(author: PickAuthor): Promise<number> {
-    return this.posts.filter((p) => p.type === 'no-play' && p.lang === 'en' && p.author === author).length;
+    return this.posts.filter((p) => p.type === 'no-play' && p.lang === NGON_NGU[0] && p.author === author).length;
   }
 
   async insertWatching(watching: NewWatching): Promise<WatchingRow & { daCoSan?: true }> {
@@ -504,11 +505,13 @@ export class SupabaseStore implements Store {
   async listPostSlugsByType(type: string): Promise<Set<string>> {
     // Chống đăng trùng: posts đã 940 dòng (27/8/2026), sát trần 1000 của PostgREST — thiếu slug là bài trùng
     // lọt lên. Phân trang + order('id') để các trang không giẫm/sót nhau.
+    // Chỉ tiếng Việt (Peter 27/8): BỎ filter lang thay vì đổi 'en'→'vi' — bài cũ nào
+    // từng rớt section vi (per-lang resilience) chỉ còn dòng en; lọc 'vi' sẽ mù slug đó
+    // và sinh bài trùng. Set slug tự khử trùng, layHet phân trang nên số dòng x4 vô hại.
     const rows = await layHet<{ slug: string }>(() => this.db
       .from('posts')
       .select('slug')
       .eq('type', type)
-      .eq('lang', 'en')
       .order('id'));
     return new Set(rows.map((r) => r.slug));
   }
@@ -520,7 +523,7 @@ export class SupabaseStore implements Store {
       .from('posts')
       .select('id', { count: 'exact', head: true })
       .eq('type', type)
-      .eq('lang', 'en')
+      .eq('lang', NGON_NGU[0])
       .gte('published_at', startOfDay.toISOString());
     if (error) throw new Error(`countPostsTodayByType failed: ${error.message}`);
     return count ?? 0;
@@ -531,7 +534,7 @@ export class SupabaseStore implements Store {
       .from('posts')
       .select('id', { count: 'exact', head: true })
       .eq('type', 'no-play')
-      .eq('lang', 'en')
+      .eq('lang', NGON_NGU[0])
       .eq('author', author);
     if (error) throw new Error(`countNoPlayByAuthor failed: ${error.message}`);
     return count ?? 0;

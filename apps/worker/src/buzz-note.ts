@@ -1,57 +1,50 @@
 /**
- * Watching note translation: translates the Curator's note into 4 languages
- * and stores as note_translations jsonb on the watching row.
+ * Watching note translation: translates the Curator's note into NGON_NGU
+ * (chỉ tiếng Việt, Peter 27/8) and stores as note_translations jsonb on the watching row.
  * REQ 5: also propagates translations into published presence posts.
  * A translation failure must NEVER break the watching pipeline — every path logs and returns.
  */
-import { callClaude, POST_FLAGS, splitLangSections, VI_LEXICON_RULE, watchingDisclosureFor } from './recap';
+import { callClaude, LANG_NAMES, POST_FLAGS, splitLangSections, VI_LEXICON_RULE, watchingDisclosureFor } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import { buildNewsSlug } from './watching-news';
 import type { PostLang, Store, WatchingRow } from './store';
 import { log } from './log';
 
-type NoteLang = 'en' | 'vi' | 'th' | 'es';
+/** Ngôn ngữ đích của bản dịch note — NGON_NGU trừ EN (note gốc đã là EN). */
+const TARGET_LANGS: readonly PostLang[] = NGON_NGU.filter((l) => l !== 'en');
 
 export function buildNoteTranslationPrompt(w: WatchingRow): string {
-  return `Translate this football note for the match ${w.home_team} vs ${w.away_team} into 4 languages. Output EXACTLY this format — each section starts with the flag emoji ALONE on its own line, then the text below it:
+  const blocks = TARGET_LANGS
+    .map((l) => `${POST_FLAGS[l]}\n[${LANG_NAMES[l]} translation here]`)
+    .join('\n\n');
+  return `Translate this football note for the match ${w.home_team} vs ${w.away_team} into ${TARGET_LANGS.map((l) => LANG_NAMES[l]).join(', ')}. Output EXACTLY this format — each section starts with the flag emoji ALONE on its own line, then the text below it:
 
-${POST_FLAGS.en}
+${blocks}
+
+The note (English):
 ${w.note}
 
-${POST_FLAGS.vi}
-[Vietnamese translation here]
-
-${POST_FLAGS.th}
-[Thai translation here]
-
-${POST_FLAGS.es}
-[Spanish translation here]
-
 Rules:
-- English section = original note verbatim.
-- Other sections = faithful translations, same meaning, nothing added.
-- Use each language's natural football terminology.
+- Each section = a faithful translation of the note, same meaning, nothing added.
+- Use the language's natural football terminology.
 ${VI_LEXICON_RULE}
-- Output ONLY the 4 flag-headed sections, nothing else.`;
+- Output ONLY the flag-headed section(s), nothing else.`;
 }
 
 /** Parse flag-delimited sections into a lang→text record. Returns null on failure. */
 export function parseNoteTranslations(
   text: string,
-): Record<NoteLang, string> | null {
+): Partial<Record<PostLang, string>> | null {
   const sections = splitLangSections(text);
   if (!sections) return null;
 
-  const langs: NoteLang[] = ['en', 'vi', 'th', 'es'];
-  for (const lang of langs) {
+  for (const lang of TARGET_LANGS) {
     if (!sections[lang]) return null;
   }
 
-  return {
-    en: sections.en!,
-    vi: sections.vi!,
-    th: sections.th!,
-    es: sections.es!,
-  };
+  const out: Partial<Record<PostLang, string>> = {};
+  for (const lang of TARGET_LANGS) out[lang] = sections[lang];
+  return out;
 }
 
 /** Translate + store note translations for a watching row. Never throws. */
@@ -95,12 +88,11 @@ export async function translateWatchingNote(
 export async function propagateNoteToPresencePosts(
   store: Store,
   watching: WatchingRow,
-  translations: Record<NoteLang, string>,
+  translations: Partial<Record<PostLang, string>>,
 ): Promise<void> {
   const slug = buildNewsSlug(watching.home_team, watching.away_team, watching.kickoff_utc);
-  const langs: PostLang[] = ['en', 'vi', 'th', 'es'];
 
-  for (const lang of langs) {
+  for (const lang of NGON_NGU) {
     const note = translations[lang];
     if (!note) continue;
     const footer = watchingDisclosureFor(lang);

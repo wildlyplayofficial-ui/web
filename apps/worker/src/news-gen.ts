@@ -279,13 +279,14 @@ function buildRow(
       const r = render(lang);
       row[`headline_${lang}`] = r.headline; row[`body_${lang}`] = r.body;
     } catch (err) {
-      if (lang === 'en') throw err;
+      if (lang === NEWS_LANGS[0]) throw err;
       log.warn(`news-gen: ${lang} render failed for ${slug}:`, err);
       row[`headline_${lang}`] = null; row[`body_${lang}`] = null;
     }
   }
-  if (opts.publish && typeof row.body_en === 'string' && row.body_en.length < MIN_PUBLISH_BODY_LEN) {
-    log.warn(`news-gen: quality gate — body too short (${row.body_en.length} chars) for ${slug}, keeping draft`);
+  const mainBody = row[`body_${NEWS_LANGS[0]}`];
+  if (opts.publish && typeof mainBody === 'string' && mainBody.length < MIN_PUBLISH_BODY_LEN) {
+    log.warn(`news-gen: quality gate — body too short (${mainBody.length} chars) for ${slug}, keeping draft`);
     row.status = 'draft';
     row.published_at = null;
   }

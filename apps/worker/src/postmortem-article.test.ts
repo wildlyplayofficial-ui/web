@@ -46,21 +46,21 @@ function settledPick(overrides: Partial<PickRow> = {}): PickRow {
 }
 
 describe('buildPostmortemArticlePrompt — disclosure (Tiered Picks §12 firewall)', () => {
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the curator (real_human) disclosure in %s',
-    (lang) => {
-      const prompt = buildPostmortemArticlePrompt(settledPick({ author: 'curator' }));
-      expect(prompt).toContain(disclosureFor('real_human', lang));
-    },
-  );
+  it('renders the curator (real_human) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildPostmortemArticlePrompt(settledPick({ author: 'curator' }));
+    expect(prompt).toContain(disclosureFor('real_human', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('real_human', lang));
+    }
+  });
 
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the scout (fictional_ai) disclosure in %s',
-    (lang) => {
-      const prompt = buildPostmortemArticlePrompt(settledPick({ author: 'scout' }));
-      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
-    },
-  );
+  it('renders the scout (fictional_ai) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildPostmortemArticlePrompt(settledPick({ author: 'scout' }));
+    expect(prompt).toContain(disclosureFor('fictional_ai', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('fictional_ai', lang));
+    }
+  });
 
   it('never leaks the curator wording into a scout post-mortem prompt', () => {
     const prompt = buildPostmortemArticlePrompt(settledPick({ author: 'scout' }));

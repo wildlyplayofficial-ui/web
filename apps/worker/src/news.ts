@@ -5,7 +5,8 @@
  */
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { authorTypeOf } from './store';
-import { callClaude, computeRecord, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE, type SettledRecord } from './recap';
+import { callClaude, computeRecord, disclosureBlock, isPlaceholderTeam, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE, type SettledRecord } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import { log } from './log';
 import { createRevalidator } from './revalidate';
 
@@ -131,8 +132,7 @@ export function buildAnalysisPrompt(ctx: AnalysisContext): string {
     `- Channel record: ${record.won}-${record.lost}-${record.push} (W-L-P), ${units} units total`,
     ...factsBlock,
     '',
-    'Write a pre-match analysis with exactly FOUR language sections, in this order:',
-    `English under ${POST_FLAGS.en}, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.`,
+    `Write a pre-match analysis with ${sectionSpec()}.`,
     '',
     'Each section MUST start with these 3 lines (EXACTLY this format, each on its own line):',
     '[META_TITLE] <SEO title under 60 chars with primary keyword>',
@@ -201,7 +201,7 @@ export function splitAnalysisSections(
     if (section) parsed[lang] = section;
   }
 
-  return parsed.en ? parsed : null;
+  return parsed[NGON_NGU[0]] ? parsed : null;
 }
 
 // ── Build Posts ──────────────────────────────────────────────────────────────
@@ -222,7 +222,7 @@ export function buildAnalysisPosts(
     return [{
       type: 'analysis',
       slug,
-      lang: 'en',
+      lang: NGON_NGU[0],
       title: `Analysis: ${topic.home_team} vs ${topic.away_team}`,
       body_md: text.trim(),
       pick_ids: topic.related_pick_ids,
@@ -414,7 +414,8 @@ export async function generateAnalysis(
 
   const posts = buildAnalysisPosts(ctx.topic, text, ctx.facts);
 
-  const enPost = posts.find((p) => p.lang === 'en');
+  // Chỉ tiếng Việt: guard chạy trên section chính (heuristic gốc viết cho EN — xem PR).
+  const enPost = posts.find((p) => p.lang === NGON_NGU[0]);
   const edgePct = ctx.topic.pick?.consensus_edge_pct ?? null;
   const inversion = enPost ? detectPolarityInversion(edgePct, enPost.body_md) : null;
   if (inversion) {

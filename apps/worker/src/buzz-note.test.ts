@@ -39,34 +39,33 @@ describe('buildNoteTranslationPrompt', () => {
     expect(prompt).toContain('Mexico dominant at home');
   });
 
-  it('asks for four flag sections', () => {
-    expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
+  it('asks ONLY for the VI flag section (chỉ tiếng Việt, Peter 27/8)', () => {
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
-    expect(prompt).toContain('\u{1F1F9}\u{1F1ED}');
-    expect(prompt).toContain('\u{1F1EA}\u{1F1F8}');
+    expect(prompt).not.toContain('\u{1F1EC}\u{1F1E7}');
+    expect(prompt).not.toContain('\u{1F1F9}\u{1F1ED}');
+    expect(prompt).not.toContain('\u{1F1EA}\u{1F1F8}');
   });
 });
 
 describe('parseNoteTranslations', () => {
-  it('parses 4 sections into a lang record', () => {
+  it('parses a 4-section response into a vi-only record', () => {
     const result = parseNoteTranslations(FOUR_SECTIONS);
     expect(result).not.toBeNull();
-    expect(result!.en).toContain('Mexico dominant');
     expect(result!.vi).toContain('áp đảo');
-    expect(result!.th).toContain('เม็กซิโก');
-    expect(result!.es).toContain('México dominante');
+    expect(Object.keys(result!)).toEqual(['vi']);
   });
 
   it('returns null on garbage input', () => {
     expect(parseNoteTranslations('no flags anywhere')).toBeNull();
   });
 
-  it('returns null when a language is missing', () => {
-    const partial = [
-      '\u{1F1EC}\u{1F1E7} English only',
-      '\u{1F1FB}\u{1F1F3} Tiếng Việt',
-    ].join('\n\n');
-    expect(parseNoteTranslations(partial)).toBeNull();
+  it('returns null when the VI section is missing', () => {
+    expect(parseNoteTranslations('\u{1F1EC}\u{1F1E7} English only')).toBeNull();
+  });
+
+  it('accepts a VI-only response (EN echo no longer required)', () => {
+    const result = parseNoteTranslations('\u{1F1FB}\u{1F1F3} Tiếng Việt');
+    expect(result).toEqual({ vi: 'Tiếng Việt' });
   });
 });
 
@@ -94,8 +93,8 @@ describe('translateWatchingNote', () => {
 
     const updated = store.watchings.get(row.id)!;
     expect(updated.note_translations).not.toBeNull();
-    expect(updated.note_translations!.en).toContain('Mexico dominant');
     expect(updated.note_translations!.vi).toContain('áp đảo');
+    expect(updated.note_translations!.en).toBeUndefined(); // chỉ tiếng Việt
   });
 
   it('does nothing when note is null', async () => {
@@ -161,7 +160,7 @@ describe('translateWatchingNote', () => {
     // Simulate: presence posts already published with verbatim EN note
     const presencePosts = buildPresencePosts(row as unknown as WatchingRow);
     for (const post of presencePosts) await store.insertPost(post);
-    expect(store.posts[1].body_md).toContain('Mexico dominant at home'); // VI has EN note verbatim
+    expect(store.posts[0].body_md).toContain('Mexico dominant at home'); // VI has EN note verbatim
 
     await translateWatchingNote({ store, env: { apiKey: 'k' } }, row as unknown as WatchingRow);
 
@@ -173,7 +172,7 @@ describe('translateWatchingNote', () => {
 });
 
 describe('propagateNoteToPresencePosts (REQ 5)', () => {
-  it('updates all 4 langs with translated note + footer', async () => {
+  it('updates the vi post with translated note + footer', async () => {
     const store = new MemoryStore();
     const w = activeWatching({ presence: true });
 
@@ -181,19 +180,12 @@ describe('propagateNoteToPresencePosts (REQ 5)', () => {
     const posts = buildPresencePosts(w);
     for (const p of posts) await store.insertPost(p);
 
-    const translations = {
-      en: 'English note',
-      vi: 'Ghi chú tiếng Việt',
-      th: 'หมายเหตุภาษาไทย',
-      es: 'Nota en español',
-    };
+    const translations = { vi: 'Ghi chú tiếng Việt' };
 
     await propagateNoteToPresencePosts(store, w, translations);
 
-    for (const lang of ['en', 'vi', 'th', 'es'] as const) {
-      const post = store.posts.find(p => p.lang === lang);
-      expect(post!.body_md).toContain(translations[lang]);
-      expect(post!.body_md).toContain(watchingDisclosureFor(lang));
-    }
+    const post = store.posts.find(p => p.lang === 'vi');
+    expect(post!.body_md).toContain(translations.vi);
+    expect(post!.body_md).toContain(watchingDisclosureFor('vi'));
   });
 });

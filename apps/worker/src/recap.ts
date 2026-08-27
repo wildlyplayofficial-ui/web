@@ -17,6 +17,7 @@ export function isPlaceholderTeam(name: string): boolean {
 }
 
 import { log } from './log';
+import { NGON_NGU } from './ngon-ngu';
 
 export const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 // 4-language articles (~3500 tokens) need well over 20s — the 12/6 Canada preview
@@ -32,6 +33,20 @@ export const POST_FLAGS: Record<PostLang, string> = {
   th: '\u{1F1F9}\u{1F1ED}',
   es: '\u{1F1EA}\u{1F1F8}',
 };
+
+/** Tên tiếng Anh của từng ngôn ngữ — dùng trong prompt. */
+export const LANG_NAMES: Record<PostLang, string> = {
+  en: 'English', vi: 'Vietnamese', th: 'Thai', es: 'Spanish',
+};
+
+/** Chỉ thị output theo NGON_NGU (chỉ tiếng Việt, Peter 27/8) — thay cho câu
+ *  "exactly FOUR sections..." cũ trong mọi prompt sinh bài. */
+export function sectionSpec(): string {
+  const list = NGON_NGU.map((l) => `${LANG_NAMES[l]} under a ${POST_FLAGS[l]} header`).join(', ');
+  return NGON_NGU.length === 1
+    ? `exactly ONE language section: ${list}`
+    : `exactly ${NGON_NGU.length} language sections, in this order: ${list}`;
+}
 
 /** T7 disclosure text (Tiered Picks §12 firewall, launch blocker (a), Jane review 3/7) —
  *  keyed by server-derived AuthorType, NEVER the raw client `author` string, so a Scout
@@ -73,7 +88,7 @@ export function watchingDisclosureFor(lang: PostLang): string {
 
 /** Multi-line watching disclosure block for AI prompts. */
 export function watchingDisclosureBlock(): string {
-  return (Object.keys(POST_FLAGS) as PostLang[])
+  return NGON_NGU
     .map((lang) => `  ${lang.toUpperCase()}: "${watchingDisclosureFor(lang)}"`)
     .join('\n');
 }
@@ -81,7 +96,7 @@ export function watchingDisclosureBlock(): string {
 /** Multi-line instruction block, one line per language, for insertion into a prompt's
  *  <rules> section — the model must match each section's own language to the line below. */
 export function disclosureBlock(authorType: AuthorType): string {
-  return (Object.keys(POST_FLAGS) as PostLang[])
+  return NGON_NGU
     .map((lang) => `  ${lang.toUpperCase()}: "${disclosureFor(authorType, lang)}"`)
     .join('\n');
 }
@@ -146,7 +161,7 @@ export function buildRecapPrompt(pick: PickRow, record: SettledRecord): string {
   const units = record.units > 0 ? `+${record.units}` : `${record.units}`;
   const pl = Number(pick.units_pl);
 
-  // 4 languages on the channel too (Nick 13/6) — same flag order as the newsroom articles.
+  // Chỉ tiếng Việt (Peter 27/8) — cùng giao thức cờ 🇻🇳 với bài newsroom.
   return `<role>
 You write post-match recaps for banhbong.net's public Telegram channel. Short, honest, thesis-driven — every recap evaluates whether the pre-match read was right.
 </role>
@@ -185,7 +200,7 @@ WHY: Evaluates thesis directly, adds nuance about how the result unfolded, hones
 </good_examples>
 
 <output>
-Write exactly FOUR sections in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Write ${sectionSpec()}.
 Each section: 60 words or fewer.
 </output>
 
@@ -195,28 +210,30 @@ Before outputting, verify: (1) no banned vocabulary even negated, (2) no facts n
 }
 
 /** Split AI output on the flag headers (any subset/order of \u{1F1EC}\u{1F1E7}/\u{1F1FB}\u{1F1F3}/\u{1F1F9}\u{1F1ED}/\u{1F1EA}\u{1F1F8}).
- *  Returns one entry per non-empty section. Null when fewer than two sections
- *  were found or the EN section is missing — callers then fall back to a single
- *  EN post with the whole text. */
+ *  Chỉ tiếng Việt (Peter 27/8): chỉ giữ các section thuộc NGON_NGU — section
+ *  en/th/es lạc vào (model tự ý sinh thêm) bị bỏ, không bao giờ thành post row.
+ *  Null khi không tìm thấy cờ nào hoặc thiếu section NGON_NGU[0] — caller
+ *  fallback về MỘT post NGON_NGU[0] với nguyên văn text. */
 export function splitLangSections(text: string): Partial<Record<PostLang, string>> | null {
   const hits = (Object.entries(POST_FLAGS) as [PostLang, string][])
     .map(([lang, flag]) => ({ lang, flag, idx: text.indexOf(flag) }))
     .filter((h) => h.idx !== -1)
     .sort((a, b) => a.idx - b.idx);
-  if (hits.length < 2) return null;
+  if (hits.length === 0) return null;
   const sections: Partial<Record<PostLang, string>> = {};
   hits.forEach((h, i) => {
     const end = i + 1 < hits.length ? hits[i + 1].idx : text.length;
     const body = text.slice(h.idx + h.flag.length, end).trim();
     if (body !== '') sections[h.lang] = body;
   });
-  return sections.en ? sections : null;
+  const kept: Partial<Record<PostLang, string>> = {};
+  for (const lang of NGON_NGU) if (sections[lang]) kept[lang] = sections[lang];
+  return kept[NGON_NGU[0]] ? kept : null;
 }
 
-/** Validate 4-lang completeness: all required langs have body > minChars. */
-const REQUIRED_LANGS: PostLang[] = ['en', 'vi', 'th', 'es'];
-export function validate4Lang(sections: Partial<Record<PostLang, string>>, minChars = 50): { ok: boolean; missing: PostLang[] } {
-  const missing = REQUIRED_LANGS.filter((l) => !sections[l] || (sections[l]?.length ?? 0) < minChars);
+/** Validate NGON_NGU completeness: mọi ngôn ngữ cấu hình phải có body > minChars. */
+export function validateLangs(sections: Partial<Record<PostLang, string>>, minChars = 50): { ok: boolean; missing: PostLang[] } {
+  const missing = NGON_NGU.filter((l) => !sections[l] || (sections[l]?.length ?? 0) < minChars);
   return { ok: missing.length === 0, missing };
 }
 
@@ -239,7 +256,7 @@ export function buildRecapPosts(pick: PickRow, text: string): NewPost[] {
   };
   const sections = splitLangSections(text);
   if (!sections) {
-    return [{ ...base, lang: 'en', title: `${RECAP_TITLES.en}: ${score}`, body_md: text.trim() }];
+    return [{ ...base, lang: NGON_NGU[0], title: `${RECAP_TITLES[NGON_NGU[0]]}: ${score}`, body_md: text.trim() }];
   }
   return (Object.entries(sections) as [PostLang, string][]).map(([lang, body]) => ({
     ...base, lang, title: `${RECAP_TITLES[lang]}: ${score}`, body_md: body,
@@ -344,7 +361,7 @@ WHY: States the price move as a plain fact, keeps the numbers exact, stays hones
 </good_examples>
 
 <output>
-Write exactly FOUR sections in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Write ${sectionSpec()}.
 Each section: 150-250 words, markdown allowed (short paragraphs, no H1).
 </output>
 

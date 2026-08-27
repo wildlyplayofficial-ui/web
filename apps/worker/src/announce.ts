@@ -2,6 +2,7 @@
 import type { Api } from 'grammy';
 import { postToFacebook, pickVi, CARD_FOOTER } from './announce-pick';
 import { buildRecapPosts, detectClosingLineFabrication } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import type { PickRow, Store } from './store';
 import { log } from './log';
 
@@ -215,7 +216,8 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     try {
       const articleText = (await deps.recapArticle?.(pick)) ?? text;
       const recapPosts = buildRecapPosts(pick, articleText);
-      const enPost = recapPosts.find((p) => p.lang === 'en');
+      // Chỉ tiếng Việt: guard chạy trên section chính (heuristic gốc viết cho EN — xem PR).
+      const enPost = recapPosts.find((p) => p.lang === NGON_NGU[0]);
       const fabrication = enPost ? detectClosingLineFabrication(pick.odds_close, enPost.body_md) : null;
       if (fabrication) {
         log.warn(`recap: blocked publish for pick ${pick.id} — ${fabrication}`);

@@ -60,12 +60,12 @@ describe('buildThesisTranslationPrompt', () => {
     expect(prompt).toContain('missing both starting CBs');
   });
 
-  it('asks for all four flag sections, EN echoed verbatim', () => {
-    expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
+  it('asks ONLY for the VI flag section (chỉ tiếng Việt, Peter 27/8)', () => {
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
-    expect(prompt).toContain('\u{1F1F9}\u{1F1ED}');
-    expect(prompt).toContain('\u{1F1EA}\u{1F1F8}');
-    expect(prompt).toContain('echoed verbatim');
+    expect(prompt).not.toContain('\u{1F1EC}\u{1F1E7}');
+    expect(prompt).not.toContain('\u{1F1F9}\u{1F1ED}');
+    expect(prompt).not.toContain('\u{1F1EA}\u{1F1F8}');
+    expect(prompt).toContain('exactly ONE section');
   });
 
   it('keeps responsible language: translation only, no promises of profit', () => {
@@ -74,9 +74,9 @@ describe('buildThesisTranslationPrompt', () => {
 });
 
 describe('buildThesisContentRows', () => {
-  it('splits a 4-section response into vi/th/es rows (en discarded)', () => {
+  it('splits a 4-section response into a single vi row (en/th/es discarded)', () => {
     const rows = buildThesisContentRows(publishedPick(), FOUR_SECTIONS, 'test-model');
-    expect(rows.map((r) => r.lang)).toEqual(['vi', 'th', 'es']);
+    expect(rows.map((r) => r.lang)).toEqual(['vi']);
     expect(rows[0]).toEqual({
       pick_id: 'pick-1',
       lang: 'vi',
@@ -84,24 +84,27 @@ describe('buildThesisContentRows', () => {
       body_md: 'Mexico áp đảo sân nhà, đội khách mất cả hai trung vệ đá chính',
       model: 'test-model',
     });
-    expect(rows[1].body_md).toContain('เม็กซิโก');
-    expect(rows[2].body_md).toContain('México dominante');
   });
 
   it('returns [] on garbage input without flag headers', () => {
     expect(buildThesisContentRows(publishedPick(), 'no flags anywhere')).toEqual([]);
   });
 
-  it('returns [] when the EN section is missing (splitLangSections contract)', () => {
+  it('accepts a response without EN — VI section alone is enough', () => {
     const noEn = '\u{1F1FB}\u{1F1F3} chỉ tiếng Việt\n\u{1F1EA}\u{1F1F8} solo español';
-    expect(buildThesisContentRows(publishedPick(), noEn)).toEqual([]);
+    expect(buildThesisContentRows(publishedPick(), noEn).map((r) => r.lang)).toEqual(['vi']);
+  });
+
+  it('returns [] when the VI section is missing', () => {
+    const noVi = '\u{1F1EC}\u{1F1E7} english only\n\u{1F1EA}\u{1F1F8} solo español';
+    expect(buildThesisContentRows(publishedPick(), noVi)).toEqual([]);
   });
 });
 
 describe('publishThesisTranslations', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('generates and upserts the vi/th/es rows', async () => {
+  it('generates and upserts the vi row', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -111,7 +114,7 @@ describe('publishThesisTranslations', () => {
 
     await publishThesisTranslations({ store, env: { apiKey: 'k' } }, publishedPick());
 
-    expect(store.pickContent.size).toBe(3);
+    expect(store.pickContent.size).toBe(1);
     expect(store.pickContent.get('pick-1:vi')).toMatchObject({ title: 'Mexico -1.25' });
   });
 

@@ -1,8 +1,9 @@
 /**
  * Post-mortem newsroom article: when Curator /approve a pick,
- * generate a public post-mortem article (4 languages) and publish it on the web.
+ * generate a public post-mortem article (NGON_NGU — chỉ tiếng Việt) and publish it on the web.
  */
-import { callClaude, DEFAULT_MODEL, disclosureBlock, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import { parseAnalysisSection } from './news';
 import type { NewPost, PostLang, PickRow, Store } from './store';
 import { authorTypeOf } from './store';
@@ -35,7 +36,7 @@ Thesis: ${pick.thesis}
 - Write an honest post-mortem: what happened, did the thesis play out, what we learned.
 - For losses: explain the loss-type honestly (variance vs bad read).
 - For wins: apply honest calibration — acknowledge variance on coinflip/LOW-confidence picks, state confounds, do NOT claim skill on thin margins. WIN reviews must be as critical as LOSS reviews.
-- FAITHFULLY reflect the Curator review tone. If the Curator wrote honest/humble text, preserve that tone in ALL 4 languages. Do NOT embellish or add hype.
+- FAITHFULLY reflect the Curator review tone. If the Curator wrote honest/humble text, preserve that tone. Do NOT embellish or add hype.
 - BANNED VOCABULARY — applies IDENTICALLY to every language section, including Thai and Spanish. Do not let a local idiom or "softer" translation smuggle back in the banned meaning:
   - Win-hype: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
   - Loss-excuse: unlucky, deserved to win, deserved better, hard luck, bad break, wrong call, robbed, harsh result.
@@ -46,8 +47,7 @@ ${disclosureBlock(authorTypeOf(pick.author))}
 </rules>
 
 <output>
-Write exactly FOUR language sections in this order:
-English under ${POST_FLAGS.en}, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Write ${sectionSpec()}.
 
 Each section MUST start with these 3 lines:
 [META_TITLE] <SEO title under 60 chars>
@@ -57,7 +57,7 @@ Then a blank line, then article body (200-400 words, markdown, no H1).
 </output>
 
 <self_critique>
-Before outputting, check ALL FOUR sections individually (Thai and Spanish are not exempt): (1) no win-hype vocabulary, (2) no loss-excuse vocabulary, (3) honest about result, (4) each section in correct language, (5) disclosure line present and matching its own language exactly.
+Before outputting, check EVERY language section individually: (1) no win-hype vocabulary, (2) no loss-excuse vocabulary, (3) honest about result, (4) each section in correct language, (5) disclosure line present and matching its own language exactly.
 </self_critique>`;
 }
 
@@ -115,7 +115,7 @@ export async function publishPostmortemArticle(
       }
     } else {
       posts.push({
-        type: 'post-mortem' as const, slug, lang: 'en',
+        type: 'post-mortem' as const, slug, lang: NGON_NGU[0],
         title: `Post-mortem: ${score}`, body_md: text.trim(),
         pick_ids: [pick.id], status: 'published', published_at: now,
         author: pick.author,

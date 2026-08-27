@@ -78,11 +78,11 @@ describe('buildWatchingNewsPrompt', () => {
     expect(noNote).not.toContain('Curator note');
   });
 
-  it('asks for 4 language sections with meta fields', () => {
-    expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
+  it('asks ONLY for the VI language section with meta fields (chỉ tiếng Việt)', () => {
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
-    expect(prompt).toContain('\u{1F1F9}\u{1F1ED}');
-    expect(prompt).toContain('\u{1F1EA}\u{1F1F8}');
+    expect(prompt).not.toContain('\u{1F1EC}\u{1F1E7}');
+    expect(prompt).not.toContain('\u{1F1F9}\u{1F1ED}');
+    expect(prompt).not.toContain('\u{1F1EA}\u{1F1F8}');
     expect(prompt).toContain('[META_TITLE]');
     expect(prompt).toContain('[META_DESC]');
     expect(prompt).toContain('[KEYWORD]');
@@ -93,59 +93,55 @@ describe('buildWatchingNewsPrompt', () => {
     expect(prompt).toContain('Neutral and informative');
   });
 
-  it('instructs responsible language and disclosure', () => {
+  it('instructs responsible language and the vi disclosure', () => {
     expect(prompt).toContain('"sure win"');
-    expect(prompt).toContain('AI-written');
+    expect(prompt).toContain(watchingDisclosureFor('vi'));
   });
 });
 
 describe('buildWatchingNewsPrompt — disclosure (Req 2: state-accurate footer)', () => {
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the watching (no-play) disclosure in %s — never "chose this play"',
-    (lang) => {
-      const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'curator' }));
-      expect(prompt).toContain(watchingDisclosureFor(lang));
-      expect(prompt).not.toContain('chose this play');
-    },
-  );
+  it('renders the watching (no-play) disclosure in vi — and ONLY vi, never "chose this play"', () => {
+    const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'curator' }));
+    expect(prompt).toContain(watchingDisclosureFor('vi'));
+    expect(prompt).not.toContain('chose this play');
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(watchingDisclosureFor(lang));
+    }
+  });
 
   it('uses the same watching disclosure for scout watching prompts', () => {
     const prompt = buildWatchingNewsPrompt(activeWatching({ author: 'scout' }));
-    expect(prompt).toContain(watchingDisclosureFor('en'));
-    expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
+    expect(prompt).toContain(watchingDisclosureFor('vi'));
+    expect(prompt).not.toContain(disclosureFor('real_human', 'vi'));
   });
 });
 
 describe('buildNewsPosts', () => {
-  it('builds 4 published posts with meta fields when split succeeds', () => {
+  it('builds a single vi post with meta fields when split succeeds — even from a 4-section response', () => {
     const posts = buildNewsPosts(activeWatching(), FOUR_SECTIONS);
-    expect(posts).toHaveLength(4);
+    expect(posts.map((p) => p.lang)).toEqual(['vi']);
 
     expect(posts[0]).toMatchObject({
       type: 'analysis',
       slug: 'news-mexico-vs-south-africa-2026-06-11',
-      lang: 'en',
-      title: 'Mexico vs South Africa Preview - World Cup 2026',
-      meta_title: 'Mexico vs South Africa Preview - World Cup 2026',
-      meta_description: expect.stringContaining('Preview of Mexico'),
-      target_keyword: 'Mexico vs South Africa preview',
+      lang: 'vi',
+      title: 'Trước trận Mexico vs Nam Phi - World Cup 2026',
+      meta_title: 'Trước trận Mexico vs Nam Phi - World Cup 2026',
+      meta_description: expect.stringContaining('Nhận định trước trận'),
+      target_keyword: 'Mexico vs Nam Phi nhận định',
       pick_ids: [],
       status: 'published',
     });
-    expect(posts[0].body_md).toContain('Mexico host South Africa');
+    expect(posts[0].body_md).toContain('Mexico đón tiếp Nam Phi');
     expect(posts[0].published_at).toBeTruthy();
-
-    expect(posts[1]).toMatchObject({ lang: 'vi', type: 'analysis' });
-    expect(posts[2]).toMatchObject({ lang: 'th', type: 'analysis' });
-    expect(posts[3]).toMatchObject({ lang: 'es', type: 'analysis' });
   });
 
-  it('falls back to a single en row when the split fails', () => {
+  it('falls back to a single vi row when the split fails', () => {
     const posts = buildNewsPosts(activeWatching(), '  no flags here  ');
     expect(posts).toHaveLength(1);
     expect(posts[0]).toMatchObject({
       type: 'analysis',
-      lang: 'en',
+      lang: 'vi',
       body_md: 'no flags here',
       meta_title: null,
       meta_description: null,
@@ -155,35 +151,35 @@ describe('buildNewsPosts', () => {
 });
 
 describe('buildPresencePosts (Req 1: watch-lite minimal render)', () => {
-  it('builds 4 posts with the note verbatim and watching disclosure', () => {
+  it('builds a single vi post with the note verbatim and vi watching disclosure', () => {
     const posts = buildPresencePosts(activeWatching({ presence: true }));
-    expect(posts).toHaveLength(4);
+    expect(posts.map((p) => p.lang)).toEqual(['vi']);
     expect(posts[0]).toMatchObject({
       type: 'analysis',
-      lang: 'en',
+      lang: 'vi',
       slug: 'news-mexico-vs-south-africa-2026-06-11',
       pick_ids: [],
       status: 'published',
     });
+    // Chưa có bản dịch → note EN verbatim (bản dịch đến sau qua propagateNoteToPresencePosts)
     expect(posts[0].body_md).toContain('Mexico dominant at home');
-    expect(posts[0].body_md).toContain(watchingDisclosureFor('en'));
+    expect(posts[0].body_md).toContain(watchingDisclosureFor('vi'));
     // Must NOT contain full-preview sections
     expect(posts[0].body_md).not.toContain('Tactical');
     expect(posts[0].body_md).not.toContain('Key Players');
   });
 
-  it('uses fallback when note is empty', () => {
+  it('uses the vi fallback when note is empty', () => {
     const posts = buildPresencePosts(activeWatching({ presence: true, note: null }));
-    expect(posts[0].body_md).toContain('On our watch list for audience coverage.');
+    expect(posts[0].body_md).toContain('Trận đấu nằm trong danh sách theo dõi của chúng tôi.');
   });
 
   it('uses translated note when available', () => {
     const posts = buildPresencePosts(activeWatching({
       presence: true,
-      note_translations: { en: 'EN note', vi: 'VI note', th: 'TH note', es: 'ES note' },
+      note_translations: { vi: 'VI note' },
     }));
-    expect(posts[1].body_md).toContain('VI note');
-    expect(posts[3].body_md).toContain('ES note');
+    expect(posts[0].body_md).toContain('VI note');
   });
 });
 
@@ -200,11 +196,11 @@ describe('publishWatchingNews', () => {
 
     await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());
 
-    expect(store.posts).toHaveLength(4);
+    expect(store.posts.map((p) => p.lang)).toEqual(['vi']);
     expect(store.posts[0]).toMatchObject({
       type: 'analysis',
       slug: 'news-mexico-vs-south-africa-2026-06-11',
-      lang: 'en',
+      lang: 'vi',
     });
   });
 
@@ -243,10 +239,10 @@ describe('publishWatchingNews', () => {
 
     // Should NOT call Claude
     expect(fetchMock).not.toHaveBeenCalled();
-    // Should still publish 4 posts
-    expect(store.posts).toHaveLength(4);
+    // Should still publish the vi post
+    expect(store.posts.map((p) => p.lang)).toEqual(['vi']);
     expect(store.posts[0].body_md).toContain('Mexico dominant at home');
-    expect(store.posts[0].body_md).toContain(watchingDisclosureFor('en'));
+    expect(store.posts[0].body_md).toContain(watchingDisclosureFor('vi'));
   });
 
   it('presence cards work even without an API key', async () => {
@@ -255,7 +251,7 @@ describe('publishWatchingNews', () => {
       { store, env: { apiKey: undefined } },
       activeWatching({ presence: true }),
     );
-    expect(store.posts).toHaveLength(4);
+    expect(store.posts).toHaveLength(1);
   });
 
   it('does nothing without an api key', async () => {
@@ -293,23 +289,18 @@ describe('publishWatchingNews', () => {
     expect(store.posts).toHaveLength(0);
   });
 
-  // Regression: France-Morocco 09/07 — a single lang failing seo-lint (Thai katakana glitch)
-  // blocked the whole insert loop, so EN/VI/ES were lost too.
-  it('publishes surviving langs when one lang is blocked', async () => {
+  // Regression: France-Morocco 09/07 — per-lang resilience loop giữ nguyên;
+  // với NGON_NGU = ['vi'] bài chỉ còn dòng vi.
+  it('publishes exactly the vi row through the per-lang loop', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true, status: 200,
       json: async () => ({ content: [{ type: 'text', text: FOUR_SECTIONS }] }),
     })));
     const store = new MemoryStore();
-    const realInsert = store.insertPost.bind(store);
-    store.insertPost = vi.fn(async (post) => {
-      if (post.lang === 'th') throw new Error("seo-lint BLOCK for news/x/th: unexpected script character '\u30F3'");
-      return realInsert(post);
-    });
 
     await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());
 
-    expect(store.posts.map((p) => p.lang).sort()).toEqual(['en', 'es', 'vi']);
+    expect(store.posts.map((p) => p.lang).sort()).toEqual(['vi']);
   });
 
   it('REQ 4: presence posts can be deleted by slug on unwatch', async () => {
@@ -319,12 +310,12 @@ describe('publishWatchingNews', () => {
       { store, env: { apiKey: undefined } },
       activeWatching({ presence: true }),
     );
-    expect(store.posts).toHaveLength(4);
+    expect(store.posts).toHaveLength(1);
 
     // Simulate unwatch: delete posts by slug
     const slug = buildNewsSlug('Mexico', 'South Africa', '2026-06-11T19:00:00.000Z');
     const deleted = await store.deletePostsBySlug(slug);
-    expect(deleted).toBe(4);
+    expect(deleted).toBe(1);
     expect(store.posts).toHaveLength(0);
   });
 
@@ -340,7 +331,7 @@ describe('publishWatchingNews', () => {
       { store, env: { apiKey: 'k' } },
       activeWatching({ presence: false }),
     );
-    expect(store.posts).toHaveLength(4);
+    expect(store.posts).toHaveLength(1);
 
     // Expire the watching — since presence=false, posts should NOT be deleted
     const row = await store.insertWatching({
@@ -354,7 +345,7 @@ describe('publishWatchingNews', () => {
 
     // The scope guard: NOT a presence card → do NOT delete posts
     expect(expired.presence).toBe(false);
-    expect(store.posts).toHaveLength(4); // posts still intact
+    expect(store.posts).toHaveLength(1); // posts still intact
   });
 
   it('publishes nothing when EVERY lang is blocked', async () => {
@@ -384,7 +375,7 @@ describe('publishWatchingNews', () => {
 
     await publishWatchingNews({ store, env: { apiKey: 'k' } }, activeWatching());
 
-    expect(store.posts).toHaveLength(4);
+    expect(store.posts).toHaveLength(1);
     expect(fbCalls).toHaveLength(0);
   });
 });

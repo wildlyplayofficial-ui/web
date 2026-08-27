@@ -99,11 +99,13 @@ describe('buildRecapPrompt', () => {
     expect(prompt).toContain('3-1-0 (W-L-P), +2.55 units total');
   });
 
-  it('instructs responsible language and both flag sections', () => {
+  it('instructs responsible language and ONLY the VI flag section (chỉ tiếng Việt, Peter 27/8)', () => {
     expect(prompt).toContain('"sure win"');
     expect(prompt).toContain('"guaranteed"');
-    expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
+    expect(prompt).not.toContain('\u{1F1EC}\u{1F1E7}');
+    expect(prompt).not.toContain('\u{1F1F9}\u{1F1ED}');
+    expect(prompt).not.toContain('\u{1F1EA}\u{1F1F8}');
   });
 });
 
@@ -157,25 +159,25 @@ describe('detectClosingLineFabrication — post-gen lint for auto-publish', () =
 describe('buildRecapArticlePrompt — disclosure (Tiered Picks §12 firewall)', () => {
   const record = { won: 3, lost: 1, push: 0, units: 2.55 };
 
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the curator (real_human) disclosure in %s',
-    (lang) => {
-      const prompt = buildRecapArticlePrompt(settledPick({ author: 'curator' }), record);
-      expect(prompt).toContain(disclosureFor('real_human', lang));
-    },
-  );
+  it('renders the curator (real_human) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildRecapArticlePrompt(settledPick({ author: 'curator' }), record);
+    expect(prompt).toContain(disclosureFor('real_human', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('real_human', lang));
+    }
+  });
 
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the scout (fictional_ai) disclosure in %s',
-    (lang) => {
-      const prompt = buildRecapArticlePrompt(settledPick({ author: 'scout' }), record);
-      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
-    },
-  );
+  it('renders the scout (fictional_ai) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildRecapArticlePrompt(settledPick({ author: 'scout' }), record);
+    expect(prompt).toContain(disclosureFor('fictional_ai', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('fictional_ai', lang));
+    }
+  });
 
   it('never leaks the curator wording into a scout pick prompt', () => {
     const prompt = buildRecapArticlePrompt(settledPick({ author: 'scout' }), record);
-    expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
+    expect(prompt).not.toContain(disclosureFor('real_human', 'vi'));
   });
 });
 
@@ -183,20 +185,16 @@ const BILINGUAL = '\u{1F1EC}\u{1F1E7} The hosts ran away with it.\nRecord: 1-0-0
 
 const QUAD = BILINGUAL + '\n\n\u{1F1F9}\u{1F1ED} เจ้าบ้านชนะขาด\n\n\u{1F1EA}\u{1F1F8} El local ganó con autoridad.';
 
-describe('splitLangSections', () => {
-  it('splits a bilingual text on the flag headers', () => {
+describe('splitLangSections (chỉ tiếng Việt — chỉ giữ section NGON_NGU)', () => {
+  it('keeps ONLY the vi section from a bilingual text', () => {
     expect(splitLangSections(BILINGUAL)).toEqual({
-      en: 'The hosts ran away with it.\nRecord: 1-0-0, +1.05u',
       vi: 'Chủ nhà thắng thuyết phục.\nThành tích: 1-0-0, +1.05u',
     });
   });
 
-  it('splits all four language sections', () => {
+  it('keeps ONLY the vi section from a four-language text', () => {
     expect(splitLangSections(QUAD)).toEqual({
-      en: 'The hosts ran away with it.\nRecord: 1-0-0, +1.05u',
       vi: 'Chủ nhà thắng thuyết phục.\nThành tích: 1-0-0, +1.05u',
-      th: 'เจ้าบ้านชนะขาด',
-      es: 'El local ganó con autoridad.',
     });
   });
 
@@ -204,48 +202,49 @@ describe('splitLangSections', () => {
     expect(splitLangSections('plain english recap, no flags')).toBeNull();
   });
 
-  it('returns null when the EN section is missing or empty', () => {
-    expect(splitLangSections('\u{1F1EC}\u{1F1E7} \u{1F1FB}\u{1F1F3} only vietnamese')).toBeNull();
-    expect(splitLangSections('\u{1F1FB}\u{1F1F3} only vietnamese')).toBeNull();
+  it('accepts a lone VI section — EN no longer required', () => {
+    expect(splitLangSections('\u{1F1FB}\u{1F1F3} only vietnamese')).toEqual({ vi: 'only vietnamese' });
+    expect(splitLangSections('\u{1F1EC}\u{1F1E7} \u{1F1FB}\u{1F1F3} only vietnamese')).toEqual({ vi: 'only vietnamese' });
   });
 
-  it('drops an empty trailing section but keeps the rest', () => {
+  it('returns null when the VI section is missing (EN-only output)', () => {
+    expect(splitLangSections('\u{1F1EC}\u{1F1E7} english only')).toBeNull();
+  });
+
+  it('drops an empty trailing section but keeps vi', () => {
     expect(splitLangSections('\u{1F1EC}\u{1F1E7} english \u{1F1FB}\u{1F1F3} tiếng việt \u{1F1F9}\u{1F1ED}')).toEqual({
-      en: 'english',
       vi: 'tiếng việt',
     });
   });
 });
 
 describe('buildRecapPosts', () => {
-  it('builds en + vi published rows with slug recap-{team-vs-team-score} and score titles (decision #19)', () => {
+  it('builds a single vi published row with slug recap-{team-vs-team-score} and score title', () => {
     const posts = buildRecapPosts(settledPick(), BILINGUAL);
-    expect(posts).toHaveLength(2);
+    expect(posts).toHaveLength(1);
     expect(posts[0]).toMatchObject({
       type: 'recap',
-      slug: 'recap-mexico-vs-south-africa-3-0',
-      lang: 'en',
-      title: 'Recap: Mexico 3-0 South Africa',
-      body_md: 'The hosts ran away with it.\nRecord: 1-0-0, +1.05u',
-      pick_ids: ['pick-1'],
-      status: 'published',
-    });
-    expect(posts[0].published_at).toBeTruthy();
-    expect(posts[1]).toMatchObject({
       slug: 'recap-mexico-vs-south-africa-3-0',
       lang: 'vi',
       title: 'Nhìn lại: Mexico 3-0 South Africa',
       body_md: 'Chủ nhà thắng thuyết phục.\nThành tích: 1-0-0, +1.05u',
+      pick_ids: ['pick-1'],
       status: 'published',
     });
+    expect(posts[0].published_at).toBeTruthy();
   });
 
-  it('falls back to a single en row with the whole text when the split fails', () => {
+  it('bộ bài sinh ra có đúng một ngôn ngữ: [vi] — kể cả khi model trả về 4 section', () => {
+    const posts = buildRecapPosts(settledPick(), QUAD);
+    expect(posts.map((p) => p.lang)).toEqual(['vi']);
+  });
+
+  it('falls back to a single vi row with the whole text when the split fails', () => {
     const posts = buildRecapPosts(settledPick(), '  no flags in this recap  ');
     expect(posts).toHaveLength(1);
     expect(posts[0]).toMatchObject({
-      lang: 'en',
-      title: 'Recap: Mexico 3-0 South Africa',
+      lang: 'vi',
+      title: 'Nhìn lại: Mexico 3-0 South Africa',
       body_md: 'no flags in this recap',
       status: 'published',
     });

@@ -60,25 +60,25 @@ function analysisCtx(pick: PickRow | null): AnalysisContext {
 }
 
 describe('buildAnalysisPrompt — disclosure (Tiered Picks §12 firewall)', () => {
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the curator (real_human) disclosure in %s',
-    (lang) => {
-      const prompt = buildAnalysisPrompt(analysisCtx(analysisPick({ author: 'curator' })));
-      expect(prompt).toContain(disclosureFor('real_human', lang));
-    },
-  );
+  it('renders the curator (real_human) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildAnalysisPrompt(analysisCtx(analysisPick({ author: 'curator' })));
+    expect(prompt).toContain(disclosureFor('real_human', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('real_human', lang));
+    }
+  });
 
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the scout (fictional_ai) disclosure in %s',
-    (lang) => {
-      const prompt = buildAnalysisPrompt(analysisCtx(analysisPick({ author: 'scout' })));
-      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
-    },
-  );
+  it('renders the scout (fictional_ai) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildAnalysisPrompt(analysisCtx(analysisPick({ author: 'scout' })));
+    expect(prompt).toContain(disclosureFor('fictional_ai', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('fictional_ai', lang));
+    }
+  });
 
   it('defaults to the curator disclosure when no pick is attached', () => {
     const prompt = buildAnalysisPrompt(analysisCtx(null));
-    expect(prompt).toContain(disclosureFor('real_human', 'en'));
+    expect(prompt).toContain(disclosureFor('real_human', 'vi'));
   });
 
   it('never leaks the curator wording into a scout pick prompt', () => {

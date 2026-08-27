@@ -3,7 +3,8 @@
  * a pick, AI writes a bilingual pre-match article and it auto-publishes to /news.
  * A preview failure must NEVER break the pick publication — every path logs and returns.
  */
-import { callClaude, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
+import { callClaude, disclosureBlock, isPlaceholderTeam, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import type { NewPost, PickRow, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
 import { log } from './log';
@@ -51,7 +52,7 @@ WHY: Leads with a specific tactical angle tied to the thesis, immediately tells 
 </good_examples>
 
 <output>
-Write exactly FOUR sections in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Write ${sectionSpec()}.
 Each section: 150-250 words, markdown allowed (short paragraphs, no H1).
 </output>
 
@@ -64,8 +65,8 @@ const PREVIEW_TITLES: Record<PostLang, string> = {
   en: 'Preview', vi: 'Nhận định', th: 'พรีวิว', es: 'Previa',
 };
 
-/** Published posts rows for a preview. One row per language section when the
- *  split works (en/vi/th/es); one 'en' row with the whole text otherwise. Pure. */
+/** Published posts rows for a preview. One row per NGON_NGU section when the
+ *  split works; one NGON_NGU[0] row with the whole text otherwise. Pure. */
 export function buildPreviewPosts(pick: PickRow, text: string): NewPost[] {
   const matchup = `${pick.home_team} vs ${pick.away_team}`;
   const base = {
@@ -78,7 +79,7 @@ export function buildPreviewPosts(pick: PickRow, text: string): NewPost[] {
   };
   const sections = splitLangSections(text);
   if (!sections) {
-    return [{ ...base, lang: 'en', title: `${PREVIEW_TITLES.en}: ${matchup}`, body_md: text.trim() }];
+    return [{ ...base, lang: NGON_NGU[0], title: `${PREVIEW_TITLES[NGON_NGU[0]]}: ${matchup}`, body_md: text.trim() }];
   }
   return (Object.entries(sections) as [PostLang, string][]).map(([lang, body]) => ({
     ...base, lang, title: `${PREVIEW_TITLES[lang]}: ${matchup}`, body_md: body,

@@ -88,10 +88,17 @@ describe('parseBuzzResponse', () => {
     expect(parseBuzzResponse(bad)).toBeNull();
   });
 
-  it('returns null for missing language in lean_label', () => {
+  it('returns null when vi is missing in lean_label (chỉ tiếng Việt)', () => {
     const parsed = JSON.parse(VALID_RESPONSE);
-    delete parsed.lean_label.th;
+    delete parsed.lean_label.vi;
     expect(parseBuzzResponse(JSON.stringify(parsed))).toBeNull();
+  });
+
+  it('accepts a vi-only response — th/es no longer required', () => {
+    const parsed = JSON.parse(VALID_RESPONSE);
+    parsed.lean_label = { vi: parsed.lean_label.vi };
+    parsed.themes = { vi: parsed.themes.vi };
+    expect(parseBuzzResponse(JSON.stringify(parsed))).not.toBeNull();
   });
 
   it('returns null for invalid confidence value', () => {

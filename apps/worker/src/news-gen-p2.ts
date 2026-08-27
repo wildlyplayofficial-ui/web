@@ -8,6 +8,16 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, slugify } from './recap';
 import { log } from './log';
 import { NEWS_LANGS, type NewsLang, type Rendered } from './news-gen-templates';
+
+const P2_LANG_TITLES: Record<NewsLang, string> = { en: 'English', vi: 'Vietnamese', th: 'Thai', es: 'Spanish' };
+
+/** Chỉ thị section theo NEWS_LANGS (= NGON_NGU, chỉ tiếng Việt Peter 27/8) — header kiểu "# Vietnamese". */
+function p2SectionSpec(): string {
+  const list = NEWS_LANGS.map((l) => `${P2_LANG_TITLES[l]} under "# ${P2_LANG_TITLES[l]}"`).join(', ');
+  return NEWS_LANGS.length === 1
+    ? `exactly ONE language section: ${list}`
+    : `exactly ${NEWS_LANGS.length} language sections, in this order: ${list}`;
+}
 import bylineJson from './data/byline.json';
 
 // ── Config ──────────────────────────────────────────────────────────────────
@@ -220,8 +230,7 @@ ${formCtx}
 
 ${photoCtx !== '(No player photos available)' ? `=== PLAYER PHOTOS ===\n${photoCtx}` : ''}
 
-Write a pre-match preview with exactly FOUR language sections, in this order:
-English under # English, Vietnamese under # Vietnamese, Thai under # Thai, Spanish under # Spanish.
+Write a pre-match preview with ${p2SectionSpec()}.
 
 Each section: 250-400 words, markdown (## for subsections, no H1).
 
@@ -287,7 +296,7 @@ export async function enrichPreviewP2(
     return null;
   }
 
-  // Parse the 4-language output
+  // Parse the per-language output (NEWS_LANGS)
   const result = parseP2Output(rawText, input, photos);
   if (!result) {
     log.warn(`news-p2: failed to parse LLM output for ${input.home} vs ${input.away} — falling back to P1`);
@@ -325,8 +334,8 @@ function parseP2Output(
     log.warn(`news-p2: no lang headers found. First 200 chars: ${text.slice(0, 200)}`);
   }
 
-  // Must have at least EN
-  if (!positions.some((p) => p.lang === 'en')) return null;
+  // Phải có ít nhất section ngôn ngữ chính (NEWS_LANGS[0])
+  if (!positions.some((p) => p.lang === NEWS_LANGS[0])) return null;
 
   for (let i = 0; i < positions.length; i++) {
     const { lang, idx } = positions[i];
@@ -450,8 +459,7 @@ ${h2hCtx}
 === TEAM FORM ===
 ${formCtx}
 
-Write a match report with exactly FOUR language sections, in this order:
-English under # English, Vietnamese under # Vietnamese, Thai under # Thai, Spanish under # Spanish.
+Write a match report with ${p2SectionSpec()}.
 
 Each section: 200-350 words, markdown (## for subsections, no H1).
 

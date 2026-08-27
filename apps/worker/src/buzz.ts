@@ -1,23 +1,23 @@
 /**
  * Buzz v2: Community sentiment snapshots for watched matches.
- * Generates AI-powered sentiment summaries in 4 languages (en/vi/th/es),
+ * Generates AI-powered sentiment summaries in NGON_NGU (chỉ tiếng Việt, Peter 27/8),
  * stored as a history array so the web UI can show trends over time.
  * A buzz failure must NEVER break the watching pipeline — every path logs and returns.
  */
 import { callClaude } from './recap';
-import type { Store, WatchingRow } from './store';
+import { NGON_NGU } from './ngon-ngu';
+import type { PostLang, Store, WatchingRow } from './store';
 import { log } from './log';
 
 export interface BuzzSnapshot {
   timestamp: string;
   sentiment_pct: number;
-  lean_label: Record<BuzzLang, string>;
-  themes: Record<BuzzLang, string[]>;
+  /** Partial: snapshot mới chỉ có các key trong NGON_NGU; snapshot cũ vẫn đủ 4 lang. */
+  lean_label: Partial<Record<PostLang, string>>;
+  themes: Partial<Record<PostLang, string[]>>;
   confidence: string;
   sources?: string[];
 }
-
-type BuzzLang = 'en' | 'vi' | 'th' | 'es';
 
 const BUZZ_MODEL = 'claude-haiku-4-5-20251001';
 const BUZZ_MAX_TOKENS = 1200;
@@ -84,17 +84,17 @@ export function buildBuzzPrompt(w: WatchingRow, communitySnippets: string = ''):
     'Output ONLY valid JSON (no markdown fences, no commentary) with this exact shape:',
     '{',
     '  "sentiment_pct": <number 0-100, 50=neutral, >50 favors home>,',
-    '  "lean_label": {"en":"<short label>","vi":"<short label>","th":"<short label>","es":"<short label>"},',
-    '  "themes": {"en":["<theme1>","<theme2>","<theme3>"],"vi":[...],"th":[...],"es":[...]},',
+    `  "lean_label": {${NGON_NGU.map((l) => `"${l}":"<short label>"`).join(',')}},`,
+    `  "themes": {${NGON_NGU.map((l) => `"${l}":["<theme1>","<theme2>","<theme3>"]`).join(',')}},`,
     '  "confidence": "<low|medium|high>"',
     '}',
     '',
     'Rules:',
     '- lean_label: one short phrase (3-6 words) summarizing the lean, e.g. "Home slight favorites", "Evenly split".',
-    '- themes: exactly 3 per language — the top discussion points a bettor community would raise.',
+    '- themes: exactly 3 — the top discussion points a bettor community would raise.',
     '- confidence: "low" for obscure matchups, "high" for major fixtures with clear consensus.',
     '- Responsible language: NEVER use "sure win", "guaranteed", or promise profit.',
-    '- All 4 languages must be natural — use each language\'s own betting terminology.',
+    '- The text must be natural in each requested language — use the terminology its readers actually use.',
   ].filter(Boolean).join('\n');
 }
 
@@ -115,8 +115,7 @@ export function parseBuzzResponse(text: string): Omit<BuzzSnapshot, 'timestamp'>
       return null;
     }
 
-    const langs: BuzzLang[] = ['en', 'vi', 'th', 'es'];
-    for (const lang of langs) {
+    for (const lang of NGON_NGU) {
       if (typeof data.lean_label[lang] !== 'string') return null;
       if (!Array.isArray(data.themes[lang])) return null;
     }
