@@ -269,6 +269,15 @@ export function createBot(deps: BotDeps): Bot {
       author: watching.author,
       presence: watching.presence,
     });
+    if (row.daCoSan) {
+      // Dòng cũ trả lại: không dịch lại note, không ghi đè buzz, không đăng lại bài tin.
+      log.info(`watching ${row.id} đã có sẵn — không chạy việc phụ`);
+      await ctx.reply(
+        `⚠️ Watching trùng — đã có watching ${row.id} cho ${row.home_team} vs ${row.away_team}` +
+        ` (kickoff ${row.kickoff_utc}). KHÔNG thêm mới.` + kickoffNote,
+      );
+      return;
+    }
     log.info(`watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     if (deps.revalidate) void deps.revalidate(['watching']);
     // Fire-and-forget: translate note into 4 languages if note is not empty

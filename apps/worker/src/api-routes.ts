@@ -178,6 +178,16 @@ export async function handleApiRoute(
       author: watching.author,
       presence,
     });
+    if (row.daCoSan) {
+      // 27/8 14:57Z: gọi lặp cho trận đang active vẫn xếp lại note-translate (dịch lại bằng Claude)
+      // + ghi đè buzz_history. Dòng cũ thì trả lại y nguyên, không chạy việc phụ.
+      log.info(`api: watching ${row.id} đã có sẵn — không xếp việc phụ`);
+      json(res, 200, {
+        ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}`,
+        author: row.author, author_type: authorTypeOf(row.author),
+      });
+      return true;
+    }
     log.info(`api: watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     void deps.revalidate(['watching']);
     if (row.note && deps.aiEnv?.apiKey && deps.persistDb) {
