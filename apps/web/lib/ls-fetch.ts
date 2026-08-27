@@ -29,6 +29,19 @@ export function lsFetch(url: string | URL, init?: RequestInit): Promise<Response
       .then(() => undefined, () => undefined);
   } catch { /* best-effort */ }
   // Chỗ gọi tự truyền signal thì tôn trọng, không đè.
-  const signal = init?.signal ?? AbortSignal.timeout(HAN_CHO_MS);
-  return fetch(url, { ...init, signal });
+  if (init?.signal) return fetch(url, init);
+
+  const t0 = Date.now();
+  return fetch(url, { ...init, signal: AbortSignal.timeout(HAN_CHO_MS) }).catch((e) => {
+    // KÊU TO khi hạn giờ bắn. Chỗ gọi đều .catch(() => []) nên quá hạn là dải
+    // trận biến mất KHÔNG một tiếng động — đúng loại hỏng thầm nhà mình cấm.
+    // Thấy dòng này lặp nhiều nghĩa là 6 giây quá chặt, phải nới, chứ không
+    // phải để nó lặng lẽ nuốt nội dung.
+    const qua = e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
+    console.warn(
+      `[lsFetch] ${qua ? `QUÁ HẠN ${HAN_CHO_MS}ms` : "LỖI"} sau ${Date.now() - t0}ms — ` +
+      `${String(url).replace(/(key|secret)=[^&]*/g, "$1=***").slice(0, 110)}`,
+    );
+    throw e;
+  });
 }
