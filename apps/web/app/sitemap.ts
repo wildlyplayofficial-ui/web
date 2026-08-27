@@ -42,7 +42,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, matches, guides, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
+  const [posts, matches, guides, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllReportSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   // Hub theo CLB: CHỈ khai hub nào đủ bài để được index. Hub dưới ngưỡng tự đặt
   // noindex (xem doi/[slug]/page.tsx), mà khai một trang noindex vào sitemap thì
