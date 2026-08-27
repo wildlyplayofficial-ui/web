@@ -7,6 +7,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { RawOutcome } from '@wildlyplay/settlement';
 import type { Market, PickAuthor } from './parse-pick';
 import { log } from './log';
+import { layHet } from './phan-trang';
 
 export type { PickAuthor } from './parse-pick';
 export type PickStatus = 'draft' | 'published' | 'won' | 'lost' | 'push' | 'void';
@@ -397,7 +398,7 @@ export class MemoryStore implements Store {
   }
 }
 
-class SupabaseStore implements Store {
+export class SupabaseStore implements Store {
   constructor(private readonly db: SupabaseClient) {}
 
   async insertPick(pick: NewPick): Promise<PickRow> {
@@ -456,13 +457,12 @@ class SupabaseStore implements Store {
   }
 
   async listByStatus(statuses: PickStatus[], author?: PickAuthor): Promise<PickRow[]> {
-    let query = this.db
-      .from('picks').select('*').in('status', statuses)
-      .order('kickoff_utc', { ascending: true });
-    if (author) query = query.eq('author', author);
-    const { data, error } = await query;
-    if (error) throw new Error(`listByStatus failed: ${error.message}`);
-    return (data ?? []) as PickRow[];
+    // Phân trang qua trần 1000 của PostgREST; order('id') phụ để thứ tự trang ổn định (kickoff_utc không duy nhất).
+    return layHet<PickRow>(() => {
+      let query = this.db.from('picks').select('*').in('status', statuses);
+      if (author) query = query.eq('author', author);
+      return query.order('kickoff_utc', { ascending: true }).order('id');
+    });
   }
 
   async insertChannelLog(entry: ChannelLogEntry): Promise<void> {
@@ -502,13 +502,15 @@ class SupabaseStore implements Store {
   }
 
   async listPostSlugsByType(type: string): Promise<Set<string>> {
-    const { data, error } = await this.db
+    // Chống đăng trùng: posts đã 940 dòng (27/8/2026), sát trần 1000 của PostgREST — thiếu slug là bài trùng
+    // lọt lên. Phân trang + order('id') để các trang không giẫm/sót nhau.
+    const rows = await layHet<{ slug: string }>(() => this.db
       .from('posts')
       .select('slug')
       .eq('type', type)
-      .eq('lang', 'en');
-    if (error) throw new Error(`listPostSlugsByType failed: ${error.message}`);
-    return new Set(((data ?? []) as { slug: string }[]).map((r) => r.slug));
+      .eq('lang', 'en')
+      .order('id'));
+    return new Set(rows.map((r) => r.slug));
   }
 
   async countPostsTodayByType(type: string): Promise<number> {
@@ -563,11 +565,10 @@ class SupabaseStore implements Store {
   }
 
   async getActiveWatching(): Promise<WatchingRow[]> {
-    const { data, error } = await this.db
+    // Phân trang qua trần 1000 của PostgREST; order('id') phụ để thứ tự trang ổn định.
+    return layHet<WatchingRow>(() => this.db
       .from('watching').select('*').eq('status', 'active')
-      .order('kickoff_utc', { ascending: true });
-    if (error) throw new Error(`getActiveWatching failed: ${error.message}`);
-    return (data ?? []) as WatchingRow[];
+      .order('kickoff_utc', { ascending: true }).order('id'));
   }
 
   async getWatchingById(id: string): Promise<WatchingRow | null> {

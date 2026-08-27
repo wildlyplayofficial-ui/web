@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryStore, type NewPick, type NewPost, type NewWatching, type PickAuthor } from './store';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { MemoryStore, SupabaseStore, type NewPick, type NewPost, type NewWatching, type PickAuthor } from './store';
 
 function watching(overrides: Partial<NewWatching> = {}): NewWatching {
   return {
@@ -286,5 +287,31 @@ describe('MemoryStore.getWatchingById (27/8: job handlers tra theo id, không l�
     const found = await store.getWatchingById(row.id);
 
     expect(found?.status).toBe('expired');
+  });
+});
+
+describe('SupabaseStore.listPostSlugsByType — đọc qua trần 1000 dòng của PostgREST (posts 940 dòng 27/8/2026)', () => {
+  /** Giả lập supabase-js tối thiểu: mọi bước lọc/sắp xếp trả lại builder, `.range()` cắt đúng lát dữ liệu. */
+  function giaLapSupabase(slugs: string[], goi: [number, number][]) {
+    const builder = {
+      select: () => builder,
+      eq: () => builder,
+      order: () => builder,
+      range: async (from: number, to: number) => {
+        goi.push([from, to]);
+        return { data: slugs.slice(from, to + 1).map((slug) => ({ slug })), error: null };
+      },
+    };
+    return { from: () => builder } as unknown as SupabaseClient;
+  }
+
+  it('1200 bài → 1200 slug qua 2 trang, không dừng ở 1000', async () => {
+    const goi: [number, number][] = [];
+    const slugs = Array.from({ length: 1200 }, (_, i) => `bai-${i}`);
+    const store = new SupabaseStore(giaLapSupabase(slugs, goi));
+
+    const ketQua = await store.listPostSlugsByType('news');
+
+    expect([ketQua.size, goi]).toEqual([1200, [[0, 999], [1000, 1999]]]);
   });
 });

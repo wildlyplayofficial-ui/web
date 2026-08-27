@@ -4,30 +4,10 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { log } from './log';
+import { layHet } from './phan-trang';
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-/** PostgREST trả tối đa 1000 dòng một lần gọi (đo trên prod 27/8/2026) — bảng lớn hơn phải phân trang. */
-const TRAN_MOT_TRANG = 1000;
-
-type TruyVanPhanTrang<T> = {
-  range(from: number, to: number): PromiseLike<{ data: T[] | null; error: { message: string } | null }>;
-};
-
-/** Đọc HẾT kết quả một truy vấn theo từng trang `kichThuoc` dòng. `taoQuery` phải trả builder MỚI mỗi lần
- *  (builder supabase-js không dùng lại được sau khi await) và đã `.order()` theo khoá ổn định (có cột duy nhất)
- *  để các trang không giẫm/sót nhau. Trang lỗi thì ném luôn — không trả về kết quả thiếu. */
-export async function layHet<T>(taoQuery: () => TruyVanPhanTrang<T>, kichThuoc = TRAN_MOT_TRANG): Promise<T[]> {
-  const tatCa: T[] = [];
-  for (let from = 0; ; from += kichThuoc) {
-    const { data, error } = await taoQuery().range(from, from + kichThuoc - 1);
-    if (error) throw new Error(`layHet: lỗi trang từ dòng ${from} (đã gom ${tatCa.length}): ${error.message}`);
-    const trang = data ?? [];
-    tatCa.push(...trang);
-    if (trang.length < kichThuoc) return tatCa;
-  }
 }
 
 type MappingRow = { competition_id: string; home_team: string; away_team: string; kickoff_utc: string; odds_api_event_id: number | null; livescore_match_id: string | null; slug: string | null };
