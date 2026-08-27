@@ -103,18 +103,41 @@ interface HangMapping {
  *  vì thông tin của nó đã nằm trọn trong dòng vừa ghi. Không dọn thì dòng cũ ở lại
  *  mãi và lịch thi đấu vẫn hiện hai lần.
  */
-async function ghiMapping(sb: SupabaseClient, hang: HangMapping): Promise<{ error: { message: string } | null }> {
+export async function ghiMapping(sb: SupabaseClient, hang: HangMapping): Promise<{ error: { message: string } | null }> {
   const boc = hang.odds_api_event_id
     ? { odds_api_event_id: hang.odds_api_event_id }
     : { livescore_match_id: hang.livescore_match_id };
   const day = { ...hang, updated_at: new Date().toISOString() };
 
-  const { data: cu } = await sb.from('provider_mappings').select('id')
+  const cot = 'id, odds_api_event_id, livescore_match_id';
+  let { data: cu } = await sb.from('provider_mappings').select(cot)
     .match({ competition_id: hang.competition_id, ...boc }).limit(1);
 
-  const { error } = cu?.length
-    ? await sb.from('provider_mappings').update(day).eq('id', cu[0].id)
-    : await sb.from('provider_mappings').insert(day);
+  // Chưa có dòng mang mã này → dò theo KHOÁ TỰ NHIÊN, đúng bộ cột unique của bảng
+  // (competition_id, home_team, away_team, kickoff_utc). Nhánh chỉ-livescore 27/8/2026
+  // 15:41Z (odds-api 429 mọi khoá) gặp dòng odds-only cùng tên cùng giờ → INSERT vỡ
+  // "duplicate key" mỗi lượt, mã tỷ số không bao giờ được gắn vào. Gộp thay vì chèn.
+  if (!cu?.length) {
+    ({ data: cu } = await sb.from('provider_mappings').select(cot)
+      .match({ competition_id: hang.competition_id, home_team: hang.home_team, away_team: hang.away_team, kickoff_utc: hang.kickoff_utc })
+      .limit(1));
+    if (cu?.length) log.info(`provider-matcher: gộp ${hang.home_team} vs ${hang.away_team} vào dòng có sẵn ${cu[0].id} (khoá tự nhiên)`);
+  }
+
+  let error: { message: string } | null;
+  if (cu?.length) {
+    // Sửa dòng cũ thì GIỮ mã của nhà cung cấp kia, không ghi đè bằng null — kẻo lượt
+    // chỉ-livescore kế tiếp lại xoá mã kèo vừa gộp.
+    const gop = {
+      ...day,
+      odds_api_event_id: hang.odds_api_event_id ?? cu[0].odds_api_event_id,
+      livescore_match_id: hang.livescore_match_id ?? cu[0].livescore_match_id,
+    };
+    if (gop.odds_api_event_id && gop.livescore_match_id) gop.confidence = 'auto';
+    ({ error } = await sb.from('provider_mappings').update(gop).eq('id', cu[0].id));
+  } else {
+    ({ error } = await sb.from('provider_mappings').insert(day));
+  }
   if (error) return { error };
 
   if (hang.odds_api_event_id && hang.livescore_match_id) {
