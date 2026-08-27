@@ -143,8 +143,10 @@ describe('scoreFixture', () => {
   });
 
   it('thresholds are sensible constants', () => {
-    expect(SCORE_THRESHOLD).toBe(45);
-    expect(SCORE_P2_THRESHOLD).toBe(60);
+    // 45/60 là giá trị gốc (d4f9173). Nick hạ cả hai xuống 30 để phủ MLS/Liga MX:
+    // e47cfbe (SCORE_THRESHOLD 45→30) + d1f7f2c (SCORE_P2_THRESHOLD 60→30, "Cả 2").
+    expect(SCORE_THRESHOLD).toBe(30);
+    expect(SCORE_P2_THRESHOLD).toBe(30);
   });
 });
 
