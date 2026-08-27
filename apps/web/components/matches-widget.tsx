@@ -10,7 +10,10 @@ import { LiveMatchCard } from "./live-match-card";
 
 /** Server component — today's matches on the homepage. */
 export async function MatchesWidget({ lang }: { lang: Lang }) {
-  const matches = await getTodaysMatches();
+  // Gọi nhà cung cấp NGOÀI. Từ 27/8 lsFetch có hạn chờ nên quá hạn nó ném lỗi
+  // thay vì treo — component máy chủ mà ném thì cả trang chứa nó trả 500.
+  // Jane rà ra chỗ này 27/8 sau khi tôi vá thiếu ở PR #183.
+  const matches = await getTodaysMatches().catch(() => []);
   const dict = getDict(lang);
 
   if (matches.length === 0) {

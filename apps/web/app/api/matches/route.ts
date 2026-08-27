@@ -13,10 +13,10 @@ export async function GET(request: Request): Promise<Response> {
   // getTodaysMatches kept as fallback if DB is empty.
   let matches: Awaited<ReturnType<typeof fetchLiveMatches>>;
   if (liveOnly) {
-    matches = await fetchLiveMatches();
+    matches = await fetchLiveMatches().catch(() => []);
   } else {
     const dbMatches = await fetchTodaysMatchesFromDb();
-    matches = dbMatches.length > 0 ? dbMatches : await getTodaysMatches();
+    matches = dbMatches.length > 0 ? dbMatches : await getTodaysMatches().catch(() => []);
   }
 
   const payload = {
