@@ -1,9 +1,10 @@
 /**
  * No-play article: when the Curator passes on a match via /noplay,
- * auto-generate a discipline-framed article (4 languages) and publish it on the web.
+ * auto-generate a discipline-framed article (NGON_NGU — chỉ tiếng Việt) and publish it on the web.
  * A failure must NEVER break the /noplay reply — every path logs and returns.
  */
-import { callClaude, disclosureBlock, POST_FLAGS, slugify, splitLangSections, DEFAULT_MODEL, VI_LEXICON_RULE } from './recap';
+import { callClaude, disclosureBlock, sectionSpec, slugify, splitLangSections, DEFAULT_MODEL, VI_LEXICON_RULE } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import { parseAnalysisSection } from './news';
 import type { NewPost, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
@@ -73,8 +74,7 @@ WHY: Leads with tension (passing despite strength), immediately frames the reaso
 </good_examples>
 
 <output>
-Write exactly FOUR language sections in this order:
-English under ${POST_FLAGS.en}, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.
+Write ${sectionSpec()}.
 
 Each section MUST start with these 3 lines (EXACTLY this format, each on its own line):
 [META_TITLE] <SEO title under 60 chars with primary keyword>
@@ -105,8 +105,8 @@ export function buildNoPlayPosts(np: ParsedNoPlay, text: string): NewPost[] {
     return [{
       type: 'no-play',
       slug,
-      lang: 'en',
-      title: `${NOPLAY_TITLES.en}: ${matchup}`,
+      lang: NGON_NGU[0],
+      title: `${NOPLAY_TITLES[NGON_NGU[0]]}: ${matchup}`,
       body_md: text.trim(),
       pick_ids: [],
       status: 'published',

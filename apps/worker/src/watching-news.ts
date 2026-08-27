@@ -4,7 +4,8 @@
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { callClaude, DEFAULT_MODEL, disclosureBlock, isPlaceholderTeam, POST_FLAGS, slugify, validate4Lang, VI_LEXICON_RULE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
+import { callClaude, DEFAULT_MODEL, isPlaceholderTeam, sectionSpec, slugify, validateLangs, VI_LEXICON_RULE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
 import { authorTypeOf } from './store';
@@ -34,8 +35,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     `- Kickoff: ${kickoff} UTC`,
     w.note ? `- Curator note: ${w.note}` : '',
     '',
-    'Write a pre-match preview article with exactly FOUR language sections, in this order:',
-    `English under ${POST_FLAGS.en}, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.`,
+    `Write a pre-match preview article with ${sectionSpec()}.`,
     '',
     'Each section MUST start with these 3 lines (EXACTLY this format, each on its own line):',
     '[META_TITLE] <SEO title under 60 chars with primary keyword>',
@@ -75,8 +75,8 @@ export function buildNewsPosts(w: WatchingRow, text: string): NewPost[] {
     return [{
       type: 'analysis',
       slug,
-      lang: 'en',
-      title: `${NEWS_TITLES.en}: ${matchup}`,
+      lang: NGON_NGU[0],
+      title: `${NEWS_TITLES[NGON_NGU[0]]}: ${matchup}`,
       body_md: text.trim(),
       pick_ids: [],
       status: 'published',
@@ -125,7 +125,7 @@ export function buildPresencePosts(w: WatchingRow): NewPost[] {
   const noteText = w.note?.trim() || null;
   const noteTrans = w.note_translations ?? {};
 
-  return (['en', 'vi', 'th', 'es'] as PostLang[]).map((lang) => {
+  return NGON_NGU.map((lang) => {
     const body = lang === 'en'
       ? (noteText || PRESENCE_FALLBACK)
       : (noteTrans[lang] || noteText || PRESENCE_FALLBACK_I18N[lang]);
@@ -227,10 +227,10 @@ export async function publishWatchingNews(
       }
     }
 
-    // Validation guard: check all 4 langs have body before publishing
+    // Validation guard: check all NGON_NGU langs have body before publishing
     const langBodies: Partial<Record<import('./store').PostLang, string>> = {};
     for (const p of posts) langBodies[p.lang as import('./store').PostLang] = p.body_md;
-    const { ok, missing } = validate4Lang(langBodies);
+    const { ok, missing } = validateLangs(langBodies);
     if (!ok) log.warn(`watching-news: incomplete langs [${missing.join(',')}] for ${watching.home_team} vs ${watching.away_team} — publishing available langs`);
     // Per-lang resilience: one lang failing seo-lint must NOT drop the card (bug: France-Morocco
     // 09/07 — a Thai katakana glitch blocked insert, killing the whole announce). Publish what

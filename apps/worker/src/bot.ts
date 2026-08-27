@@ -29,7 +29,7 @@ export interface BotDeps {
   recapArticle?: (pick: PickRow) => Promise<string | null>;
   /** Decision #19: fire-and-forget newsroom preview after a pick publishes. Never throws. */
   preview?: (pick: PickRow) => Promise<void>;
-  /** Thesis translations (vi/th/es) into pick_content for the 4-language web UI. Never throws. */
+  /** Thesis translation (NGON_NGU — chỉ vi) into pick_content. Never throws. */
   translateThesis?: (pick: PickRow) => Promise<void>;
   /** On-demand analysis article when a pick publishes. Never throws. */
   publishAnalysis?: (pick: PickRow) => Promise<void>;
@@ -280,7 +280,7 @@ export function createBot(deps: BotDeps): Bot {
     }
     log.info(`watching ${row.id}: ${row.home_team} vs ${row.away_team}`);
     if (deps.revalidate) void deps.revalidate(['watching']);
-    // Fire-and-forget: translate note into 4 languages if note is not empty
+    // Fire-and-forget: translate note (NGON_NGU — chỉ vi) if note is not empty
     log.info(`watching note-translate gate: note=${!!row.note} aiEnv=${!!deps.aiEnv?.apiKey}`);
     if (row.note && deps.aiEnv?.apiKey) {
       void translateWatchingNote({ store: deps.store, env: deps.aiEnv, revalidate: deps.revalidate }, row)

@@ -5,8 +5,11 @@
  * Form letters W/D/L are standard football notation, kept identical across languages.
  */
 
+import { NGON_NGU } from './ngon-ngu';
+
 export type NewsLang = 'en' | 'vi' | 'th' | 'es';
-export const NEWS_LANGS: NewsLang[] = ['en', 'vi', 'th', 'es'];
+// Chỉ tiếng Việt (Peter 27/8): render/ghi cột theo NGON_NGU; template 4 lang giữ nguyên vì vô hại.
+export const NEWS_LANGS: readonly NewsLang[] = NGON_NGU;
 
 export interface Rendered { headline: string; body: string }
 

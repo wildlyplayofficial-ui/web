@@ -110,12 +110,12 @@ describe('MemoryStore.listByStatus — author firewall (§12.A item 1/2)', () =>
 });
 
 describe('MemoryStore.countNoPlayByAuthor (§12.A item 3)', () => {
-  it('counts no-play posts per author, en-only, without blending', async () => {
+  it('counts no-play posts per author, vi-only (NGON_NGU[0]), without blending', async () => {
     const store = new MemoryStore();
-    await store.insertPost(noPlayPost('curator'));
-    await store.insertPost(noPlayPost('curator'));
-    await store.insertPost(noPlayPost('scout'));
-    await store.insertPost(noPlayPost('curator', { lang: 'vi' })); // non-en, should not count
+    await store.insertPost(noPlayPost('curator', { lang: 'vi' }));
+    await store.insertPost(noPlayPost('curator', { lang: 'vi' }));
+    await store.insertPost(noPlayPost('scout', { lang: 'vi' }));
+    await store.insertPost(noPlayPost('curator')); // dòng en cũ, không được đếm
 
     expect(await store.countNoPlayByAuthor('curator')).toBe(2);
     expect(await store.countNoPlayByAuthor('scout')).toBe(1);

@@ -63,65 +63,60 @@ describe('buildPreviewPrompt', () => {
     expect(running).toContain('(live @ 1-0)');
   });
 
-  it('instructs no invented facts, responsible language, both flags and the disclosure', () => {
+  it('instructs no invented facts, responsible language, ONLY the VI flag and the VI disclosure', () => {
     expect(prompt).toContain('Do NOT invent');
     expect(prompt).toContain('"sure win"');
-    expect(prompt).toContain('\u{1F1EC}\u{1F1E7}');
     expect(prompt).toContain('\u{1F1FB}\u{1F1F3}');
-    expect(prompt).toContain('Human-picked, AI-written.');
+    expect(prompt).not.toContain('\u{1F1EC}\u{1F1E7}');
+    expect(prompt).toContain('Con người chọn trận, AI viết bài.');
+    expect(prompt).not.toContain('Human-picked, AI-written.');
   });
 });
 
 describe('buildPreviewPrompt — disclosure (Tiered Picks §12 firewall)', () => {
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the curator (real_human) disclosure in %s',
-    (lang) => {
-      const prompt = buildPreviewPrompt(publishedPick({ author: 'curator' }));
-      expect(prompt).toContain(disclosureFor('real_human', lang));
-    },
-  );
+  it('renders the curator (real_human) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildPreviewPrompt(publishedPick({ author: 'curator' }));
+    expect(prompt).toContain(disclosureFor('real_human', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('real_human', lang));
+    }
+  });
 
-  it.each(['en', 'vi', 'th', 'es'] as const)(
-    'renders the scout (fictional_ai) disclosure in %s',
-    (lang) => {
-      const prompt = buildPreviewPrompt(publishedPick({ author: 'scout' }));
-      expect(prompt).toContain(disclosureFor('fictional_ai', lang));
-    },
-  );
+  it('renders the scout (fictional_ai) disclosure in vi — and ONLY vi', () => {
+    const prompt = buildPreviewPrompt(publishedPick({ author: 'scout' }));
+    expect(prompt).toContain(disclosureFor('fictional_ai', 'vi'));
+    for (const lang of ['en', 'th', 'es'] as const) {
+      expect(prompt).not.toContain(disclosureFor('fictional_ai', lang));
+    }
+  });
 
   it('never leaks the curator wording into a scout pick prompt', () => {
     const prompt = buildPreviewPrompt(publishedPick({ author: 'scout' }));
-    expect(prompt).not.toContain(disclosureFor('real_human', 'en'));
+    expect(prompt).not.toContain(disclosureFor('real_human', 'vi'));
   });
 });
 
 describe('buildPreviewPosts', () => {
-  it('builds published en + vi rows with slug preview-{team-vs-team} (decision #19)', () => {
+  it('builds a single published vi row with slug preview-{team-vs-team} (chỉ tiếng Việt)', () => {
     const posts = buildPreviewPosts(publishedPick(), BILINGUAL);
-    expect(posts).toHaveLength(2);
+    expect(posts).toHaveLength(1);
     expect(posts[0]).toMatchObject({
       type: 'preview',
-      slug: 'preview-mexico-vs-south-africa',
-      lang: 'en',
-      title: 'Preview: Mexico vs South Africa',
-      body_md: 'Mexico open at home.',
-      pick_ids: ['pick-1'],
-      status: 'published',
-    });
-    expect(posts[0].published_at).toBeTruthy();
-    expect(posts[1]).toMatchObject({
       slug: 'preview-mexico-vs-south-africa',
       lang: 'vi',
       title: 'Nhận định: Mexico vs South Africa',
       body_md: 'Mexico mở màn sân nhà.',
+      pick_ids: ['pick-1'],
       status: 'published',
     });
+    expect(posts[0].published_at).toBeTruthy();
+    expect(posts.map((p) => p.lang)).toEqual(['vi']);
   });
 
-  it('falls back to a single en row with the whole text when the split fails', () => {
+  it('falls back to a single vi row with the whole text when the split fails', () => {
     const posts = buildPreviewPosts(publishedPick(), '  no flags here  ');
     expect(posts).toHaveLength(1);
-    expect(posts[0]).toMatchObject({ lang: 'en', body_md: 'no flags here', status: 'published' });
+    expect(posts[0]).toMatchObject({ lang: 'vi', body_md: 'no flags here', status: 'published' });
   });
 });
 
@@ -138,8 +133,8 @@ describe('publishPreview', () => {
 
     await publishPreview({ store, env: { apiKey: 'k' } }, publishedPick());
 
-    expect(store.posts).toHaveLength(2);
-    expect(store.posts[0]).toMatchObject({ type: 'preview', slug: 'preview-mexico-vs-south-africa', lang: 'en' });
+    expect(store.posts).toHaveLength(1);
+    expect(store.posts[0]).toMatchObject({ type: 'preview', slug: 'preview-mexico-vs-south-africa', lang: 'vi' });
   });
 
   it('stores nothing without an api key', async () => {

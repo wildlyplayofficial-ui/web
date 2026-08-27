@@ -1,10 +1,11 @@
 /**
- * Thesis translations: the Curator writes the thesis in English, the web UI is
- * 4-language — AI translates the thesis into vi/th/es and stores it in
- * pick_content. A translation failure must NEVER break the pick publication —
+ * Thesis translation: the Curator writes the thesis in English, the web is
+ * Vietnamese-only (Peter 27/8) — AI translates the thesis into vi and stores it
+ * in pick_content. A translation failure must NEVER break the pick publication —
  * every path logs and returns (same contract as preview.ts).
  */
-import { callClaude, DEFAULT_MODEL, POST_FLAGS, splitLangSections } from './recap';
+import { callClaude, DEFAULT_MODEL, LANG_NAMES, POST_FLAGS, splitLangSections } from './recap';
+import { NGON_NGU } from './ngon-ngu';
 import { callSoldier, isUsableText, soldierEnabled } from './soldier';
 import type { NewPickContent, PickRow, PostLang, Store } from './store';
 import { log } from './log';
@@ -18,13 +19,12 @@ export function buildThesisTranslationPrompt(pick: PickRow): string {
     `- Pick: ${pick.selection} @ ${pick.odds_publish} (market: ${pick.market}, line: ${pick.line ?? 'n/a'})`,
     `- Thesis: ${pick.thesis}`,
     '',
-    `Output the thesis in exactly FOUR sections, in this order: English under a ${POST_FLAGS.en} header, Vietnamese under ${POST_FLAGS.vi}, Thai under ${POST_FLAGS.th}, Spanish under ${POST_FLAGS.es}.`,
+    `Output the translated thesis in ${THESIS_LANGS.length === 1 ? 'exactly ONE section' : `exactly ${THESIS_LANGS.length} sections, in this order`}: ${THESIS_LANGS.map((l) => `${LANG_NAMES[l]} under a ${POST_FLAGS[l]} header`).join(', ')}.`,
     'Rules:',
-    '- The English section is the original thesis, echoed verbatim.',
-    '- The other three sections are faithful translations of the thesis — same meaning, same length, nothing added or removed.',
-    '- Use the betting terminology that readers of each language actually use (e.g. natural Asian handicap terms).',
+    '- Each section is a faithful translation of the thesis — same meaning, same length, nothing added or removed.',
+    '- Use the terminology that readers of that language actually use (e.g. natural Asian handicap terms).',
     '- This is a translation, not analysis: do NOT add opinions, hype or any promise of profit.',
-    '- Output plain text only — no markdown, no commentary outside the four sections.',
+    '- Output plain text only — no markdown, no commentary outside the flag-headed sections.',
     // Nick chốt 23/8: bản tiếng Việt gọi Curator/Admin là "Chú Tám Banh", Scout là
     // "Trợ lý AI". Không dặn thì máy dịch bê nguyên tên tiếng Anh vào bài (đo 23/8:
     // 77 bài tiếng Việt đã đăng còn chữ "Admin").
@@ -32,11 +32,11 @@ export function buildThesisTranslationPrompt(pick: PickRow): string {
   ].join('\n');
 }
 
-const THESIS_LANGS: readonly PostLang[] = ['vi', 'th', 'es'];
+// Chỉ tiếng Việt (Peter 27/8): note gốc của Nick là EN → chỉ dịch sang vi.
+const THESIS_LANGS: readonly PostLang[] = NGON_NGU;
 
-/** pick_content rows from the AI output — vi/th/es only, the EN section is just
- *  the verbatim echo that keeps splitLangSections happy. Pure. Returns [] when
- *  the split fails or no translated section came back. */
+/** pick_content rows from the AI output — THESIS_LANGS (= NGON_NGU) only.
+ *  Pure. Returns [] when the split fails or no translated section came back. */
 export function buildThesisContentRows(
   pick: PickRow,
   text: string,

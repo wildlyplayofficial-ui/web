@@ -140,7 +140,7 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
     expect(store.logs).toHaveLength(1);
   });
 
-  it('publishes en + vi posts rows on a successful bilingual recap (decision #19)', async () => {
+  it('publishes a single vi posts row on a successful bilingual recap (chỉ tiếng Việt)', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(settledPick());
     const api = fakeApi();
@@ -152,13 +152,12 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
       pick,
     );
 
-    expect(store.posts).toHaveLength(2);
+    expect(store.posts).toHaveLength(1);
     expect(store.posts[0]).toMatchObject({
-      type: 'recap', slug: 'recap-mexico-vs-south-africa-3-0', lang: 'en', status: 'published',
-      pick_ids: [pick.id], body_md: 'Hosts cruised.',
+      type: 'recap', slug: 'recap-mexico-vs-south-africa-3-0', lang: 'vi', status: 'published',
+      pick_ids: [pick.id], body_md: 'Chủ nhà thắng dễ.',
     });
     expect(store.posts[0].published_at).toBeTruthy();
-    expect(store.posts[1]).toMatchObject({ lang: 'vi', status: 'published', body_md: 'Chủ nhà thắng dễ.' });
   });
 
   it('uses the long-form article for posts when recapArticle delivers — no extra channel message', async () => {
@@ -176,9 +175,8 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
 
     expect(api.sendMessage).toHaveBeenCalledTimes(1); // the result card only
     expect(recapArticle).toHaveBeenCalledWith(pick);
-    expect(store.posts).toHaveLength(2);
-    expect(store.posts[0]).toMatchObject({ lang: 'en', body_md: 'Long article EN.', status: 'published' });
-    expect(store.posts[1]).toMatchObject({ lang: 'vi', body_md: 'Bài dài VI.' });
+    expect(store.posts).toHaveLength(1);
+    expect(store.posts[0]).toMatchObject({ lang: 'vi', body_md: 'Bài dài VI.', status: 'published' });
   });
 
   it('falls back to the channel recap text for posts when recapArticle returns null', async () => {
@@ -193,8 +191,8 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
       pick,
     );
 
-    expect(store.posts).toHaveLength(1); // no flags in fallback text → single en row
-    expect(store.posts[0]).toMatchObject({ lang: 'en', body_md: 'short channel recap', status: 'published' });
+    expect(store.posts).toHaveLength(1); // no flags in fallback text → single vi row
+    expect(store.posts[0]).toMatchObject({ lang: 'vi', body_md: 'short channel recap', status: 'published' });
   });
 
   it('still announces the result when insertPost throws — storage must never break it', async () => {
