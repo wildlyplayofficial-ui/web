@@ -45,6 +45,30 @@ function gioVN(iso: string): string {
   return `${g("day")}/${g("month")} · ${g("hour")}:${g("minute")}`;
 }
 
+/** Nền, màu nhấn và dải theo kết quả (Peter chốt 29/8: "xanh lá + vàng là win,
+ *  xàm xám là failed"). Ba trạng thái, không dùng cho pick chưa chấm.
+ *
+ *  ⚠️ Thẻ WIN xanh khá giống thẻ NHẬN ĐỊNH ở cỡ bảng tin. Thứ phân biệt là
+ *  DẢI góc phải, PHÁO HOA và nhãn "KẾT QUẢ" — đừng gỡ ba thứ đó. */
+function theoKetQua(status: string) {
+  if (status === "won") {
+    return {
+      nenDoc: "linear-gradient(115deg, #16a05e 0%, #0b6f42 40%, #05341f 100%)",
+      dai: "TRÚNG", mauDai: "#ffd640", phaoHoa: true,
+    };
+  }
+  if (status === "push") {
+    return {
+      nenDoc: "linear-gradient(115deg, #3b4a52 0%, #26333a 45%, #131b1f 100%)",
+      mauNhanDe: "#cbd9dc", dai: "HOÀ", mauDai: "#6f8a92", mauChuDai: "#ffffff",
+    };
+  }
+  return {
+    nenDoc: "linear-gradient(115deg, #3d444a 0%, #262b30 45%, #131619 100%)",
+    mauNhanDe: "#cbd4dc", dai: "TRẬT", mauDai: "#6f7c87", mauChuDai: "#ffffff",
+  };
+}
+
 /** 0.25 -> "0,25" — dấu phẩy thập phân như bản Python. */
 function donVi(n: number | null | undefined): string | null {
   if (n === null || n === undefined) return null;
@@ -65,6 +89,15 @@ export async function GET(
   if (!pick) return new Response("Not found", { status: 404 });
 
   const published = pick.status === "published";
+  // Sau khi chấm điểm, thẻ phải nói được TRẬN NÀO và TỈ SỐ — tấm băng-rôn TRÚNG
+  // chung không cho biết gì (Jane + Nick 29/8). Đổi nhãn trên cùng và thay hàng
+  // Đơn vị/Tự tin/Giờ bằng tỉ số kèm kết luận.
+  const xong = pick.status === "won" || pick.status === "lost" || pick.status === "push";
+  const KET_LUAN: Record<string, string> = { won: "TRÚNG", lost: "TRẬT", push: "HOÀ" };
+  // Tỉ số in TO trong khung; dòng chữ nhỏ bỏ đi vì cỡ bảng tin là mất.
+  const tiSo = xong && pick.home_score !== null && pick.away_score !== null
+    ? `${pick.home_score} – ${pick.away_score}`
+    : null;
 
   // Ảnh cầu thủ: ưu tiên đội nhà, không có thì đội khách. Thiếu cả hai thì thẻ
   // vẫn ra, chỉ trống nửa phải — không chặn việc đăng.
@@ -72,13 +105,21 @@ export async function GET(
   if (!player) player = await loadTeamPlayerDataUri(pick.away_team);
 
   const [mark, huyHieuNha, huyHieuKhach] = await Promise.all([
-    loadMarkDataUri(),
+    loadMarkDataUri(xong ? "muc" : "trang"),
     crest(pick.home_team),
     crest(pick.away_team),
   ]);
 
   return ogResponse(
     TheTranPick({
+      nhan: xong ? "KẾT QUẢ" : "NHẬN ĐỊNH NỔI BẬT",
+      // Thẻ SAU TRẬN (Peter + Nick chốt 29/8): TRÚNG nền vàng-đỏ ấm kèm pháo hoa,
+      // TRẬT nền xám trung tính. Cả hai có dải góc phải — ở cỡ bảng tin Facebook
+      // (rộng ~400) chữ nhỏ trong thẻ coi như mất, chỉ NỀN và DẢI còn phân biệt được.
+      // Dải TRẬT phải chữ TRẮNG trên xám đậm, để xám-trên-xám không mất chữ (Jane đo).
+      ...(xong ? theoKetQua(pick.status) : {}),
+      ketQua: null,
+      tiSo,
       giai: tenGiai(pick.league),
       doiNha: pick.home_team,
       doiKhach: pick.away_team,

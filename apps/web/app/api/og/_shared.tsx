@@ -99,21 +99,27 @@ export function loadPlayerDataUri(): Promise<string | null> {
   return playerPromise;
 }
 
-// ── Brand mark bb (white, transparent) for the card's top-left, inlined as data URI. ──
-let markPromise: Promise<string | null> | undefined;
+// ── Brand mark bb, inlined as data URI. Bản TRẮNG cho nền tối, bản MỰC cho nền sáng:
+//    thẻ kết quả nền mint (Nick chốt 29/8) mà dùng bản trắng thì logo chìm gần mất. ──
+const markPromises = new Map<string, Promise<string | null>>();
 
-async function loadMarkOnce(): Promise<string | null> {
+async function loadMarkOnce(ten: string): Promise<string | null> {
   try {
-    const buf = await readFile(join(process.cwd(), "public/brand/bb-mark-white.png"));
+    const buf = await readFile(join(process.cwd(), `public/brand/${ten}`));
     return `data:image/png;base64,${buf.toString("base64")}`;
   } catch {
     return null;
   }
 }
 
-export function loadMarkDataUri(): Promise<string | null> {
-  if (!markPromise) markPromise = loadMarkOnce();
-  return markPromise;
+export function loadMarkDataUri(tone: "trang" | "muc" = "trang"): Promise<string | null> {
+  const ten = tone === "muc" ? "bb-mark-ink.png" : "bb-mark-white.png";
+  let p = markPromises.get(ten);
+  if (!p) {
+    p = loadMarkOnce(ten);
+    markPromises.set(ten, p);
+  }
+  return p;
 }
 
 // ── Per-team cartoon: public/og/players/{slug}.png, inlined as a data URI.
