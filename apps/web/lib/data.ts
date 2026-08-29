@@ -413,15 +413,28 @@ async function getAllGuideSlugsImpl(): Promise<{ slug: string; updated: string; 
       return true;
     }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title }));
   }
+  // KHÔNG lọc theo lang. Bảng `posts` giữ mỗi ngôn ngữ một hàng cho cùng một slug,
+  // nên trước đây lọc lang="en" để lấy mỗi slug đúng một lần. Nhưng bài viết THẲNG
+  // bằng tiếng Việt (vd tai-xiu-la-gi-cach-doc-keo-over-under) KHÔNG có hàng en, nên
+  // không bao giờ lọt vào sitemap — trang tiếng Việt mà cửa vào sitemap khoá theo
+  // tiếng Anh. Giờ lấy hết rồi tự gộp trùng theo slug, giữ hàng mới nhất.
   const { data, error } = await supabase
     .from("posts")
-    .select("slug, published_at, title")
+    .select("slug, published_at, title, lang")
     .eq("status", "published")
     .eq("type", "guide")
-    .eq("lang", "en")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllGuideSlugs: ${error.message}`);
-  return (data ?? []).filter((r) => !REPORT_SLUG_RE.test(r.slug)).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
+  const theoSlug = new Map<string, { slug: string; updated: string; title: string }>();
+  for (const r of data ?? []) {
+    if (REPORT_SLUG_RE.test(r.slug)) continue;
+    const cu2 = theoSlug.get(r.slug);
+    // ưu tiên hàng tiếng Việt cho tiêu đề, vì sitemap khai bản vi
+    if (!cu2 || r.lang === "vi") {
+      theoSlug.set(r.slug, { slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title });
+    }
+  }
+  return [...theoSlug.values()];
 }
 
 export const getAllGuideSlugs = unstable_cache(getAllGuideSlugsImpl, ["guide-slugs"], {

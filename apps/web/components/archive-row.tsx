@@ -97,16 +97,23 @@ export function ArchiveRow({
 
       {/* Expanded thesis */}
       {expanded && thesis && (
-        <div className="border-t border-line px-4 py-3">
+        <div className="border-t border-line px-4 py-3 pb-0">
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink/80">{thesis}</p>
-          <Link
-            href={withLang(`/play/${pick.id}`, lang)}
-            className="mt-3 inline-block font-display text-xs font-semibold text-brand hover:underline"
-          >
-            View full play &rarr;
-          </Link>
         </div>
       )}
+
+      {/* Đường tới trang pick — PHẢI luôn có trong HTML, đừng giấu sau nút mở.
+          Trước đây link này nằm trong khối {expanded && ...}, mà `expanded` khởi
+          tạo false nên HTML máy chủ trả về KHÔNG có nó. Googlebot không bấm nút,
+          nên 21/23 trang /play/ thành mồ côi: có trong sitemap mà không đường vào. */}
+      <div className={`px-4 pb-3 ${expanded && thesis ? "pt-2" : "pt-0"}`}>
+        <Link
+          href={withLang(`/play/${pick.id}`, lang)}
+          className="inline-block font-display text-xs font-semibold text-brand hover:underline"
+        >
+          {lang === "vi" ? "Xem nhận định đầy đủ" : "View full play"} &rarr;
+        </Link>
+      </div>
     </div>
   );
 }
