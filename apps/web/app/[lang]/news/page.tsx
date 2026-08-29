@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
-import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { canonicalTrang } from "@/lib/canonical-trang";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
 import { getPosts } from "@/lib/data";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
@@ -39,7 +40,7 @@ function resolveLeague(value: string | string[] | undefined): string | undefined
   return undefined;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: dict.news.subtitle,
       images: [{ url: `/api/og/editorial?title=News&subtitle=Match%20news%20and%20updates&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
-    alternates: buildAlternates("/news", lang),
+    ...canonicalTrang("/news", lang, await searchParams),
   };
 }
 

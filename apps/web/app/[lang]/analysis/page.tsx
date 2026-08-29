@@ -4,7 +4,8 @@ import Link from "next/link";
 import { getPosts } from "@/lib/data";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { locales } from "@/lib/format";
-import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { canonicalTrang } from "@/lib/canonical-trang";
 import type { AnalysisArticle, Post, PostType } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
@@ -85,13 +86,13 @@ function resolvePage(value: string | string[] | undefined): number {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
     title: dict.analysis.title,
     description: dict.analysis.seoDescription,
-    alternates: buildAlternates("/analysis", lang),
+    ...canonicalTrang("/analysis", lang, await searchParams),
     openGraph: {
       title: `${dict.analysis.title} | banhbong.net`,
       description: dict.analysis.seoDescription,

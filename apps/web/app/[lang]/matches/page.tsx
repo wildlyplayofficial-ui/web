@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getAllMatchSlugs } from "@/lib/data";
-import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getDict, resolveLang, withLang } from "@/lib/i18n";
+import { canonicalTrang } from "@/lib/canonical-trang";
 import { MatchDateGroups } from "./match-date-groups";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
@@ -13,7 +14,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: dict.matches.matchesSubtitle,
       images: [{ url: `/api/og/editorial?title=Today%27s%20Matches&subtitle=World%20Cup%202026%20fixtures%20and%20predictions&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
-    alternates: buildAlternates("/matches", lang),
+    ...canonicalTrang("/matches", lang, await searchParams),
   };
 }
 
