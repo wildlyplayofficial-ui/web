@@ -62,7 +62,8 @@ const DESK_KIND_COLORS: Record<string, string> = {
 /** Badge labels for Desk article tiers. */
 const PICK_TYPES: PostType[] = ["preview", "recap"];
 const RAIL_COUNT = 5;
-const PAGE_SIZE = 10;
+// 50 thay vì 10: 272 bài từ 28 trang xuống 6 trang, Google bò tới cuối nhanh hơn.
+const PAGE_SIZE = 50;
 
 /** Unified feed item — either a Post or a Desk AnalysisArticle. */
 type FeedItem =
@@ -328,7 +329,7 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
           </div>
 
           {totalPages > 1 && (
-            <nav className="flex items-center justify-center gap-3 pb-8 pt-4">
+            <nav className="flex flex-wrap items-center justify-center gap-2 pb-8 pt-4">
               {safePage > 1 && (
                 <Link
                   href={buildTabHref(tab, lang, safePage - 1)}
@@ -337,9 +338,23 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
                   &larr; Prev
                 </Link>
               )}
-              <span className="text-sm text-muted">
-                Page {safePage} of {totalPages}
-              </span>
+              {/* Số trang: mỗi trang cách trang đầu ĐÚNG 1 cú bấm. Trước đây chỉ có
+                  Prev/Next nên muốn tới trang cuối phải bấm Next liên tiếp — Google
+                  không làm vậy nên bài nằm sâu không bao giờ được thu thập. */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <Link
+                  key={p}
+                  href={buildTabHref(tab, lang, p)}
+                  aria-current={p === safePage ? "page" : undefined}
+                  className={
+                    p === safePage
+                      ? "rounded-card border border-brand bg-brand/10 px-3.5 py-2 text-sm font-semibold text-brand"
+                      : "rounded-card border border-line bg-card px-3.5 py-2 text-sm font-semibold text-muted transition-colors hover:border-line-hover hover:text-foreground"
+                  }
+                >
+                  {p}
+                </Link>
+              ))}
               {safePage < totalPages && (
                 <Link
                   href={buildTabHref(tab, lang, safePage + 1)}

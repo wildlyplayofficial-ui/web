@@ -25,7 +25,8 @@ const EPL_LIVESCORE_ID = 2;
 /** Bao nhiêu thẻ nằm TRÊN danh sách (1 nổi bật + 6 headline + 6 lưới) và mỗi lần
  *  "xem thêm" nối thêm bao nhiêu. Trần để một trang sâu không kéo cả kho về. */
 const TRUOC_LIST = 13;
-const PAGE_SIZE = 10;
+// 50 thay vì 10: giảm số lần Google phải bấm Xem thêm mới hết danh sách.
+const PAGE_SIZE = 50;
 const TRAN_LAY = 200;
 
 type Props = {
