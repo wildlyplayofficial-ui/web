@@ -45,26 +45,27 @@ function gioVN(iso: string): string {
   return `${g("day")}/${g("month")} · ${g("hour")}:${g("minute")}`;
 }
 
-/** Nền, màu nhấn và dải theo kết quả. Ba trạng thái, không dùng cho pick chưa chấm. */
+/** Nền, màu nhấn và dải theo kết quả (Peter chốt 29/8: "xanh lá + vàng là win,
+ *  xàm xám là failed"). Ba trạng thái, không dùng cho pick chưa chấm.
+ *
+ *  ⚠️ Thẻ WIN xanh khá giống thẻ NHẬN ĐỊNH ở cỡ bảng tin. Thứ phân biệt là
+ *  DẢI góc phải, PHÁO HOA và nhãn "KẾT QUẢ" — đừng gỡ ba thứ đó. */
 function theoKetQua(status: string) {
   if (status === "won") {
     return {
-      nenDoc: "linear-gradient(90deg, #fff3d1 0%, #ffd9a3 45%, #ffb0a0 100%)",
-      toneChu: "sang" as const, mauNhanDe: "#8a2f1a",
+      nenDoc: "linear-gradient(115deg, #16a05e 0%, #0b6f42 40%, #05341f 100%)",
       dai: "TRÚNG", mauDai: "#ffd640", phaoHoa: true,
     };
   }
   if (status === "push") {
     return {
-      nenDoc: "linear-gradient(90deg, #eef4f8 0%, #dde8ef 45%, #c8d8e3 100%)",
-      toneChu: "sang" as const, mauNhanDe: "#274453",
-      dai: "HOÀ", mauDai: "#7f97a6", mauChuDai: "#ffffff",
+      nenDoc: "linear-gradient(115deg, #3b4a52 0%, #26333a 45%, #131b1f 100%)",
+      mauNhanDe: "#cbd9dc", dai: "HOÀ", mauDai: "#6f8a92", mauChuDai: "#ffffff",
     };
   }
   return {
-    nenDoc: "linear-gradient(90deg, #eceff1 0%, #dde2e6 45%, #c9d0d6 100%)",
-    toneChu: "sang" as const, mauNhanDe: "#3b4550",
-    dai: "TRẬT", mauDai: "#6f7c87", mauChuDai: "#ffffff",
+    nenDoc: "linear-gradient(115deg, #3d444a 0%, #262b30 45%, #131619 100%)",
+    mauNhanDe: "#cbd4dc", dai: "TRẬT", mauDai: "#6f7c87", mauChuDai: "#ffffff",
   };
 }
 
@@ -93,8 +94,9 @@ export async function GET(
   // Đơn vị/Tự tin/Giờ bằng tỉ số kèm kết luận.
   const xong = pick.status === "won" || pick.status === "lost" || pick.status === "push";
   const KET_LUAN: Record<string, string> = { won: "TRÚNG", lost: "TRẬT", push: "HOÀ" };
-  const ketQua = xong && pick.home_score !== null && pick.away_score !== null
-    ? `Kết quả: ${pick.home_score}-${pick.away_score} · ${KET_LUAN[pick.status] ?? ""}`.trim()
+  // Tỉ số in TO trong khung; dòng chữ nhỏ bỏ đi vì cỡ bảng tin là mất.
+  const tiSo = xong && pick.home_score !== null && pick.away_score !== null
+    ? `${pick.home_score} – ${pick.away_score}`
     : null;
 
   // Ảnh cầu thủ: ưu tiên đội nhà, không có thì đội khách. Thiếu cả hai thì thẻ
@@ -116,7 +118,8 @@ export async function GET(
       // (rộng ~400) chữ nhỏ trong thẻ coi như mất, chỉ NỀN và DẢI còn phân biệt được.
       // Dải TRẬT phải chữ TRẮNG trên xám đậm, để xám-trên-xám không mất chữ (Jane đo).
       ...(xong ? theoKetQua(pick.status) : {}),
-      ketQua,
+      ketQua: null,
+      tiSo,
       giai: tenGiai(pick.league),
       doiNha: pick.home_team,
       doiKhach: pick.away_team,

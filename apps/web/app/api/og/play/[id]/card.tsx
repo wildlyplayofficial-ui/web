@@ -55,6 +55,9 @@ export type TheTranPickProps = {
   /** Sau trận: thay hàng Đơn vị/Tự tin/Giờ bằng "Kết quả: 2-2 · TRÚNG".
    *  Giờ đá và mức tự tin sau trận không còn nghĩa gì (Jane 29/8). */
   ketQua: string | null;
+  /** Tỉ số in TO. Ở cỡ bảng tin Facebook chữ nhỏ mất hết, chỉ chữ to còn đọc được
+   *  — nên tỉ số phải to ngang tên đội chứ không nhét vào dòng phụ (Jane đo 29/8). */
+  tiSo?: string | null;
   huyHieuNha: string | null;
   huyHieuKhach: string | null;
   anhCauThu: string | null;
@@ -161,18 +164,18 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
           style={{
             display: "flex",
             flexDirection: "column",
-            marginTop: 22,
+            marginTop: p.tiSo ? 10 : 22,
             width: 572,
             borderRadius: 20,
             border: `3px solid ${mauNhan}`,
             backgroundColor: sang ? "rgba(255,255,255,0.55)" : "rgba(1,30,18,0.6)",
-            padding: "16px 28px 18px 28px",
+            padding: p.tiSo ? "12px 28px 14px 28px" : "16px 28px 18px 28px",
           }}
         >
           <div
             style={{
               display: "flex",
-              fontSize: coChu(p.duDoan, 500, 82, 40),
+              fontSize: coChu(p.duDoan, 500, p.tiSo ? 58 : 82, 36),
               fontWeight: 700,
               color: mauNhan,
               letterSpacing: -1,
@@ -181,6 +184,16 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
             {p.duDoan.toUpperCase()}
           </div>
           <div style={{ display: "flex", height: 2, backgroundColor: sang ? "rgba(10,92,52,0.35)" : "rgba(255,214,64,0.45)", marginTop: 10 }} />
+          {p.tiSo ? (
+            <div style={{ display: "flex", alignItems: "baseline", gap: 16, marginTop: 8 }}>
+              <div style={{ display: "flex", fontSize: 58, fontWeight: 700, color: mauNhan, letterSpacing: -1 }}>
+                {p.tiSo}
+              </div>
+              <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: mauNhan }}>
+                {p.dai ?? ""}
+              </div>
+            </div>
+          ) : null}
           <div style={{ display: "flex", marginTop: 12, gap: 18, alignItems: "center" }}>
             {oThongTin.map((t, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 18 }}>
