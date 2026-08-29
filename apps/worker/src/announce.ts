@@ -1,6 +1,6 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
-import { postToFacebook, pickVi, CARD_FOOTER } from './announce-pick';
+import { postToFacebook, pickVi } from './announce-pick';
 import { buildRecapPosts, detectClosingLineFabrication } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import type { PickRow, Store } from './store';
@@ -30,12 +30,13 @@ const STATUS_VI: Record<string, string> = {
 };
 
 /** VI-safe: 5 trạng thái settle gộp về đúng/chưa trúng/hòa (bỏ half-win/half-loss của kèo AH). */
+// Nick 29/8: "biểu tượng hơi khó đọc" → bỏ hết emoji, chỉ còn chữ.
 const OUTCOME_VI: Record<string, string> = {
-  win: '\u2705 NHẬN ĐỊNH ĐÚNG',
-  half_win: '\u2705 NHẬN ĐỊNH ĐÚNG',
-  push: '\u{1F7E1} HÒA — KHÔNG TÍNH',
-  half_loss: '\u274c CHƯA TRÚNG',
-  loss: '\u274c CHƯA TRÚNG',
+  win: 'NHẬN ĐỊNH ĐÚNG',
+  half_win: 'NHẬN ĐỊNH ĐÚNG',
+  push: 'HÒA — KHÔNG TÍNH',
+  half_loss: 'CHƯA TRÚNG',
+  loss: 'CHƯA TRÚNG',
 };
 
 /** Branded settled banner per status (§2.6 image table, fallback when OG card fails). */
@@ -62,20 +63,42 @@ export function formatUnits(n: number): string {
   return `${rounded > 0 ? '+' : ''}${rounded}u`;
 }
 
-/** Thẻ KẾT QUẢ — tiếng Việt, VI-safe (bỏ @odds + units; giọng "nhận định đúng/chưa trúng"). */
-export function formatResultMessage(pick: PickRow, record?: RecordSummary): string {
+/** Thẻ KẾT QUẢ — khuôn Nick chốt 29/8:
+ *
+ *    ✅ NHẬN ĐỊNH ĐÚNG — Liverpool vs Nottingham Forest
+ *
+ *    👉 Over 2.5 bàn · Kết quả: 2-2
+ *
+ *    Link recap: https://.../analysis/recap-liverpool-vs-nottingham-forest-2-2
+ *
+ *  Nick bỏ dòng "Thành tích" và dòng công bố. Dòng công bố còn đang SAI: nó dùng
+ *  hằng cắm cứng bản "người thật", không rẽ theo `author`, nên pick của Trợ lý AI
+ *  bị dán nhãn người thật. Bỏ hẳn là hết cả hai chuyện.
+ *
+ *  Đường dẫn recap dùng `/analysis/` — đó mới là bản canonical; `/news/` cũng trả
+ *  200 nhưng canonical của nó trỏ về `/analysis/`.
+ *
+ *  `html` = true khi gửi Telegram (in đậm hai dòng chính). Facebook không có chữ
+ *  đậm nên gọi với false. */
+export function formatResultMessage(pick: PickRow, siteUrl?: string, html = false): string {
   const badge = (pick.raw_outcome && OUTCOME_VI[pick.raw_outcome])
     ?? STATUS_VI[pick.status] ?? pick.status;
-  const lines = [
-    `${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`,
-    `\u{1F449} ${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`,
-  ];
-  if (record) {
-    lines.push(`\u{1F4CA} Th\u00e0nh t\u00edch: ${record.wins} \u0111\u00fang \u00b7 ${record.losses} ch\u01b0a tr\u00fang \u00b7 ${record.pushes} h\u00f2a`);
-  }
-  lines.push(CARD_FOOTER);
-  return lines.join('\n');
+  const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
+  const dam = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
+  const slugify = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const recap = siteUrl
+    ? `${siteUrl}/analysis/recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`
+    : null;
+  return [
+    dam(`${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`),
+    '',
+    dam(`${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`),
+    // "Xem lại trận" chứ không phải "Link recap" — Nick 29/8 muốn tiếng Việt.
+    // Chữ `recap` TRONG đường dẫn thì giữ: đổi slug là bài đang sống thành 404.
+    ...(recap ? ['', `Xem lại trận: ${recap}`] : []),
+  ].join('\n');
 }
+
 
 /** POST a photo to the FB Page. Returns the FB object id; throws on API error. */
 export async function postPhotoToFacebook(
@@ -141,15 +164,8 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     return;
   }
 
-  // 📊 record line — failures must not block the result card.
-  let record: RecordSummary | undefined;
-  try {
-    record = summarizeRecord(await deps.store.listByStatus(['won', 'lost', 'push'], pick.author));
-  } catch (err) {
-    log.warn(`record summary failed for pick ${pick.id} — sending card without record line:`, err);
-  }
-
-  const text = formatResultMessage(pick, record);
+  const textTg = formatResultMessage(pick, deps.siteUrl, true);
+  const text = formatResultMessage(pick, deps.siteUrl, false);
   const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
   const brandUrl = deps.siteUrl && SETTLED_IMAGES[pick.status]
     ? `${deps.siteUrl}/images/${SETTLED_IMAGES[pick.status]}` : null;
@@ -159,18 +175,18 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   let detail = `result ${pick.status} ${pick.units_pl}u`;
   try {
     if (!cardUrl) throw new Error('no siteUrl');
-    const photoMsg = await deps.api.sendPhoto(deps.channelChatId, cardUrl, { caption: text });
+    const photoMsg = await deps.api.sendPhoto(deps.channelChatId, cardUrl, { caption: textTg, parse_mode: 'HTML' as const });
     msgId = photoMsg.message_id;
     detail += ' (card)';
   } catch (err) {
     if (cardUrl) log.warn(`result card photo failed for pick ${pick.id} — trying branded banner:`, err);
     try {
       if (!brandUrl) throw new Error('no brand image');
-      const photoMsg = await deps.api.sendPhoto(deps.channelChatId, brandUrl, { caption: text });
+      const photoMsg = await deps.api.sendPhoto(deps.channelChatId, brandUrl, { caption: textTg, parse_mode: 'HTML' as const });
       msgId = photoMsg.message_id;
       detail += ' (banner)';
     } catch {
-      msgId = (await deps.api.sendMessage(deps.channelChatId, text)).message_id;
+      msgId = (await deps.api.sendMessage(deps.channelChatId, textTg, { parse_mode: 'HTML' as const })).message_id;
     }
   }
   await deps.store.insertChannelLog({
@@ -183,12 +199,14 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   log.info(`announced result for pick ${pick.id} to channel ${deps.channelChatId}`);
 
   // FB result post (fail-safe: never blocks the rest of the announcement).
-  // §3: branded W/L/P banner as hero; OG card would underperform as FB hero.
+  // Trước đây ưu tiên tấm băng-rôn TRÚNG/TRẬT chung (§3: "OG card would underperform
+  // as FB hero"). Peter 29/8 xem bài thật rồi bảo đổi: FB phải dùng THẺ TRẬN như
+  // Telegram, không dùng tấm chung. Băng-rôn lùi xuống làm phương án dự phòng.
   if (deps.facebook && deps.siteUrl) {
     try {
       let fbId: string;
       try {
-        fbId = await postPhotoToFacebook(deps.facebook, brandUrl ?? cardUrl!, text);
+        fbId = await postPhotoToFacebook(deps.facebook, cardUrl ?? brandUrl!, text);
       } catch (err) {
         log.warn(`FB result card failed for pick ${pick.id} — falling back to link post:`, err);
         fbId = await postToFacebook(deps.facebook, text, `${deps.siteUrl}/play/${pick.id}`);

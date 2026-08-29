@@ -4,7 +4,7 @@
  * A failed announcement must NEVER break the pick publication.
  */
 import type { Api } from 'grammy';
-import { authorTypeOf, type PickRow, type Store } from './store';
+import { type PickRow, type Store } from './store';
 import { log } from './log';
 
 export interface AnnouncePickDeps {
@@ -24,16 +24,6 @@ export interface PickCardExtras {
 }
 
 /** Legacy constant — Curator footer only. Used by digest.ts and announce.ts for non-pick-specific cards. */
-export const CARD_FOOTER = '\u2014 Nh\u1eadn \u0111\u1ecbnh c\u1ee7a ng\u01b0\u1eddi th\u1eadt \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o';
-
-/** D\u00f2ng c\u00f4ng b\u1ed1 theo author_type \u2014 ti\u1ebfng Vi\u1ec7t, VI-safe (b\u1ecf "odds/not financial advice").
- *  Scout = AI, Curator = ng\u01b0\u1eddi th\u1eadt (Bug A: Scout ph\u1ea3i ghi r\u00f5 do AI). */
-export function cardFooter(pick: PickRow): string {
-  const at = authorTypeOf(pick.author);
-  return at === 'fictional_ai'
-    ? '\u2014 Nh\u1eadn \u0111\u1ecbnh do AI th\u1ef1c hi\u1ec7n \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o'
-    : '\u2014 Nh\u1eadn \u0111\u1ecbnh c\u1ee7a ng\u01b0\u1eddi th\u1eadt \u00b7 Ch\u1ec9 mang t\u00ednh tham kh\u1ea3o';
-}
 
 /** Tên giải tiếng Việt cho caption. Không có trong map → giữ nguyên tên gốc. */
 const LEAGUE_VI: Record<string, string> = {
@@ -117,7 +107,6 @@ export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCa
   // Peter 29/8: bỏ hẳn dòng công bố ở caption pick, và IN ĐẬM phần dự đoán + tỷ lệ.
   // Gwen + Jane đã cản hai lần (dòng đó do `author` quyết định, và chốt chặn trong kho
   // dựng ra để pick của Scout không đăng thiếu nhãn) — Peter nghe rồi vẫn chốt bỏ.
-  // `cardFooter` GIỮ NGUYÊN vì thông báo KẾT QUẢ (announce.ts) vẫn dùng.
   const hook = extras.hook ? (html ? `📝 <b>${esc(extras.hook)}</b>` : `📝 ${esc(extras.hook)}`) : null;
   return [
     ...(hook ? [hook, ''] : []),
