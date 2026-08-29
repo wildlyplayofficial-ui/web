@@ -22,7 +22,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title: dict.archive.title,
     description: dict.archive.subtitle,
     openGraph: { title: `${dict.archive.title} | banhbong.net`, description: dict.archive.subtitle, images: [{ url: `/api/og/record?page=archive&v=${OG_VERSION}`, width: 1200, height: 630 }] },
-    ...canonicalTrang("/archive", lang, await searchParams),
+    // /archive KHÔNG phân trang (không đọc `page`) → đừng tự trỏ canonical theo `page`
+    ...canonicalTrang("/archive", lang, await searchParams, false),
   };
 }
 

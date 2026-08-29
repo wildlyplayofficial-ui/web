@@ -25,11 +25,16 @@ export function canonicalTrang(
   duongDan: string,
   lang: Lang,
   sp: Record<string, string | string[] | undefined>,
+  /** Trang này CÓ phân trang thật không. `/archive` thì KHÔNG — nó bỏ qua `page`,
+   *  gõ `?page=999` vẫn trả đúng nội dung cũ. Tự trỏ canonical vào một tham số bị
+   *  bỏ qua là đẻ ra vô số địa chỉ trùng, hại hơn cái đang sửa. */
+  coPhanTrang = true,
 ): Pick<Metadata, "alternates" | "robots"> {
   const coLoc = KHOA_LOC.some((k) => typeof sp[k] === "string" && sp[k] !== "");
   const trang = Math.max(1, parseInt(String(sp.page ?? "1"), 10) || 1);
   if (coLoc) {
     return { alternates: buildAlternates(duongDan, lang), robots: { index: false, follow: true } };
   }
-  return { alternates: buildAlternates(trang > 1 ? `${duongDan}?page=${trang}` : duongDan, lang) };
+  const tuTro = coPhanTrang && trang > 1;
+  return { alternates: buildAlternates(tuTro ? `${duongDan}?page=${trang}` : duongDan, lang) };
 }
