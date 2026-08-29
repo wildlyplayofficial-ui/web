@@ -152,6 +152,24 @@ describe('announcePick', () => {
     expect(store.logs[1]).toMatchObject({ pick_id: pick.id, channel: 'facebook', external_id: '111_222', ok: true, detail: 'pick announce' });
   });
 
+  it('caption Facebook chỉ dán link MỘT lần', async () => {
+    // Jane 29/8: bài pick trên fanpage dán hai link cùng trỏ một trang — một bản
+    // slug, một bản mã id. Lặp ở MỌI pick nên phải chặn bằng test, đừng sửa tay.
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick());
+    const api = fakeApi();
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: '111_222' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await announcePick({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
+
+    const anh = (fetchMock.mock.calls as unknown as [string, RequestInit][])
+      .find(([url]) => url.endsWith('/photos'));
+    expect(anh).toBeDefined();
+    const caption = String(JSON.parse(String(anh![1].body)).caption);
+    expect(caption.match(new RegExp(`${SITE}/play/`, 'g'))).toHaveLength(1);
+  });
+
   it('skips the channel when CHANNEL_CHAT_ID is unset and FB when not configured', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick());

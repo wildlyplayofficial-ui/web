@@ -234,7 +234,10 @@ async function broadcast(
       try {
         // §3: FB hero = branded PICK visual (stopping power); OG data-card + link go in the first comment.
         const { postPhotoToFacebook } = await import('./announce');
-        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, `${msgFb}\n\n${deps.siteUrl}/play/${pick.id}`);
+        // Caption đã có sẵn link dạng slug ở cuối formatPickMessage. Nối thêm link
+        // dạng mã id vào đây là DÁN HAI LẦN cùng một trang — Jane phải xoá tay ở
+        // từng bài (bắt được 29/8 trên bài Liverpool rồi lại Tottenham).
+        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, msgFb);
         void postFacebookComment(deps.facebook, fbId, `${deps.siteUrl}/play/${pick.id}`, ogCardUrl)
           .catch((err) => log.warn(`FB OG comment failed for ${pick.id} — hero already posted:`, err));
       } catch {
