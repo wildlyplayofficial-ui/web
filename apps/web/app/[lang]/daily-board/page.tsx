@@ -138,8 +138,36 @@ export default async function DailyBoard({ params }: Props) {
         )}
       />
 
-      {/* 2a. Hot pick hero — top curator pick. Omitted when there is none (never a
-          fabricated seed). */}
+      {/* 2. Khối CHÚ TÁM BANH — Nick 29/8: trang này cũng phải có đủ ba tình huống
+          trang trí như khối Trợ lý AI, mỗi nhân vật một màu. Trước đây kèo của bác
+          nằm trần trên trang, không có khung không có tên, nên nhìn không ra hai sổ
+          riêng. Nay hai khối song song: bác màu xanh thương hiệu, AI màu #6b9e9e.
+
+          Ba tình huống:
+            bác có kèo  -> khối bác đậm, khối AI mờ (kèo phụ)
+            bác nghỉ    -> khối bác mờ + nói thẳng "hôm nay không có nhận định",
+                           khối AI đậm lên làm kèo chính
+            cả hai nghỉ -> hai khối đều mờ, trang vẫn không trống
+
+          Thứ tự KHÔNG đổi: bác luôn đứng trên, kể cả hôm nghỉ (Nick: "Không nhảy
+          lên trên"). */}
+      <section
+        id="chu-tam-banh"
+        className={
+          heroPick
+            ? "mb-8 rounded-card border-2 border-brand/60 bg-brand-dim/30 px-5 py-8 shadow-lg"
+            : "mb-8 rounded-card border border-dashed border-brand/30 bg-brand-dim/[.12] px-5 py-8"
+        }
+      >
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <h2 className={heroPick ? "font-display text-3xl font-bold text-brand" : "font-display text-xl font-bold text-brand"}>
+            {dict.pick.curator}
+          </h2>
+          <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-brand">
+            {dict.board.picksLabel}: {picks.length}
+          </span>
+        </div>
+
       {heroPick && (
         <section className="pb-8">
           <HotPickCard
@@ -179,6 +207,7 @@ export default async function DailyBoard({ params }: Props) {
           </div>
         </section>
       )}
+      </section>
 
       {/* 3. No-plays today — the discipline moat as a real list, not just a count */}
       {noPlays.length > 0 && (

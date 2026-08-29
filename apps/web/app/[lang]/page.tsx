@@ -149,9 +149,10 @@ export default async function Home({ params }: Props) {
   // một băng của Trợ lý AI, mỗi bên màu riêng. Trước chỉ có một băng đếm kèo Chú Tám
   // Banh nên hôm có kèo AI mà băng vẫn ghi "Nhận định chọn: 0" — Nick bắt được.
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
-  // Chú Tám Banh có kèo thì băng của bác đứng TRƯỚC; bác nghỉ thì băng AI lên trước
-  // để trang không mở ra bằng một con số 0 (cùng luật với khối AI dưới trang Bảng).
-  const bacTruoc = picks.length > 0;
+  // Băng Chú Tám Banh LUÔN đứng trước, kể cả hôm bác nghỉ — hỏi Nick 29/8 có cho
+  // băng AI nhảy lên trên không, anh trả lời "Không nhảy lên trên".
+  // Bác nghỉ thì chỉ ĐỔI TIÊU ĐỀ băng AI thành "Kèo Hôm Nay", không đổi thứ tự.
+  const bacNghi = picks.length === 0;
   // Màu lấy đúng màu đã dùng cho hai nhân vật ở mọi trang khác — xanh thương hiệu
   // cho Chú Tám Banh, #6b9e9e cho Trợ lý AI (giống /about, /archive, /track-record,
   // khối AI dưới trang Bảng). KHÔNG chế màu mới.
@@ -171,7 +172,7 @@ export default async function Home({ params }: Props) {
   const bangAI = scoutPicks.length
     ? {
         href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
-        tieuDe: bacTruoc ? dict.scout.heading : dict.scout.headingSolo,
+        tieuDe: bacNghi ? dict.scout.headingSolo : dict.scout.heading,
         vien: "border-[#6b9e9e]/40 bg-[#6b9e9e]/[.08] hover:border-[#6b9e9e]/70",
         nut: "bg-[#6b9e9e]",
         so: [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }],
@@ -400,7 +401,7 @@ export default async function Home({ params }: Props) {
           </Link>
         ) : (
           <div className="flex flex-col gap-3">
-            {(bacTruoc ? [bangBac, bangAI] : [bangAI, bangBac]).map((b) =>
+            {[bangBac, bangAI].map((b) =>
               b === null ? null : (
                 <Link
                   key={b.href}
