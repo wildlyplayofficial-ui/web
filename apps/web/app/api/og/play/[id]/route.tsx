@@ -45,15 +45,19 @@ function gioVN(iso: string): string {
   return `${g("day")}/${g("month")} · ${g("hour")}:${g("minute")}`;
 }
 
-/** Nền, màu nhấn và dải theo kết quả (Peter chốt 29/8: "xanh lá + vàng là win,
- *  xàm xám là failed"). Ba trạng thái, không dùng cho pick chưa chấm.
+/** Nền, màu nhấn và dải theo kết quả. Peter chốt cuối 29/8: TRÚNG lấy bản VÀNG
+ *  có quầng sáng (S2), TRẬT lấy XÁM. Nick để tự chọn giữa hai bản vàng.
+ *  Ba trạng thái, không dùng cho pick chưa chấm.
  *
  *  ⚠️ Thẻ WIN xanh khá giống thẻ NHẬN ĐỊNH ở cỡ bảng tin. Thứ phân biệt là
  *  DẢI góc phải, PHÁO HOA và nhãn "KẾT QUẢ" — đừng gỡ ba thứ đó. */
 function theoKetQua(status: string) {
   if (status === "won") {
     return {
-      nenDoc: "linear-gradient(115deg, #16a05e 0%, #0b6f42 40%, #05341f 100%)",
+      // Quầng sáng hắt từ góc trên trái — gần cảm giác ánh đèn sân trong tấm mẫu
+      // Nick gửi, mà không cần ảnh sân thật.
+      nenDoc: "radial-gradient(120% 90% at 30% 20%, #ffb43d 0%, #d07f0a 35%, #6b3d04 70%, #2a1703 100%)",
+      mauNhanDe: "#fff2c2",
       dai: "TRÚNG", mauDai: "#ffd640", phaoHoa: true,
     };
   }
