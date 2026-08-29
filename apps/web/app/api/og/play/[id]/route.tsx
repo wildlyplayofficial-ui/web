@@ -1,6 +1,6 @@
 import { getPick } from "@/lib/data";
 import { teamBadge } from "@/lib/team-badges";
-import type { Confidence } from "@/lib/types";
+import type { Confidence, Pick } from "@/lib/types";
 import { loadTeamPlayerDataUri, ogResponse, loadMarkDataUri, loadBadgeDataUri } from "../../_shared";
 import { TheTranPick } from "./card";
 
@@ -84,20 +84,13 @@ async function crest(team: string): Promise<string | null> {
   return url ? loadBadgeDataUri(url) : null;
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<Response> {
-  const { id } = await params;
-  const pick = await getPick(id);
-  if (!pick) return new Response("Not found", { status: 404 });
-
-  const published = pick.status === "published";
-  // Sau khi chấm điểm, thẻ phải nói được TRẬN NÀO và TỈ SỐ — tấm băng-rôn TRÚNG
-  // chung không cho biết gì (Jane + Nick 29/8). Đổi nhãn trên cùng và thay hàng
-  // Đơn vị/Tự tin/Giờ bằng tỉ số kèm kết luận.
+/** Dựng đủ props cho thẻ trận từ một pick.
+ *
+ *  Tách riêng vì bài XEM LẠI TRẬN cũng dùng thẻ này (Nick 30/8) — hai đường dựng
+ *  cùng một thẻ mà chép đôi mã là kiểu gì cũng lệch nhau. Đúng bẫy đã dính khi
+ *  chép trang /guides sang /blog và quên đổi một chữ. */
+export async function dungTheTran(pick: Pick) {
   const xong = pick.status === "won" || pick.status === "lost" || pick.status === "push";
-  const KET_LUAN: Record<string, string> = { won: "TRÚNG", lost: "TRẬT", push: "HOÀ" };
   // Tỉ số in TO trong khung; dòng chữ nhỏ bỏ đi vì cỡ bảng tin là mất.
   const tiSo = xong && pick.home_score !== null && pick.away_score !== null
     ? `${pick.home_score} – ${pick.away_score}`
@@ -114,34 +107,44 @@ export async function GET(
     crest(pick.away_team),
   ]);
 
-  return ogResponse(
-    TheTranPick({
-      nhan: xong ? "KẾT QUẢ" : "NHẬN ĐỊNH NỔI BẬT",
-      // Thẻ SAU TRẬN (Peter + Nick chốt 29/8): TRÚNG nền vàng-đỏ ấm kèm pháo hoa,
-      // TRẬT nền xám trung tính. Cả hai có dải góc phải — ở cỡ bảng tin Facebook
-      // (rộng ~400) chữ nhỏ trong thẻ coi như mất, chỉ NỀN và DẢI còn phân biệt được.
-      // Dải TRẬT phải chữ TRẮNG trên xám đậm, để xám-trên-xám không mất chữ (Jane đo).
-      ...(xong ? theoKetQua(pick.status) : {}),
-      ketQua: null,
-      tiSo,
-      giai: tenGiai(pick.league),
-      doiNha: pick.home_team,
-      doiKhach: pick.away_team,
-      duDoan: pick.selection,
-      mucTuTin: pick.confidence ? CONF_VI[pick.confidence] : null,
-      donVi: donVi(pick.stake_units),
-      gioDa: gioVN(pick.kickoff_utc),
-      huyHieuNha,
-      huyHieuKhach,
-      anhCauThu: player,
-      logo: mark,
-    }) as React.ReactElement,
-    {
-      headers: {
-        "Cache-Control": published
-          ? "public, max-age=60, s-maxage=120"
-          : "public, max-age=3600, s-maxage=86400",
-      },
+  return {
+    nhan: xong ? "KẾT QUẢ" : "NHẬN ĐỊNH NỔI BẬT",
+    // Thẻ SAU TRẬN (Peter + Nick chốt 29/8): TRÚNG nền vàng-đỏ ấm kèm pháo hoa,
+    // TRẬT nền xám trung tính. Cả hai có dải góc phải — ở cỡ bảng tin Facebook
+    // (rộng ~400) chữ nhỏ trong thẻ coi như mất, chỉ NỀN và DẢI còn phân biệt được.
+    // Dải TRẬT phải chữ TRẮNG trên xám đậm, để xám-trên-xám không mất chữ (Jane đo).
+    ...(xong ? theoKetQua(pick.status) : {}),
+    ketQua: null,
+    tiSo,
+    giai: tenGiai(pick.league),
+    doiNha: pick.home_team,
+    doiKhach: pick.away_team,
+    duDoan: pick.selection,
+    mucTuTin: pick.confidence ? CONF_VI[pick.confidence] : null,
+    donVi: donVi(pick.stake_units),
+    gioDa: gioVN(pick.kickoff_utc),
+    huyHieuNha,
+    huyHieuKhach,
+    anhCauThu: player,
+    logo: mark,
+  };
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Response> {
+  const { id } = await params;
+  const pick = await getPick(id);
+  if (!pick) return new Response("Not found", { status: 404 });
+
+  const published = pick.status === "published";
+
+  return ogResponse(TheTranPick(await dungTheTran(pick)) as React.ReactElement, {
+    headers: {
+      "Cache-Control": published
+        ? "public, max-age=60, s-maxage=120"
+        : "public, max-age=3600, s-maxage=86400",
     },
-  );
+  });
 }
