@@ -152,9 +152,10 @@ describe('announcePick', () => {
     expect(store.logs[1]).toMatchObject({ pick_id: pick.id, channel: 'facebook', external_id: '111_222', ok: true, detail: 'pick announce' });
   });
 
-  it('caption Facebook chỉ dán link MỘT lần', async () => {
-    // Jane 29/8: bài pick trên fanpage dán hai link cùng trỏ một trang — một bản
-    // slug, một bản mã id. Lặp ở MỌI pick nên phải chặn bằng test, đừng sửa tay.
+  it('caption Facebook KHÔNG mang link, link nằm ở bình luận đầu', async () => {
+    // Jane 29/8: bài pick trên fanpage dán HAI link cùng trỏ một trang — một bản slug,
+    // một bản mã id. Nick + Jane chốt: Facebook bỏ hẳn link khỏi caption, đưa xuống
+    // bình luận (fanpage bóp tầm với bài dán link ra ngoài). Telegram thì giữ.
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick());
     const api = fakeApi();
@@ -163,11 +164,20 @@ describe('announcePick', () => {
 
     await announcePick({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
 
-    const anh = (fetchMock.mock.calls as unknown as [string, RequestInit][])
-      .find(([url]) => url.endsWith('/photos'));
+    const goi = fetchMock.mock.calls as unknown as [string, RequestInit][];
+    const anh = goi.find(([url]) => url.endsWith('/photos'));
     expect(anh).toBeDefined();
-    const caption = String(JSON.parse(String(anh![1].body)).caption);
-    expect(caption.match(new RegExp(`${SITE}/play/`, 'g'))).toHaveLength(1);
+    expect(String(JSON.parse(String(anh![1].body)).caption)).not.toContain(`${SITE}/play/`);
+
+    const binhLuan = goi.find(([url]) => url.endsWith('/comments'));
+    expect(binhLuan).toBeDefined();
+    expect(String(JSON.parse(String(binhLuan![1].body)).message)).toContain(`${SITE}/play/`);
+  });
+
+  it('caption Telegram VẪN giữ link — Telegram không phạt bài có link', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick());
+    expect(formatPickMessage(pick, SITE, {}, true)).toContain(`${SITE}/play/`);
   });
 
   it('skips the channel when CHANNEL_CHAT_ID is unset and FB when not configured', async () => {

@@ -310,7 +310,8 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick,
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // 2 lượt gọi: đăng ảnh + bình luận đầu mang link Xem lại trận (thêm 29/8).
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock).toHaveBeenCalledWith(
       `https://graph.facebook.com/v19.0/${FB.pageId}/photos`, expect.anything());
     expect(store.logs).toHaveLength(2);
@@ -331,7 +332,8 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick,
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // 3 lượt: ảnh hỏng -> đăng /feed -> bình luận link.
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(store.logs[1]).toMatchObject({ channel: 'facebook', external_id: 'fb_link_1', ok: true });
 
     // Both FB attempts down → channel announce already logged, no throw.
@@ -366,5 +368,42 @@ describe('ảnh bài Facebook (Peter 29/8)', () => {
     vi.stubGlobal('fetch', fetchCu);
     expect(anh[0]).toBe(`${SITE}/api/og/play/${pick.id}?lang=vi`);
     expect(anh[0]).not.toContain('banhbong_settled_win');
+  });
+
+  it('caption KHÔNG mang link, bình luận đầu mang link Xem lại trận', async () => {
+    // Nick + Jane chốt 29/8: fanpage bóp tầm bài dán link ra ngoài → link xuống bình
+    // luận. Luồng KẾT QUẢ trước đây không có bình luận nào, bỏ link khỏi caption mà
+    // không thêm bình luận là bài mất hết đường dẫn.
+    const store = new MemoryStore();
+    const pick = await store.insertPick(settledPick());
+    const api = fakeApi();
+    const goi: [string, string][] = [];
+    const fetchCu = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn(async (u: string, init?: RequestInit) => {
+      goi.push([String(u), String(init?.body ?? '')]);
+      return { ok: true, json: async () => ({ id: 'fb1' }) } as unknown as Response;
+    }));
+    await announceResult(
+      { api: api as unknown as AnnounceDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE,
+        facebook: { pageId: 'p', pageToken: 't' } },
+      pick,
+    );
+    vi.stubGlobal('fetch', fetchCu);
+
+    const anh = goi.find(([u]) => u.endsWith('/photos'));
+    expect(anh).toBeDefined();
+    expect(String(JSON.parse(anh![1]).caption)).not.toContain('/analysis/recap-');
+
+    const binhLuan = goi.find(([u]) => u.endsWith('/comments'));
+    expect(binhLuan).toBeDefined();
+    const loi = String(JSON.parse(binhLuan![1]).message);
+    expect(loi).toContain('Xem lại trận');
+    expect(loi).toContain(`${SITE}/analysis/recap-`);
+  });
+
+  it('Telegram VẪN giữ link Xem lại trận trong chữ', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(settledPick());
+    expect(formatResultMessage(pick, SITE, true)).toContain(`${SITE}/analysis/recap-`);
   });
 });
