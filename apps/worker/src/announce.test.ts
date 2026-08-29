@@ -70,8 +70,8 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
   it('leads with the badge, pick block, FT score and units', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const text = formatResultMessage(pick);
-    expect(text).toContain('✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
-    expect(text).toContain('👉 Mexico -1.25 · Kết quả: 3-0');
+    expect(text).toContain('NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
+    expect(text).toContain('Mexico -1.25 · Kết quả: 3-0');
     // Nick 29/8: bỏ hẳn dòng công bố và dòng thành tích khỏi thẻ kết quả.
     expect(text).not.toContain('Chỉ mang tính tham khảo');
     expect(text).not.toContain('Thành tích');
@@ -81,23 +81,23 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
   it('kèm link recap khi có siteUrl, bỏ qua khi không có (Nick 29/8)', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const co = formatResultMessage(pick, SITE);
-    expect(co).toContain(`Link recap: ${SITE}/analysis/recap-mexico-vs-south-africa-3-0`);
-    expect(formatResultMessage(pick)).not.toContain('Link recap');
+    expect(co).toContain(`Xem lại trận: ${SITE}/analysis/recap-mexico-vs-south-africa-3-0`);
+    expect(formatResultMessage(pick)).not.toContain('Xem lại trận');
   });
 
   it('in đậm hai dòng chính khi gửi Telegram, chữ thường cho Facebook (Nick 29/8)', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const tg = formatResultMessage(pick, SITE, true);
     const fb = formatResultMessage(pick, SITE, false);
-    expect(tg).toContain('<b>✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa</b>');
-    expect(tg).toContain('<b>👉 Mexico -1.25 · Kết quả: 3-0</b>');
+    expect(tg).toContain('<b>NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa</b>');
+    expect(tg).toContain('<b>Mexico -1.25 · Kết quả: 3-0</b>');
     expect(fb).not.toContain('<b>');
-    expect(fb).toContain('✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
+    expect(fb).toContain('NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
   });
 
   it('marks half wins and losses next to the badge', () => {
     const pick = { ...settledPick({ raw_outcome: 'half_win', units_pl: 0.53 }), id: 'p1' } as PickRow;
-    expect(formatResultMessage(pick)).toContain('✅ NHẬN ĐỊNH ĐÚNG —');
+    expect(formatResultMessage(pick)).toContain('NHẬN ĐỊNH ĐÚNG —');
   });
 
   it('formats units with sign', () => {
@@ -342,5 +342,29 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick2,
     )).resolves.toBeUndefined();
     expect(store.logs.filter((l) => l.pick_id === pick2.id)).toHaveLength(1); // telegram only
+  });
+});
+
+describe('ảnh bài Facebook (Peter 29/8)', () => {
+  it('Facebook dùng THẺ TRẬN, không dùng băng-rôn chung', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(settledPick());
+    const api = fakeApi();
+    const anh: string[] = [];
+    const fetchCu = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn(async (u: string, init?: RequestInit) => {
+      const body = String(init?.body ?? '');
+      const m = body.match(/"url":"([^"]+)"/);
+      if (m) anh.push(m[1]);
+      return { ok: true, json: async () => ({ id: 'fb1' }) } as unknown as Response;
+    }));
+    await announceResult(
+      { api: api as unknown as AnnounceDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE,
+        facebook: { pageId: 'p', pageToken: 't' } },
+      pick,
+    );
+    vi.stubGlobal('fetch', fetchCu);
+    expect(anh[0]).toBe(`${SITE}/api/og/play/${pick.id}?lang=vi`);
+    expect(anh[0]).not.toContain('banhbong_settled_win');
   });
 });

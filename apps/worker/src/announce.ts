@@ -30,12 +30,13 @@ const STATUS_VI: Record<string, string> = {
 };
 
 /** VI-safe: 5 trạng thái settle gộp về đúng/chưa trúng/hòa (bỏ half-win/half-loss của kèo AH). */
+// Nick 29/8: "biểu tượng hơi khó đọc" → bỏ hết emoji, chỉ còn chữ.
 const OUTCOME_VI: Record<string, string> = {
-  win: '\u2705 NHẬN ĐỊNH ĐÚNG',
-  half_win: '\u2705 NHẬN ĐỊNH ĐÚNG',
-  push: '\u{1F7E1} HÒA — KHÔNG TÍNH',
-  half_loss: '\u274c CHƯA TRÚNG',
-  loss: '\u274c CHƯA TRÚNG',
+  win: 'NHẬN ĐỊNH ĐÚNG',
+  half_win: 'NHẬN ĐỊNH ĐÚNG',
+  push: 'HÒA — KHÔNG TÍNH',
+  half_loss: 'CHƯA TRÚNG',
+  loss: 'CHƯA TRÚNG',
 };
 
 /** Branded settled banner per status (§2.6 image table, fallback when OG card fails). */
@@ -91,8 +92,10 @@ export function formatResultMessage(pick: PickRow, siteUrl?: string, html = fals
   return [
     dam(`${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`),
     '',
-    dam(`\u{1F449} ${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`),
-    ...(recap ? ['', `Link recap: ${recap}`] : []),
+    dam(`${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`),
+    // "Xem lại trận" chứ không phải "Link recap" — Nick 29/8 muốn tiếng Việt.
+    // Chữ `recap` TRONG đường dẫn thì giữ: đổi slug là bài đang sống thành 404.
+    ...(recap ? ['', `Xem lại trận: ${recap}`] : []),
   ].join('\n');
 }
 
@@ -196,12 +199,14 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   log.info(`announced result for pick ${pick.id} to channel ${deps.channelChatId}`);
 
   // FB result post (fail-safe: never blocks the rest of the announcement).
-  // §3: branded W/L/P banner as hero; OG card would underperform as FB hero.
+  // Trước đây ưu tiên tấm băng-rôn TRÚNG/TRẬT chung (§3: "OG card would underperform
+  // as FB hero"). Peter 29/8 xem bài thật rồi bảo đổi: FB phải dùng THẺ TRẬN như
+  // Telegram, không dùng tấm chung. Băng-rôn lùi xuống làm phương án dự phòng.
   if (deps.facebook && deps.siteUrl) {
     try {
       let fbId: string;
       try {
-        fbId = await postPhotoToFacebook(deps.facebook, brandUrl ?? cardUrl!, text);
+        fbId = await postPhotoToFacebook(deps.facebook, cardUrl ?? brandUrl!, text);
       } catch (err) {
         log.warn(`FB result card failed for pick ${pick.id} — falling back to link post:`, err);
         fbId = await postToFacebook(deps.facebook, text, `${deps.siteUrl}/play/${pick.id}`);
