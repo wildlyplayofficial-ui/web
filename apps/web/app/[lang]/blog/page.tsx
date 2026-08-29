@@ -84,7 +84,7 @@ function BlogCard({ post, lang }: { post: Post; lang: Lang }) {
 export default async function GuidesPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const guides = await getBlogs(lang);
+  const baiBlog = await getBlogs(lang);
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
@@ -94,13 +94,13 @@ export default async function GuidesPage({ params }: Props) {
         <p className="mt-3 text-muted">{dict.blog.subtitle}</p>
       </section>
 
-      {guides.length === 0 ? (
+      {baiBlog.length === 0 ? (
         <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">
           {dict.blog.empty}
         </div>
       ) : (
         <div className="flex flex-col gap-4 pb-8">
-          {guides.map((post) => (
+          {baiBlog.map((post) => (
             <BlogCard key={post.id} post={post} lang={lang} />
           ))}
           <p className="pt-2 text-center text-sm text-muted">
