@@ -1,6 +1,6 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
-import { postToFacebook, pickVi, CARD_FOOTER } from './announce-pick';
+import { postToFacebook, pickVi } from './announce-pick';
 import { buildRecapPosts, detectClosingLineFabrication } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import type { PickRow, Store } from './store';
@@ -62,19 +62,25 @@ export function formatUnits(n: number): string {
   return `${rounded > 0 ? '+' : ''}${rounded}u`;
 }
 
-/** Thẻ KẾT QUẢ — tiếng Việt, VI-safe (bỏ @odds + units; giọng "nhận định đúng/chưa trúng"). */
-export function formatResultMessage(pick: PickRow, record?: RecordSummary): string {
+/** Thẻ KẾT QUẢ — tiếng Việt, VI-safe (bỏ @odds + units; giọng "nhận định đúng/chưa trúng").
+ *
+ *  Nick 29/8 bỏ hai dòng cuối:
+ *  - Dòng "Thành tích: x đúng · y chưa trúng".
+ *  - Dòng công bố. Dòng này còn đang SAI: nó dùng hằng CARD_FOOTER cắm cứng bản
+ *    "người thật", không rẽ theo `author`, nên pick của Trợ lý AI vẫn bị dán nhãn
+ *    người thật — ngược hẳn ý nghĩa. Bỏ hẳn là hết cả hai chuyện.
+ *
+ *  `html` = true khi gửi Telegram: in đậm hai dòng chính. Facebook không có chữ đậm
+ *  nên gọi với false, ra chữ thường. */
+export function formatResultMessage(pick: PickRow, _record?: RecordSummary, html = false): string {
   const badge = (pick.raw_outcome && OUTCOME_VI[pick.raw_outcome])
     ?? STATUS_VI[pick.status] ?? pick.status;
-  const lines = [
-    `${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`,
-    `\u{1F449} ${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`,
-  ];
-  if (record) {
-    lines.push(`\u{1F4CA} Th\u00e0nh t\u00edch: ${record.wins} \u0111\u00fang \u00b7 ${record.losses} ch\u01b0a tr\u00fang \u00b7 ${record.pushes} h\u00f2a`);
-  }
-  lines.push(CARD_FOOTER);
-  return lines.join('\n');
+  const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
+  const dam = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
+  return [
+    dam(`${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`),
+    dam(`\u{1F449} ${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`),
+  ].join('\n');
 }
 
 /** POST a photo to the FB Page. Returns the FB object id; throws on API error. */
@@ -149,7 +155,8 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     log.warn(`record summary failed for pick ${pick.id} — sending card without record line:`, err);
   }
 
-  const text = formatResultMessage(pick, record);
+  const textTg = formatResultMessage(pick, record, true);
+  const text = formatResultMessage(pick, record, false);
   const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
   const brandUrl = deps.siteUrl && SETTLED_IMAGES[pick.status]
     ? `${deps.siteUrl}/images/${SETTLED_IMAGES[pick.status]}` : null;
@@ -159,18 +166,18 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   let detail = `result ${pick.status} ${pick.units_pl}u`;
   try {
     if (!cardUrl) throw new Error('no siteUrl');
-    const photoMsg = await deps.api.sendPhoto(deps.channelChatId, cardUrl, { caption: text });
+    const photoMsg = await deps.api.sendPhoto(deps.channelChatId, cardUrl, { caption: textTg, parse_mode: 'HTML' as const });
     msgId = photoMsg.message_id;
     detail += ' (card)';
   } catch (err) {
     if (cardUrl) log.warn(`result card photo failed for pick ${pick.id} — trying branded banner:`, err);
     try {
       if (!brandUrl) throw new Error('no brand image');
-      const photoMsg = await deps.api.sendPhoto(deps.channelChatId, brandUrl, { caption: text });
+      const photoMsg = await deps.api.sendPhoto(deps.channelChatId, brandUrl, { caption: textTg, parse_mode: 'HTML' as const });
       msgId = photoMsg.message_id;
       detail += ' (banner)';
     } catch {
-      msgId = (await deps.api.sendMessage(deps.channelChatId, text)).message_id;
+      msgId = (await deps.api.sendMessage(deps.channelChatId, textTg, { parse_mode: 'HTML' as const })).message_id;
     }
   }
   await deps.store.insertChannelLog({

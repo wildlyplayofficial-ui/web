@@ -49,10 +49,11 @@ function settledPick(overrides: Partial<NewPick> = {}): NewPick {
   };
 }
 
-/** Card text as announceResult builds it: record computed over the store's settled picks. */
+/** Chữ thẻ đúng như announceResult dựng cho TELEGRAM: bản in đậm (html = true). */
 function expectedText(pick: PickRow): string {
-  return formatResultMessage(pick, summarizeRecord([pick]));
+  return formatResultMessage(pick, summarizeRecord([pick]), true);
 }
+const TG_OPTS = { parse_mode: 'HTML' as const };
 
 function fakeApi() {
   let nextId = 100;
@@ -70,15 +71,26 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
     const text = formatResultMessage(pick);
     expect(text).toContain('✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
     expect(text).toContain('👉 Mexico -1.25 · Kết quả: 3-0');
-    expect(text).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
-    expect(text).not.toContain('Thành tích'); // no record line when summary absent
+    // Nick 29/8: bỏ hẳn dòng công bố và dòng thành tích khỏi thẻ kết quả.
+    expect(text).not.toContain('Chỉ mang tính tham khảo');
+    expect(text).not.toContain('Thành tích');
     expect(text).not.toContain('@ 2.05'); // VI-safe: no odds
   });
 
-  it('adds the record line when a summary is provided', () => {
+  it('KHÔNG in dòng thành tích kể cả khi có sổ (Nick 29/8)', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const text = formatResultMessage(pick, { wins: 3, losses: 1, pushes: 1, units: 2.35 });
-    expect(text).toContain('📊 Thành tích: 3 đúng · 1 chưa trúng · 1 hòa');
+    expect(text).not.toContain('Thành tích');
+  });
+
+  it('in đậm hai dòng chính khi gửi Telegram, chữ thường cho Facebook (Nick 29/8)', () => {
+    const pick = { ...settledPick(), id: 'p1' } as PickRow;
+    const tg = formatResultMessage(pick, undefined, true);
+    const fb = formatResultMessage(pick, undefined, false);
+    expect(tg).toContain('<b>✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa</b>');
+    expect(tg).toContain('<b>👉 Mexico -1.25 · Kết quả: 3-0</b>');
+    expect(fb).not.toContain('<b>');
+    expect(fb).toContain('✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
   });
 
   it('marks half wins and losses next to the badge', () => {
@@ -106,7 +118,7 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
     );
 
     expect(api.sendMessage).toHaveBeenCalledTimes(1);
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick));
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick), TG_OPTS);
     expect(recap).toHaveBeenCalledWith(pick);
     expect(store.logs).toHaveLength(1);
     expect(store.logs[0]).toMatchObject({ pick_id: pick.id, channel: 'telegram', external_id: '100', ok: true });
@@ -247,7 +259,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     // c0eb1c5 (#118, 22/8): resultCardUrl phải kèm ?lang=vi — thiếu nó card đăng bản
     // tiếng Anh (+ bản CDN cũ), Jane bắt live trên /score Hull vs MU. Test cập nhật theo.
     expect(api.sendPhoto).toHaveBeenCalledWith(
-      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick) });
+      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (card)');
   });
@@ -264,7 +276,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     );
 
     expect(api.sendPhoto).toHaveBeenNthCalledWith(
-      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick) });
+      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (banner)');
   });
@@ -280,7 +292,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick,
     );
 
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick));
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick), TG_OPTS);
     expect(store.logs[0].detail).toBe('result won 1.05u'); // no suffix
   });
 
