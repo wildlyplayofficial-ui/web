@@ -29,6 +29,11 @@ export function ScoreboardRail({
 }) {
   if (matches.length === 0) return null;
 
+  // Thẻ đầu tiên CHƯA đá — băng cuộn tới đúng chỗ này khi mở trang (Nick 29/8).
+  // Trận đã KT vẫn giữ, chỉ nằm bên trái. Không có trận nào chưa đá thì không neo,
+  // băng đứng ở đầu như cũ.
+  const neoTaiId = matches.find((m) => !m.finished)?.id ?? null;
+
   return (
     <div className="border-b border-line bg-card" aria-label={labels.title}>
       <div className="mx-auto max-w-[1100px] px-5 py-2.5">
@@ -84,16 +89,18 @@ export function ScoreboardRail({
             );
             const cls =
               "flex w-[168px] shrink-0 flex-col rounded-md border border-line bg-bg px-2.5 py-1.5 transition-colors";
+            const neo = m.id === neoTaiId ? { "data-neo": "" } : {};
             return href ? (
               <Link
                 key={`${m.compSlug}-${m.id}`}
                 href={href}
                 className={`${cls} hover:border-line-hover hover:bg-card-hover`}
+                {...neo}
               >
                 {body}
               </Link>
             ) : (
-              <div key={`${m.compSlug}-${m.id}`} className={cls}>
+              <div key={`${m.compSlug}-${m.id}`} className={cls} {...neo}>
                 {body}
               </div>
             );
