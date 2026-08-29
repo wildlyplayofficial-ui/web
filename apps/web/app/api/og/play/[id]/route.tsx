@@ -80,7 +80,7 @@ export async function GET(
   if (!player) player = await loadTeamPlayerDataUri(pick.away_team);
 
   const [mark, huyHieuNha, huyHieuKhach] = await Promise.all([
-    loadMarkDataUri(),
+    loadMarkDataUri(xong ? "muc" : "trang"),
     crest(pick.home_team),
     crest(pick.away_team),
   ]);
@@ -88,6 +88,15 @@ export async function GET(
   return ogResponse(
     TheTranPick({
       nhan: xong ? "KẾT QUẢ" : "NHẬN ĐỊNH NỔI BẬT",
+      // Thẻ SAU TRẬN nền MINT SÁNG (Nick chốt M1 ngày 29/8) — nhìn một cái là biết
+      // ngay đây là kết quả, không lẫn với thẻ nhận định nền xanh đậm.
+      ...(xong
+        ? {
+            nenDoc: "linear-gradient(90deg, #d8f5e7 0%, #bdecd8 45%, #9fe0c6 100%)",
+            toneChu: "sang" as const,
+            mauNhanDe: "#0a5c34",
+          }
+        : {}),
       ketQua,
       giai: tenGiai(pick.league),
       doiNha: pick.home_team,
