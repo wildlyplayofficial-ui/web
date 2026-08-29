@@ -42,21 +42,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    // Bản VI của 6 guide nặng thuật ngữ cá cược → noindex để không lộ trên search VN.
-    // 5 guide còn lại + mọi ngôn ngữ khác index bình thường. (Nick chốt danh sách 4/8)
     alternates: { canonical, languages },
     openGraph: {
       title,
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=${slug}&type=blog&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/guide?slug=${slug}&type=blog&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
 }
@@ -97,7 +95,7 @@ export default async function GuidePage({ params }: Props) {
   const lang = resolveLang(rawLang);
   const dict = getDict(lang);
   const post = await getPost(slug, lang);
-  if (!post || post.type !== "guide") notFound();
+  if (!post || post.type !== "blog") notFound();
 
   const published = post.published_at
     ? new Intl.DateTimeFormat(locales[lang], {
