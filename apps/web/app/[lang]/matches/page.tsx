@@ -63,7 +63,9 @@ function dedupName(display: string): string {
 }
 
 
-const PER_PAGE = 30;
+// 60 chứ không phải 30: 250 trang trận chia 30 là 9 trang, bot phải bấm Sau 9 lần
+// mới tới trang cuối. Chia 60 còn 5 trang, và bên dưới liệt kê đủ SỐ TRANG.
+const PER_PAGE = 60;
 
 export default async function MatchesIndex({ params, searchParams }: Props) {
   const lang = resolveLang((await params).lang);
@@ -130,6 +132,8 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
   const settled = filtered.filter((m) => m.kickoffUtc < vuaXong).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
   const matches = [...recent, ...upcoming, ...settled];
 
+  const trangHref = (p: number) =>
+    withLang(`/matches?page=${p}${leagueFilter ? `&league=${encodeURIComponent(leagueFilter)}` : ""}`, lang);
   const totalPages = Math.ceil(matches.length / PER_PAGE);
   const pageMatches = matches.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
@@ -196,19 +200,34 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
       )}
 
       {totalPages > 1 && (
-        <nav className="flex items-center justify-center gap-4 pb-8 pt-4">
+        <nav className="flex flex-wrap items-center justify-center gap-2 pb-8 pt-4">
           {page > 1 && (
             <Link
-              href={withLang(`/matches?page=${page - 1}${leagueFilter ? `&league=${encodeURIComponent(leagueFilter)}` : ""}`, lang)}
+              href={trangHref(page - 1)}
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
             >
               &larr; Prev
             </Link>
           )}
-          <span className="text-sm text-muted">{page} / {totalPages}</span>
+          {/* Liệt kê ĐỦ số trang, không chỉ Trước/Sau: bot đi theo link, mỗi trang
+              sâu thêm một lớp là một lớp nữa Google có thể bỏ qua. */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <Link
+              key={p}
+              href={trangHref(p)}
+              aria-current={p === page ? "page" : undefined}
+              className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
+                p === page
+                  ? "border-brand text-brand"
+                  : "border-line text-muted hover:border-brand hover:text-brand"
+              }`}
+            >
+              {p}
+            </Link>
+          ))}
           {page < totalPages && (
             <Link
-              href={withLang(`/matches?page=${page + 1}${leagueFilter ? `&league=${encodeURIComponent(leagueFilter)}` : ""}`, lang)}
+              href={trangHref(page + 1)}
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
             >
               Next &rarr;
