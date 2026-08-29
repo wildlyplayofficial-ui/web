@@ -62,26 +62,40 @@ export function formatUnits(n: number): string {
   return `${rounded > 0 ? '+' : ''}${rounded}u`;
 }
 
-/** Thẻ KẾT QUẢ — tiếng Việt, VI-safe (bỏ @odds + units; giọng "nhận định đúng/chưa trúng").
+/** Thẻ KẾT QUẢ — khuôn Nick chốt 29/8:
  *
- *  Nick 29/8 bỏ hai dòng cuối:
- *  - Dòng "Thành tích: x đúng · y chưa trúng".
- *  - Dòng công bố. Dòng này còn đang SAI: nó dùng hằng CARD_FOOTER cắm cứng bản
- *    "người thật", không rẽ theo `author`, nên pick của Trợ lý AI vẫn bị dán nhãn
- *    người thật — ngược hẳn ý nghĩa. Bỏ hẳn là hết cả hai chuyện.
+ *    ✅ NHẬN ĐỊNH ĐÚNG — Liverpool vs Nottingham Forest
  *
- *  `html` = true khi gửi Telegram: in đậm hai dòng chính. Facebook không có chữ đậm
- *  nên gọi với false, ra chữ thường. */
-export function formatResultMessage(pick: PickRow, _record?: RecordSummary, html = false): string {
+ *    👉 Over 2.5 bàn · Kết quả: 2-2
+ *
+ *    Link recap: https://.../analysis/recap-liverpool-vs-nottingham-forest-2-2
+ *
+ *  Nick bỏ dòng "Thành tích" và dòng công bố. Dòng công bố còn đang SAI: nó dùng
+ *  hằng cắm cứng bản "người thật", không rẽ theo `author`, nên pick của Trợ lý AI
+ *  bị dán nhãn người thật. Bỏ hẳn là hết cả hai chuyện.
+ *
+ *  Đường dẫn recap dùng `/analysis/` — đó mới là bản canonical; `/news/` cũng trả
+ *  200 nhưng canonical của nó trỏ về `/analysis/`.
+ *
+ *  `html` = true khi gửi Telegram (in đậm hai dòng chính). Facebook không có chữ
+ *  đậm nên gọi với false. */
+export function formatResultMessage(pick: PickRow, siteUrl?: string, html = false): string {
   const badge = (pick.raw_outcome && OUTCOME_VI[pick.raw_outcome])
     ?? STATUS_VI[pick.status] ?? pick.status;
   const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
   const dam = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
+  const slugify = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const recap = siteUrl
+    ? `${siteUrl}/analysis/recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`
+    : null;
   return [
     dam(`${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`),
+    '',
     dam(`\u{1F449} ${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`),
+    ...(recap ? ['', `Link recap: ${recap}`] : []),
   ].join('\n');
 }
+
 
 /** POST a photo to the FB Page. Returns the FB object id; throws on API error. */
 export async function postPhotoToFacebook(
@@ -147,16 +161,8 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
     return;
   }
 
-  // 📊 record line — failures must not block the result card.
-  let record: RecordSummary | undefined;
-  try {
-    record = summarizeRecord(await deps.store.listByStatus(['won', 'lost', 'push'], pick.author));
-  } catch (err) {
-    log.warn(`record summary failed for pick ${pick.id} — sending card without record line:`, err);
-  }
-
-  const textTg = formatResultMessage(pick, record, true);
-  const text = formatResultMessage(pick, record, false);
+  const textTg = formatResultMessage(pick, deps.siteUrl, true);
+  const text = formatResultMessage(pick, deps.siteUrl, false);
   const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
   const brandUrl = deps.siteUrl && SETTLED_IMAGES[pick.status]
     ? `${deps.siteUrl}/images/${SETTLED_IMAGES[pick.status]}` : null;

@@ -49,9 +49,9 @@ function settledPick(overrides: Partial<NewPick> = {}): NewPick {
   };
 }
 
-/** Chữ thẻ đúng như announceResult dựng cho TELEGRAM: bản in đậm (html = true). */
-function expectedText(pick: PickRow): string {
-  return formatResultMessage(pick, summarizeRecord([pick]), true);
+/** Chữ thẻ đúng như announceResult dựng cho TELEGRAM: bản in đậm, kèm link recap. */
+function expectedText(pick: PickRow, siteUrl?: string): string {
+  return formatResultMessage(pick, siteUrl, true);
 }
 const TG_OPTS = { parse_mode: 'HTML' as const };
 
@@ -64,6 +64,7 @@ function fakeApi() {
 }
 
 const CHANNEL = '-100123';
+const SITE = 'https://www.banhbong.net';
 
 describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () => {
   it('leads with the badge, pick block, FT score and units', () => {
@@ -77,16 +78,17 @@ describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () 
     expect(text).not.toContain('@ 2.05'); // VI-safe: no odds
   });
 
-  it('KHÔNG in dòng thành tích kể cả khi có sổ (Nick 29/8)', () => {
+  it('kèm link recap khi có siteUrl, bỏ qua khi không có (Nick 29/8)', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
-    const text = formatResultMessage(pick, { wins: 3, losses: 1, pushes: 1, units: 2.35 });
-    expect(text).not.toContain('Thành tích');
+    const co = formatResultMessage(pick, SITE);
+    expect(co).toContain(`Link recap: ${SITE}/analysis/recap-mexico-vs-south-africa-3-0`);
+    expect(formatResultMessage(pick)).not.toContain('Link recap');
   });
 
   it('in đậm hai dòng chính khi gửi Telegram, chữ thường cho Facebook (Nick 29/8)', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
-    const tg = formatResultMessage(pick, undefined, true);
-    const fb = formatResultMessage(pick, undefined, false);
+    const tg = formatResultMessage(pick, SITE, true);
+    const fb = formatResultMessage(pick, SITE, false);
     expect(tg).toContain('<b>✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa</b>');
     expect(tg).toContain('<b>👉 Mexico -1.25 · Kết quả: 3-0</b>');
     expect(fb).not.toContain('<b>');
@@ -118,6 +120,7 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
     );
 
     expect(api.sendMessage).toHaveBeenCalledTimes(1);
+    // deps không có siteUrl → thẻ không kèm link recap
     expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick), TG_OPTS);
     expect(recap).toHaveBeenCalledWith(pick);
     expect(store.logs).toHaveLength(1);
@@ -241,7 +244,6 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
 });
 
 describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)', () => {
-  const SITE = 'https://www.banhbong.net';
   const FB = { pageId: '120', pageToken: 'tok' };
 
   afterEach(() => vi.unstubAllGlobals());
@@ -259,7 +261,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     // c0eb1c5 (#118, 22/8): resultCardUrl phải kèm ?lang=vi — thiếu nó card đăng bản
     // tiếng Anh (+ bản CDN cũ), Jane bắt live trên /score Hull vs MU. Test cập nhật theo.
     expect(api.sendPhoto).toHaveBeenCalledWith(
-      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick), ...TG_OPTS });
+      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick, SITE), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (card)');
   });
@@ -276,7 +278,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     );
 
     expect(api.sendPhoto).toHaveBeenNthCalledWith(
-      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick), ...TG_OPTS });
+      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick, SITE), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (banner)');
   });
@@ -292,7 +294,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick,
     );
 
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick), TG_OPTS);
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick, SITE), TG_OPTS);
     expect(store.logs[0].detail).toBe('result won 1.05u'); // no suffix
   });
 
