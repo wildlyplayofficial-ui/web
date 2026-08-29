@@ -39,6 +39,7 @@ const TYPE_LABELS: Record<PostType, string> = {
   "no-play": "No Play",
   "post-mortem": "Post-Mortem",
   guide: "Guide",
+  blog: "Blog",
 };
 
 const TYPE_BADGE_COLORS: Record<PostType, string> = {
@@ -49,6 +50,7 @@ const TYPE_BADGE_COLORS: Record<PostType, string> = {
   "no-play": "border-muted/40 text-muted",
   "post-mortem": "border-loss/40 text-loss",
   guide: "border-brand/40 text-brand",
+  blog: "border-brand/40 text-brand",
 };
 
 /** Badge colors for Desk article kinds. */

@@ -304,8 +304,9 @@ export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
 /** Transparency report slugs follow the pattern "month-year" (e.g., "june-2026"). */
 export const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/;
 
-/** Published guides for a language, newest first. Excludes transparency reports. */
-async function getGuidesImpl(lang: Lang): Promise<Post[]> {
+/** Published posts of one type for a language, newest first. Excludes transparency reports.
+ *  Dùng chung cho /guides và /blog — hai mục khác nhau ở đúng giá trị `type`. */
+async function getPostsOfTypeImpl(lang: Lang, loai: "guide" | "blog"): Promise<Post[]> {
   const supabase = getSupabase();
   let all: Post[];
   if (!supabase) {
@@ -315,14 +316,14 @@ async function getGuidesImpl(lang: Lang): Promise<Post[]> {
       .from("posts")
       .select("*")
       .eq("status", "published")
-      .eq("type", "guide")
+      .eq("type", loai)
       .in("lang", ["en", lang])
       .order("published_at", { ascending: false });
-    if (error) throw new Error(`getGuides: ${error.message}`);
+    if (error) throw new Error(`getPostsOfType(${loai}): ${error.message}`);
     all = (data ?? []) as Post[];
   }
   const bySlug = new Map<string, Post>();
-  for (const post of all.filter((p) => p.status === "published" && p.type === "guide" && !REPORT_SLUG_RE.test(p.slug))) {
+  for (const post of all.filter((p) => p.status === "published" && p.type === loai && !REPORT_SLUG_RE.test(p.slug))) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
@@ -334,7 +335,15 @@ async function getGuidesImpl(lang: Lang): Promise<Post[]> {
     .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
 }
 
-export const getGuides = unstable_cache(getGuidesImpl, ["guides"], {
+export const getGuides = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "guide"), ["guides"], {
+  revalidate: 300,
+  tags: ["posts"],
+});
+
+/** Bài Blog — bóng đá nói chung, KHÔNG dạy cá cược. Tách khỏi /guides vì 6 bài
+ *  hướng dẫn đang bị cố ý ẩn khỏi Google (Nick+Peter 28/7) và cả mục đó không
+ *  đem lên fanpage được (trang bị chặn tuổi). Blog thì index và đăng thoải mái. */
+export const getBlogs = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "blog"), ["blogs"], {
   revalidate: 300,
   tags: ["posts"],
 });
@@ -436,6 +445,33 @@ async function getAllGuideSlugsImpl(): Promise<{ slug: string; updated: string; 
   }
   return [...theoSlug.values()];
 }
+
+/** Slug bài Blog cho sitemap. Cùng cách gộp trùng như guide: KHÔNG lọc theo lang,
+ *  vì bài viết thẳng bằng tiếng Việt không có hàng `en`. */
+async function getAllBlogSlugsImpl(): Promise<{ slug: string; updated: string; title: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("slug, published_at, title, lang")
+    .eq("status", "published")
+    .eq("type", "blog")
+    .order("published_at", { ascending: false });
+  if (error) throw new Error(`getAllBlogSlugs: ${error.message}`);
+  const theoSlug = new Map<string, { slug: string; updated: string; title: string }>();
+  for (const r of data ?? []) {
+    const cu = theoSlug.get(r.slug);
+    if (!cu || r.lang === "vi") {
+      theoSlug.set(r.slug, { slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title });
+    }
+  }
+  return [...theoSlug.values()];
+}
+
+export const getAllBlogSlugs = unstable_cache(getAllBlogSlugsImpl, ["blog-slugs"], {
+  revalidate: 3600,
+  tags: ["posts"],
+});
 
 export const getAllGuideSlugs = unstable_cache(getAllGuideSlugsImpl, ["guide-slugs"], {
   revalidate: 3600,

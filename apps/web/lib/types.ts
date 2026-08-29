@@ -6,7 +6,7 @@
 export type PickMarket = "ah" | "ou" | "1x2" | "btts" | "other";
 export type PickStatus = "published" | "won" | "lost" | "push" | "void";
 export type RawOutcome = "win" | "half_win" | "push" | "half_loss" | "loss" | "void";
-export type PostType = "recap" | "preview" | "news" | "analysis" | "no-play" | "post-mortem" | "guide";
+export type PostType = "recap" | "preview" | "news" | "analysis" | "no-play" | "post-mortem" | "guide" | "blog";
 
 /** Desk-authored analysis article kind (spec §2A). */
 export type AnalysisKind = "preview" | "recap" | "roundup" | "analysis" | "news";
