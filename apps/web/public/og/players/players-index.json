@@ -1,0 +1,124 @@
+{
+  "afc-bournemouth": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "arsenal": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "aston-villa": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "brentford": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "brighton-hove-albion": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "chelsea": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "coventry-city": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "crystal-palace": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "everton": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "fulham": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "hull-city": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "ipswich-town": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "juventus": {
+    "giai": "serie-a",
+    "cau_thu": "Bremer",
+    "nguon": "https://r2.thesportsdb.com/images/media/player/cutout/3qx4p71759224866.png"
+  },
+  "leeds-united": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "liverpool": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "manchester-city": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "manchester-united": {
+    "giai": "premier-league",
+    "cau_thu": "Bruno Fernandes",
+    "nguon": "thesportsdb strCutout",
+    "ghi_chu": "vẽ lại 29/8 cho đúng khuôn BÁN THÂN (bản cũ là cả thân, tỉ lệ 1,76)"
+  },
+  "monaco": {
+    "giai": "ligue-1",
+    "cau_thu": "Ansu Fati",
+    "nguon": "https://r2.thesportsdb.com/images/media/player/cutout/54v6h91766238031.png"
+  },
+  "newcastle-united": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "nottingham-forest": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "real-madrid": {
+    "giai": "la-liga",
+    "cau_thu": "Kylian Mbappé",
+    "nguon": "thesportsdb strCutout",
+    "ve_boi": "Jane 29/8"
+  },
+  "sevilla": {
+    "giai": "la-liga",
+    "cau_thu": "Alexis Sánchez",
+    "nguon": "https://r2.thesportsdb.com/images/media/player/cutout/6bj5hk1762860338.png"
+  },
+  "sunderland": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  },
+  "tottenham-hotspur": {
+    "giai": "premier-league",
+    "cau_thu": "(chưa ghi)",
+    "nguon": "có sẵn trong repo trước 29/8"
+  }
+}
