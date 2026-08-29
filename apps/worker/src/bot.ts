@@ -567,7 +567,10 @@ function confirmationCard(row: PickRow): string {
     `odds: ${row.odds_publish} (snapshot at publish) | stake: ${row.stake_units}u`,
     row.fixture_id > 0
       ? `event: ${row.fixture_id} (auto-settlement on)`
-      : 'event: none — settle manually with /score',
+      // Dòng cũ ghi nhẹ "event: none", lẫn giữa mấy dòng kỹ thuật nên đọc lướt là
+      // trôi qua. Kèo không có mã trận thì máy KHÔNG BAO GIỜ tự chấm — phải hét
+      // lên, kèm sẵn lệnh chấm để khỏi đi tra mã (Nick 29/8).
+      : `\u26a0\ufe0f KHÔNG CÓ MÃ TRẬN — MÁY KHÔNG TỰ CHẤM ĐƯỢC.\nTrận xong nhớ gõ: /score ${row.id} 0-0`,
     `thesis: ${row.thesis}`,
   ].join('\n');
 }
