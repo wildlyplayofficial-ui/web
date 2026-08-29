@@ -125,22 +125,29 @@ export function loadMarkDataUri(tone: "trang" | "muc" = "trang"): Promise<string
 // ── Per-team cartoon: public/og/players/{slug}.png, inlined as a data URI.
 //    Missing file → null, so the caller keeps a text-only card. Short club
 //    names map to the canonical slug so "Man City" and "Manchester City" both
-//    resolve to manchester-city.png. ──
+//    resolve to manchester-city.png.
+//
+//    ⚠️ Bảng này phải trỏ về TÊN ĐẦY ĐỦ, đúng tên file trong public/og/players.
+//    Bản cũ trỏ ngược lại ("tottenham hotspur" → "tottenham") trong khi #131 lưu
+//    file là tottenham-hotspur.png → readFile trượt, catch nuốt lỗi, thẻ ra
+//    trống nửa phải mà không báo gì. Dính 6 đội: Tottenham, Newcastle, Brighton,
+//    Leeds, Bournemouth, West Ham — Nick bắt được trên thẻ Tottenham 29/8.
+//    THÊM ẢNH MỚI: đặt tên file theo TÊN ĐẦY ĐỦ, đừng thêm alias rút gọn. ──
 const EPL_TEAM_ALIASES: Record<string, string> = {
   "man city": "manchester city",
   "man utd": "manchester united",
   "man united": "manchester united",
   "manchester utd": "manchester united",
-  spurs: "tottenham",
-  "tottenham hotspur": "tottenham",
-  wolves: "wolverhampton",
-  "wolverhampton wanderers": "wolverhampton",
+  spurs: "tottenham hotspur",
+  tottenham: "tottenham hotspur",
+  wolves: "wolverhampton wanderers",
   "nottm forest": "nottingham forest",
-  "brighton and hove albion": "brighton",
-  "west ham united": "west ham",
-  "newcastle united": "newcastle",
-  "leeds united": "leeds",
-  "afc bournemouth": "bournemouth",
+  "brighton and hove albion": "brighton hove albion",
+  brighton: "brighton hove albion",
+  "west ham": "west ham united",
+  newcastle: "newcastle united",
+  leeds: "leeds united",
+  bournemouth: "afc bournemouth",
 };
 
 /** Filename slug for a team's cartoon, e.g. "Man City" → "manchester-city". */
