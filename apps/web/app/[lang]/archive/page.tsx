@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ArchiveRow } from "@/components/archive-row";
 import { getArchiveMonths, getSettledPicks, getThesisTranslations, getTrackRecordForAuthor } from "@/lib/data";
 import { formatMonth, formatUnits } from "@/lib/format";
-import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { canonicalTrang } from "@/lib/canonical-trang";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 600;
@@ -14,14 +15,15 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
     title: dict.archive.title,
     description: dict.archive.subtitle,
     openGraph: { title: `${dict.archive.title} | banhbong.net`, description: dict.archive.subtitle, images: [{ url: `/api/og/record?page=archive&v=${OG_VERSION}`, width: 1200, height: 630 }] },
-    alternates: buildAlternates("/archive", lang),
+    // /archive KHÔNG phân trang (không đọc `page`) → đừng tự trỏ canonical theo `page`
+    ...canonicalTrang("/archive", lang, await searchParams, false),
   };
 }
 

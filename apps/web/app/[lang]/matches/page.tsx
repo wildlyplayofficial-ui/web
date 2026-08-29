@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getAllMatchSlugs } from "@/lib/data";
-import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { getDict, resolveLang, withLang } from "@/lib/i18n";
+import { canonicalTrang } from "@/lib/canonical-trang";
 import { MatchDateGroups } from "./match-date-groups";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
@@ -13,7 +14,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: dict.matches.matchesSubtitle,
       images: [{ url: `/api/og/editorial?title=Today%27s%20Matches&subtitle=World%20Cup%202026%20fixtures%20and%20predictions&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
-    alternates: buildAlternates("/matches", lang),
+    ...canonicalTrang("/matches", lang, await searchParams),
   };
 }
 
@@ -134,8 +135,11 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
 
   const trangHref = (p: number) =>
     withLang(`/matches?page=${p}${leagueFilter ? `&league=${encodeURIComponent(leagueFilter)}` : ""}`, lang);
-  const totalPages = Math.ceil(matches.length / PER_PAGE);
-  const pageMatches = matches.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(matches.length / PER_PAGE));
+  // Kẹp số trang vào phạm vi thật, giống /analysis. Trước đây ?page=999 trả mã 200
+  // kèm trang RỖNG — đó là 404 giả, Google chấm điểm xấu. Giờ trả trang cuối.
+  const safePage = Math.min(page, totalPages);
+  const pageMatches = matches.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
 
   // Prepare serializable match entries for client-side local-date grouping
   const matchEntries = pageMatches.map((m) => ({
@@ -201,9 +205,9 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
 
       {totalPages > 1 && (
         <nav className="flex flex-wrap items-center justify-center gap-2 pb-8 pt-4">
-          {page > 1 && (
+          {safePage > 1 && (
             <Link
-              href={trangHref(page - 1)}
+              href={trangHref(safePage - 1)}
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
             >
               &larr; Prev
@@ -215,9 +219,9 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
             <Link
               key={p}
               href={trangHref(p)}
-              aria-current={p === page ? "page" : undefined}
+              aria-current={p === safePage ? "page" : undefined}
               className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
-                p === page
+                p === safePage
                   ? "border-brand text-brand"
                   : "border-line text-muted hover:border-brand hover:text-brand"
               }`}
@@ -225,9 +229,9 @@ export default async function MatchesIndex({ params, searchParams }: Props) {
               {p}
             </Link>
           ))}
-          {page < totalPages && (
+          {safePage < totalPages && (
             <Link
-              href={trangHref(page + 1)}
+              href={trangHref(safePage + 1)}
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
             >
               Next &rarr;
