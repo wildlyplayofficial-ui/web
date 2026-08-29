@@ -23,6 +23,17 @@ const LEAGUE_VI: Record<string, string> = {
   "EFL Cup": "Cúp Liên đoàn Anh",
 };
 
+/** Tên giải tiếng Việt, GIỮ phần mùa nếu có.
+ *  Kho ghi kèm mùa ("Premier League 2026-27") nên khớp chữ cứng là trượt —
+ *  thẻ đầu tiên chạy thật 29/8 in ra "Premier League 2026-27" tiếng Anh.
+ *  Cắt phần mùa ra, đổi tên giải, rồi ghép lại. */
+function tenGiai(raw: string): string {
+  const m = raw.match(/^(.*?)\s*((?:19|20)\d{2}(?:[-/]\d{2,4})?)$/);
+  const ten = (m ? m[1] : raw).trim();
+  const mua = m ? ` ${m[2]}` : "";
+  return `${LEAGUE_VI[ten] ?? ten}${mua}`;
+}
+
 /** "29/08 · 18:30" theo giờ VN — bản Python in đúng kiểu này. */
 function gioVN(iso: string): string {
   const d = new Date(iso);
@@ -68,7 +79,7 @@ export async function GET(
 
   return ogResponse(
     TheTranPick({
-      giai: LEAGUE_VI[pick.league] ?? pick.league,
+      giai: tenGiai(pick.league),
       doiNha: pick.home_team,
       doiKhach: pick.away_team,
       duDoan: pick.selection,
