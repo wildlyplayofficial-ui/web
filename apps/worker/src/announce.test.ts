@@ -49,10 +49,11 @@ function settledPick(overrides: Partial<NewPick> = {}): NewPick {
   };
 }
 
-/** Card text as announceResult builds it: record computed over the store's settled picks. */
-function expectedText(pick: PickRow): string {
-  return formatResultMessage(pick, summarizeRecord([pick]));
+/** Chữ thẻ đúng như announceResult dựng cho TELEGRAM: bản in đậm, kèm link recap. */
+function expectedText(pick: PickRow, siteUrl?: string): string {
+  return formatResultMessage(pick, siteUrl, true);
 }
+const TG_OPTS = { parse_mode: 'HTML' as const };
 
 function fakeApi() {
   let nextId = 100;
@@ -63,27 +64,40 @@ function fakeApi() {
 }
 
 const CHANNEL = '-100123';
+const SITE = 'https://www.banhbong.net';
 
 describe('formatResultMessage — SETTLED card (Post Restructure v1 §2.3)', () => {
   it('leads with the badge, pick block, FT score and units', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
     const text = formatResultMessage(pick);
-    expect(text).toContain('✅ NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
-    expect(text).toContain('👉 Mexico -1.25 · Kết quả: 3-0');
-    expect(text).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
-    expect(text).not.toContain('Thành tích'); // no record line when summary absent
+    expect(text).toContain('NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
+    expect(text).toContain('Mexico -1.25 · Kết quả: 3-0');
+    // Nick 29/8: bỏ hẳn dòng công bố và dòng thành tích khỏi thẻ kết quả.
+    expect(text).not.toContain('Chỉ mang tính tham khảo');
+    expect(text).not.toContain('Thành tích');
     expect(text).not.toContain('@ 2.05'); // VI-safe: no odds
   });
 
-  it('adds the record line when a summary is provided', () => {
+  it('kèm link recap khi có siteUrl, bỏ qua khi không có (Nick 29/8)', () => {
     const pick = { ...settledPick(), id: 'p1' } as PickRow;
-    const text = formatResultMessage(pick, { wins: 3, losses: 1, pushes: 1, units: 2.35 });
-    expect(text).toContain('📊 Thành tích: 3 đúng · 1 chưa trúng · 1 hòa');
+    const co = formatResultMessage(pick, SITE);
+    expect(co).toContain(`Xem lại trận: ${SITE}/analysis/recap-mexico-vs-south-africa-3-0`);
+    expect(formatResultMessage(pick)).not.toContain('Xem lại trận');
+  });
+
+  it('in đậm hai dòng chính khi gửi Telegram, chữ thường cho Facebook (Nick 29/8)', () => {
+    const pick = { ...settledPick(), id: 'p1' } as PickRow;
+    const tg = formatResultMessage(pick, SITE, true);
+    const fb = formatResultMessage(pick, SITE, false);
+    expect(tg).toContain('<b>NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa</b>');
+    expect(tg).toContain('<b>Mexico -1.25 · Kết quả: 3-0</b>');
+    expect(fb).not.toContain('<b>');
+    expect(fb).toContain('NHẬN ĐỊNH ĐÚNG — Mexico vs South Africa');
   });
 
   it('marks half wins and losses next to the badge', () => {
     const pick = { ...settledPick({ raw_outcome: 'half_win', units_pl: 0.53 }), id: 'p1' } as PickRow;
-    expect(formatResultMessage(pick)).toContain('✅ NHẬN ĐỊNH ĐÚNG —');
+    expect(formatResultMessage(pick)).toContain('NHẬN ĐỊNH ĐÚNG —');
   });
 
   it('formats units with sign', () => {
@@ -106,7 +120,8 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
     );
 
     expect(api.sendMessage).toHaveBeenCalledTimes(1);
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick));
+    // deps không có siteUrl → thẻ không kèm link recap
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick), TG_OPTS);
     expect(recap).toHaveBeenCalledWith(pick);
     expect(store.logs).toHaveLength(1);
     expect(store.logs[0]).toMatchObject({ pick_id: pick.id, channel: 'telegram', external_id: '100', ok: true });
@@ -229,7 +244,6 @@ describe('announceResult — R6: recap is web-only, one TG notification', () => 
 });
 
 describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)', () => {
-  const SITE = 'https://www.banhbong.net';
   const FB = { pageId: '120', pageToken: 'tok' };
 
   afterEach(() => vi.unstubAllGlobals());
@@ -247,7 +261,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     // c0eb1c5 (#118, 22/8): resultCardUrl phải kèm ?lang=vi — thiếu nó card đăng bản
     // tiếng Anh (+ bản CDN cũ), Jane bắt live trên /score Hull vs MU. Test cập nhật theo.
     expect(api.sendPhoto).toHaveBeenCalledWith(
-      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick) });
+      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick, SITE), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (card)');
   });
@@ -264,7 +278,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
     );
 
     expect(api.sendPhoto).toHaveBeenNthCalledWith(
-      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick) });
+      2, CHANNEL, `${SITE}/images/banhbong_settled_win.png`, { caption: expectedText(pick, SITE), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (banner)');
   });
@@ -280,7 +294,7 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick,
     );
 
-    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick));
+    expect(api.sendMessage).toHaveBeenCalledWith(CHANNEL, expectedText(pick, SITE), TG_OPTS);
     expect(store.logs[0].detail).toBe('result won 1.05u'); // no suffix
   });
 
@@ -328,5 +342,29 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
       pick2,
     )).resolves.toBeUndefined();
     expect(store.logs.filter((l) => l.pick_id === pick2.id)).toHaveLength(1); // telegram only
+  });
+});
+
+describe('ảnh bài Facebook (Peter 29/8)', () => {
+  it('Facebook dùng THẺ TRẬN, không dùng băng-rôn chung', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(settledPick());
+    const api = fakeApi();
+    const anh: string[] = [];
+    const fetchCu = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn(async (u: string, init?: RequestInit) => {
+      const body = String(init?.body ?? '');
+      const m = body.match(/"url":"([^"]+)"/);
+      if (m) anh.push(m[1]);
+      return { ok: true, json: async () => ({ id: 'fb1' }) } as unknown as Response;
+    }));
+    await announceResult(
+      { api: api as unknown as AnnounceDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE,
+        facebook: { pageId: 'p', pageToken: 't' } },
+      pick,
+    );
+    vi.stubGlobal('fetch', fetchCu);
+    expect(anh[0]).toBe(`${SITE}/api/og/play/${pick.id}?lang=vi`);
+    expect(anh[0]).not.toContain('banhbong_settled_win');
   });
 });
