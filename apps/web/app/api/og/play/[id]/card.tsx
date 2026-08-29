@@ -14,6 +14,8 @@ const VANG = "#ffd640";
 const XANH_NHAT = "#bee8d0";
 
 export type TheTranPickProps = {
+  /** Chữ nhỏ trên cùng. Trước trận "NHẬN ĐỊNH NỔI BẬT", sau trận "KẾT QUẢ". */
+  nhan: string;
   giai: string;
   doiNha: string;
   doiKhach: string;
@@ -21,6 +23,9 @@ export type TheTranPickProps = {
   mucTuTin: string | null;
   donVi: string | null;
   gioDa: string;
+  /** Sau trận: thay hàng Đơn vị/Tự tin/Giờ bằng "Kết quả: 2-2 · TRÚNG".
+   *  Giờ đá và mức tự tin sau trận không còn nghĩa gì (Jane 29/8). */
+  ketQua: string | null;
   huyHieuNha: string | null;
   huyHieuKhach: string | null;
   anhCauThu: string | null;
@@ -56,11 +61,13 @@ function TenDoi({ huyHieu, ten }: { huyHieu: string | null; ten: string }) {
 }
 
 export function TheTranPick(p: TheTranPickProps): ReactNode {
-  const oThongTin = [
-    ...(p.donVi ? [`Đơn vị: ${p.donVi}`] : []),
-    ...(p.mucTuTin ? [`Tự tin: ${p.mucTuTin}`] : []),
-    p.gioDa,
-  ];
+  const oThongTin = p.ketQua
+    ? [p.ketQua]
+    : [
+        ...(p.donVi ? [`Đơn vị: ${p.donVi}`] : []),
+        ...(p.mucTuTin ? [`Tự tin: ${p.mucTuTin}`] : []),
+        p.gioDa,
+      ];
   return (
     <div
       style={{
@@ -100,7 +107,7 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
               Đúng bẫy đã dính hai lần: bản Python phải vẽ polygon, bản này phải xoay div. */}
           <div style={{ display: "flex", width: 14, height: 14, backgroundColor: VANG, transform: "rotate(45deg)" }} />
           <div style={{ display: "flex", fontSize: 26, fontWeight: 700, color: VANG, letterSpacing: 1 }}>
-            NHẬN ĐỊNH NỔI BẬT
+            {p.nhan}
           </div>
         </div>
 

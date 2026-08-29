@@ -65,6 +65,14 @@ export async function GET(
   if (!pick) return new Response("Not found", { status: 404 });
 
   const published = pick.status === "published";
+  // Sau khi chấm điểm, thẻ phải nói được TRẬN NÀO và TỈ SỐ — tấm băng-rôn TRÚNG
+  // chung không cho biết gì (Jane + Nick 29/8). Đổi nhãn trên cùng và thay hàng
+  // Đơn vị/Tự tin/Giờ bằng tỉ số kèm kết luận.
+  const xong = pick.status === "won" || pick.status === "lost" || pick.status === "push";
+  const KET_LUAN: Record<string, string> = { won: "TRÚNG", lost: "CHƯA TRÚNG", push: "HOÀ" };
+  const ketQua = xong && pick.home_score !== null && pick.away_score !== null
+    ? `Kết quả: ${pick.home_score}-${pick.away_score} · ${KET_LUAN[pick.status] ?? ""}`.trim()
+    : null;
 
   // Ảnh cầu thủ: ưu tiên đội nhà, không có thì đội khách. Thiếu cả hai thì thẻ
   // vẫn ra, chỉ trống nửa phải — không chặn việc đăng.
@@ -79,6 +87,8 @@ export async function GET(
 
   return ogResponse(
     TheTranPick({
+      nhan: xong ? "KẾT QUẢ" : "NHẬN ĐỊNH NỔI BẬT",
+      ketQua,
       giai: tenGiai(pick.league),
       doiNha: pick.home_team,
       doiKhach: pick.away_team,
