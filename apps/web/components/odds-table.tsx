@@ -9,6 +9,7 @@ import {
 } from "@/lib/odds-data";
 import { ChiTietTran } from "./odds-detail";
 import { locMucChinh, sangMalay } from "./odds-filter";
+import { teamBadge } from "@/lib/team-badges";
 
 /**
  * Bảng kèo kiểu trang nhà cái (Nick 25/8: "user quen nhìn kiểu này rồi").
@@ -66,19 +67,31 @@ function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
   );
 }
 
-/** Logo đội, lấy theo MÃ ĐỘI của nhà cung cấp kèo qua /api/team-logo/[id].
+/** Logo đội trong bảng kèo.
  *
- *  Không ghép theo tên: tên hai nhà cung cấp viết khác nhau nên chỉ khớp 11/40
- *  đội, và cách ghép gần đúng từng gán "Sabah Masazir" vào logo "Sabah" — hai
- *  câu lạc bộ khác nước. Gắn nhầm huy hiệu tệ hơn để trống.
+ *  ƯU TIÊN kho huy hiệu của mình (`teamBadge`), rơi về ảnh của nhà cung cấp kèo
+ *  qua /api/team-logo/[id] khi kho không có.
  *
- *  Không có mã (dòng thu trước 25/8) thì chừa chỗ trống, KHÔNG đoán. */
-function LogoDoi({ id }: { id: number | null }) {
-  if (id == null) return <span className="inline-block w-[18px] shrink-0" aria-hidden />;
+ *  Vì sao đổi thứ tự (Nick 29/8 chụp gửi: cả bảng là ô vuông trắng): mọi mã đội
+ *  của nhà cung cấp đều trả 404 — họ không có ảnh cho mấy mã này. Thử 3 mã lấy
+ *  thẳng từ trang thật (2824, 2814, 2687), cả 3 đều 404.
+ *
+ *  ⚠️ VẪN KHÔNG ghép gần đúng theo tên. Ghi chú cũ ở đây đúng và giữ nguyên hiệu
+ *  lực: ghép gần đúng từng gán "Sabah Masazir" vào logo "Sabah" — hai câu lạc bộ
+ *  khác nước, gắn nhầm huy hiệu tệ hơn để trống. `teamBadge` là tra CHÍNH XÁC sau
+ *  khi chuẩn hoá (bỏ dấu, bỏ chữ chỉ loại hình clb) cộng bảng tên gõ tay — không
+ *  có bước đoán nào. Cùng hàm đó đang phủ 66/66 đội ở danh sách trận ngay trên
+ *  cùng trang này.
+ *
+ *  Không có cả hai thì chừa chỗ trống, KHÔNG đoán. */
+function LogoDoi({ id, ten }: { id: number | null; ten: string }) {
+  const kho = teamBadge(ten);
+  const src = kho ?? (id != null ? `/api/team-logo/${id}` : null);
+  if (src === null) return <span className="inline-block w-[18px] shrink-0" aria-hidden />;
   return (
     <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm bg-white/95 p-[1px]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/api/team-logo/${id}`} alt="" width={16} height={16} loading="lazy" className="h-4 w-4 object-contain" />
+      <img src={src} alt="" width={16} height={16} loading="lazy" className="h-4 w-4 object-contain" />
     </span>
   );
 }
@@ -173,11 +186,11 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
               <div className="text-[11px] text-muted tabular-nums">{ngay} · {gio}</div>
               {/* Đội CHẤP kèo tô đỏ (Nick 25/8). Mức chấp âm = đội chủ chấp. */}
               <div className={`mt-0.5 flex items-center gap-1.5 font-semibold ${chuChap ? "text-loss" : "text-ink"}`}>
-                <LogoDoi id={match.homeId} />
+                <LogoDoi id={match.homeId} ten={match.homeTeam} />
                 <span>{match.homeTeam}</span>
               </div>
               <div className={`flex items-center gap-1.5 font-semibold ${chuChap === false ? "text-loss" : "text-ink"}`}>
-                <LogoDoi id={match.awayId} />
+                <LogoDoi id={match.awayId} ten={match.awayTeam} />
                 <span>{match.awayTeam}</span>
               </div>
               <div className="text-muted">Hoà</div>
