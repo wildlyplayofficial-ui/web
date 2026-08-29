@@ -55,13 +55,14 @@ const FB = { pageId: '111', pageToken: 'tok' };
 afterEach(() => vi.unstubAllGlobals());
 
 describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () => {
-  it('renders only the hook + link + disclosure — the OG card carries the rest (Nick 21/8)', async () => {
+  it('renders only the hook + link — thẻ hình mang phần còn lại (Nick 21/8; Peter 29/8 bỏ dòng công bố)', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(publishedPick());
     const msg = formatPickMessage(pick, SITE);
     expect(msg).toContain(`${SITE}/play/mexico-vs-south-africa-mexico-1-25-2026-06-11`);
     expect(msg).toContain('Nhận định chi tiết');
-    expect(msg).toContain('— Nhận định của người thật · Chỉ mang tính tham khảo');
+    // Peter 29/8: bỏ hẳn dòng công bố khỏi caption pick (thông báo KẾT QUẢ vẫn giữ).
+    expect(msg).not.toContain('Chỉ mang tính tham khảo');
     // caption KHÔNG lặp thông tin đã có trên thẻ hình
     expect(msg).not.toContain('Mexico vs South Africa');
     expect(msg).not.toContain('Mức tự tin');
@@ -184,5 +185,18 @@ describe('announcePick', () => {
 
     expect(store.logs).toHaveLength(1);
     expect(store.logs[0]).toMatchObject({ channel: 'telegram' });
+  });
+});
+
+describe('in đậm dòng kèo (Peter 29/8)', () => {
+  it('bọc <b> quanh hook khi gửi HTML, để nguyên khi gửi Facebook', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick());
+    const tg = formatPickMessage(pick, SITE, { hook: 'Over 2.5 @ 1.75' }, true);
+    const fb = formatPickMessage(pick, SITE, { hook: 'Over 2.5 @ 1.75' }, false);
+    expect(tg).toContain('📝 <b>Over 2.5 @ 1.75</b>');
+    // Facebook không có chữ đậm — bên đó phải là chữ thường, không dính thẻ HTML.
+    expect(fb).toContain('📝 Over 2.5 @ 1.75');
+    expect(fb).not.toContain('<b>');
   });
 });

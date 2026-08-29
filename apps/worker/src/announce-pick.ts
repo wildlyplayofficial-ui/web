@@ -114,10 +114,14 @@ export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCa
   // Thẻ hình đã đủ thông tin (đội · Over/Under · Mức tự tin · giờ VN) → caption KHÔNG lặp lại.
   const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
   const link = `${siteUrl}/play/${buildPickSlug(pick)}`;
+  // Peter 29/8: bỏ hẳn dòng công bố ở caption pick, và IN ĐẬM phần dự đoán + tỷ lệ.
+  // Gwen + Jane đã cản hai lần (dòng đó do `author` quyết định, và chốt chặn trong kho
+  // dựng ra để pick của Scout không đăng thiếu nhãn) — Peter nghe rồi vẫn chốt bỏ.
+  // `cardFooter` GIỮ NGUYÊN vì thông báo KẾT QUẢ (announce.ts) vẫn dùng.
+  const hook = extras.hook ? (html ? `📝 <b>${esc(extras.hook)}</b>` : `📝 ${esc(extras.hook)}`) : null;
   return [
-    ...(extras.hook ? [`📝 ${esc(extras.hook)}`, ''] : []),
+    ...(hook ? [hook, ''] : []),
     html ? `🔗 <a href="${link}">Nhận định chi tiết</a>` : `🔗 Nhận định chi tiết: ${link}`,
-    cardFooter(pick),
   ].join('\n');
 }
 

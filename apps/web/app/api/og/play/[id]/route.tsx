@@ -1,22 +1,19 @@
 import { getPick } from "@/lib/data";
-import { formatKickoff } from "@/lib/format";
+import { teamBadge } from "@/lib/team-badges";
 import type { Confidence } from "@/lib/types";
-import { OgCard, loadTeamPlayerDataUri, ogResponse, loadMarkDataUri } from "../../_shared";
+import { loadTeamPlayerDataUri, ogResponse, loadMarkDataUri, loadBadgeDataUri } from "../../_shared";
+import { TheTranPick } from "./card";
 
 /**
- * Share image (PNG 1200x630) for ANY non-draft pick. This is the ONLY card type
- * that surfaces the pick/selection — the featured play. Teams headline, the
- * selection + pre-registered confidence in a gold badge, league + kickoff.
- * 404 only when the pick doesn't exist.
+ * Thẻ chia sẻ (PNG 1200x630) cho pick — KHUÔN Peter chốt 21/8.
+ * Đây là thẻ worker gắn vào tin Telegram/Facebook sau khi anh Nick gõ /pick,
+ * nên nó phải giống hệt bản dựng tay ở tools/watchlist/tao-the-pick.py.
+ * 404 chỉ khi không có pick.
  */
 
-const CONF_LABEL: Record<Confidence, { en: string; vi: string }> = {
-  low: { en: "Low", vi: "Thấp" },
-  medium: { en: "Medium", vi: "Trung bình" },
-  high: { en: "High", vi: "Cao" },
-};
+/** Ba mức Nick chốt 21/8 — ghi VỪA, KHÔNG ghi "Trung bình". */
+const CONF_VI: Record<Confidence, string> = { low: "THẤP", medium: "VỪA", high: "CAO" };
 
-/** Vietnamese league names for the OG card (default: original name). */
 const LEAGUE_VI: Record<string, string> = {
   "Premier League": "Ngoại hạng Anh",
   "Champions League": "Cúp C1 châu Âu",
@@ -26,47 +23,65 @@ const LEAGUE_VI: Record<string, string> = {
   "EFL Cup": "Cúp Liên đoàn Anh",
 };
 
+/** "29/08 · 18:30" theo giờ VN — bản Python in đúng kiểu này. */
+function gioVN(iso: string): string {
+  const d = new Date(iso);
+  const p = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+    hour12: false, timeZone: "Asia/Ho_Chi_Minh",
+  }).formatToParts(d);
+  const g = (t: string) => p.find((x) => x.type === t)?.value ?? "";
+  return `${g("day")}/${g("month")} · ${g("hour")}:${g("minute")}`;
+}
+
+/** 0.25 -> "0,25" — dấu phẩy thập phân như bản Python. */
+function donVi(n: number | null | undefined): string | null {
+  if (n === null || n === undefined) return null;
+  return String(n).replace(".", ",");
+}
+
+async function crest(team: string): Promise<string | null> {
+  const url = teamBadge(team);
+  return url ? loadBadgeDataUri(url) : null;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   const { id } = await params;
   const pick = await getPick(id);
-  if (!pick) {
-    return new Response("Not found", { status: 404 });
-  }
+  if (!pick) return new Response("Not found", { status: 404 });
 
-  const vi = new URL(request.url).searchParams.get("lang") === "vi";
   const published = pick.status === "published";
 
-  const conf = pick.confidence ? CONF_LABEL[pick.confidence] : null;
-  const confText = conf
-    ? ` · ${vi ? "Mức tự tin" : "Confidence"}: ${vi ? conf.vi : conf.en}`
-    : "";
-
-  const leagueLabel = vi ? LEAGUE_VI[pick.league] ?? pick.league : pick.league;
-
-  // Featured pick gets the club's cartoon when we have art for it — home team
-  // leads, away as fallback. No art yet → text-only card (selection + odds
-  // stay unchanged either way). Drop cartoons into public/og/players/<slug>.png.
+  // Ảnh cầu thủ: ưu tiên đội nhà, không có thì đội khách. Thiếu cả hai thì thẻ
+  // vẫn ra, chỉ trống nửa phải — không chặn việc đăng.
   let player = await loadTeamPlayerDataUri(pick.home_team);
   if (!player) player = await loadTeamPlayerDataUri(pick.away_team);
 
-  const mark = await loadMarkDataUri();
+  const [mark, huyHieuNha, huyHieuKhach] = await Promise.all([
+    loadMarkDataUri(),
+    crest(pick.home_team),
+    crest(pick.away_team),
+  ]);
+
   return ogResponse(
-    <OgCard
-      mark={mark}
-      eyebrow={vi ? "Trận tâm điểm" : "Featured pick"}
-      title={`${pick.home_team} vs ${pick.away_team}`}
-      topRight={leagueLabel}
-      badge={`${pick.selection}${confText}`}
-      detail={[{ label: vi ? "Khởi tranh" : "Kick-off", value: formatKickoff(pick.kickoff_utc, vi ? "vi" : "en") }]}
-      player={player}
-      showPlayer={Boolean(player)}
-    />,
+    TheTranPick({
+      giai: LEAGUE_VI[pick.league] ?? pick.league,
+      doiNha: pick.home_team,
+      doiKhach: pick.away_team,
+      duDoan: pick.selection,
+      mucTuTin: pick.confidence ? CONF_VI[pick.confidence] : null,
+      donVi: donVi(pick.stake_units),
+      gioDa: gioVN(pick.kickoff_utc),
+      huyHieuNha,
+      huyHieuKhach,
+      anhCauThu: player,
+      logo: mark,
+    }) as React.ReactElement,
     {
       headers: {
-        // Short cache while published (status changes), longer once settled.
         "Cache-Control": published
           ? "public, max-age=60, s-maxage=120"
           : "public, max-age=3600, s-maxage=86400",
