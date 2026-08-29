@@ -45,6 +45,29 @@ function gioVN(iso: string): string {
   return `${g("day")}/${g("month")} · ${g("hour")}:${g("minute")}`;
 }
 
+/** Nền, màu nhấn và dải theo kết quả. Ba trạng thái, không dùng cho pick chưa chấm. */
+function theoKetQua(status: string) {
+  if (status === "won") {
+    return {
+      nenDoc: "linear-gradient(90deg, #fff3d1 0%, #ffd9a3 45%, #ffb0a0 100%)",
+      toneChu: "sang" as const, mauNhanDe: "#8a2f1a",
+      dai: "TRÚNG", mauDai: "#ffd640", phaoHoa: true,
+    };
+  }
+  if (status === "push") {
+    return {
+      nenDoc: "linear-gradient(90deg, #eef4f8 0%, #dde8ef 45%, #c8d8e3 100%)",
+      toneChu: "sang" as const, mauNhanDe: "#274453",
+      dai: "HOÀ", mauDai: "#7f97a6", mauChuDai: "#ffffff",
+    };
+  }
+  return {
+    nenDoc: "linear-gradient(90deg, #eceff1 0%, #dde2e6 45%, #c9d0d6 100%)",
+    toneChu: "sang" as const, mauNhanDe: "#3b4550",
+    dai: "TRẬT", mauDai: "#6f7c87", mauChuDai: "#ffffff",
+  };
+}
+
 /** 0.25 -> "0,25" — dấu phẩy thập phân như bản Python. */
 function donVi(n: number | null | undefined): string | null {
   if (n === null || n === undefined) return null;
@@ -69,7 +92,7 @@ export async function GET(
   // chung không cho biết gì (Jane + Nick 29/8). Đổi nhãn trên cùng và thay hàng
   // Đơn vị/Tự tin/Giờ bằng tỉ số kèm kết luận.
   const xong = pick.status === "won" || pick.status === "lost" || pick.status === "push";
-  const KET_LUAN: Record<string, string> = { won: "TRÚNG", lost: "CHƯA TRÚNG", push: "HOÀ" };
+  const KET_LUAN: Record<string, string> = { won: "TRÚNG", lost: "TRẬT", push: "HOÀ" };
   const ketQua = xong && pick.home_score !== null && pick.away_score !== null
     ? `Kết quả: ${pick.home_score}-${pick.away_score} · ${KET_LUAN[pick.status] ?? ""}`.trim()
     : null;
@@ -88,15 +111,11 @@ export async function GET(
   return ogResponse(
     TheTranPick({
       nhan: xong ? "KẾT QUẢ" : "NHẬN ĐỊNH NỔI BẬT",
-      // Thẻ SAU TRẬN nền MINT SÁNG (Nick chốt M1 ngày 29/8) — nhìn một cái là biết
-      // ngay đây là kết quả, không lẫn với thẻ nhận định nền xanh đậm.
-      ...(xong
-        ? {
-            nenDoc: "linear-gradient(90deg, #d8f5e7 0%, #bdecd8 45%, #9fe0c6 100%)",
-            toneChu: "sang" as const,
-            mauNhanDe: "#0a5c34",
-          }
-        : {}),
+      // Thẻ SAU TRẬN (Peter + Nick chốt 29/8): TRÚNG nền vàng-đỏ ấm kèm pháo hoa,
+      // TRẬT nền xám trung tính. Cả hai có dải góc phải — ở cỡ bảng tin Facebook
+      // (rộng ~400) chữ nhỏ trong thẻ coi như mất, chỉ NỀN và DẢI còn phân biệt được.
+      // Dải TRẬT phải chữ TRẮNG trên xám đậm, để xám-trên-xám không mất chữ (Jane đo).
+      ...(xong ? theoKetQua(pick.status) : {}),
       ketQua,
       giai: tenGiai(pick.league),
       doiNha: pick.home_team,

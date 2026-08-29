@@ -11,6 +11,19 @@ import type { ReactNode } from "react";
  */
 
 const VANG = "#ffd640";
+
+/** Mảnh giấy màu cho thẻ TRÚNG. Toạ độ CỐ ĐỊNH, không random: Satori dựng lại
+ *  nhiều lần phải ra y hệt, và ảnh còn bị bộ nhớ đệm giữ lại. */
+const MANH_GIAY = [
+  { x: 60, y: 18, w: 14, h: 7, r: 24, c: "#ff5a5f" }, { x: 150, y: 62, w: 10, h: 10, r: 12, c: "#ffd640" },
+  { x: 250, y: 26, w: 16, h: 6, r: -18, c: "#4cc194" }, { x: 340, y: 96, w: 9, h: 9, r: 40, c: "#ff8a3d" },
+  { x: 430, y: 34, w: 13, h: 7, r: 8, c: "#ffd640" }, { x: 520, y: 120, w: 11, h: 11, r: -30, c: "#ff5a5f" },
+  { x: 610, y: 22, w: 15, h: 6, r: 33, c: "#4cc194" }, { x: 700, y: 78, w: 10, h: 10, r: -12, c: "#ffd640" },
+  { x: 790, y: 40, w: 12, h: 7, r: 20, c: "#ff8a3d" }, { x: 880, y: 140, w: 9, h: 9, r: -40, c: "#ff5a5f" },
+  { x: 960, y: 30, w: 14, h: 6, r: 15, c: "#ffd640" }, { x: 1050, y: 96, w: 11, h: 11, r: 28, c: "#4cc194" },
+  { x: 1130, y: 46, w: 12, h: 7, r: -22, c: "#ff8a3d" }, { x: 200, y: 170, w: 10, h: 10, r: 18, c: "#ffd640" },
+  { x: 460, y: 200, w: 12, h: 6, r: -14, c: "#ff5a5f" }, { x: 1000, y: 190, w: 10, h: 10, r: 36, c: "#4cc194" },
+];
 const XANH_NHAT = "#bee8d0";
 
 export type TheTranPickProps = {
@@ -32,6 +45,13 @@ export type TheTranPickProps = {
   mauNhanDe?: string;
   /** Dải kết quả to vắt ngang góc phải trên. */
   dai?: string | null;
+  /** Màu dải. Mặc định vàng. */
+  mauDai?: string;
+  /** Màu chữ trên dải. Dải xám phải dùng chữ trắng, không thì cỡ nhỏ đọc không ra
+   *  (Jane đo trên bảng tin Facebook 29/8). */
+  mauChuDai?: string;
+  /** Rắc mảnh giấy màu kiểu pháo hoa — chỉ dùng cho thẻ TRÚNG (Nick 29/8). */
+  phaoHoa?: boolean;
   /** Sau trận: thay hàng Đơn vị/Tự tin/Giờ bằng "Kết quả: 2-2 · TRÚNG".
    *  Giờ đá và mức tự tin sau trận không còn nghĩa gì (Jane 29/8). */
   ketQua: string | null;
@@ -172,6 +192,26 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
         </div>
       </div>
 
+      {p.phaoHoa ? (
+        <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: 1200, height: 300 }}>
+          {MANH_GIAY.map((m, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: m.x,
+                top: m.y,
+                width: m.w,
+                height: m.h,
+                backgroundColor: m.c,
+                transform: `rotate(${m.r}deg)`,
+                opacity: 0.85,
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
+
       {p.dai ? (
         <div
           style={{
@@ -182,8 +222,8 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
             width: 340,
             justifyContent: "center",
             transform: "rotate(38deg)",
-            backgroundColor: VANG,
-            color: "#0b1f14",
+            backgroundColor: p.mauDai ?? VANG,
+            color: p.mauChuDai ?? "#0b1f14",
             fontSize: 30,
             fontWeight: 700,
             letterSpacing: 1,
