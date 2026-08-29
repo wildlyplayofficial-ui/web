@@ -145,6 +145,38 @@ export default async function Home({ params }: Props) {
       : null;
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
+  // Nick 29/8: băng "Bảng Dự Đoán Hôm Nay" phải NHÂN ĐÔI — một băng của Chú Tám Banh,
+  // một băng của Trợ lý AI, mỗi bên màu riêng. Trước chỉ có một băng đếm kèo Chú Tám
+  // Banh nên hôm có kèo AI mà băng vẫn ghi "Nhận định chọn: 0" — Nick bắt được.
+  const scoutPicks = allPicks.filter((p) => p.author === "scout");
+  // Chú Tám Banh có kèo thì băng của bác đứng TRƯỚC; bác nghỉ thì băng AI lên trước
+  // để trang không mở ra bằng một con số 0 (cùng luật với khối AI dưới trang Bảng).
+  const bacTruoc = picks.length > 0;
+  // Màu lấy đúng màu đã dùng cho hai nhân vật ở mọi trang khác — xanh thương hiệu
+  // cho Chú Tám Banh, #6b9e9e cho Trợ lý AI (giống /about, /archive, /track-record,
+  // khối AI dưới trang Bảng). KHÔNG chế màu mới.
+  const bangBac = {
+    href: withLang("/daily-board", lang),
+    tieuDe: dict.board.title,
+    vien: "border-brand/30 bg-brand-dim/40 hover:border-brand/60",
+    nut: "bg-brand",
+    so: [
+      { nhan: dict.board.picksLabel, gia: picks.length },
+      { nhan: dict.board.noPlaysLabel, gia: noPlays.length },
+      { nhan: dict.board.watchingLabel, gia: watching.length },
+    ],
+  };
+  // Băng AI chỉ đếm kèo của nó. Bỏ qua và Đang theo dõi là sổ của Chú Tám Banh,
+  // in lại bên này là đếm trùng. Không có kèo AI thì ẩn hẳn băng, đừng để băng rỗng.
+  const bangAI = scoutPicks.length
+    ? {
+        href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
+        tieuDe: bacTruoc ? dict.scout.heading : dict.scout.headingSolo,
+        vien: "border-[#6b9e9e]/40 bg-[#6b9e9e]/[.08] hover:border-[#6b9e9e]/70",
+        nut: "bg-[#6b9e9e]",
+        so: [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }],
+      }
+    : null;
 
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
@@ -367,26 +399,35 @@ export default async function Home({ params }: Props) {
             </span>
           </Link>
         ) : (
-          <Link
-            href={withLang("/daily-board", lang)}
-            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-          >
-            <div>
-              <p className="font-display text-lg font-bold">{dict.board.title}</p>
-              <p className="mt-1 text-sm text-muted">
-                {formatBoardDate(new Date(), lang)}
-                <span className="mx-2">·</span>
-                {dict.board.picksLabel}: <strong className="text-ink">{picks.length}</strong>
-                <span className="mx-2">·</span>
-                {dict.board.noPlaysLabel}: <strong className="text-ink">{noPlays.length}</strong>
-                <span className="mx-2">·</span>
-                {dict.board.watchingLabel}: <strong className="text-ink">{watching.length}</strong>
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-              {dict.home.viewBoard} &rarr;
-            </span>
-          </Link>
+          <div className="flex flex-col gap-3">
+            {(bacTruoc ? [bangBac, bangAI] : [bangAI, bangBac]).map((b) =>
+              b === null ? null : (
+                <Link
+                  key={b.href}
+                  href={b.href}
+                  className={`group flex flex-wrap items-center justify-between gap-4 rounded-card border px-6 py-5 transition-colors ${b.vien}`}
+                >
+                  <div>
+                    <p className="font-display text-lg font-bold">{b.tieuDe}</p>
+                    <p className="mt-1 text-sm text-muted">
+                      {formatBoardDate(new Date(), lang)}
+                      {b.so.map((o) => (
+                        <span key={o.nhan}>
+                          <span className="mx-2">·</span>
+                          {o.nhan}: <strong className="text-ink">{o.gia}</strong>
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5 ${b.nut}`}
+                  >
+                    {dict.home.viewBoard} &rarr;
+                  </span>
+                </Link>
+              ),
+            )}
+          </div>
         )}
       </section>
 

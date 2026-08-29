@@ -214,6 +214,8 @@ export default async function DailyBoard({ params }: Props) {
       {/* 4. §7.1 Scout section — hidden when scout has 0 settled picks (pre-launch rule) */}
       {scoutRecord.settled > 0 && (
         <section
+          // Băng Trợ lý AI trên trang chủ nhảy thẳng xuống đây (Nick 29/8).
+          id="tro-ly-ai"
           className={
             scoutNoiBat
               ? "mb-8 rounded-card border-2 border-[#6b9e9e]/70 bg-[#6b9e9e]/[.10] px-5 py-10 shadow-lg"
