@@ -206,6 +206,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
       label: nav.learn,
       items: [
         { name: nav.learn, href: "/learn" },
+        { name: nav.blog, href: "/blog" },
         { name: nav.guides, href: "/guides" },
         { name: nav.calculators, href: "/calculators" },
       ],

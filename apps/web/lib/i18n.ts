@@ -65,6 +65,7 @@ export interface Dict {
     responsiblePlay: string;
     forum: string;
     guides: string;
+    blog: string;
     transparency: string;
     calculators: string;
     todaysPick: string;
@@ -186,6 +187,13 @@ export interface Dict {
     seoDescription: string;
     empty: string;
     backToGuides: string;
+  };
+  blog: {
+    title: string;
+    subtitle: string;
+    seoDescription: string;
+    empty: string;
+    backToBlog: string;
   };
   transparency: {
     title: string;
@@ -375,6 +383,7 @@ const en: Dict = {
     responsiblePlay: "Responsible Play",
     forum: "Forum",
     guides: "Guides",
+    blog: "Blog",
     transparency: "Transparency",
     calculators: "Calculators",
     todaysPick: "Today's Pick",
@@ -498,6 +507,13 @@ const en: Dict = {
     seoDescription: "Free betting guides covering bankroll management, Asian handicap, Kelly criterion, closing line value and more. Educational resources to sharpen your edge — written by humans, no paywall.",
     empty: "No guides yet.",
     backToGuides: "Back to Guides",
+  },
+  blog: {
+    title: "Blog",
+    subtitle: "Football stories, rankings, transfer windows and the numbers behind the season.",
+    seoDescription: "Football blog from banhbong.net — rankings, transfer windows, records and season stories. No betting instruction, just the game.",
+    empty: "No posts yet.",
+    backToBlog: "Back to Blog",
   },
   transparency: {
     title: "Transparency",
@@ -685,6 +701,7 @@ const vi: Dict = {
     responsiblePlay: "Chơi Có Trách Nhiệm",
     forum: "Diễn Đàn",
     guides: "Hướng Dẫn",
+    blog: "Blog",
     transparency: "Minh Bạch",
     calculators: "Công Cụ",
     todaysPick: "Dự Đoán Hôm Nay",
@@ -808,6 +825,13 @@ const vi: Dict = {
     seoDescription: "Hướng dẫn phân tích miễn phí về quản lý vốn, chấp châu Á, phương pháp Kelly, giá trị đường khóa và nhiều hơn nữa. Tài liệu giáo dục giúp nâng cao lợi thế — viết bởi người thật, không tính phí.",
     empty: "Chưa có bài hướng dẫn.",
     backToGuides: "Quay lại Hướng Dẫn",
+  },
+  blog: {
+    title: "Blog",
+    subtitle: "Chuyện bóng đá mỗi ngày — bảng xếp hạng, chuyển nhượng, kỷ lục và những con số của mùa giải.",
+    seoDescription: "Blog bóng đá của banhbong.net: bảng xếp hạng, kỳ chuyển nhượng, kỷ lục và chuyện mùa giải. Không hướng dẫn cá cược, chỉ nói chuyện bóng đá.",
+    empty: "Chưa có bài viết.",
+    backToBlog: "Quay lại Blog",
   },
   transparency: {
     title: "Minh Bạch",
@@ -995,6 +1019,7 @@ const th: Dict = {
     responsiblePlay: "เล่นอย่างมีความรับผิดชอบ",
     forum: "ฟอรั่ม",
     guides: "คู่มือ",
+    blog: "บล็อก",
     transparency: "ความโปร่งใส",
     calculators: "เครื่องคิดเลข",
     todaysPick: "ทีเด็ดวันนี้",
@@ -1118,6 +1143,13 @@ const th: Dict = {
     seoDescription: "คู่มือเดิมพันฟรีครอบคลุมการจัดการเงินทุน บอลเอเชีย เกณฑ์ Kelly มูลค่าราคาปิด และอื่นๆ สื่อการเรียนรู้เพื่อเพิ่มความได้เปรียบ — เขียนโดยคน ไม่มีค่าใช้จ่าย",
     empty: "ยังไม่มีคู่มือ",
     backToGuides: "กลับไปหน้าคู่มือ",
+  },
+  blog: {
+    title: "บล็อก",
+    subtitle: "เรื่องราวฟุตบอล อันดับ ตลาดซื้อขาย และตัวเลขของฤดูกาล",
+    seoDescription: "บล็อกฟุตบอลจาก banhbong.net — อันดับ ตลาดซื้อขาย สถิติ และเรื่องราวของฤดูกาล",
+    empty: "ยังไม่มีบทความ",
+    backToBlog: "กลับไปหน้าบล็อก",
   },
   transparency: {
     title: "ความโปร่งใส",
@@ -1305,6 +1337,7 @@ const es: Dict = {
     responsiblePlay: "Juego Responsable",
     forum: "Foro",
     guides: "Guías",
+    blog: "Blog",
     transparency: "Transparencia",
     calculators: "Calculadoras",
     todaysPick: "Pick de Hoy",
@@ -1428,6 +1461,13 @@ const es: Dict = {
     seoDescription: "Guías de apuestas gratuitas sobre gestión de bankroll, hándicap asiático, criterio Kelly, valor de línea de cierre y más. Recursos educativos para afilar tu ventaja — escritos por humanos, sin muro de pago.",
     empty: "Aún no hay guías.",
     backToGuides: "Volver a Guías",
+  },
+  blog: {
+    title: "Blog",
+    subtitle: "Historias de fútbol, clasificaciones, mercado de fichajes y los números de la temporada.",
+    seoDescription: "Blog de fútbol de banhbong.net: clasificaciones, fichajes, récords e historias de la temporada.",
+    empty: "Aún no hay entradas.",
+    backToBlog: "Volver al Blog",
   },
   transparency: {
     title: "Transparencia",
