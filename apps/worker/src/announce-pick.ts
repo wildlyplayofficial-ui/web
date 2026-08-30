@@ -180,6 +180,13 @@ export async function announcePick(
   pick: PickRow,
   extras: PickCardExtras = {},
 ): Promise<void> {
+  // Chốt chặn đăng trùng. Luồng KẾT QUẢ có sẵn chốt này từ lâu, luồng PICK thì
+  // KHÔNG — nên chạy lại là kênh có hai tin y hệt, không ai cản. Nick bắt được
+  // 29/8: tin pick Tottenham đăng 22:41 rồi đăng lại 23:17.
+  if (await deps.store.hasChannelLog(pick.id, 'telegram', 'pick announce')) {
+    log.info(`bỏ qua đăng trùng pick ${pick.id} — sổ channel_log đã có tin`);
+    return;
+  }
   // Telegram: in đậm phần chính bằng HTML; Facebook: bản thường (nhấn mạnh sẵn bằng CHỮ HOA).
   await broadcast(
     deps,

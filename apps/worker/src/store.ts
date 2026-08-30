@@ -168,6 +168,16 @@ export interface Store {
    *  points (bot /pick + dashboard POST /api/pick) both calling insertPick with zero
    *  coordination, 6s apart. Returns the existing published pick for the same
    *  home/away/market/selection within the last `withinMinutes`, or null. */
+  /** Kèo trùng: cùng trận + cùng thị trường + cùng lựa chọn, đang ở trạng thái
+   *  published, và một trong hai điều kiện:
+   *   - CÒN SỐNG: chưa tới giờ đá. Đây mới là điều kiện đúng — không thể có hai
+   *     vị thế y hệt trên cùng một trận, dù cách nhau bao lâu.
+   *   - hoặc vừa đăng trong `withinMinutes`. Giữ lại để bắt kèo trong-trận
+   *     (giờ đá đã qua) và vụ hai cổng chèn cách nhau 6 giây (Hull–MU 22/8).
+   *
+   *  ⚠️ Bản cũ CHỈ có cửa sổ 10 phút. 29/8 sinh hai bản ghi Tottenham–Newcastle
+   *  y hệt cách nhau 36 PHÚT, cả hai đều published — lọt hết. Suýt tính lời lỗ
+   *  nhân đôi trên trang Thành Tích. Điều kiện "còn sống" bịt đúng chỗ đó. */
   findRecentDuplicatePick(
     homeTeam: string, awayTeam: string, market: string, selection: string, withinMinutes: number,
   ): Promise<PickRow | null>;
@@ -239,10 +249,14 @@ export class MemoryStore implements Store {
     homeTeam: string, awayTeam: string, market: string, selection: string, withinMinutes: number,
   ): Promise<PickRow | null> {
     const cutoff = Date.now() - withinMinutes * 60_000;
+    const gio = Date.now();
     const match = [...this.picks.values()].find((p) =>
       p.home_team === homeTeam && p.away_team === awayTeam && p.market === market &&
       p.selection === selection && p.status === 'published' &&
-      p.published_at !== null && new Date(p.published_at).getTime() >= cutoff,
+      // CÒN SỐNG (chưa tới giờ đá) HOẶC vừa đăng trong cửa sổ ngắn. Xem ghi chú
+      // ở chữ ký hàm — cửa sổ ngắn một mình để lọt vụ 29/8.
+      (new Date(p.kickoff_utc).getTime() > gio ||
+        (p.published_at !== null && new Date(p.published_at).getTime() >= cutoff)),
     );
     return match ?? null;
   }
@@ -419,11 +433,14 @@ export class SupabaseStore implements Store {
     homeTeam: string, awayTeam: string, market: string, selection: string, withinMinutes: number,
   ): Promise<PickRow | null> {
     const cutoff = new Date(Date.now() - withinMinutes * 60_000).toISOString();
+    const gio = new Date().toISOString();
     const { data, error } = await this.db
       .from('picks').select('*')
       .eq('home_team', homeTeam).eq('away_team', awayTeam)
       .eq('market', market).eq('selection', selection)
-      .eq('status', 'published').gte('published_at', cutoff)
+      .eq('status', 'published')
+      // CÒN SỐNG hoặc vừa đăng — xem ghi chú ở chữ ký hàm.
+      .or(`kickoff_utc.gt.${gio},published_at.gte.${cutoff}`)
       .limit(1).maybeSingle();
     if (error) throw new Error(`findRecentDuplicatePick failed: ${error.message}`);
     return (data as PickRow) ?? null;

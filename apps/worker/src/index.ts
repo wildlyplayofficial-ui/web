@@ -8,6 +8,7 @@ import { findEvent, type MatchQuery } from './event-lookup';
 import { trackFailure } from './job-tracker';
 import { onWarn } from './log';
 import { startPoller } from './poll';
+import { canhKeoTreo } from './keo-treo';
 import { createRevalidator } from './revalidate';
 
 // R9: pipe log warnings containing "failed" into job-tracker
@@ -504,6 +505,22 @@ const dlMonitorTimer = persistDb
   : null;
 if (dlMonitorTimer) log.info('dl-monitor started (every 15 min)');
 else log.warn('dl-monitor disabled — no Supabase client');
+
+// ── Canh kèo TREO (mỗi 30 phút) ──
+// Bộ tự chấm bỏ qua kèo không có mã trận và kèo quá 8 tiếng, chỉ ghi nhật ký mà
+// không ai đọc → kèo nằm treo, thành tích không cộng, KHÔNG có gì báo động.
+// 13/43 kèo tính tới 29/8 không có mã trận. Nick: đừng dặn người nhớ, để máy nhắc.
+const CANH_TREO_INTERVAL = 30 * 60 * 1000;
+const nguoiNhan = [...allowlist].map(String);
+const canhTreoTimer = nguoiNhan.length > 0
+  ? setInterval(() => void canhKeoTreo({
+      store,
+      guiTin: (chatId, text) => bot.api.sendMessage(chatId, text),
+      nguoiNhan,
+    }), CANH_TREO_INTERVAL)
+  : null;
+if (canhTreoTimer) log.info(`canh kèo treo started (every 30 min, ${nguoiNhan.length} người nhận)`);
+else log.warn('canh kèo treo disabled — CURATOR_USER_IDS rỗng');
 
 // ── D7: Daily Line Telegram alerts (every 5 min) ──
 const DL_ALERTS_INTERVAL = 5 * 60 * 1000;

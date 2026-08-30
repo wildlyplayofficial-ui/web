@@ -64,11 +64,15 @@ export type TheTranPickProps = {
   logo: string | null;
 };
 
-/** Chữ dài thì hạ cỡ, giống hàm _fit bên bản Python. */
+/** Chữ dài thì hạ cỡ, giống hàm _fit bên bản Python.
+ *  Hệ số 0,62 là bề rộng trung bình một chữ HOA Space Grotesk Bold. Bản cũ để
+ *  0,52 nên ước hụt: "TOTTENHAM HOTSPUR" tính ra vừa 460 nhưng vẽ ra tràn, bị
+ *  ngắt hai dòng, đẩy cả khối xuống đè lên dòng banhbong.net (Nick 29/8). */
+const BE_RONG_CHU = 0.62;
 function coChu(s: string, rong: number, coMax: number, coMin = 30): number {
-  const uoc = s.length * coMax * 0.52;
+  const uoc = s.length * coMax * BE_RONG_CHU;
   if (uoc <= rong) return coMax;
-  return Math.max(coMin, Math.floor((rong / (s.length * 0.52))));
+  return Math.max(coMin, Math.floor(rong / (s.length * BE_RONG_CHU)));
 }
 
 function TenDoi({ huyHieu, ten, mau }: { huyHieu: string | null; ten: string; mau: string }) {
@@ -84,6 +88,9 @@ function TenDoi({ huyHieu, ten, mau }: { huyHieu: string | null; ten: string; ma
           fontWeight: 700,
           color: mau,
           letterSpacing: -0.5,
+          // Ước cỡ chữ có sai vài pixel thì thà tràn còn hơn xuống dòng: xuống
+          // dòng là đẩy cả khối, vỡ bố cục tận chân thẻ.
+          whiteSpace: "nowrap",
         }}
       >
         {ten.toUpperCase()}
@@ -123,7 +130,45 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
           height={604}
           style={{ position: "absolute", right: -34, bottom: 0, height: 604, objectFit: "contain" }}
         />
-      ) : null}
+      ) : (
+        /* Chưa có ảnh cầu thủ thì KHÔNG để trống nửa phải — trống nhìn như ảnh
+           hỏng (Nick + Jane 29/8). Thay bằng hai huy hiệu to lệch nhau trên nền
+           quầng sáng, đúng cách bản Python xử lý ở hai_huy_hieu_to(). */
+        <div style={{ display: "flex", position: "absolute", right: 0, top: 0, width: 560, height: 630 }}>
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: 560,
+              height: 630,
+              // Quầng XANH chỉ hợp nền xanh của thẻ nhận định. Thẻ sau trận
+              // (nenDoc riêng: vàng TRÚNG, xám TRẬT) phải dùng quầng trắng,
+              // không thì nửa phải ám xanh lệch hẳn nửa trái.
+              backgroundImage:
+                sang || p.nenDoc
+                  ? "radial-gradient(70% 55% at 55% 45%, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 100%)"
+                  : "radial-gradient(70% 55% at 55% 45%, rgba(120,220,170,0.28) 0%, rgba(120,220,170,0) 100%)",
+            }}
+          />
+          {p.huyHieuNha ? (
+            <img
+              src={p.huyHieuNha}
+              width={250}
+              height={250}
+              style={{ position: "absolute", left: 60, top: 62, objectFit: "contain" }}
+            />
+          ) : null}
+          {p.huyHieuKhach ? (
+            <img
+              src={p.huyHieuKhach}
+              width={250}
+              height={250}
+              style={{ position: "absolute", left: 236, top: 300, objectFit: "contain" }}
+            />
+          ) : null}
+        </div>
+      )}
 
       {/* Lớp phủ nửa trái cho chữ nổi. Nền TỐI thì phủ đen; nền SÁNG thì phủ TRẮNG —
           để nguyên lớp đen trên nền mint là mint bị xỉn thành xám xanh (dựng thử 29/8 thấy). */}
@@ -140,7 +185,21 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
         }}
       />
 
-      <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: 50, top: 32, width: 620 }}>
+      {/* Cột trái cao cố định, dòng banhbong.net là con CUỐI đẩy xuống bằng
+          marginTop:auto. Trước để chân trang tuyệt đối theo đáy thẻ nên khối
+          chữ dài ra là đè lên nó — vỡ hai lần trong ngày, một lần vì thêm dòng
+          tỉ số, một lần vì tên đội dài. Neo vào cuối khối thì hết cả hai. */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          position: "absolute",
+          left: 50,
+          top: 32,
+          height: 558,
+          width: 620,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           {p.logo ? <img src={p.logo} width={50} height={50} style={{ objectFit: "contain" }} /> : null}
           {/* Hình thoi VẼ BẰNG Ô XOAY, đừng gõ ký tự ◆ — phông không có, ra ô vuông.
@@ -203,6 +262,10 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
             ))}
           </div>
         </div>
+
+        <div style={{ display: "flex", marginTop: "auto", fontSize: 28, color: mauPhu }}>
+          banhbong.net
+        </div>
       </div>
 
       {p.phaoHoa ? (
@@ -247,9 +310,6 @@ export function TheTranPick(p: TheTranPickProps): ReactNode {
         </div>
       ) : null}
 
-      <div style={{ display: "flex", position: "absolute", left: 50, bottom: 40, fontSize: 28, color: mauPhu }}>
-        banhbong.net
-      </div>
     </div>
   );
 }

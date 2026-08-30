@@ -65,6 +65,11 @@ export default async function DailyBoard({ params }: Props) {
   // §7.1: split picks by author — curator picks go to the board, scout picks to the Scout section
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
   const scoutPicks = allPicks.filter((p) => p.author === "scout");
+  // Nick 29/8: Chú Tám Banh KHÔNG có kèo thì khối Trợ lý AI phải NỔI lên làm kèo
+  // chính của ngày; có kèo rồi thì lùi lại làm kèo phụ như cũ. Trang không bao giờ trống.
+  // Vẫn giữ nguyên chữ "Trợ lý AI", nhãn độ-tin-thấp-hơn và dòng công bố — to lên mà
+  // bỏ mấy nhãn đó là người đọc tưởng kèo của người thật, mà hai sổ đang để riêng.
+  const scoutNoiBat = picks.length === 0 && scoutPicks.length > 0;
 
   // Hero prediction — top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
@@ -133,8 +138,36 @@ export default async function DailyBoard({ params }: Props) {
         )}
       />
 
-      {/* 2a. Hot pick hero — top curator pick. Omitted when there is none (never a
-          fabricated seed). */}
+      {/* 2. Khối CHÚ TÁM BANH — Nick 29/8: trang này cũng phải có đủ ba tình huống
+          trang trí như khối Trợ lý AI, mỗi nhân vật một màu. Trước đây kèo của bác
+          nằm trần trên trang, không có khung không có tên, nên nhìn không ra hai sổ
+          riêng. Nay hai khối song song: bác màu xanh thương hiệu, AI màu #6b9e9e.
+
+          Ba tình huống:
+            bác có kèo  -> khối bác đậm, khối AI mờ (kèo phụ)
+            bác nghỉ    -> khối bác mờ + nói thẳng "hôm nay không có nhận định",
+                           khối AI đậm lên làm kèo chính
+            cả hai nghỉ -> hai khối đều mờ, trang vẫn không trống
+
+          Thứ tự KHÔNG đổi: bác luôn đứng trên, kể cả hôm nghỉ (Nick: "Không nhảy
+          lên trên"). */}
+      <section
+        id="chu-tam-banh"
+        className={
+          heroPick
+            ? "mb-8 rounded-card border-2 border-brand/60 bg-brand-dim/30 px-5 py-8 shadow-lg"
+            : "mb-8 rounded-card border border-dashed border-brand/30 bg-brand-dim/[.12] px-5 py-8"
+        }
+      >
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <h2 className={heroPick ? "font-display text-3xl font-bold text-brand" : "font-display text-xl font-bold text-brand"}>
+            {dict.pick.curator}
+          </h2>
+          <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-brand">
+            {dict.board.picksLabel}: {picks.length}
+          </span>
+        </div>
+
       {heroPick && (
         <section className="pb-8">
           <HotPickCard
@@ -174,6 +207,7 @@ export default async function DailyBoard({ params }: Props) {
           </div>
         </section>
       )}
+      </section>
 
       {/* 3. No-plays today — the discipline moat as a real list, not just a count */}
       {noPlays.length > 0 && (
@@ -208,10 +242,18 @@ export default async function DailyBoard({ params }: Props) {
 
       {/* 4. §7.1 Scout section — hidden when scout has 0 settled picks (pre-launch rule) */}
       {scoutRecord.settled > 0 && (
-        <section className="mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
+        <section
+          // Băng Trợ lý AI trên trang chủ nhảy thẳng xuống đây (Nick 29/8).
+          id="tro-ly-ai"
+          className={
+            scoutNoiBat
+              ? "mb-8 rounded-card border-2 border-[#6b9e9e]/70 bg-[#6b9e9e]/[.10] px-5 py-10 shadow-lg"
+              : "mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8"
+          }
+        >
           <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-xl font-bold text-[#6b9e9e]">
-              {dict.scout.heading} 🤖
+            <h2 className={scoutNoiBat ? "font-display text-3xl font-bold text-[#6b9e9e]" : "font-display text-xl font-bold text-[#6b9e9e]"}>
+              {scoutNoiBat ? dict.scout.headingSolo : dict.scout.heading} 🤖
             </h2>
             <span className="rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-[#6b9e9e]">
               {dict.scout.badge}
