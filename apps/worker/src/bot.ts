@@ -371,6 +371,21 @@ export function createBot(deps: BotDeps): Bot {
       (noplay.verdict ? `\nverdict: ${noplay.verdict}` : '') +
       (noplay.note ? `\nnote: ${noplay.note}` : ''),
     );
+    // ĐÓNG dòng watching của trận vừa bỏ qua. Thiếu bước này thì bài no-play vẫn ra
+    // nhưng bảng trên trang chủ đếm "Bỏ qua" từ watching(status='expired') nên mãi
+    // bằng 0, còn trận đã pass vẫn nằm trong "Đang theo dõi". Nick bắt được 30/8.
+    // Không tìm thấy dòng khớp thì im lặng bỏ qua — có thể Nick pass một trận chưa
+    // từng đưa vào watchlist, đó không phải lỗi.
+    try {
+      const dong = await deps.store.expireWatchingByTeams(
+        noplay.homeTeam, noplay.awayTeam, noplay.note || noplay.verdict || undefined,
+      );
+      if (dong) log.info(`noplay: đã đóng watching ${dong.id} (${dong.home_team} vs ${dong.away_team})`);
+      else log.info(`noplay: không có dòng watching đang mở cho ${noplay.homeTeam} vs ${noplay.awayTeam}`);
+    } catch (err) {
+      log.warn(`noplay: đóng watching hỏng cho ${noplay.homeTeam} vs ${noplay.awayTeam}:`, err);
+    }
+
     // Generate no-play article — fire-and-forget, never throws.
     // Web-only (Nick 21/8): /noplay never posts to TG or FB.
     if (deps.aiEnv?.apiKey) {
