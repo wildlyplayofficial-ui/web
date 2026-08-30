@@ -39,6 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: headline,
     description,
     alternates: { canonical, languages: alternates.languages },
+    // Bản tin đã bị bài mới hơn thay thế: giấu khỏi Google, GIỮ follow để vẫn
+    // dẫn được sang bài mới. Người đọc vào thẳng vẫn xem bình thường.
+    ...(item.noindex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: headline,
       description,

@@ -26,6 +26,9 @@ export interface NewsItem {
   hero_card_url: string | null;
   published_at: string;
   status: string;
+  /** true = vẫn hiện cho người đọc nhưng ẩn khỏi Google. Dùng cho bản tin đã bị
+   *  bài mới hơn thay thế (vd 3 bài cùng vụ Barcola tranh nhau một từ khoá). */
+  noindex: boolean;
   created_at: string;
   /** Slug các đội bài này nhắc tới, khớp TEAM_HUBS. Dùng để dẫn về hub /doi/<clb>. */
   teams: string[] | null;
@@ -81,6 +84,9 @@ async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: strin
     .from("news_items")
     .select("slug, published_at, headline_vi, headline_en")
     .eq("status", "published")
+    // Bài đã bị bài mới hơn thay thế thì bỏ khỏi sitemap — đừng mời Google vào
+    // đọc ba trang cùng tranh một từ khoá. Trang vẫn sống cho người đọc.
+    .eq("noindex", false)
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllNewsItemSlugs: ${error.message}`);
   return (data ?? []).map((r) => ({
