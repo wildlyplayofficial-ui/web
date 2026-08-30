@@ -69,12 +69,12 @@ function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
 
 /** Logo đội trong bảng kèo.
  *
- *  ƯU TIÊN kho huy hiệu của mình (`teamBadge`), rơi về ảnh của nhà cung cấp kèo
- *  qua /api/team-logo/[id] khi kho không có.
+ *  CHỈ dùng kho huy hiệu của mình (`teamBadge`). Không có thì chừa chỗ trống.
  *
- *  Vì sao đổi thứ tự (Nick 29/8 chụp gửi: cả bảng là ô vuông trắng): mọi mã đội
- *  của nhà cung cấp đều trả 404 — họ không có ảnh cho mấy mã này. Thử 3 mã lấy
- *  thẳng từ trang thật (2824, 2814, 2687), cả 3 đều 404.
+ *  Vì sao KHÔNG còn rơi về /api/team-logo/[id] của nhà cung cấp kèo: nguồn đó chết
+ *  hẳn. Đo trên prod 30/8 sau khi #214 lên — 46 mã còn rơi về nó, gọi ĐỦ CẢ 46,
+ *  404 hết, không mã nào ra ảnh. Để nguyên thì trình duyệt vẽ ô ảnh vỡ, đúng cái
+ *  "ô vuông trắng" Nick chụp gửi 29/8 — tệ hơn để trống.
  *
  *  ⚠️ VẪN KHÔNG ghép gần đúng theo tên. Ghi chú cũ ở đây đúng và giữ nguyên hiệu
  *  lực: ghép gần đúng từng gán "Sabah Masazir" vào logo "Sabah" — hai câu lạc bộ
@@ -84,9 +84,8 @@ function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
  *  cùng trang này.
  *
  *  Không có cả hai thì chừa chỗ trống, KHÔNG đoán. */
-function LogoDoi({ id, ten }: { id: number | null; ten: string }) {
-  const kho = teamBadge(ten);
-  const src = kho ?? (id != null ? `/api/team-logo/${id}` : null);
+function LogoDoi({ ten }: { ten: string }) {
+  const src = teamBadge(ten);
   if (src === null) return <span className="inline-block w-[18px] shrink-0" aria-hidden />;
   return (
     <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm bg-white/95 p-[1px]">
@@ -186,11 +185,11 @@ function KhoiTran({ match }: { match: OddsBoardMatch }) {
               <div className="text-[11px] text-muted tabular-nums">{ngay} · {gio}</div>
               {/* Đội CHẤP kèo tô đỏ (Nick 25/8). Mức chấp âm = đội chủ chấp. */}
               <div className={`mt-0.5 flex items-center gap-1.5 font-semibold ${chuChap ? "text-loss" : "text-ink"}`}>
-                <LogoDoi id={match.homeId} ten={match.homeTeam} />
+                <LogoDoi ten={match.homeTeam} />
                 <span>{match.homeTeam}</span>
               </div>
               <div className={`flex items-center gap-1.5 font-semibold ${chuChap === false ? "text-loss" : "text-ink"}`}>
-                <LogoDoi id={match.awayId} ten={match.awayTeam} />
+                <LogoDoi ten={match.awayTeam} />
                 <span>{match.awayTeam}</span>
               </div>
               <div className="text-muted">Hoà</div>
