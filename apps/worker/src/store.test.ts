@@ -172,10 +172,33 @@ describe('MemoryStore.findRecentDuplicatePick (22/8: Hull-MU incident — 2 entr
     expect(dup).toBeNull();
   });
 
-  it('returns null when the earlier pick is outside the time window', async () => {
+  it('returns null when the earlier pick is outside the time window AND kickoff đã qua', async () => {
     const store = new MemoryStore();
     const old = new Date(Date.now() - 20 * 60_000).toISOString(); // 20 min ago
+    // kickoff_utc mặc định 11/6/2026 — đã qua, nên không rơi vào nhánh "còn sống".
     await store.insertPick(pick('curator', 'published', { published_at: old }));
+    const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'Mexico -1.25', 10);
+    expect(dup).toBeNull();
+  });
+
+  it('BẮT kèo trùng dù đăng cách nhau 36 phút, miễn CHƯA TỚI GIỜ ĐÁ (sự cố 29/8)', async () => {
+    // Tottenham–Newcastle 29/8: hai bản ghi y hệt cách nhau 36 phút, cửa sổ 10 phút
+    // để lọt cả hai, suýt tính lời lỗ nhân đôi trên trang Thành Tích.
+    const store = new MemoryStore();
+    const row = await store.insertPick(pick('scout', 'published', {
+      published_at: new Date(Date.now() - 36 * 60_000).toISOString(),
+      kickoff_utc: new Date(Date.now() + 60 * 60_000).toISOString(),
+    }));
+    const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'Mexico -1.25', 10);
+    expect(dup?.id).toBe(row.id);
+  });
+
+  it('kèo đã HUỶ không chặn kèo mới — huỷ rồi đặt lại phải làm được', async () => {
+    const store = new MemoryStore();
+    await store.insertPick(pick('scout', 'void', {
+      published_at: new Date().toISOString(),
+      kickoff_utc: new Date(Date.now() + 60 * 60_000).toISOString(),
+    }));
     const dup = await store.findRecentDuplicatePick('Mexico', 'South Africa', 'ah', 'Mexico -1.25', 10);
     expect(dup).toBeNull();
   });

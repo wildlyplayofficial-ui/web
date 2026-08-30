@@ -12,9 +12,66 @@ const ISO: Record<string, string> = countryIso;
  *  - World Cup nations   → flagcdn flag by ISO code.
  *  - Everything else      → null (caller falls back to the emoji flag).
  */
+/** Chữ chỉ LOẠI HÌNH câu lạc bộ, không phải tên. Nguồn kèo ghi "Juventus Turin",
+ *  "AS Roma", "SSC Napoli" trong khi kho lưu "Juventus", "Roma", "Napoli" — bỏ mấy
+ *  chữ này đi rồi tra lại là khớp. Đo 29/8 trên /keo: 76 đội, 23 khớp sẵn,
+ *  34 khớp thêm nhờ bước này. */
+const CHU_LOAI_CLB = new Set([
+  "fc", "ac", "as", "aj", "sc", "cf", "ssc", "ogc", "us", "acf", "rc", "ca",
+  "afc", "bc", "cfc", "sco", "calcio", "sv", "vfb", "fk", "cd", "ud", "sd",
+  "rcd", "ss", "ssd", "club", "estac",
+]);
+
+/** Tên rút gọn để tra: bỏ dấu, bỏ chữ loại hình CLB, còn lại nối bằng khoảng trắng. */
+function tenTra(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w && !CHU_LOAI_CLB.has(w))
+    .join(" ");
+}
+
+/** Tra theo tên rút gọn. Dựng một lần. */
+const CLB_THEO_TEN_TRA: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  for (const [ten, url] of Object.entries(CLUB)) {
+    const k = tenTra(ten);
+    if (k && !(k in m)) m[k] = url;
+  }
+  return m;
+})();
+
+/** Tên nguồn kèo ghi khác hẳn, không rút gọn ra được. GÕ TAY, tuyệt đối KHÔNG dò
+ *  gần đúng: dò gần đúng cho ra "Espanyol Barcelona" → logo Barcelona,
+ *  "Torino" → Toronto, "Inter Milano" → Inter Miami. Sai logo tệ hơn thiếu logo. */
+const TEN_KHAC: Record<string, string> = {
+  "juventus turin": "Juventus",
+  "lazio rome": "Lazio",
+  "inter milano": "Inter",
+  "olympique lyon": "Lyon",
+  "olympique marseille": "Marseille",
+  "espanyol barcelona": "Espanyol",
+  "real sociedad san sebastian": "Real Sociedad",
+  "celta de vigo": "Celta Vigo",
+  "deportivo de la coruna": "Deportivo de A Coruña",
+  "como 1907": "Como",
+  "athletic bilbao": "Athletic Club",
+  "stade rennais": "Rennes",
+  "stade brest 29": "Stade Brestois 29",
+  "malaga": "Málaga",
+};
+
 export function teamBadge(name: string): string | null {
   const crest = CLUB[name];
   if (crest) return crest;
+
+  const rut = tenTra(name);
+  const theoTenKhac = TEN_KHAC[rut];
+  if (theoTenKhac && CLUB[theoTenKhac]) return CLUB[theoTenKhac];
+  const theoRut = CLB_THEO_TEN_TRA[rut];
+  if (theoRut) return theoRut;
 
   const stripped = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const iso = ISO[name] ?? ISO[stripped];

@@ -152,6 +152,34 @@ describe('announcePick', () => {
     expect(store.logs[1]).toMatchObject({ pick_id: pick.id, channel: 'facebook', external_id: '111_222', ok: true, detail: 'pick announce' });
   });
 
+  it('KHÔNG đăng lần hai khi sổ đã có tin — chống bài trùng trên kênh', async () => {
+    // Nick 29/8: kênh có hai tin pick Tottenham y hệt (22:41 và 23:17). Luồng KẾT QUẢ
+    // có chốt chặn này từ lâu, luồng PICK thì không.
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick());
+    const api = fakeApi();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ id: '111_222' }), { status: 200 })));
+
+    await announcePick({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
+    await announcePick({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
+
+    expect(api.sendMessage).toHaveBeenCalledTimes(1);
+    expect(store.logs.filter((l) => l.channel === 'telegram')).toHaveLength(1);
+  });
+
+  it('HUỶ pick vẫn báo được dù đã có tin đăng pick — chốt chặn chỉ chặn đúng loại tin', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(publishedPick());
+    const api = fakeApi();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ id: '111_222' }), { status: 200 })));
+
+    await announcePick({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
+    await announceVoid({ api: api as unknown as AnnouncePickDeps['api'], channelChatId: CHANNEL, store, siteUrl: SITE, facebook: FB }, pick);
+
+    expect(store.logs.filter((l) => l.channel === 'telegram')).toHaveLength(2);
+    expect(store.logs.map((l) => l.detail)).toContain('void announce');
+  });
+
   it('caption Facebook KHÔNG mang link, link nằm ở bình luận đầu', async () => {
     // Jane 29/8: bài pick trên fanpage dán HAI link cùng trỏ một trang — một bản slug,
     // một bản mã id. Nick + Jane chốt: Facebook bỏ hẳn link khỏi caption, đưa xuống

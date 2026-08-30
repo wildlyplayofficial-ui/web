@@ -19,6 +19,28 @@ export function ScrollRow({ children, className = "" }: { children: ReactNode; c
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   };
 
+  // Mở ra là nhảy thẳng tới thẻ có data-neo. Băng tỷ số xếp trận ĐÃ ĐÁ trước rồi
+  // mới tới trận sắp đá, nên nếu để nguyên thì thứ đập vào mắt đầu tiên là mấy
+  // trận đã xong — Nick 29/8: "ở đầu băng này lúc nào cũng là trận chưa hoặc đang
+  // đá". Trận đã đá vẫn còn, chỉ nằm bên trái, kéo ngược lại là thấy.
+  // Không có data-neo thì không làm gì — mấy hàng cuộn khác giữ nguyên như cũ.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const neo = el.querySelector<HTMLElement>("[data-neo]");
+    if (!neo) return;
+    // Đo bằng getBoundingClientRect chứ KHÔNG dùng offsetLeft: offsetLeft tính từ
+    // ông tổ có position, không phải từ khung cuộn, nên trượt mất hai thẻ (đo 29/8).
+    // Đặt thẳng, KHÔNG cuộn mượt: cuộn mượt lúc trang vừa hiện trông như giật.
+    const dat = () => {
+      el.scrollLeft += neo.getBoundingClientRect().left - el.getBoundingClientRect().left;
+    };
+    dat();
+    // Chạy lại sau một khung hình: huy hiệu đội tải xong có thể đẩy lại bố cục.
+    const id = requestAnimationFrame(dat);
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   useEffect(() => {
     update();
     const el = ref.current;

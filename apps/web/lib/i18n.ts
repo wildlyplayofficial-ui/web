@@ -304,6 +304,9 @@ export interface Dict {
   };
   scout: {
     heading: string;
+    /** Tiêu đề khi Chú Tám Banh KHÔNG có kèo — khối AI lên làm kèo chính của ngày.
+     *  Vẫn phải mang chữ "Trợ lý AI" để không ai tưởng là kèo người thật (Jane 29/8). */
+    headingSolo: string;
     badge: string;
     noPlay: string;
     disclosure: string;
@@ -624,6 +627,7 @@ const en: Dict = {
   },
   scout: {
     heading: "Alternative Picks \u00b7 The Scout",
+    headingSolo: "Today's Pick \u00b7 The Scout",
     badge: "Lower Confidence",
     noPlay: "The Scout \u2014 no Alt play today.",
     disclosure: "The Scout \u2014 a fictional, AI-operated banhbong.net persona \u00b7 lower confidence \u00b7 separate ledger",
@@ -942,6 +946,7 @@ const vi: Dict = {
   },
   scout: {
     heading: "K\u00e8o Ph\u1ee5 \u00b7 Trợ lý AI",
+    headingSolo: "K\u00e8o H\u00f4m Nay \u00b7 Trợ lý AI",
     badge: "\u0110\u1ed9 tin th\u1ea5p h\u01a1n",
     noPlay: "Trợ lý AI \u2014 kh\u00f4ng c\u00f3 k\u00e8o ph\u1ee5 h\u00f4m nay.",
     disclosure: "Trợ lý AI \u2014 nh\u00e2n v\u1eadt gi\u1ea3 t\u01b0\u1edfng, AI-operated, c\u1ee7a banhbong.net \u00b7 \u0111\u1ed9 tin th\u1ea5p h\u01a1n \u00b7 s\u1ed5 ri\u00eang",
@@ -1260,6 +1265,7 @@ const th: Dict = {
   },
   scout: {
     heading: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07 \u00b7 The Scout",
+    headingSolo: "\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49 \u00b7 The Scout",
     badge: "\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32",
     noPlay: "The Scout \u2014 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e2a\u0e33\u0e23\u0e2d\u0e07\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49",
     disclosure: "The Scout \u2014 \u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e21\u0e21\u0e15\u0e34 \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e02\u0e2d\u0e07 banhbong.net \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u00b7 \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01",
@@ -1580,6 +1586,7 @@ const es: Dict = {
   },
   scout: {
     heading: "Picks Alternativos \u00b7 The Scout",
+    headingSolo: "Pick de Hoy \u00b7 The Scout",
     badge: "Menor Confianza",
     noPlay: "The Scout \u2014 sin pick alternativo hoy.",
     disclosure: "The Scout \u2014 personaje ficticio, operado por IA, de banhbong.net \u00b7 menor confianza \u00b7 registro separado",
