@@ -153,6 +153,43 @@ export interface NoPlayArticleDeps {
   revalidateUrl?: string;
 }
 
+/** Đóng dòng watching của trận vừa bỏ qua, và xoá đệm thẻ "watching" để bảng lên ngay.
+ *
+ *  Vì sao là hàm RIÊNG, không nhét vào publishNoPlayArticle: hàm đó thoát sớm khi thiếu
+ *  khoá AI hoặc khi slug đã tồn tại — nhét vào trong thì có lúc không chạy. Bỏ qua một
+ *  trận là việc phải ghi nhận DÙ bài có sinh được hay không.
+ *
+ *  Vì sao là hàm riêng chứ không viết thẳng ở chỗ gọi: có HAI đường sinh no-play —
+ *  lệnh bot /noplay và endpoint /api/noplay. Ngày 30/8 vá mỗi lệnh bot, quên endpoint,
+ *  Nick báo lại y hệt lỗi cũ. Một hàm, hai chỗ gọi, hết lặp.
+ *
+ *  Không ném lỗi: đóng watching hỏng KHÔNG được chặn việc sinh bài.
+ */
+export async function dongWatchingChoNoPlay(
+  deps: { store: Store; revalidateUrl?: string },
+  noplay: ParsedNoPlay,
+): Promise<void> {
+  try {
+    const dong = await deps.store.expireWatchingByTeams(
+      noplay.homeTeam, noplay.awayTeam, noplay.note || noplay.verdict || undefined,
+    );
+    if (!dong) {
+      log.info(`noplay: không có dòng watching đang mở cho ${noplay.homeTeam} vs ${noplay.awayTeam}`);
+      return;
+    }
+    log.info(`noplay: đã đóng watching ${dong.id} (${dong.home_team} vs ${dong.away_team})`);
+    // Bảng đọc thẻ đệm "watching" — không xoá thì số cũ đứng tới 5 phút.
+    if (deps.revalidateUrl) {
+      const revalidate = createRevalidator({
+        siteUrl: deps.revalidateUrl, secret: process.env.REVALIDATE_SECRET,
+      });
+      await revalidate(['watching']);
+    }
+  } catch (err) {
+    log.warn(`noplay: đóng watching hỏng cho ${noplay.homeTeam} vs ${noplay.awayTeam}:`, err);
+  }
+}
+
 /** Generate + publish a no-play article. Fire-and-forget: never throws. */
 export async function publishNoPlayArticle(
   deps: NoPlayArticleDeps,

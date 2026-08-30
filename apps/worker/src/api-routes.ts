@@ -6,7 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { parsePick } from './parse-pick';
 import { parseWatching } from './parse-watching';
 import { parseNoPlay } from './parse-noplay';
-import { publishNoPlayArticle } from './noplay-article';
+import { publishNoPlayArticle, dongWatchingChoNoPlay } from './noplay-article';
 import { translateWatchingNote } from './buzz-note';
 import { generateBuzz } from './buzz';
 import { publishWatchingNews, buildNewsSlug } from './watching-news';
@@ -221,6 +221,10 @@ export async function handleApiRoute(
     if (!result.ok) { json(res, 422, { ok: false, error: 'parse_failed', errors: result.errors }); return true; }
     const { noplay } = result;
     log.info(`api: noplay ${noplay.homeTeam} vs ${noplay.awayTeam} — ${noplay.reason}`);
+    // Đóng dòng watching — ĐẶT NGOÀI cổng khoá AI: bỏ qua một trận phải được ghi nhận
+    // dù bài có sinh được hay không. Thiếu bước này thì API trả ok:true mà daily-board
+    // vẫn trống — Nick báo 30/8 với trận Man United vs Ipswich Town.
+    await dongWatchingChoNoPlay({ store: deps.store, revalidateUrl: deps.siteUrl }, noplay);
     if (deps.aiEnv?.apiKey) {
       void publishNoPlayArticle({
         store: deps.store, env: deps.aiEnv, revalidateUrl: deps.siteUrl,
