@@ -148,7 +148,16 @@ const EPL_TEAM_ALIASES: Record<string, string> = {
   newcastle: "newcastle united",
   leeds: "leeds united",
   bournemouth: "afc bournemouth",
+  // Tên ngoài Ngoại hạng Anh: kho lưu tên ngắn, nguồn kèo ghi tên dài.
+  "juventus turin": "juventus",
 };
+
+// ── Đuôi/tiền tố pháp nhân trong tên đội: "Arsenal FC", "Sunderland AFC",
+//    "AS Monaco". Kho ảnh đặt theo tên gọi thường ngày (arsenal.png, monaco.png)
+//    nên phải gỡ mấy chữ này TRƯỚC khi tra bảng alias, không thì "Arsenal FC" đi
+//    tìm arsenal-fc.png rồi trượt im lặng như vụ Tottenham 29/8. ──
+const CLUB_PREFIX = /^(?:fc|afc|as|ac|ss|sc|cf|cd|rc)\s+/;
+const CLUB_SUFFIX = /\s+(?:fc|afc|cf|sc|ac|sad)$/;
 
 /** Filename slug for a team's cartoon, e.g. "Man City" → "manchester-city". */
 export function teamImageSlug(name: string): string {
@@ -159,6 +168,9 @@ export function teamImageSlug(name: string): string {
     .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
+    .trim()
+    .replace(CLUB_PREFIX, "")
+    .replace(CLUB_SUFFIX, "")
     .trim();
   return (EPL_TEAM_ALIASES[norm] ?? norm).replace(/\s+/g, "-");
 }
