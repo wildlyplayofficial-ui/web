@@ -223,6 +223,9 @@ export interface Store {
   updatePostBody(slug: string, lang: PostLang, body_md: string): Promise<number>;
   /** Check if a channel_log entry exists for a pick+channel combo (dedup guard). */
   hasChannelLog(pickId: string, channel: string, detailPrefix?: string): Promise<boolean>;
+  /** Mọi dòng channel_log của một pick, mới nhất trước. Lệnh /lammoi cần mã tin đã
+   *  đăng để sửa lại đúng tin đó thay vì đăng tin mới. */
+  listChannelLogs(pickId: string): Promise<ChannelLogEntry[]>;
   /** Upsert a Telegram group into gl_groups (Daily Line TMA). */
   upsertGroup(tgGroupId: number, title: string, createdByTg: number): Promise<{ id: string }>;
   /** Mark a gl_group as inactive (bot removed from group). */
@@ -392,6 +395,10 @@ export class MemoryStore implements Store {
     return this.logs.some(
       (l) => l.pick_id === pickId && l.channel === channel && (!detailPrefix || (l.detail ?? '').startsWith(detailPrefix)),
     );
+  }
+
+  async listChannelLogs(pickId: string): Promise<ChannelLogEntry[]> {
+    return this.logs.filter((l) => l.pick_id === pickId).reverse();
   }
 
   readonly groups = new Map<number, { id: string; tgGroupId: number; active: boolean }>();
@@ -647,6 +654,15 @@ export class SupabaseStore implements Store {
     if (detailPrefix) query = query.like('detail', `${detailPrefix}%`);
     const { count } = await query;
     return (count ?? 0) > 0;
+  }
+
+  async listChannelLogs(pickId: string): Promise<ChannelLogEntry[]> {
+    const { data, error } = await this.db.from('channel_log')
+      .select('pick_id, channel, external_id, ok, detail')
+      .eq('pick_id', pickId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(`listChannelLogs failed: ${error.message}`);
+    return (data ?? []) as ChannelLogEntry[];
   }
 
   async upsertGroup(tgGroupId: number, title: string, createdByTg: number): Promise<{ id: string }> {

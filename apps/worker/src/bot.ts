@@ -15,6 +15,7 @@ import { publishWatchingNews, buildNewsSlug } from './watching-news';
 import { settlePick } from './settle';
 import { announceResult } from './announce';
 import { announcePick, announceVoid } from './announce-pick';
+import { lamMoiBai, bangBaoCao } from './lam-moi';
 import { generatePostmortemDraft, listOverdue, formatPostmortemCard, LOSS_TYPES, type LossType, type PostmortemDeps } from './postmortem';
 import type { NewPick, PickRow, Store } from './store';
 import { log } from './log';
@@ -196,6 +197,31 @@ export function createBot(deps: BotDeps): Bot {
       log.error(`/score failed for pick ${pick.id}:`, err);
       await ctx.reply(`Settlement failed: ${err instanceof Error ? err.message : String(err)}`);
     }
+  });
+
+  // Làm mới ảnh của một pick trên mọi kênh đã đăng (Nick 29/8: "Làm thành app chứ
+  // làm dựa theo trí nhớ thì không lần nào giống lần nào"). Dùng khi vừa sửa thẻ và
+  // muốn mấy bài đã đăng ăn theo bản mới.
+  bot.command('lammoi', async (ctx) => {
+    const id = (ctx.match ?? '').trim();
+    if (!id) {
+      await ctx.reply('Cách dùng: /lammoi <pick_id>\nĐổi lại ảnh thẻ ở tin Telegram đã đăng và bảo Facebook quét lại ảnh.');
+      return;
+    }
+    const pick = await deps.store.getPick(id);
+    if (!pick) {
+      await ctx.reply(`Không thấy pick nào mã ${id}`);
+      return;
+    }
+    const bao = await lamMoiBai({
+      api: bot.api,
+      store: deps.store,
+      channelChatId: deps.channelChatId,
+      siteUrl: deps.siteUrl,
+      facebook: deps.facebook,
+    }, pick);
+    if (deps.revalidate) void deps.revalidate(['picks', 'posts']);
+    await ctx.reply(bangBaoCao(pick, bao));
   });
 
   // Void a pick BEFORE kickoff (Nick 12/6). Trust model: picks are never edited
