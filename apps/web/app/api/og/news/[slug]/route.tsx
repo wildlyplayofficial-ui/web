@@ -1,4 +1,4 @@
-import { getPost } from "@/lib/data";
+import { getPost, getPickById } from "@/lib/data";
 import { getHeadline, getNewsItemBySlug } from "@/lib/news";
 import { resolveLang, type Lang } from "@/lib/i18n";
 import {
@@ -6,6 +6,8 @@ import {
   loadTeamPlayerDataUri, loadBadgeDataUri,
 } from "../../_shared";
 import { teamBadge } from "@/lib/team-badges";
+import { TheTranPick } from "../../play/[id]/card";
+import { dungTheTran } from "../../play/[id]/route";
 
 /**
  * Dynamic share image (PNG 1200x630) for news/article pages.
@@ -178,6 +180,24 @@ export async function GET(
   // getPost falls back to the EN row when the language is missing.
   const post = await getPost(slug, lang);
   if (post) {
+    // Bài GẮN VỚI MỘT KÈO ĐÃ CHẤM thì dùng luôn THẺ KẾT QUẢ (vàng TRÚNG / xám
+    // TRẬT, có tỉ số, có mặt cầu thủ) thay tấm xanh chung — Nick 30/8: "chỉ đổi
+    // cho bài CÓ gắn kèo".
+    //
+    // ⚠️ Điều kiện phải CHẶT. Khuôn xanh này dùng cho MỌI bài tin và bài nhận
+    // định; đổi rộng tay là mấy trăm bài chuyển nhượng, bài dạy kèo mất ảnh theo
+    // (Jane cản đúng chỗ này). Nên chỉ đổi khi:
+    //   có pick_ids  VÀ  pick đó đã chấm xong (won/lost/push).
+    // Kèo chưa đá thì bài xem lại chưa tồn tại, còn bài trước trận vẫn nên dùng
+    // khuôn cũ — thẻ trận trước giờ đá không nói thêm được gì so với tiêu đề.
+    const maKeo = post.pick_ids?.[0];
+    if (maKeo) {
+      const pick = await getPickById(maKeo);
+      if (pick && (pick.status === "won" || pick.status === "lost" || pick.status === "push")) {
+        // Dùng CHUNG hàm dựng với /api/og/play/[id] — chép đôi mã là hai thẻ lệch nhau.
+        return ogResponse(TheTranPick(await dungTheTran(pick)) as React.ReactElement, { headers });
+      }
+    }
     return card(post.meta_title ?? post.title, post.type, lang, headers);
   }
 
