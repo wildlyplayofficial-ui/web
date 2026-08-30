@@ -166,18 +166,22 @@ export default async function Home({ params }: Props) {
       { nhan: dict.board.noPlaysLabel, gia: noPlays.length },
       { nhan: dict.board.watchingLabel, gia: watching.length },
     ],
+    ghiChu: null,
   };
   // Băng AI chỉ đếm kèo của nó. Bỏ qua và Đang theo dõi là sổ của Chú Tám Banh,
-  // in lại bên này là đếm trùng. Không có kèo AI thì ẩn hẳn băng, đừng để băng rỗng.
-  const bangAI = scoutPicks.length
-    ? {
-        href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
-        tieuDe: bacNghi ? dict.scout.headingSolo : dict.scout.heading,
-        vien: "border-[#6b9e9e]/40 bg-[#6b9e9e]/[.08] hover:border-[#6b9e9e]/70",
-        nut: "bg-[#6b9e9e]",
-        so: [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }],
-      }
-    : null;
+  // in lại bên này là đếm trùng.
+  // Hôm không có kèo AI thì băng VẪN HIỆN, chỉ đổi phần số thành câu "không có kèo
+  // phụ hôm nay" — giống khối AI dưới /daily-board. Trước đây ẩn hẳn băng, hoá ra
+  // Nick nhìn thấy một băng lại tưởng mã chưa lên (sáng 30/8); Nick chốt cho hiện.
+  const coKeoAI = scoutPicks.length > 0;
+  const bangAI = {
+    href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
+    tieuDe: coKeoAI && bacNghi ? dict.scout.headingSolo : dict.scout.heading,
+    vien: "border-[#6b9e9e]/40 bg-[#6b9e9e]/[.08] hover:border-[#6b9e9e]/70",
+    nut: "bg-[#6b9e9e]",
+    so: coKeoAI ? [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }] : [],
+    ghiChu: coKeoAI ? null : dict.scout.noPlay,
+  };
 
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
@@ -401,33 +405,37 @@ export default async function Home({ params }: Props) {
           </Link>
         ) : (
           <div className="flex flex-col gap-3">
-            {[bangBac, bangAI].map((b) =>
-              b === null ? null : (
-                <Link
-                  key={b.href}
-                  href={b.href}
-                  className={`group flex flex-wrap items-center justify-between gap-4 rounded-card border px-6 py-5 transition-colors ${b.vien}`}
+            {[bangBac, bangAI].map((b) => (
+              <Link
+                key={b.href}
+                href={b.href}
+                className={`group flex flex-wrap items-center justify-between gap-4 rounded-card border px-6 py-5 transition-colors ${b.vien}`}
+              >
+                <div>
+                  <p className="font-display text-lg font-bold">{b.tieuDe}</p>
+                  <p className="mt-1 text-sm text-muted">
+                    {formatBoardDate(new Date(), lang)}
+                    {b.so.map((o) => (
+                      <span key={o.nhan}>
+                        <span className="mx-2">·</span>
+                        {o.nhan}: <strong className="text-ink">{o.gia}</strong>
+                      </span>
+                    ))}
+                    {b.ghiChu === null ? null : (
+                      <span>
+                        <span className="mx-2">·</span>
+                        {b.ghiChu}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <span
+                  className={`inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5 ${b.nut}`}
                 >
-                  <div>
-                    <p className="font-display text-lg font-bold">{b.tieuDe}</p>
-                    <p className="mt-1 text-sm text-muted">
-                      {formatBoardDate(new Date(), lang)}
-                      {b.so.map((o) => (
-                        <span key={o.nhan}>
-                          <span className="mx-2">·</span>
-                          {o.nhan}: <strong className="text-ink">{o.gia}</strong>
-                        </span>
-                      ))}
-                    </p>
-                  </div>
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5 ${b.nut}`}
-                  >
-                    {dict.home.viewBoard} &rarr;
-                  </span>
-                </Link>
-              ),
-            )}
+                  {dict.home.viewBoard} &rarr;
+                </span>
+              </Link>
+            ))}
           </div>
         )}
       </section>
