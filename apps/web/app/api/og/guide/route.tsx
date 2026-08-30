@@ -42,7 +42,18 @@ export async function GET(request: Request): Promise<Response> {
   const anchor = data?.anchor || searchParams.get("anchor") || "";
   const badgeEn = data?.badge || searchParams.get("type")?.toUpperCase() || "GUIDE";
   // Bản /vi: nhãn tiếng Việt (Peter 25/8 — nhãn EN trên bài VI là lỗi)
-  const badge = vi ? (badgeEn === "CALCULATOR" ? "CÔNG CỤ" : "HƯỚNG DẪN") : badgeEn;
+  //
+  // ⚠️ Bảng tra chứ KHÔNG phải "cái nào không phải CALCULATOR thì là HƯỚNG DẪN".
+  // Nhánh gộp cũ làm mọi bài Blog chia sẻ ra với nhãn HƯỚNG DẪN (soi ảnh thật
+  // 30/8 trên bài cau-thu-dat-nhat-the-gioi-2026). Sai này đắt: Hướng dẫn là mục
+  // dạy cá cược, bị chặn đăng fanpage — dán nhãn đó lên bài bóng đá thường là tự
+  // đóng đúng cửa mà mục Blog sinh ra để mở. Thêm loại mới thì thêm một dòng ở đây.
+  const NHAN_VI: Record<string, string> = {
+    CALCULATOR: "CÔNG CỤ",
+    BLOG: "BLOG",
+    GUIDE: "HƯỚNG DẪN",
+  };
+  const badge = vi ? (NHAN_VI[badgeEn] ?? "HƯỚNG DẪN") : badgeEn;
 
   const mark = await loadMarkDataUri();
   return ogResponse(
