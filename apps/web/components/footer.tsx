@@ -19,6 +19,11 @@ export function Footer() {
     { href: "/matches", label: dict.nav.matches },
     { href: "/competitions", label: dict.nav.standings },
     { href: "/learn", label: dict.nav.learn },
+    // Blog phải có mặt Ở ĐÂY chứ không chỉ trong menu thả xuống ở đầu trang: menu đó
+    // nằm trong component client, không có trong HTML máy chủ trả về, nên Google
+    // không thấy đường nào bò vào /blog. Đo 30/8: trang chủ có /learn, /guides,
+    // /calculators (đều từ chân trang này) nhưng KHÔNG có /blog lần nào.
+    { href: "/blog", label: dict.nav.blog },
     { href: "/guides", label: dict.nav.guides },
     { href: "/calculators", label: dict.nav.calculators },
     { href: "/about", label: dict.nav.about },
