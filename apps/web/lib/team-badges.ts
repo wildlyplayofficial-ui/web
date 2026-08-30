@@ -1,3 +1,4 @@
+import { tenTra } from "./ten-doi";
 import clubBadges from "@/lib/data/club-badges.json";
 import countryIso from "@/lib/data/country-iso.json";
 
@@ -12,27 +13,6 @@ const ISO: Record<string, string> = countryIso;
  *  - World Cup nations   → flagcdn flag by ISO code.
  *  - Everything else      → null (caller falls back to the emoji flag).
  */
-/** Chữ chỉ LOẠI HÌNH câu lạc bộ, không phải tên. Nguồn kèo ghi "Juventus Turin",
- *  "AS Roma", "SSC Napoli" trong khi kho lưu "Juventus", "Roma", "Napoli" — bỏ mấy
- *  chữ này đi rồi tra lại là khớp. Đo 29/8 trên /keo: 76 đội, 23 khớp sẵn,
- *  34 khớp thêm nhờ bước này. */
-const CHU_LOAI_CLB = new Set([
-  "fc", "ac", "as", "aj", "sc", "cf", "ssc", "ogc", "us", "acf", "rc", "ca",
-  "afc", "bc", "cfc", "sco", "calcio", "sv", "vfb", "fk", "cd", "ud", "sd",
-  "rcd", "ss", "ssd", "club", "estac",
-]);
-
-/** Tên rút gọn để tra: bỏ dấu, bỏ chữ loại hình CLB, còn lại nối bằng khoảng trắng. */
-function tenTra(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((w) => w && !CHU_LOAI_CLB.has(w))
-    .join(" ");
-}
-
 /** Tra theo tên rút gọn. Dựng một lần. */
 const CLB_THEO_TEN_TRA: Record<string, string> = (() => {
   const m: Record<string, string> = {};
