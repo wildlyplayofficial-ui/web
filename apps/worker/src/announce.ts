@@ -1,6 +1,6 @@
 /** Post a settled pick's result to the Telegram channel + audit it in channel_log. */
 import type { Api } from 'grammy';
-import { postToFacebook, pickVi } from './announce-pick';
+import { postToFacebook, postFacebookComment, pickVi } from './announce-pick';
 import { buildRecapPosts, detectClosingLineFabrication } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import type { PickRow, Store } from './store';
@@ -79,22 +79,31 @@ export function formatUnits(n: number): string {
  *  200 nhưng canonical của nó trỏ về `/analysis/`.
  *
  *  `html` = true khi gửi Telegram (in đậm hai dòng chính). Facebook không có chữ
- *  đậm nên gọi với false. */
-export function formatResultMessage(pick: PickRow, siteUrl?: string, html = false): string {
+ *  đậm nên gọi với false.
+ *
+ *  `coLink` = false cho Facebook: fanpage bóp tầm với bài dán link ra ngoài nên
+ *  link xuống bình luận đầu (Nick + Jane chốt 29/8). Telegram giữ link trong chữ
+ *  — Telegram không phạt gì, để link ngay trong tin là tiện cho người đọc. */
+/** Link bài xem lại trận. Chữ `recap` TRONG đường dẫn thì GIỮ NGUYÊN: đổi slug là
+ *  mấy bài đang sống thành 404. Chỉ chữ hiển thị mới dịch (Nick chốt 29/8:
+ *  "Không cần đổi" khi được hỏi có đổi đường dẫn không). */
+export function linkXemLai(pick: PickRow, siteUrl?: string): string | null {
+  if (!siteUrl) return null;
+  const slugify = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `${siteUrl}/analysis/recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`;
+}
+
+export function formatResultMessage(pick: PickRow, siteUrl?: string, html = false, coLink = true): string {
   const badge = (pick.raw_outcome && OUTCOME_VI[pick.raw_outcome])
     ?? STATUS_VI[pick.status] ?? pick.status;
   const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
   const dam = (t: string) => (html ? `<b>${esc(t)}</b>` : t);
-  const slugify = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const recap = siteUrl
-    ? `${siteUrl}/analysis/recap-${slugify(pick.home_team)}-vs-${slugify(pick.away_team)}-${pick.home_score}-${pick.away_score}`
-    : null;
+  const recap = coLink ? linkXemLai(pick, siteUrl) : null;
   return [
     dam(`${badge} \u2014 ${pick.home_team} vs ${pick.away_team}`),
     '',
     dam(`${pickVi(pick)} \u00b7 K\u1ebft qu\u1ea3: ${pick.home_score}-${pick.away_score}`),
     // "Xem lại trận" chứ không phải "Link recap" — Nick 29/8 muốn tiếng Việt.
-    // Chữ `recap` TRONG đường dẫn thì giữ: đổi slug là bài đang sống thành 404.
     ...(recap ? ['', `Xem lại trận: ${recap}`] : []),
   ].join('\n');
 }
@@ -165,7 +174,8 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
   }
 
   const textTg = formatResultMessage(pick, deps.siteUrl, true);
-  const text = formatResultMessage(pick, deps.siteUrl, false);
+  // Caption Facebook KHÔNG mang link — link đi xuống bình luận đầu ở dưới.
+  const text = formatResultMessage(pick, deps.siteUrl, false, false);
   const cardUrl = deps.siteUrl ? resultCardUrl(deps.siteUrl, pick) : null;
   const brandUrl = deps.siteUrl && SETTLED_IMAGES[pick.status]
     ? `${deps.siteUrl}/images/${SETTLED_IMAGES[pick.status]}` : null;
@@ -209,7 +219,16 @@ export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise
         fbId = await postPhotoToFacebook(deps.facebook, cardUrl ?? brandUrl!, text);
       } catch (err) {
         log.warn(`FB result card failed for pick ${pick.id} — falling back to link post:`, err);
+        // Đường dự phòng đăng lên /feed, có ô `link` riêng nên vẫn còn đường dẫn.
         fbId = await postToFacebook(deps.facebook, text, `${deps.siteUrl}/play/${pick.id}`);
+      }
+      // Bình luận đầu mang link bài xem lại. Luồng đăng PICK đã có bình luận link từ
+      // trước, luồng KẾT QUẢ thì CHƯA — bỏ link khỏi caption mà không thêm chỗ này là
+      // bài kết quả không còn đường dẫn nào (Jane bắt được 29/8).
+      const xemLai = linkXemLai(pick, deps.siteUrl);
+      if (xemLai) {
+        void postFacebookComment(deps.facebook, fbId, `Xem lại trận: ${xemLai}`)
+          .catch((err) => log.warn(`FB recap comment failed for ${pick.id} — post already up:`, err));
       }
       await deps.store.insertChannelLog({
         pick_id: pick.id,

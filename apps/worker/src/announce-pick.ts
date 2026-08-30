@@ -99,8 +99,11 @@ export function formatPickBlock(pick: PickRow): string {
   return `${pick.selection}${lineSuffix} @ ${Number(pick.odds_publish).toFixed(2)}`;
 }
 
-/** Caption gọn (Nick 21/8): thẻ hình đã mang thông tin → caption chỉ còn nhận định ngắn (nếu có) + link + disclaimer. */
-export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCardExtras = {}, html = false): string {
+/** Caption gọn (Nick 21/8): thẻ hình đã mang thông tin → caption chỉ còn nhận định ngắn (nếu có) + link + disclaimer.
+ *
+ *  `coLink` = false cho Facebook: fanpage bóp tầm với bài dán link ra ngoài nên link
+ *  xuống bình luận đầu (Nick + Jane chốt 29/8). Telegram giữ link trong chữ. */
+export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCardExtras = {}, html = false, coLink = true): string {
   // Thẻ hình đã đủ thông tin (đội · Over/Under · Mức tự tin · giờ VN) → caption KHÔNG lặp lại.
   const esc = (t: string) => (html ? t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : t);
   const link = `${siteUrl}/play/${buildPickSlug(pick)}`;
@@ -108,6 +111,12 @@ export function formatPickMessage(pick: PickRow, siteUrl: string, extras: PickCa
   // Gwen + Jane đã cản hai lần (dòng đó do `author` quyết định, và chốt chặn trong kho
   // dựng ra để pick của Scout không đăng thiếu nhãn) — Peter nghe rồi vẫn chốt bỏ.
   const hook = extras.hook ? (html ? `📝 <b>${esc(extras.hook)}</b>` : `📝 ${esc(extras.hook)}`) : null;
+  if (!coLink) {
+    // Bỏ link thì caption có thể rỗng khi pick không có nhận định ngắn — Facebook
+    // từ chối ảnh không caption, nên rơi về tên trận. KHÔNG in thêm giờ/tự tin:
+    // thẻ hình đã có, Nick 21/8 chốt caption không lặp lại thẻ.
+    return hook ?? `${pick.home_team} vs ${pick.away_team}`;
+  }
   return [
     ...(hook ? [hook, ''] : []),
     html ? `🔗 <a href="${link}">Nhận định chi tiết</a>` : `🔗 Nhận định chi tiết: ${link}`,
@@ -183,7 +192,7 @@ export async function announcePick(
     deps,
     pick,
     formatPickMessage(pick, deps.siteUrl, extras, true),
-    formatPickMessage(pick, deps.siteUrl, extras, false),
+    formatPickMessage(pick, deps.siteUrl, extras, false, false),
     'pick announce',
   );
 }
@@ -241,7 +250,10 @@ async function broadcast(
       try {
         // §3: FB hero = branded PICK visual (stopping power); OG data-card + link go in the first comment.
         const { postPhotoToFacebook } = await import('./announce');
-        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, `${msgFb}\n\n${deps.siteUrl}/play/${pick.id}`);
+        // Caption đã có sẵn link dạng slug ở cuối formatPickMessage. Nối thêm link
+        // dạng mã id vào đây là DÁN HAI LẦN cùng một trang — Jane phải xoá tay ở
+        // từng bài (bắt được 29/8 trên bài Liverpool rồi lại Tottenham).
+        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, msgFb);
         void postFacebookComment(deps.facebook, fbId, `${deps.siteUrl}/play/${pick.id}`, ogCardUrl)
           .catch((err) => log.warn(`FB OG comment failed for ${pick.id} — hero already posted:`, err));
       } catch {
