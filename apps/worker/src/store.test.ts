@@ -338,3 +338,42 @@ describe('SupabaseStore.listPostSlugsByType — đọc qua trần 1000 dòng c�
     expect([ketQua.size, goi]).toEqual([1200, [[0, 999], [1000, 1999]]]);
   });
 });
+
+describe('MemoryStore.expireWatchingByTeams (30/8: /noplay đẻ bài nhưng KHÔNG đóng watching)', () => {
+  const w = (home: string, away: string) => ({
+    home_team: home, away_team: away, league: 'Premier League',
+    kickoff_utc: '2026-08-30T19:00:00.000Z', note: null, status: 'active' as const,
+    pick_id: null, unified_fixture_id: null, author: 'curator' as const,
+  });
+
+  it('đóng đúng dòng và ghi lý do — bảng "Bỏ qua" mới nhảy số', async () => {
+    const store = new MemoryStore();
+    await store.insertWatching(w('Chelsea', 'Brighton & Hove Albion') as never);
+    const dong = await store.expireWatchingByTeams('Chelsea', 'Brighton & Hove Albion', 'giá không hợp lý');
+    expect(dong?.status).toBe('expired');
+    expect(dong?.close_note).toBe('giá không hợp lý');
+    expect(await store.getActiveWatching()).toHaveLength(0);
+  });
+
+  it('KHỚP dù tên đội viết khác nhau — "Brighton FC" vs "Brighton"', async () => {
+    // Hai nguồn ghi tên đội khác nhau; so thẳng bằng eq là trượt, phải chuẩn hoá.
+    const store = new MemoryStore();
+    await store.insertWatching(w('Chelsea FC', 'Brighton') as never);
+    expect(await store.expireWatchingByTeams('Chelsea', 'Brighton FC')).not.toBeNull();
+  });
+
+  it('trả null khi không có dòng nào đang mở — pass trận ngoài watchlist KHÔNG phải lỗi', async () => {
+    const store = new MemoryStore();
+    expect(await store.expireWatchingByTeams('Real Madrid', 'Malaga')).toBeNull();
+  });
+
+  it('KHÔNG đụng dòng của trận khác', async () => {
+    const store = new MemoryStore();
+    await store.insertWatching(w('Chelsea', 'Brighton') as never);
+    await store.insertWatching(w('Real Madrid', 'Malaga') as never);
+    await store.expireWatchingByTeams('Chelsea', 'Brighton');
+    const con = await store.getActiveWatching();
+    expect(con).toHaveLength(1);
+    expect(con[0].home_team).toBe('Real Madrid');
+  });
+});

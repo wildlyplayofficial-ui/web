@@ -213,6 +213,12 @@ export interface Store {
   getWatchingById(id: string): Promise<WatchingRow | null>;
   /** Expire a watching row by setting status='expired'. Optional closeNote for public closing line. */
   expireWatching(id: string, closeNote?: string): Promise<WatchingRow>;
+  /** Đóng dòng watching ĐANG ACTIVE khớp cặp đội, trả về dòng đã đóng — null nếu không có.
+   *  Sinh ra vì lệnh /noplay chỉ đẻ bài rồi thôi, KHÔNG đụng bảng watching, nên bộ đếm
+   *  "Bỏ qua" trên trang chủ (đếm status='expired') mãi bằng 0. Nick bắt được 30/8:
+   *  bỏ qua Chelsea xong bảng vẫn ghi "Bỏ qua: 0 · Đang theo dõi: 4".
+   *  So tên đội SAU KHI CHUẨN HOÁ để "Brighton" khớp "Brighton & Hove Albion FC". */
+  expireWatchingByTeams(homeTeam: string, awayTeam: string, closeNote?: string): Promise<WatchingRow | null>;
   /** Link a watching row to a pick: status='picked' + pick_id. */
   linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow>;
   /** Partial update on a watching row (buzz_history, note_translations, etc). */
@@ -354,6 +360,13 @@ export class MemoryStore implements Store {
     const next = { ...row, status: 'expired' as const, ...(closeNote !== undefined ? { close_note: closeNote } : {}) };
     this.watchings.set(id, next);
     return next;
+  }
+
+  async expireWatchingByTeams(homeTeam: string, awayTeam: string, closeNote?: string): Promise<WatchingRow | null> {
+    const row = (await this.getActiveWatching()).find(
+      (r) => chuanTenDoi(r.home_team) === chuanTenDoi(homeTeam) &&
+             chuanTenDoi(r.away_team) === chuanTenDoi(awayTeam));
+    return row ? this.expireWatching(row.id, closeNote) : null;
   }
 
   async linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow> {
@@ -611,6 +624,15 @@ export class SupabaseStore implements Store {
       .from('watching').update(patch).eq('id', id).select().single();
     if (error) throw new Error(`expireWatching failed: ${error.message}`);
     return data as WatchingRow;
+  }
+
+  async expireWatchingByTeams(homeTeam: string, awayTeam: string, closeNote?: string): Promise<WatchingRow | null> {
+    // Lọc trong bộ nhớ chứ không lọc bằng câu truy vấn: tên đội hai nguồn ghi khác nhau
+    // ("Brighton" vs "Brighton & Hove Albion"), so thẳng bằng eq là trượt.
+    const row = (await this.getActiveWatching()).find(
+      (r) => chuanTenDoi(r.home_team) === chuanTenDoi(homeTeam) &&
+             chuanTenDoi(r.away_team) === chuanTenDoi(awayTeam));
+    return row ? this.expireWatching(row.id, closeNote) : null;
   }
 
   async linkWatchingToPick(watchingId: string, pickId: string): Promise<WatchingRow> {
