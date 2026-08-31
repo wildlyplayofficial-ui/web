@@ -9,6 +9,7 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
+import { biaUrl } from "@/lib/bia-guide";
 
 export const revalidate = 300;
 
@@ -28,31 +29,6 @@ const GUIDE_DIAGRAMS: Record<string, string> = {
   "no-play-discipline": "no-play-discipline.svg",
   "responsible-play-guide": "responsible-play.svg",
 };
-
-/**
- * Bìa vẽ tay cho cụm guide tài xỉu/kèo tiếng Việt. Thẻ sinh runtime (/api/og/guide)
- * chỉ có tiêu đề; mấy bài này cần MỐC SỐ trên bìa, mà mốc phải đúng bài — bìa của
- * bài 2.25 mà khoe 2.5 là chỉ vào bài hàng xóm. Nên số vẽ sẵn theo từng slug, không
- * sinh động. Chữ trên bìa là tiếng Việt → chỉ dùng cho lang "vi".
- * Để dưới /images/ vì proxy.ts CHỈ miễn trừ icons|images|brand — /og/* bị lớp
- * chuyển ngôn ngữ nuốt và trả 404 (thử tay 1/9: /og/player.png cũng đang 404).
- */
-const BIA_VI = new Set([
-  "keo-tai-xiu-2-2-5-la-gi",
-  "keo-tai-xiu-2-5-la-gi",
-  "keo-tai-xiu-2-5-3-la-gi",
-  "keo-tai-xiu-3-la-gi",
-  "keo-tai-xiu-3-3-5-la-gi",
-  "keo-tai-xiu-3-5-4-la-gi",
-  "keo-1x2-la-gi",
-  "keo-hiep-1-la-gi",
-  "keo-the-phat-la-gi",
-]);
-
-function biaUrl(slug: string, lang: Lang, title: string): string {
-  if (lang === "vi" && BIA_VI.has(slug)) return `/images/huong-dan/${slug}.jpg?v=${OG_VERSION}`;
-  return `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`;
-}
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;

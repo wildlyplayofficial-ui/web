@@ -6,6 +6,7 @@ import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { Post } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { biaUrl, hasBia } from "@/lib/bia-guide";
 
 export const revalidate = 300;
 
@@ -55,25 +56,45 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
 
 function GuideCard({ post, lang }: { post: Post; lang: Lang }) {
   const excerpt = post.meta_description || extractExcerpt(post.body_md);
+  const bia = hasBia(post.slug, lang) ? biaUrl(post.slug, lang, post.title) : null;
   return (
     <Link
       href={withLang(`/guides/${post.slug}`, lang)}
-      className="group rounded-card border border-line bg-card p-6 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover"
+      className="group flex gap-4 rounded-card border border-line bg-card p-4 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover sm:p-6"
     >
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="rounded-full border border-brand/40 px-2 py-0.5 font-display font-semibold text-brand">
-          Guide
-        </span>
-        <time dateTime={post.published_at ?? undefined}>
-          {formatDate(post.published_at, lang)}
-        </time>
+      {/* Ô ảnh luôn chiếm chỗ dù bài chưa có bìa — không thì thẻ có ảnh và thẻ
+          không ảnh cao thấp so le, nhìn như hỏng. */}
+      <div className="hidden h-[88px] w-[168px] shrink-0 self-start overflow-hidden rounded-lg border border-line sm:block">
+        {bia ? (
+          <img
+            src={bia}
+            alt={post.title}
+            width={168}
+            height={88}
+            loading="lazy"
+            className="h-[88px] w-full object-cover"
+          />
+        ) : (
+          <div className="h-[88px] w-full bg-gradient-to-br from-brand/25 to-brand/5" />
+        )}
       </div>
-      <h2 className="mt-3 font-display text-xl font-bold transition-colors group-hover:text-brand">
-        {post.title}
-      </h2>
-      {excerpt && (
-        <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>
-      )}
+
+      <div className="min-w-0">
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className="rounded-full border border-brand/40 px-2 py-0.5 font-display font-semibold text-brand">
+            Guide
+          </span>
+          <time dateTime={post.published_at ?? undefined}>
+            {formatDate(post.published_at, lang)}
+          </time>
+        </div>
+        <h2 className="mt-3 font-display text-xl font-bold transition-colors group-hover:text-brand">
+          {post.title}
+        </h2>
+        {excerpt && (
+          <p className="mt-2 text-sm text-muted line-clamp-2">{excerpt}</p>
+        )}
+      </div>
     </Link>
   );
 }
