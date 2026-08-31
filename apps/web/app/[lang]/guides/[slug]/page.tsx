@@ -9,7 +9,7 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
-import { biaUrl, hasBia, SO_DO_VI } from "@/lib/bia-guide";
+import { biaUrl, biaKhongChuUrl, SO_DO_VI } from "@/lib/bia-guide";
 
 export const revalidate = 300;
 
@@ -126,14 +126,15 @@ export default async function GuidePage({ params }: Props) {
   // Schema built from DB field names only — no user-generated HTML. < escaped to prevent injection.
   const schema = JSON.stringify(buildArticleSchema(post, slug, lang)).replace(/</g, "\\u003c");
 
-  // Hero theo thứ tự: sơ đồ SVG cũ (11 bài EN) → sơ đồ PNG riêng (9 bài kèo VI) → ảnh bìa → không có.
-  // Ảnh bìa có sẵn chữ tiêu đề nên chỉ dùng khi bài không có sơ đồ riêng.
+  // Hero theo thứ tự: sơ đồ SVG cũ (11 bài EN) → sơ đồ PNG riêng (9 bài kèo VI) →
+  // bìa BẢN KHÔNG TIÊU ĐỀ (13 bài còn lại) → không có gì.
+  const biaBai = biaKhongChuUrl(slug, lang);
   const hero = GUIDE_DIAGRAMS[slug]
     ? { src: `/images/guides/${GUIDE_DIAGRAMS[slug]}`, h: 400 }
     : SO_DO_VI.has(slug)
       ? { src: `/images/guides/${slug}.png`, h: 420 }
-      : hasBia(slug, lang)
-        ? { src: biaUrl(slug, lang, post.title), h: 420 }
+      : biaBai
+        ? { src: biaBai, h: 420 }
         : null;
 
   return (

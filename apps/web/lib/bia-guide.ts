@@ -57,10 +57,22 @@ export const SO_DO_VI = new Set([
   "keo-the-phat-la-gi",
 ]);
 
-/** Ảnh bìa tĩnh nếu bài có, không thì rơi về thẻ sinh runtime. */
+/** Ảnh bìa tĩnh nếu bài có, không thì rơi về thẻ sinh runtime. Bản CÓ tiêu đề. */
 export function biaUrl(slug: string, lang: Lang, title: string): string {
   if (hasBia(slug, lang)) return `/images/huong-dan/${slug}.jpg?v=${OG_VERSION}`;
   return `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`;
+}
+
+/**
+ * Bản KHÔNG tiêu đề, chỉ dùng làm ảnh đầu bài. Cùng khuôn, cùng số, bỏ đúng dòng
+ * tiêu đề — vì ảnh nằm ngay dưới thẻ H1, in tiêu đề lần nữa là lặp chữ.
+ * Bản có tiêu đề vẫn giữ cho og:image: lúc chia sẻ ra Telegram/Facebook không có
+ * H1 bên cạnh, bỏ chữ là mất nghĩa.
+ * Chỉ có cho bài KHÔNG nằm trong SO_DO_VI — 9 bài kia đã dùng sơ đồ riêng làm hero.
+ */
+export function biaKhongChuUrl(slug: string, lang: Lang): string | null {
+  if (!hasBia(slug, lang) || SO_DO_VI.has(slug)) return null;
+  return `/images/huong-dan-bai/${slug}.jpg?v=${OG_VERSION}`;
 }
 
 /**
