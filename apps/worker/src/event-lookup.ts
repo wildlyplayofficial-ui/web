@@ -7,8 +7,42 @@
  */
 import { log } from './log';
 
-/** Default lookup league — WC season, site is WC-focused. Change here when the season rolls over. */
+/** Giải dùng khi CHƯA lấy được danh sách từ kho — chỉ là lưới đỡ, không phải cấu hình. */
 export const LOOKUP_LEAGUE = 'international-fifa-world-cup';
+
+/** ── Vì sao có hàm này ──
+ *  Trước đây chỗ tra mã trận GHIM CỨNG đúng một giải World Cup, kèm chú thích
+ *  "đổi ở đây khi sang mùa mới" — và không ai đổi khi World Cup kết thúc. Hệ quả:
+ *  mọi kèo giải câu lạc bộ (Ligue 1, Ngoại hạng Anh, Serie A…) tra không ra mã,
+ *  rơi về fixture_id = 0, bộ chấm tự động bỏ qua, Nick phải gõ /score bằng tay.
+ *  Đo 31/8/2026 trên 60 kèo gần nhất: 15 kèo không có mã, toàn giải CLB.
+ *  Bảng competitions ĐÃ có sẵn cột odds_api_key cho từng giải đang bật — lấy từ đó
+ *  thì hết ghim cứng, thêm giải mới cũng không phải sửa mã. */
+let cacheGiai: Promise<string[]> | null = null;
+
+/** Xoá bộ nhớ tạm — dùng trong bài kiểm. */
+export function quenGiaiDangBat(): void {
+  cacheGiai = null;
+}
+
+export async function layGiaiDangBat(
+  doc: () => Promise<(string | null)[]>,
+): Promise<string[]> {
+  cacheGiai ??= (async () => {
+    try {
+      const ma = (await doc()).filter((x): x is string => Boolean(x));
+      if (!ma.length) {
+        log.warn('event lookup: bảng competitions không có giải nào đang bật — dùng giải mặc định');
+        return [LOOKUP_LEAGUE];
+      }
+      return ma;
+    } catch (err) {
+      log.warn('event lookup: không đọc được bảng competitions, dùng giải mặc định:', err);
+      return [LOOKUP_LEAGUE];
+    }
+  })();
+  return cacheGiai;
+}
 
 /** How long the lookup may delay the confirmation reply before we give up. */
 const LOOKUP_TIMEOUT_MS = 5_000;
@@ -93,33 +127,47 @@ export function matchEventFull(events: ApiEvent[], query: MatchQuery): EventMatc
  *
  * Returns the full EventMatch (id + participant IDs for team logos) since 13/6.
  */
-export async function findEvent(
-  deps: { apiKey: string },
-  pick: MatchQuery,
-): Promise<EventMatch | null> {
+async function layMotGiai(apiKey: string, giai: string): Promise<ApiEvent[]> {
   try {
     const res = await fetch(
-      `https://api.odds-api.io/v3/events?sport=football&league=${LOOKUP_LEAGUE}&apiKey=${deps.apiKey}`,
+      `https://api.odds-api.io/v3/events?sport=football&league=${giai}&apiKey=${apiKey}`,
       { signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS) },
     );
     if (!res.ok) {
-      log.warn(`event lookup: odds-api returned ${res.status} for league ${LOOKUP_LEAGUE}`);
-      return null;
+      log.warn(`event lookup: odds-api returned ${res.status} for league ${giai}`);
+      return [];
     }
     const body: unknown = await res.json();
     if (!Array.isArray(body)) {
-      log.warn('event lookup: unexpected payload (not an array)');
-      return null;
+      log.warn(`event lookup: unexpected payload for league ${giai} (not an array)`);
+      return [];
     }
-    const event = matchEventFull(body as ApiEvent[], pick);
-    if (event === null) {
-      log.warn(`event lookup: no unambiguous event for ${pick.homeTeam} vs ${pick.awayTeam} on ${pick.kickoffUtc.slice(0, 10)}`);
-    }
-    return event;
+    return body as ApiEvent[];
   } catch (err) {
-    log.warn(`event lookup failed for ${pick.homeTeam} vs ${pick.awayTeam}:`, err);
+    log.warn(`event lookup: league ${giai} failed:`, err);
+    return [];
+  }
+}
+
+export async function findEvent(
+  deps: { apiKey: string; leagues?: string[] },
+  pick: MatchQuery,
+): Promise<EventMatch | null> {
+  // Hỏi MỌI giải đang bật cùng lúc rồi gộp kết quả. Chạy song song nên tổng thời
+  // gian vẫn là một nhịp chờ, không nhân lên theo số giải. Giải nào hỏng thì trả
+  // mảng rỗng, các giải còn lại vẫn chạy.
+  const giai = deps.leagues?.length ? deps.leagues : [LOOKUP_LEAGUE];
+  const dot = await Promise.all(giai.map((g) => layMotGiai(deps.apiKey, g)));
+  const events = dot.flat();
+  if (!events.length) {
+    log.warn(`event lookup: không giải nào trả về sự kiện (${giai.length} giải đã hỏi)`);
     return null;
   }
+  const event = matchEventFull(events, pick);
+  if (event === null) {
+    log.warn(`event lookup: no unambiguous event for ${pick.homeTeam} vs ${pick.awayTeam} on ${pick.kickoffUtc.slice(0, 10)} (đã hỏi ${giai.length} giải)`);
+  }
+  return event;
 }
 
 /** @deprecated Use findEvent() which returns full EventMatch with participant IDs. */

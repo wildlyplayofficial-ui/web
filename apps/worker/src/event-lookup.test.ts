@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { findEventId, matchEvent, type ApiEvent } from './event-lookup';
+import {
+  LOOKUP_LEAGUE, findEvent, findEventId, layGiaiDangBat, matchEvent, quenGiaiDangBat,
+  type ApiEvent,
+} from './event-lookup';
 
 const EVENTS: ApiEvent[] = [
   { id: 101, home: 'Canada', away: 'Bosnia and Herzegovina', date: '2026-06-12T19:00:00Z' },
@@ -82,5 +85,58 @@ describe('findEventId', () => {
   it('unexpected payload shape (not an array) → null', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: 'rate limit' }))));
     await expect(findEventId({ apiKey: 'k' }, PICK)).resolves.toBeNull();
+  });
+});
+
+describe('findEvent — hỏi mọi giải đang bật', () => {
+  afterEach(() => { vi.unstubAllGlobals(); quenGiaiDangBat(); });
+
+  const KEO = { homeTeam: 'AS Monaco', awayTeam: 'Olympique Marseille', kickoffUtc: '2026-08-30T18:45:00Z' };
+
+  it('tìm ra trận Ligue 1 dù giải mặc định là World Cup', async () => {
+    const goi: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      goi.push(new URL(url).searchParams.get('league') ?? '');
+      const wc = url.includes('world-cup');
+      return { ok: true, json: async () => wc ? [] : [
+        { id: 987, home: 'Monaco', away: 'Marseille', date: '2026-08-30T18:45:00Z' },
+      ] };
+    });
+    const kq = await findEvent(
+      { apiKey: 'k', leagues: ['international-fifa-world-cup', 'france-ligue-1'] }, KEO);
+    expect(kq?.id).toBe(987);
+    expect(goi).toEqual(['international-fifa-world-cup', 'france-ligue-1']);
+  });
+
+  it('một giải hỏng thì các giải còn lại vẫn chạy', async () => {
+    vi.stubGlobal('fetch', async (url: string) => {
+      if (url.includes('world-cup')) throw new Error('mạng hỏng');
+      return { ok: true, json: async () => [
+        { id: 555, home: 'Monaco', away: 'Marseille', date: '2026-08-30T18:45:00Z' },
+      ] };
+    });
+    const kq = await findEvent(
+      { apiKey: 'k', leagues: ['international-fifa-world-cup', 'france-ligue-1'] }, KEO);
+    expect(kq?.id).toBe(555);
+  });
+
+  it('không truyền giải thì vẫn dùng giải mặc định như cũ', async () => {
+    const goi: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      goi.push(new URL(url).searchParams.get('league') ?? '');
+      return { ok: true, json: async () => [] };
+    });
+    await findEvent({ apiKey: 'k' }, KEO);
+    expect(goi).toEqual([LOOKUP_LEAGUE]);
+  });
+
+  it('lấy mã giải từ bảng competitions, bỏ giải không có mã', async () => {
+    const doc = async () => ['france-ligue-1', null, 'england-premier-league'];
+    expect(await layGiaiDangBat(doc)).toEqual(['france-ligue-1', 'england-premier-league']);
+  });
+
+  it('kho hỏng thì lùi về giải mặc định, không ném lỗi', async () => {
+    const doc = async (): Promise<(string | null)[]> => { throw new Error('kho chết'); };
+    expect(await layGiaiDangBat(doc)).toEqual([LOOKUP_LEAGUE]);
   });
 });
