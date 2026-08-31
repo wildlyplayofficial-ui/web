@@ -117,6 +117,27 @@ describe('settlePick — publish → score → settled (memory store)', () => {
     await expect(settlePick(store, pick, { home: 1, away: 0 })).rejects.toThrow(/no automatic settlement/);
   });
 
+  it('nhận ra đội khi kèo ghi tên ngắn hơn tên trong kho (Monaco–Marseille 31/8)', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(basePick({
+      home_team: 'AS Monaco', away_team: 'Olympique Marseille',
+      selection: 'Marseille +0.25', line: 0.25, league: 'Ligue 1 2026-27',
+    }));
+    // Monaco thắng 2-0 → Marseille +0.25 thua
+    const done = await settlePick(store, pick, { home: 2, away: 0 });
+    expect(done.raw_outcome).toBe('loss');
+  });
+
+  it('không lẫn hai đội cùng thành phố (Manchester United vs Manchester City)', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(basePick({
+      home_team: 'Manchester United', away_team: 'Manchester City',
+      selection: 'Manchester United -0.5', line: -0.5, league: 'Premier League',
+    }));
+    const done = await settlePick(store, pick, { home: 2, away: 0 });
+    expect(done.raw_outcome).toBe('win');
+  });
+
   it('throws when an AH selection matches neither team', async () => {
     const store = new MemoryStore();
     const pick = await store.insertPick(basePick({ selection: 'Brazil -1.25' }));

@@ -50,10 +50,35 @@ export function computeOutcome(pick: PickRow, score: Score): RawOutcome {
   }
 }
 
+/** Chữ đáng kể trong một tên đội, bỏ dấu và bỏ chữ quá ngắn ("AS", "FC"). */
+function chuTrongTen(s: string): string[] {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 2);
+}
+
+/** Lựa chọn nhắc tới bao nhiêu chữ của tên đội này. */
+function soChuKhop(selection: string, team: string): number {
+  const trongSel = new Set(chuTrongTen(selection));
+  return chuTrongTen(team).filter((w) => trongSel.has(w)).length;
+}
+
 export function sideOf(pick: PickRow): Side {
   const sel = pick.selection.toLowerCase();
-  if (sel.includes(pick.home_team.toLowerCase()) || sel.startsWith('home')) return 'home';
-  if (sel.includes(pick.away_team.toLowerCase()) || sel.startsWith('away')) return 'away';
+  if (sel.startsWith('home')) return 'home';
+  if (sel.startsWith('away')) return 'away';
+  // ── Hỏi NGƯỢC so với bản cũ. Bản cũ hỏi "lựa chọn có chứa nguyên tên đội không"
+  //    nên tên đội dài hơn lựa chọn là trượt: kèo ghi "Marseille +0.25" mà kho lưu
+  //    "Olympique Marseille" → không khớp → kèo treo, Nick không chấm được (31/8).
+  //    Giờ đếm số chữ trùng, bên nào trùng nhiều hơn thì thắng. Bằng nhau (kể cả
+  //    cùng bằng 0) thì vẫn ném lỗi — thà kêu còn hơn chấm nhầm đội. ──
+  const nha = soChuKhop(pick.selection, pick.home_team);
+  const khach = soChuKhop(pick.selection, pick.away_team);
+  if (nha > khach) return 'home';
+  if (khach > nha) return 'away';
   throw new Error(
     `pick ${pick.id}: selection "${pick.selection}" matches neither ` +
     `"${pick.home_team}" nor "${pick.away_team}"`,
