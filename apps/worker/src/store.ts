@@ -682,7 +682,10 @@ export class SupabaseStore implements Store {
     const { data, error } = await this.db.from('channel_log')
       .select('pick_id, channel, external_id, ok, detail')
       .eq('pick_id', pickId)
-      .order('created_at', { ascending: false });
+      // Bảng channel_log KHÔNG có created_at — cột giờ đăng tên là posted_at.
+      // Sai tên cột nên /lammoi ném lỗi ngay bước đọc sổ, chưa kịp sửa ảnh nào.
+      // MemoryStore trong test không đụng PostgREST nên test xanh mà thật thì đỏ.
+      .order('posted_at', { ascending: false });
     if (error) throw new Error(`listChannelLogs failed: ${error.message}`);
     return (data ?? []) as ChannelLogEntry[];
   }
