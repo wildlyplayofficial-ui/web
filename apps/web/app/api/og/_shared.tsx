@@ -1,3 +1,4 @@
+import { tenTra } from "@/lib/ten-doi";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
@@ -148,18 +149,13 @@ const EPL_TEAM_ALIASES: Record<string, string> = {
   newcastle: "newcastle united",
   leeds: "leeds united",
   bournemouth: "afc bournemouth",
+  // Tên ngoài Ngoại hạng Anh: kho lưu tên ngắn, nguồn kèo ghi tên dài.
+  "juventus turin": "juventus",
 };
 
 /** Filename slug for a team's cartoon, e.g. "Man City" → "manchester-city". */
 export function teamImageSlug(name: string): string {
-  const norm = name
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const norm = tenTra(name);
   return (EPL_TEAM_ALIASES[norm] ?? norm).replace(/\s+/g, "-");
 }
 
