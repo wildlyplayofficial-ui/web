@@ -4,7 +4,7 @@ import { parseAllowlist } from './allowlist';
 import { announceResult } from './announce';
 import { createBot } from './bot';
 import { fetchOddsPayload } from './clv';
-import { findEvent, type MatchQuery } from './event-lookup';
+import { findEvent, layGiaiDangBat, type MatchQuery } from './event-lookup';
 import { trackFailure } from './job-tracker';
 import { onWarn } from './log';
 import { startPoller } from './poll';
@@ -92,7 +92,20 @@ const oddsApiKey = process.env.ODDS_API_KEY;
 const oddsApiKeys = (process.env.ODDS_API_KEYS ?? oddsApiKey ?? '')
   .split(',').map((k) => k.trim()).filter(Boolean);
 const lookupEvent = oddsApiKey
-  ? (pick: MatchQuery) => findEvent({ apiKey: oddsApiKey }, pick)
+  ? async (pick: MatchQuery) => findEvent(
+      // Danh sách giải lấy từ bảng competitions; không có kho thì lùi về giải mặc định.
+      {
+        apiKey: oddsApiKey,
+        leagues: persistDb
+          ? await layGiaiDangBat(async () => {
+              const { data } = await persistDb
+                .from('competitions').select('odds_api_key').eq('status', 'active');
+              return (data ?? []).map((r) => r.odds_api_key as string | null);
+            })
+          : undefined,
+      },
+      pick,
+    )
   : undefined;
 
 // On-demand web cache busting (Nick 13/6) — Board/Archive lagged up to ~10 min after settle.
