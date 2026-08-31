@@ -29,6 +29,31 @@ const GUIDE_DIAGRAMS: Record<string, string> = {
   "responsible-play-guide": "responsible-play.svg",
 };
 
+/**
+ * Bìa vẽ tay cho cụm guide tài xỉu/kèo tiếng Việt. Thẻ sinh runtime (/api/og/guide)
+ * chỉ có tiêu đề; mấy bài này cần MỐC SỐ trên bìa, mà mốc phải đúng bài — bìa của
+ * bài 2.25 mà khoe 2.5 là chỉ vào bài hàng xóm. Nên số vẽ sẵn theo từng slug, không
+ * sinh động. Chữ trên bìa là tiếng Việt → chỉ dùng cho lang "vi".
+ * Để dưới /images/ vì proxy.ts CHỈ miễn trừ icons|images|brand — /og/* bị lớp
+ * chuyển ngôn ngữ nuốt và trả 404 (thử tay 1/9: /og/player.png cũng đang 404).
+ */
+const BIA_VI = new Set([
+  "keo-tai-xiu-2-2-5-la-gi",
+  "keo-tai-xiu-2-5-la-gi",
+  "keo-tai-xiu-2-5-3-la-gi",
+  "keo-tai-xiu-3-la-gi",
+  "keo-tai-xiu-3-3-5-la-gi",
+  "keo-tai-xiu-3-5-4-la-gi",
+  "keo-1x2-la-gi",
+  "keo-hiep-1-la-gi",
+  "keo-the-phat-la-gi",
+]);
+
+function biaUrl(slug: string, lang: Lang, title: string): string {
+  if (lang === "vi" && BIA_VI.has(slug)) return `/images/huong-dan/${slug}.jpg?v=${OG_VERSION}`;
+  return `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`;
+}
+
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -44,6 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = post.meta_description
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
   const canonical = `${BASE}${withLang(`/guides/${slug}`, lang)}`;
+  const bia = biaUrl(slug, lang, title);
 
   // hreflang chỉ khai bản tiếng Việt (Peter chốt 25/8, nối tiếp đợt gỡ 23/8). Bảng
   // `posts` vẫn giữ hàng en/th/es cho công cụ dịch trong admin, nên getPostLangs trả
@@ -63,13 +89,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [{ url: bia, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/guide?slug=${slug}&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [{ url: bia, width: 1200, height: 630 }],
     },
   };
 }
@@ -90,7 +116,7 @@ function buildArticleSchema(post: {
     dateModified: post.published_at ?? undefined,
     inLanguage: post.lang,
     mainEntityOfPage: `${BASE}${withLang(`/guides/${slug}`, lang)}`,
-    image: `${BASE}/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`,
+    image: `${BASE}${biaUrl(slug, lang, post.meta_title ?? post.title)}`,
     author: {
       "@type": "Organization",
       name: "banhbong.net",
