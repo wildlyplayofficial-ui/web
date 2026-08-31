@@ -23,6 +23,38 @@ export const BIA_VI = new Set([
   "keo-1x2-la-gi",
   "keo-hiep-1-la-gi",
   "keo-the-phat-la-gi",
+  // Đợt 2 (1/9): 13 bài Hướng dẫn tiếng Việt còn lại chưa có ảnh nào.
+  "keo-1-4-la-gi",
+  "keo-0-5-la-gi",
+  "keo-3-4-la-gi",
+  "keo-1-1-4-la-gi",
+  "keo-1-5-la-gi",
+  "keo-1-3-4-la-gi",
+  "keo-0-25-va-0-75",
+  "keo-goc-8-5-la-gi",
+  "keo-goc-9-5-va-10-5",
+  "keo-goc-lech-la-gi",
+  "keo-phat-goc-la-gi",
+  "tai-xiu-la-gi-cach-doc-keo-over-under",
+  "vi-sao-ty-le-keo-khac-nhau-giua-cac-nguon",
+]);
+
+/**
+ * Sơ đồ minh hoạ riêng (PNG) cho 9 bài kèo — trực quan hơn ảnh bìa chung nên ở
+ * trang bài ưu tiên hiện cái này trước, xem hero trong guides/[slug]/page.tsx.
+ * File tại /images/guides/<slug>.png, 1200x630. Ảnh chưa vẽ xong lúc viết mã
+ * này — bình thường, người khác đang làm riêng.
+ */
+export const SO_DO_VI = new Set([
+  "keo-tai-xiu-2-2-5-la-gi",
+  "keo-tai-xiu-2-5-la-gi",
+  "keo-tai-xiu-2-5-3-la-gi",
+  "keo-tai-xiu-3-la-gi",
+  "keo-tai-xiu-3-3-5-la-gi",
+  "keo-tai-xiu-3-5-4-la-gi",
+  "keo-1x2-la-gi",
+  "keo-hiep-1-la-gi",
+  "keo-the-phat-la-gi",
 ]);
 
 /** Ảnh bìa tĩnh nếu bài có, không thì rơi về thẻ sinh runtime. */

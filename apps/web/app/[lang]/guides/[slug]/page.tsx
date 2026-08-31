@@ -9,7 +9,7 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
-import { biaUrl } from "@/lib/bia-guide";
+import { biaUrl, hasBia, SO_DO_VI } from "@/lib/bia-guide";
 
 export const revalidate = 300;
 
@@ -126,6 +126,16 @@ export default async function GuidePage({ params }: Props) {
   // Schema built from DB field names only — no user-generated HTML. < escaped to prevent injection.
   const schema = JSON.stringify(buildArticleSchema(post, slug, lang)).replace(/</g, "\\u003c");
 
+  // Hero theo thứ tự: sơ đồ SVG cũ (11 bài EN) → sơ đồ PNG riêng (9 bài kèo VI) → ảnh bìa → không có.
+  // Ảnh bìa có sẵn chữ tiêu đề nên chỉ dùng khi bài không có sơ đồ riêng.
+  const hero = GUIDE_DIAGRAMS[slug]
+    ? { src: `/images/guides/${GUIDE_DIAGRAMS[slug]}`, h: 400 }
+    : SO_DO_VI.has(slug)
+      ? { src: `/images/guides/${slug}.png`, h: 420 }
+      : hasBia(slug, lang)
+        ? { src: biaUrl(slug, lang, post.title), h: 420 }
+        : null;
+
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
       {/* JSON-LD: server-controlled data only, no user input */}
@@ -149,14 +159,14 @@ export default async function GuidePage({ params }: Props) {
         )}
       </header>
 
-      {/* Hero: concept diagram SVG (static asset, evergreen) */}
-      {GUIDE_DIAGRAMS[slug] && (
+      {/* Hero: ảnh minh hoạ đầu bài (tĩnh, không đổi theo trận) */}
+      {hero && (
         <div className="mt-6 overflow-hidden rounded-card border border-line">
           <img
-            src={`/images/guides/${GUIDE_DIAGRAMS[slug]}`}
+            src={hero.src}
             alt={post.title}
             width={800}
-            height={400}
+            height={hero.h}
             className="w-full"
             loading="eager"
           />
