@@ -176,7 +176,12 @@ export function createBot(deps: BotDeps): Bot {
     try {
       const settled = await settlePick(deps.store, pick, { home: Number(m[2]), away: Number(m[3]) });
       log.info(`manually settled pick ${settled.id} → ${settled.status} (${settled.units_pl}u)`);
-      if (deps.revalidate) void deps.revalidate(['picks', 'posts']);
+      // Phải CHỜ web xoá đệm xong rồi mới báo kênh. Bắn rồi quên thì Telegram đi
+      // tải ảnh thẻ trong lúc web còn giữ bản trước khi chấm.
+      if (deps.revalidate) {
+        try { await deps.revalidate(['picks', 'posts']); }
+        catch (err) { log.warn(`xoá đệm trước khi báo kết quả hỏng: ${err instanceof Error ? err.message : String(err)}`); }
+      }
       await ctx.reply(
         `Settled ${settled.home_team} ${settled.home_score}-${settled.away_score} ${settled.away_team}\n` +
         `${settled.selection} → ${settled.status?.toUpperCase()} ` +

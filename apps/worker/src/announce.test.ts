@@ -5,6 +5,7 @@ import {
   formatUnits,
   summarizeRecord,
   type AnnounceDeps,
+  resultCardUrl,
 } from './announce';
 import { MemoryStore, type NewPick, type PickRow } from './store';
 
@@ -260,10 +261,23 @@ describe('announceResult — image chain + Facebook (Post Restructure v1 §2.6)'
 
     // c0eb1c5 (#118, 22/8): resultCardUrl phải kèm ?lang=vi — thiếu nó card đăng bản
     // tiếng Anh (+ bản CDN cũ), Jane bắt live trên /score Hull vs MU. Test cập nhật theo.
+    // 31/8: thêm đuôi &v= — thẻ trước trận và thẻ kết quả chung một đường dẫn mà CDN
+    // giữ 1 tiếng, không đổi đuôi thì Telegram trả lại thẻ kèo xanh (Nick bắt live).
     expect(api.sendPhoto).toHaveBeenCalledWith(
-      CHANNEL, `${SITE}/api/og/play/${pick.id}?lang=vi`, { caption: expectedText(pick, SITE), ...TG_OPTS });
+      CHANNEL,
+      `${SITE}/api/og/play/${pick.id}?lang=vi&v=${Date.parse(pick.settled_at!)}`,
+      { caption: expectedText(pick, SITE), ...TG_OPTS });
     expect(api.sendMessage).not.toHaveBeenCalled();
     expect(store.logs[0].detail).toBe('result won 1.05u (card)');
+  });
+
+  it('đường dẫn thẻ kết quả KHÁC đường dẫn thẻ trước trận (chống CDN trả ảnh cũ)', async () => {
+    const store = new MemoryStore();
+    const pick = await store.insertPick(settledPick());
+    const truocTran = `${SITE}/api/og/play/${pick.id}?lang=vi`;
+    const ketQua = resultCardUrl(SITE, pick);
+    expect(ketQua).not.toBe(truocTran);
+    expect(ketQua.startsWith(`${truocTran}&v=`)).toBe(true);
   });
 
   it('falls back to the branded W/L/P banner when the OG card fails', async () => {
@@ -366,7 +380,9 @@ describe('ảnh bài Facebook (Peter 29/8)', () => {
       pick,
     );
     vi.stubGlobal('fetch', fetchCu);
-    expect(anh[0]).toBe(`${SITE}/api/og/play/${pick.id}?lang=vi`);
+    // Ý của bài kiểm này là Facebook lấy THẺ TRẬN chứ không lấy băng-rôn chung.
+    // Đuôi &v= thêm 31/8 (chống CDN trả ảnh cũ) nên so phần đầu, không so cả chuỗi.
+    expect(anh[0].startsWith(`${SITE}/api/og/play/${pick.id}?lang=vi`)).toBe(true);
     expect(anh[0]).not.toContain('banhbong_settled_win');
   });
 

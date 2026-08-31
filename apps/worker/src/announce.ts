@@ -158,7 +158,13 @@ export async function postFacebookStory(
 export function resultCardUrl(siteUrl: string, pick: PickRow): string {
   // lang=vi: same as announce-pick.ts — without it the result announce shipped the
   // ENGLISH card (and a stale CDN copy of it). Jane caught this live on /score 22/8.
-  return `${siteUrl}/api/og/play/${pick.id}?lang=vi`;
+  // ── Đuôi v: thẻ TRƯỚC TRẬN và thẻ KẾT QUẢ dùng chung một đường dẫn, mà đường dẫn
+  //    đó được CDN giữ 1 tiếng (max-age=3600). Không đổi đuôi thì Telegram tải lại
+  //    đúng bản xanh "chưa chấm" đã lưu lúc ra kèo. Nick bắt 31/8 trên kèo
+  //    Monaco–Marseille: chữ ghi CHƯA TRÚNG mà ảnh vẫn là thẻ kèo xanh.
+  //    lam-moi.ts đã biết mẹo này từ trước; chỗ này thiếu. ──
+  const v = pick.settled_at ? Date.parse(pick.settled_at) : Date.now();
+  return `${siteUrl}/api/og/play/${pick.id}?lang=vi&v=${v}`;
 }
 
 export async function announceResult(deps: AnnounceDeps, pick: PickRow): Promise<void> {

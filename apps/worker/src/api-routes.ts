@@ -251,7 +251,9 @@ export async function handleApiRoute(
     try {
       const settled = await settlePick(deps.store, pick, { home, away });
       log.info(`api: settled ${settled.id} → ${settled.status} (${settled.units_pl}u)`);
-      void deps.revalidate(['picks', 'posts']);
+      // Chờ xoá đệm xong rồi mới báo kênh — xem chú thích cùng chỗ trong bot.ts.
+      try { await deps.revalidate(['picks', 'posts']); }
+      catch (err) { log.warn(`xoá đệm trước khi báo kết quả hỏng: ${err instanceof Error ? err.message : String(err)}`); }
       if (deps.postmortem) void generatePostmortemDraft(deps.postmortem, settled);
       void announceResult({
         ...deps.announceDeps, recap: deps.recap, recapArticle: deps.recapArticle,
