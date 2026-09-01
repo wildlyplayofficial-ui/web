@@ -5,6 +5,7 @@ import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import { buildPerson, buildOrganization, buildWebSite } from "@/lib/jsonld";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
+import { isFeatureEnabled } from "@/lib/data";
 import { copy } from "./copy";
 
 export const revalidate = 300;
@@ -31,6 +32,23 @@ export default async function AboutPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const c = copy[lang];
   const competitions = await getStandingsCompetitions().catch(() => []);
+  // Chỉ liệt kê giải có TRANG CÒN SỐNG. Trang giải gọi notFound() khi status khác
+  // "active" và cờ standings_<slug> tắt (xem competitions/[slug]/page.tsx). Lọc theo
+  // mỗi slug thì aff-cup, asian-cup, euro-qualifiers hiện trên /about mà bấm vào ra
+  // 404 — đo tay 1/9/2026, cả ba đều 404. sitemap.ts đã áp đúng luật này từ 5/8,
+  // /about thì chưa. Lỗi Supabase thì coi như tắt: thà thiếu một ô còn hơn ô gãy.
+  const song = await Promise.all(
+    competitions.map(async (comp) => {
+      if (!comp.slug) return false;
+      if (comp.status === "active") return true;
+      try {
+        return await isFeatureEnabled(`standings_${comp.slug.replace(/-/g, "_")}`);
+      } catch {
+        return false;
+      }
+    }),
+  );
+  const giaiHienDuoc = competitions.filter((_, i) => song[i]);
 
   return (
     <div className="mx-auto max-w-[800px] px-5 py-12">
@@ -131,12 +149,12 @@ export default async function AboutPage({ params }: Props) {
       </section>
 
       {/* Leagues we cover — dynamic grid */}
-      {competitions.length > 0 && (
+      {giaiHienDuoc.length > 0 && (
         <section className="mt-12">
           <h2 className="font-display text-2xl font-bold">{c.leaguesTitle}</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">{c.leaguesIntro}</p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {competitions.filter((comp) => comp.slug).map((comp) => (
+            {giaiHienDuoc.map((comp) => (
               <Link key={comp.id} href={withLang(`/competitions/${comp.slug}`, lang)} className="rounded-card border border-line bg-card p-4 shadow-card transition-colors hover:border-brand/50">
                 <h3 className="font-display font-semibold text-ink">{comp.name}</h3>
                 {comp.season && (
