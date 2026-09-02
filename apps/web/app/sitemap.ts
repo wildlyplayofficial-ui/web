@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
+import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
@@ -42,7 +42,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, matches, guides, blogs, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllPostSlugs(), getAllMatchSlugs(), getAllGuideSlugs(), getAllBlogSlugs(), getAllReportSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
+  const [matches, guides, blogs, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllMatchSlugs(), getAllGuideSlugs(), getAllBlogSlugs(), getAllReportSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   // Hub theo CLB: CHỈ khai hub nào đủ bài để được index. Hub dưới ngưỡng tự đặt
   // noindex (xem doi/[slug]/page.tsx), mà khai một trang noindex vào sitemap thì
@@ -116,13 +116,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  const newsRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
-    url: `${BASE}/analysis/${p.slug}`,
-    lastModified: safeLastMod(p.updated),
-    changeFrequency: "weekly",
-    priority: 0.6,
-    alternates: alternates(`/analysis/${p.slug}`),
-  }));
+  // Bảng `posts` KHÔNG còn khai URL nào qua đường /analysis/{slug} nữa — biến
+  // newsRoutes cũ đã xoá hẳn vì cả ba nhóm trong bảng đều có chỗ khác để đi:
+  //  - bài MÁY ĐẺ thời WildlyPlay (news/analysis/preview/recap/no-play/post-mortem):
+  //    tiếng Anh, mồ côi (đo 2/9: 272/418 URL bài trong sitemap không có link nội
+  //    bộ nào trỏ tới), đã đặt noindex — mà khai trang noindex vào sitemap thì
+  //    Search Console báo "Submitted URL marked noindex", đúng lỗi tự chuốc đã ghi
+  //    ở phần hub CLB phía trên (xem lib/bai-may-de.ts);
+  //  - `guide`: nhà riêng /guides + /transparency, đã bị .neq("type","guide") loại
+  //    ngay trong query từ đợt dọn 13 cặp URL trùng (25/8) → guideRoutes/reportRoutes;
+  //  - `blog`: nhà riêng /blog/{slug}, đã có blogRoutes khai. Khai thêm bản
+  //    /analysis/{slug} là dựng lại đúng cái lỗi trùng vừa dọn cho guide — đo 2/9,
+  //    3 bài blog sống ở CẢ HAI đường dẫn, cả hai đều 200 và đều tự nhận canonical
+  //    về chính mình, Google tự chia phiếu giữa hai bản.
+  // Bài thật vẫn vào sitemap đầy đủ qua deskRoutes (analysis_articles),
+  // newsItemRoutes (news_items), guideRoutes, blogRoutes. Trang /analysis/{slug}
+  // của bài blog vẫn sống bình thường, chỉ canonical về /blog/{slug} — xem
+  // app/[lang]/analysis/[slug]/page.tsx.
 
   // Trận TƯƠNG LAI xa hơn 14 ngày chưa vào sitemap — 154 trang rỗng tháng 9 đang
   // hút crawl budget (kiểm kê 25/8). Tới gần ngày đá tự vào lại vì sitemap là
@@ -228,5 +238,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }

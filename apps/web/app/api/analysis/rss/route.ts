@@ -1,5 +1,6 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
+import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
 import { SITE_URL, SITE_NAME, DESK } from "@/lib/brand";
 
 /**
@@ -30,17 +31,25 @@ export async function GET(): Promise<Response> {
 
   // Merge and sort by date descending
   const items = [
-    ...posts.map((p) => ({
-      slug: p.slug,
-      title: p.title,
-      updated: p.updated,
-      source: "post" as const,
-    })),
+    // Lọc bài máy đẻ y như sitemap chính (xem lib/bai-may-de.ts): đã noindex thì
+    // cũng đừng đẩy ra feed — chỗ rò thứ ba của cùng một lỗi.
+    ...posts
+      .filter((p) => !LOAI_BAI_MAY_DE.has(p.type))
+      .map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        updated: p.updated,
+        source: "post" as const,
+        // Bài blog canonical về /blog/{slug}; feed trỏ /analysis/{slug} là đưa
+        // cho đầu đọc và cho Google một URL không phải bản chính.
+        duong: p.type === "blog" ? "blog" : "analysis",
+      })),
     ...deskArticles.map((a) => ({
       slug: a.slug,
       title: a.title,
       updated: a.updated,
       source: "desk" as const,
+      duong: "analysis" as const,
     })),
   ]
     .sort((a, b) => b.updated.localeCompare(a.updated))
@@ -51,8 +60,8 @@ export async function GET(): Promise<Response> {
   const rssItems = items.map(
     (item) => `    <item>
       <title>${escapeXml(item.title)}</title>
-      <link>${BASE}/analysis/${item.slug}</link>
-      <guid isPermaLink="true">${BASE}/analysis/${item.slug}</guid>
+      <link>${BASE}/${item.duong}/${item.slug}</link>
+      <guid isPermaLink="true">${BASE}/${item.duong}/${item.slug}</guid>
       <pubDate>${new Date(item.updated).toUTCString()}</pubDate>
       <dc:creator>${DESK}</dc:creator>
     </item>`,
