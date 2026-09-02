@@ -10,7 +10,7 @@ import {
   getTodaysPicks,
   getTrackRecordForAuthor,
 } from "@/lib/data";
-import { formatBoardDate, formatUnits, locales } from "@/lib/format";
+import { formatBoardDate, formatBoardDateShort, formatUnits, locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
@@ -160,10 +160,11 @@ export default async function Home({ params }: Props) {
     href: withLang("/daily-board", lang),
     ten: dict.pick.curator,
     cham: "bg-brand",
+    // nhanNgan = bản dùng trên ĐIỆN THOẠI; nhãn dài đẩy dòng số xuống 3 dòng.
     so: [
-      { nhan: dict.board.picksLabel, gia: picks.length },
-      { nhan: dict.board.noPlaysLabel, gia: noPlays.length },
-      { nhan: dict.board.watchingLabel, gia: watching.length },
+      { nhan: dict.board.picksLabel, nhanNgan: dict.board.picksLabelShort, gia: picks.length },
+      { nhan: dict.board.noPlaysLabel, nhanNgan: dict.board.noPlaysLabel, gia: noPlays.length },
+      { nhan: dict.board.watchingLabel, nhanNgan: dict.board.watchingLabelShort, gia: watching.length },
     ],
     ghiChu: null as string | null,
   };
@@ -177,7 +178,9 @@ export default async function Home({ params }: Props) {
     href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
     ten: dict.scout.name,
     cham: "bg-[#6b9e9e]",
-    so: coKeoAI ? [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }] : [],
+    so: coKeoAI
+      ? [{ nhan: dict.board.picksLabel, nhanNgan: dict.board.picksLabelShort, gia: scoutPicks.length }]
+      : [],
     // Tên "Trợ lý AI" đã in ngay bên trái trong băng gộp → dùng bản không kèm tên.
     ghiChu: coKeoAI ? null : dict.scout.noPlayShort,
   };
@@ -428,10 +431,20 @@ export default async function Home({ params }: Props) {
              Tám Banh, #6b9e9e cho Trợ lý AI — đúng màu đã dùng ở /about,
              /archive, /track-record). Cộng chung thành tích hai bên là phá
              tường lửa Curator/Scout, thứ khiến trang mình đáng tin. */
-          <div className="rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5">
-            <p className="font-display text-lg font-bold">{dict.board.title}</p>
-            <p className="mt-1 text-sm text-muted">{formatBoardDate(new Date(), lang)}</p>
-            <div className="mt-4 flex flex-col gap-2">
+          /* Nick 2/9 (đợt 2): thu chiều cao băng này trên ĐIỆN THOẠI — nó cao 262px,
+             là khối to nhất đứng giữa người đọc và bài viết. Cắt bằng cách bóp lề,
+             gộp ngày vào dòng tiêu đề (dạng ngắn "2/9") và làm nút gọn lại. KHÔNG bỏ
+             thông tin nào: máy tính bàn vẫn nguyên vẹn, điện thoại vẫn đủ tên, đủ số,
+             đủ ngày. */
+          <div className="rounded-card border border-brand/30 bg-brand-dim/40 px-4 py-4 sm:px-6 sm:py-5">
+            <p className="font-display text-base font-bold sm:text-lg">
+              {dict.board.title}
+              <span className="ml-2 text-sm font-normal text-muted sm:hidden">
+                · {formatBoardDateShort(new Date(), lang)}
+              </span>
+            </p>
+            <p className="mt-1 hidden text-sm text-muted sm:block">{formatBoardDate(new Date(), lang)}</p>
+            <div className="mt-3 flex flex-col gap-2 sm:mt-4">
               {[bangBac, bangAI].map((b) => (
                 <Link
                   key={b.href}
@@ -444,7 +457,9 @@ export default async function Home({ params }: Props) {
                     {b.so.map((o, i) => (
                       <span key={o.nhan}>
                         {i > 0 && <span className="mx-2">·</span>}
-                        {o.nhan}: <strong className="text-ink">{o.gia}</strong>
+                        <span className="sm:hidden">{o.nhanNgan}</span>
+                        <span className="hidden sm:inline">{o.nhan}</span>
+                        : <strong className="text-ink">{o.gia}</strong>
                       </span>
                     ))}
                     {b.ghiChu}
@@ -454,7 +469,7 @@ export default async function Home({ params }: Props) {
             </div>
             <Link
               href={withLang("/daily-board", lang)}
-              className="group mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+              className="group mt-3 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5 sm:mt-5 sm:px-6 sm:py-2.5"
             >
               {dict.home.viewBoard} &rarr;
             </Link>
