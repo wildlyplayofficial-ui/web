@@ -14,8 +14,12 @@ from pitch_bg import draw as pitch
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', 'apps', 'web'))
 BADGES = json.load(open(os.path.join(REPO, 'lib', 'data', 'club-badges.json')))
+# Kho huy hiệu CLB thiếu mấy đội này, phải bù bằng tệp tải riêng.
+# Coventry và Hull thêm 2/9/2026 — chốt chặn trong bộ dựng story bắt được khi
+# làm lịch vòng 3, nếu không thì ra ảnh thiếu logo mà không ai biết.
 BU = {'Malaga': 'logo_them/malaga.png', 'Ipswich': 'logo_them/ipswich.png',
-      'Bayern München': 'logo_them/bayern.png', 'Lille': 'logo_them/lille.png'}
+      'Bayern München': 'logo_them/bayern.png', 'Lille': 'logo_them/lille.png',
+      'Coventry City': 'logo_them/coventry.png', 'Hull City': 'logo_them/hull.png'}
 W, H = 1200, 630
 _FD = os.path.join(HERE, 'fonts') + os.sep
 F  = lambda s: ImageFont.truetype(_FD + 'BarlowCondensed-ExtraBold.ttf', s)
