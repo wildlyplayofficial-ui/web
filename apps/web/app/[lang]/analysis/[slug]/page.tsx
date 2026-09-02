@@ -96,7 +96,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = post.meta_title ?? post.title;
   const description = post.meta_description
     ?? post.body_md.replace(/[#*_>\-`]/g, "").trim().slice(0, 160);
-  const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
+  // Bài `blog` sống ở CẢ HAI đường dẫn: /blog/{slug} và /analysis/{slug}. Trong
+  // Supabase chỉ có MỘT dòng — đây là lỗi ĐỊNH TUYẾN chứ không phải trùng dữ liệu.
+  // Đo 2/9: 3 bài (world-cup-2026-tay-ban-nha-vo-dich, cau-thu-dat-nhat-the-gioi-2026,
+  // ai-vo-dich-ngoai-hang-anh-nhieu-nhat) trả 200 ở cả hai URL và cả hai đều tự nhận
+  // canonical về chính mình → Google thấy hai trang giống hệt rồi tự chia phiếu.
+  // Đúng loại lỗi "13 cặp URL trùng tự cạnh tranh" đã dọn cho `guide` hôm 25/8.
+  // Nhà thật là /blog/{slug}: đó là bản có link nội bộ trỏ tới và là bản được khai
+  // trong sitemap. Dùng canonical chứ KHÔNG noindex — hai URL trùng y hệt thì
+  // canonical là công cụ đúng, noindex ở đây sẽ giết luôn nội dung bài.
+  // `guide` không cần nhánh riêng: resolveArticle đã 301 nó về nhà từ trước.
+  const canonical = `${BASE}${withLang(post.type === "blog" ? `/blog/${slug}` : `/analysis/${slug}`, lang)}`;
 
   // Chỉ khai hreflang bản tiếng Việt — xem ghi chú ở guides/[slug]/page.tsx.
   // Nhánh Desk phía trên đã dùng buildAlternates từ trước; nhánh posts thì chưa,

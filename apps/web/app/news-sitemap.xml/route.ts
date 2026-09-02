@@ -1,6 +1,7 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs } from "@/lib/news";
+import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
 import { SITE_URL, SITE_NAME } from "@/lib/brand";
 
 /**
@@ -29,7 +30,12 @@ export async function GET(): Promise<Response> {
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
 
   const allItems = [
-    ...posts.map((p) => ({ path: "analysis", slug: p.slug, title: p.title, updated: p.updated })),
+    // Lọc bài máy đẻ y như sitemap chính (xem lib/bai-may-de.ts): chúng đã noindex,
+    // mà nộp URL noindex cho Google News là tự chuốc lỗi. Đây là chỗ RÒ thứ hai của
+    // cùng một lỗi — sửa sitemap.ts mà quên file này thì bài rác vẫn được khai.
+    ...posts
+      .filter((p) => !LOAI_BAI_MAY_DE.has(p.type))
+      .map((p) => ({ path: "analysis", slug: p.slug, title: p.title, updated: p.updated })),
     ...deskArticles.map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
     // news_items live at /news/, not /analysis/. Use the real headline (not the
     // slug) so Google News shows a proper title, not "romero roi tottenham...".

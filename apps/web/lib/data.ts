@@ -530,7 +530,13 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
   return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title, type: r.type }));
 }
 
-export const getAllPostSlugs = unstable_cache(getAllPostSlugsImpl, ["post-slugs"], {
+// Khoá đổi "post-slugs" → "post-slugs-v2" vì HÌNH DẠNG dữ liệu trả về vừa đổi
+// (thêm `type`). Bản ghi cache đẻ trước lần deploy này không có trường đó, nên
+// `p.type` là undefined và `LOAI_BAI_MAY_DE.has(undefined)` trả false → toàn bộ
+// bài máy đẻ lại lọt vào sitemap/news-sitemap/RSS mà KHÔNG báo lỗi gì, tới khi
+// cache hết hạn 1 tiếng. Đổi khoá = bỏ hẳn bản ghi cũ, không phải chờ.
+// Luật chung: đổi kiểu trả về của một hàm unstable_cache thì phải đổi khoá.
+export const getAllPostSlugs = unstable_cache(getAllPostSlugsImpl, ["post-slugs-v2"], {
   revalidate: 3600,
   tags: ["posts"],
 });

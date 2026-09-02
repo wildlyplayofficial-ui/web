@@ -1,5 +1,6 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
+import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
 import { SITE_URL, SITE_NAME, DESK } from "@/lib/brand";
 
 /**
@@ -30,12 +31,16 @@ export async function GET(): Promise<Response> {
 
   // Merge and sort by date descending
   const items = [
-    ...posts.map((p) => ({
-      slug: p.slug,
-      title: p.title,
-      updated: p.updated,
-      source: "post" as const,
-    })),
+    // Lọc bài máy đẻ y như sitemap chính (xem lib/bai-may-de.ts): đã noindex thì
+    // cũng đừng đẩy ra feed — chỗ rò thứ ba của cùng một lỗi.
+    ...posts
+      .filter((p) => !LOAI_BAI_MAY_DE.has(p.type))
+      .map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        updated: p.updated,
+        source: "post" as const,
+      })),
     ...deskArticles.map((a) => ({
       slug: a.slug,
       title: a.title,
