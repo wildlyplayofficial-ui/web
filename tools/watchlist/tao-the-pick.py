@@ -117,7 +117,10 @@ def hai_huy_hieu_to(im, badge_home, badge_away):
 
 
 def build(player_png, league, home, away, pred, conf, kickoff, out,
-          badge_home=None, badge_away=None, stake=None):
+          badge_home=None, badge_away=None, stake=None, nhan='NHẬN ĐỊNH NỔI BẬT'):
+    # nhan: chữ ở góc trên. Mặc định là nhãn của SẢN PHẨM PICK — dự đoán chỗ đó do
+    # anh Nick đưa qua lệnh /pick, không ai được tự điền (Peter nhắc 2/9/2026).
+    # Bài viết của toà soạn phải truyền nhãn khác để không đội lốt pick.
     # conf=None = thẻ CHỜ PICK: dựng sẵn đủ đội/giờ/huy hiệu, chừa ô dự đoán trống.
     if conf is not None and conf not in MUC_TU_TIN:
         raise ValueError(f'mức tự tin phải là một trong {MUC_TU_TIN}, nhận được {conf!r}')
@@ -162,7 +165,7 @@ def build(player_png, league, home, away, pred, conf, kickoff, out,
     im.alpha_composite(mk, (50, 32))
     d = ImageDraw.Draw(im)
     d.polygon([(122, 60), (131, 51), (140, 60), (131, 69)], fill=GOLD)
-    d.text((152, 44), 'NHẬN ĐỊNH NỔI BẬT', font=F(26), fill=GOLD)
+    d.text((152, 44), nhan, font=F(26), fill=GOLD)
     d.text((50, 96), league, font=FS(24), fill=(190, 232, 208))
 
     # ── tên đội: huy hiệu đứng TRƯỚC tên, xếp chồng ─────────
