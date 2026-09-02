@@ -278,13 +278,24 @@ function DeskArticleView({
             table: ({ children }) => (
               <div className="table-wrap"><table>{children}</table></div>
             ),
-            // Logo đội trong bảng lịch: markdown không tự đặt lazy-load hay kích
-            // thước, nên ảnh tải hết ngay và nhảy layout khi tải xong. Đặt sẵn ở
-            // đây để bảng vài chục dòng logo không ăn vào tốc độ trang.
-            img: ({ src, alt }) => (
-              <img src={typeof src === "string" ? src : ""} alt={alt ?? ""}
-                   loading="lazy" decoding="async" width={20} height={20} />
-            ),
+            // Hai loại ảnh khác nhau trong thân bài, đừng gộp làm một:
+            //  · LOGO ĐỘI chèn trong ô bảng lịch — phải nhỏ và có sẵn kích thước,
+            //    không thì bảng vài chục dòng logo nhảy layout khi tải xong.
+            //  · HÌNH MINH HOẠ (bảng lịch, sơ đồ bảng đấu) — phải hiện hết chiều ngang.
+            // Trước 2/9/2026 mã ép CỨNG mọi ảnh 20x20, nên chèn hình minh hoạ vào
+            // bài là ra một chấm 20px — không ai thấy. Phân biệt bằng NƠI CHỨA:
+            // hình minh hoạ nằm ở kho blog-images, logo đội thì không.
+            img: ({ src, alt }) => {
+              const url = typeof src === "string" ? src : "";
+              const laHinhMinhHoa = url.includes("/blog-images/");
+              return laHinhMinhHoa ? (
+                <img src={url} alt={alt ?? ""} loading="lazy" decoding="async"
+                     className="my-6 h-auto w-full rounded-card" />
+              ) : (
+                <img src={url} alt={alt ?? ""} loading="lazy" decoding="async"
+                     width={20} height={20} />
+              );
+            },
           }}
         >
           {article.body.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
@@ -417,13 +428,24 @@ export default async function AnalysisArticlePage({ params }: Props) {
             table: ({ children }) => (
               <div className="table-wrap"><table>{children}</table></div>
             ),
-            // Logo đội trong bảng lịch: markdown không tự đặt lazy-load hay kích
-            // thước, nên ảnh tải hết ngay và nhảy layout khi tải xong. Đặt sẵn ở
-            // đây để bảng vài chục dòng logo không ăn vào tốc độ trang.
-            img: ({ src, alt }) => (
-              <img src={typeof src === "string" ? src : ""} alt={alt ?? ""}
-                   loading="lazy" decoding="async" width={20} height={20} />
-            ),
+            // Hai loại ảnh khác nhau trong thân bài, đừng gộp làm một:
+            //  · LOGO ĐỘI chèn trong ô bảng lịch — phải nhỏ và có sẵn kích thước,
+            //    không thì bảng vài chục dòng logo nhảy layout khi tải xong.
+            //  · HÌNH MINH HOẠ (bảng lịch, sơ đồ bảng đấu) — phải hiện hết chiều ngang.
+            // Trước 2/9/2026 mã ép CỨNG mọi ảnh 20x20, nên chèn hình minh hoạ vào
+            // bài là ra một chấm 20px — không ai thấy. Phân biệt bằng NƠI CHỨA:
+            // hình minh hoạ nằm ở kho blog-images, logo đội thì không.
+            img: ({ src, alt }) => {
+              const url = typeof src === "string" ? src : "";
+              const laHinhMinhHoa = url.includes("/blog-images/");
+              return laHinhMinhHoa ? (
+                <img src={url} alt={alt ?? ""} loading="lazy" decoding="async"
+                     className="my-6 h-auto w-full rounded-card" />
+              ) : (
+                <img src={url} alt={alt ?? ""} loading="lazy" decoding="async"
+                     width={20} height={20} />
+              );
+            },
           }}
         >
           {post.body_md.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
