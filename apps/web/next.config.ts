@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
       { source: "/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
       { source: "/:lang(en|vi|th|es)/goalline", destination: "/:lang/daily-line", permanent: true },
       { source: "/:lang(en|vi|th|es)/goalline/:path*", destination: "/:lang/daily-line/:path*", permanent: true },
+      // 2/9/2026: hai bài tổng kết chuyển nhượng đăng nhầm mục Phân tích, đã dời
+      // sang Tin tức. Luật Peter chốt cùng ngày: MỌI nội dung chuyển nhượng vào
+      // /news, kể cả bài tổng kết cả kỳ — /analysis chỉ để phân tích chuyên môn.
+      { source: "/analysis/chuyen-nhuong-chelsea-he-2026", destination: "/news/chuyen-nhuong-chelsea-he-2026", permanent: true },
+      { source: "/analysis/chuyen-nhuong-manchester-united-he-2026", destination: "/news/chuyen-nhuong-manchester-united-he-2026", permanent: true },
+      { source: "/:lang(en|vi|th|es)/analysis/chuyen-nhuong-chelsea-he-2026", destination: "/:lang/news/chuyen-nhuong-chelsea-he-2026", permanent: true },
+      { source: "/:lang(en|vi|th|es)/analysis/chuyen-nhuong-manchester-united-he-2026", destination: "/:lang/news/chuyen-nhuong-manchester-united-he-2026", permanent: true },
       // 301 redirect evergreen guides from /news/ to /guides/ (moved 28/6/2026)
       { source: "/news/what-is-asian-handicap", destination: "/guides/what-is-asian-handicap", permanent: true },
       { source: "/news/what-is-devigging", destination: "/guides/what-is-devigging", permanent: true },
