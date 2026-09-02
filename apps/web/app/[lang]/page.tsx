@@ -395,7 +395,10 @@ export default async function Home({ params }: Props) {
           are the first thing after the fixtures strip (Nick 16/8). Preseason
           countdown when the board is empty, so the homepage doesn't read as
           broken with "0 · 0 · 0" between seasons. */}
-      <section className="pb-10 pt-6">
+      {/* Nick 2/9: trên ĐIỆN THOẠI kéo khối "Nhận định nổi bật" sát băng Bảng Dự
+          Đoán hơn — khe 40px làm hai khối nhìn như hai phần rời nhau. Còn 16px
+          trên điện thoại, máy tính bàn giữ nguyên 40px vì màn rộng cần khe thở. */}
+      <section className="pb-4 pt-6 sm:pb-10">
         {preseason ? (
           <Link
             href={withLang("/competitions/premier-league/fixtures", lang)}
