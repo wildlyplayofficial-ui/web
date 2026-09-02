@@ -158,15 +158,14 @@ export default async function Home({ params }: Props) {
   // khối AI dưới trang Bảng). KHÔNG chế màu mới.
   const bangBac = {
     href: withLang("/daily-board", lang),
-    tieuDe: dict.board.title,
-    vien: "border-brand/30 bg-brand-dim/40 hover:border-brand/60",
-    nut: "bg-brand",
+    ten: dict.pick.curator,
+    cham: "bg-brand",
     so: [
       { nhan: dict.board.picksLabel, gia: picks.length },
       { nhan: dict.board.noPlaysLabel, gia: noPlays.length },
       { nhan: dict.board.watchingLabel, gia: watching.length },
     ],
-    ghiChu: null,
+    ghiChu: null as string | null,
   };
   // Băng AI chỉ đếm kèo của nó. Bỏ qua và Đang theo dõi là sổ của Chú Tám Banh,
   // in lại bên này là đếm trùng.
@@ -176,11 +175,11 @@ export default async function Home({ params }: Props) {
   const coKeoAI = scoutPicks.length > 0;
   const bangAI = {
     href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
-    tieuDe: coKeoAI && bacNghi ? dict.scout.headingSolo : dict.scout.heading,
-    vien: "border-[#6b9e9e]/40 bg-[#6b9e9e]/[.08] hover:border-[#6b9e9e]/70",
-    nut: "bg-[#6b9e9e]",
+    ten: dict.scout.name,
+    cham: "bg-[#6b9e9e]",
     so: coKeoAI ? [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }] : [],
-    ghiChu: coKeoAI ? null : dict.scout.noPlay,
+    // Tên "Trợ lý AI" đã in ngay bên trái trong băng gộp → dùng bản không kèm tên.
+    ghiChu: coKeoAI ? null : dict.scout.noPlayShort,
   };
 
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
@@ -419,38 +418,43 @@ export default async function Home({ params }: Props) {
             </span>
           </Link>
         ) : (
-          <div className="flex flex-col gap-3">
-            {[bangBac, bangAI].map((b) => (
-              <Link
-                key={b.href}
-                href={b.href}
-                className={`group flex flex-wrap items-center justify-between gap-4 rounded-card border px-6 py-5 transition-colors ${b.vien}`}
-              >
-                <div>
-                  <p className="font-display text-lg font-bold">{b.tieuDe}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {formatBoardDate(new Date(), lang)}
-                    {b.so.map((o) => (
+          /* Nick 2/9: gộp HAI băng thành MỘT — trước đây ngày tháng và nút
+             "Xem Bảng Dự Đoán Hôm Nay" bị in hai lần liền nhau, đọc như lỗi.
+             Gộp phần KHUNG (tiêu đề + ngày + nút), KHÔNG gộp SỐ: mỗi bên vẫn
+             một dòng riêng, có tên và chấm màu riêng (xanh thương hiệu cho Chú
+             Tám Banh, #6b9e9e cho Trợ lý AI — đúng màu đã dùng ở /about,
+             /archive, /track-record). Cộng chung thành tích hai bên là phá
+             tường lửa Curator/Scout, thứ khiến trang mình đáng tin. */
+          <div className="rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5">
+            <p className="font-display text-lg font-bold">{dict.board.title}</p>
+            <p className="mt-1 text-sm text-muted">{formatBoardDate(new Date(), lang)}</p>
+            <div className="mt-4 flex flex-col gap-2">
+              {[bangBac, bangAI].map((b) => (
+                <Link
+                  key={b.href}
+                  href={b.href}
+                  className="group/hang flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm"
+                >
+                  <span className={`mt-1.5 h-2 w-2 shrink-0 self-start rounded-full ${b.cham}`} aria-hidden />
+                  <span className="font-semibold text-ink group-hover/hang:underline">{b.ten}</span>
+                  <span className="text-muted">
+                    {b.so.map((o, i) => (
                       <span key={o.nhan}>
-                        <span className="mx-2">·</span>
+                        {i > 0 && <span className="mx-2">·</span>}
                         {o.nhan}: <strong className="text-ink">{o.gia}</strong>
                       </span>
                     ))}
-                    {b.ghiChu === null ? null : (
-                      <span>
-                        <span className="mx-2">·</span>
-                        {b.ghiChu}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5 ${b.nut}`}
-                >
-                  {dict.home.viewBoard} &rarr;
-                </span>
-              </Link>
-            ))}
+                    {b.ghiChu}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            <Link
+              href={withLang("/daily-board", lang)}
+              className="group mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+            >
+              {dict.home.viewBoard} &rarr;
+            </Link>
           </div>
         )}
       </section>
