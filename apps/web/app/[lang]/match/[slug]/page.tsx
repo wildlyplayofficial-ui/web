@@ -9,11 +9,11 @@ import { WatchingTeaser } from "@/components/watching-teaser";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { MatchFacts } from "@/components/match-facts";
 import { getBoothForPick } from "@/lib/booth-data";
-import { getMatchContext } from "@/lib/match-context";
-import { getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
+import { findInSeason, getMatchContext } from "@/lib/match-context";
+import { buildMatchSlug, getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { teamBadge } from "@/lib/team-badges";
-import { formatKickoff } from "@/lib/format";
+import { formatKickoff, formatMatchDay } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import type { MatchData } from "@/lib/types";
 
@@ -43,10 +43,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const homeName = deslug(slug.slice(0, vsIdx));
     const awayName = deslug(slug.slice(vsIdx + 4, slug.length - dateMatch[1].length - 1));
     if (!homeName || !awayName) return { title: "Not found" };
+    const title = `${homeName} vs ${awayName} \u2014 Preview, Pick & Result`;
+    const description = `${homeName} vs ${awayName}. Expert prediction, odds analysis, and match result on banhbong.net.`;
+
+    // Nhánh này nhận MỌI ngày trong địa chỉ. Đo 2/9/2026 trên trận Ipswich–Liverpool:
+    // sáu địa chỉ 2/9 … 7/9 đều trả 200 và đều TỰ NHẬN mình là bản chính → mỗi trận
+    // đẻ ra vô số trang na ná cho Google. Nới lỏng ngày là cố ý (slug cũ lệch một
+    // hôm so với lịch), nên KHÔNG chặn người bấm link — chỉ dọn phần Google nhìn:
+    //   · ngày không khớp trận nào trong lịch mùa → đừng lập chỉ mục
+    //   · khớp nhưng lệch ngày → trỏ về ĐÚNG một bản chính (không tự nhận)
+    // Không đặt cả noindex lẫn canonical trên cùng một trang — hai tín hiệu đá nhau.
+    const found = findInSeason(
+      slug.slice(0, vsIdx),
+      slug.slice(vsIdx + 4, slug.length - dateMatch[1].length - 1),
+      dateMatch[1],
+    );
+    if (!found) {
+      return { title, description, robots: { index: false, follow: true } };
+    }
+    const canonicalSlug = buildMatchSlug(
+      found.hit.homeName, found.hit.awayName, `${found.hit.date}T${found.hit.time}:00Z`,
+    );
     return {
-      title: `${homeName} vs ${awayName} \u2014 Preview, Pick & Result`,
-      description: `${homeName} vs ${awayName}. Expert prediction, odds analysis, and match result on banhbong.net.`,
-      alternates: buildAlternates(`/match/${slug}`, lang),
+      title,
+      description,
+      alternates: buildAlternates(`/match/${canonicalSlug}`, lang),
     };
   }
 
@@ -127,7 +148,9 @@ export default async function MatchPage({ params }: Props) {
         )}
         <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">&larr; {dict.match.backToMatches}</Link>
         <header className="mt-6">
-          <p className="text-sm text-muted">{formatKickoff(datePart + "T00:00:00Z", lang)}</p>
+          <p className="text-sm text-muted">{ctx
+            ? formatKickoff(ctx.kickoffUtc, lang)
+            : formatMatchDay(datePart + "T00:00:00Z", lang)}</p>
           <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
             {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName} <span className="text-muted">vs</span> {ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
