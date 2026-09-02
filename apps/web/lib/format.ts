@@ -48,6 +48,22 @@ export function formatKickoff(iso: string, lang: Lang): string {
   return `${day} · ${time} ${suffix}`;
 }
 
+/** Chỉ NGÀY, không giờ — dùng khi ta chưa biết giờ bóng lăn.
+ *
+ * Vì sao cần: trước đây trang trận chưa có nội dung biên tập in
+ * `formatKickoff(datePart + "T00:00:00Z")`. Đó là NỬA ĐÊM GIỜ UTC, quy sang giờ
+ * Việt Nam thành 07:00 — nên mọi trang trận đều hiện "07:00 giờ VN" ở đầu trang
+ * trong khi thân bài ghi đúng giờ thật (đo 2/9/2026 trên 3 trang khác nhau).
+ * Không biết giờ thì đừng bịa ra một cái giờ.
+ */
+export function formatMatchDay(iso: string, lang: Lang): string {
+  return new Intl.DateTimeFormat(locales[lang], {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
 /** D1 (§9): publish-proof timestamp — always includes the year so archive picks stay unambiguous. */
 export function formatPostedAt(iso: string, lang: Lang): string {
   const date = new Date(iso);

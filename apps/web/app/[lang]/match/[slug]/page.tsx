@@ -13,7 +13,7 @@ import { getMatchContext } from "@/lib/match-context";
 import { getMatchBySlug, getThesisTranslations, getVoteCounts, SLUG_ALIASES } from "@/lib/data";
 import { teamFlag } from "@/lib/flags";
 import { teamBadge } from "@/lib/team-badges";
-import { formatKickoff } from "@/lib/format";
+import { formatKickoff, formatMatchDay } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import type { MatchData } from "@/lib/types";
 
@@ -127,7 +127,9 @@ export default async function MatchPage({ params }: Props) {
         )}
         <Link href={withLang("/", lang)} className="text-sm text-muted transition-colors hover:text-brand">&larr; {dict.match.backToMatches}</Link>
         <header className="mt-6">
-          <p className="text-sm text-muted">{formatKickoff(datePart + "T00:00:00Z", lang)}</p>
+          <p className="text-sm text-muted">{ctx
+            ? formatKickoff(ctx.kickoffUtc, lang)
+            : formatMatchDay(datePart + "T00:00:00Z", lang)}</p>
           <h1 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
             {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName} <span className="text-muted">vs</span> {ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
