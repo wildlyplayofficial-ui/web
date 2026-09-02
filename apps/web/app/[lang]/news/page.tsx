@@ -58,7 +58,11 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 /** Nhãn thời gian tương đối theo NGÔN NGỮ TRANG. Quá 7 ngày trả dd/mm theo UTC
  *  để server và trình duyệt in cùng một chuỗi, khỏi lệch hydration. */
 function timeLabel(iso: string, lang: Lang): string {
-  const diff = Date.now() - new Date(iso).getTime();
+  // Thiếu ngày hoặc ngày rác → trả chuỗi rỗng. Không chặn ở đây thì nó in
+  // "NaN/NaN" ra mặt trang (bản ghi thiếu `published_at` là có thật, 2/9/2026).
+  const moc = new Date(iso).getTime();
+  if (!iso || Number.isNaN(moc)) return "";
+  const diff = Date.now() - moc;
   const mins = Math.floor(diff / 60000);
   const REL: Record<Lang, { now: string; m: string; h: string; d: string }> = {
     en: { now: "just now", m: "{n}m ago", h: "{n}h ago", d: "{n}d ago" },
@@ -201,7 +205,7 @@ function MetaRow({ c, lang }: { c: Card; lang: Lang }) {
       {c.tag && (
         <span className={`rounded-full border px-1.5 py-px font-display font-semibold ${c.tagColor}`}>{c.tag}</span>
       )}
-      <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+      {c.date && <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>}
       {c.phutDoc && (
         <span>
           · {c.phutDoc} {lang === "vi" ? "phút đọc" : lang === "th" ? "นาที" : lang === "es" ? "min" : "min read"}
@@ -327,7 +331,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
         // generic league OG image in the "nổi bật" slot (Jane 15/8).
         anhThat: !!item.hero_card_url,
         badge: (item.competition_id && leagueLabels[item.competition_id]) || dict.nav.news,
-        date: item.published_at,
+        date: item.published_at ?? "",
         tag: loai ?? undefined,
         tagColor: MAU_LOAI[item.type] ?? MAU_LOAI.general,
         // KHÔNG tóm tắt tin tự sinh: body là câu template giống hệt nhau
@@ -357,12 +361,16 @@ export default async function NewsLanding({ params, searchParams }: Props) {
       title: a.title,
       thumb: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}&v=${OG_VERSION}`,
       badge: tenGiaiViet.get(a.league) ?? a.league,
-      date: a.published_at,
+      date: a.published_at ?? "",
       phutDoc: phutDoc(a.body),
       anhThat: !!a.hero_image,
       moTa: tomTat(a.body),
     })),
-  ].sort((a, b) => b.date.localeCompare(a.date));
+  // ?? "" ở cả ba nguồn phía trên KHÔNG thừa, và chỗ này cũng vậy: 2/9/2026 hai bài
+  // tin đăng thiếu `published_at` (NULL trong kho) làm `b.date.localeCompare` ném lỗi
+  // và HẠ TOÀN BỘ trang /news suốt mấy tiếng. Một bản ghi thiếu một trường không được
+  // phép giết cả trang danh sách — thiếu ngày thì bài xuống cuối, thế thôi.
+  ].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
   // ── Chia tầng: 1 nổi bật + 5 headline có ảnh + 6 lưới + list có tóm tắt ──
   const noiBat = cards[0];
@@ -489,7 +497,7 @@ export default async function NewsLanding({ params, searchParams }: Props) {
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2 text-[11px] text-muted">
                           <span className="font-display font-semibold text-brand">{c.badge}</span>
-                          <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>
+                          {c.date && <time dateTime={c.date}>{timeLabel(c.date, lang)}</time>}
                         </span>
                         <span className="mt-0.5 line-clamp-2 text-[14px] font-semibold leading-snug transition-colors group-hover:text-brand">
                           {c.title}

@@ -585,7 +585,7 @@ export default async function Home({ params }: Props) {
                   />
                 )}
                 <div className="p-4">
-                  <time className="text-xs text-muted" dateTime={n.published_at}>
+                  <time className="text-xs text-muted" dateTime={n.published_at ?? undefined}>
                     {formatPostDate(n.published_at, lang)}
                   </time>
                   <p className="mt-1.5 line-clamp-2 font-display text-sm font-bold leading-snug transition-colors group-hover:text-brand">

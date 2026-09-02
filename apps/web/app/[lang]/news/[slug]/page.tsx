@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: headline,
       description,
       type: "article",
-      publishedTime: item.published_at,
+      publishedTime: item.published_at ?? undefined,
       images: item.hero_card_url
         ? [{ url: item.hero_card_url, width: 1200, height: 630 }]
         : [{ url: `/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 function buildArticleSchema(
   headline: string,
-  item: { published_at: string; byline: string },
+  item: { published_at: string | null; byline: string },
   slug: string,
   lang: Lang,
 ) {
@@ -69,8 +69,12 @@ function buildArticleSchema(
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline,
-    datePublished: item.published_at,
-    dateModified: item.published_at,
+    // published_at có thể NULL (bản ghi đăng bằng script quên trường này — đã làm
+    // sập /news ngày 2/9/2026). Bỏ HẲN hai khoá khỏi JSON-LD thay vì khai null:
+    // Google bỏ qua trường thiếu, còn `"datePublished": null` là schema sai.
+    ...(item.published_at
+      ? { datePublished: item.published_at, dateModified: item.published_at }
+      : {}),
     mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
     author: {
       "@type": "Organization",
@@ -132,7 +136,7 @@ export default async function NewsDetail({ params }: Props) {
           {/* Ngày đăng ghim theo giờ VN — giờ toà soạn. Để nó chạy theo máy người
               xem thì máy chủ in ngày khác trình duyệt, và Google đọc bản máy chủ. */}
           <LocalDate
-            iso={item.published_at}
+            iso={item.published_at ?? ""}
             locale={locales[lang]}
             format="long"
             timeZone="Asia/Ho_Chi_Minh"
