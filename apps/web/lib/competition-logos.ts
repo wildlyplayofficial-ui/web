@@ -1,4 +1,13 @@
-const BASE = 'https://rtsyrktpodspdobelyqs.supabase.co/storage/v1/object/public/competition-logos';
+// Logo giải phục vụ từ THƯ MỤC TĨNH của web, không lấy từ Supabase nữa.
+//
+// Vì sao đổi (2/9/2026): tổ chức Supabase vượt hạn mức băng thông ra — 8,016/5 GB
+// (160%). Chỉ số đó vượt, còn dung lượng lưu trữ mới dùng 13% và database 19%.
+// Mười logo này nằm trên MỌI trang mà tổng tới 947 KB: chúng là ảnh Supabase
+// được gọi nhiều nhất site.
+//
+// Đã nén: PNG bảng màu 160px, giữ trong suốt. 947 KB → 33 KB, giảm 97%, so bằng
+// mắt không thấy khác. Đặt trong /images/ vì đường này không bị proxy nuốt như /og/.
+const BASE = '/images/giai';
 
 /** Maps competition slug → self-hosted logo URL (Supabase Storage). */
 export const COMPETITION_LOGOS: Record<string, string> = {
