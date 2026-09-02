@@ -462,30 +462,6 @@ export default async function Home({ params }: Props) {
         )}
       </section>
 
-      {/* 1b-bis. Banner Kèo — ngay dưới banner Dự đoán vì cùng nhóm "tra cứu trước
-          trận". Chỉ hiện khi thật sự có kèo; không có thì ẩn hẳn, đừng để banner
-          rỗng dẫn sang trang trống. */}
-      {oddsMatches.length > 0 && (
-        <section className="pb-10">
-          <Link
-            href={withLang("/keo", lang)}
-            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
-          >
-            <div>
-              <p className="font-display text-lg font-bold">{dict.home.oddsTitle}</p>
-              <p className="mt-1 text-sm text-muted">
-                {dict.home.oddsToday.replace("{n}", String(keoHomNay))}
-                <span className="mx-2">·</span>
-                {dict.home.oddsWindow.replace("{n}", String(oddsMatches.length))}
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
-              {dict.home.viewOdds} &rarr;
-            </span>
-          </Link>
-        </section>
-      )}
-
       {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
           (never a fabricated seed). */}
       {heroPick && (
@@ -604,6 +580,32 @@ export default async function Home({ params }: Props) {
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* 3a-bis. Banner Kèo — Nick 2/9: chuyển XUỐNG đây, ngay dưới bài nổi bật và
+          tin mới nhất. Trước nó nằm sát dưới băng Dự đoán và đẩy bài viết xuống dưới
+          nếp gấp trên điện thoại — banner tra cứu chiếm chỗ của nội dung thật.
+          Chỉ hiện khi thật sự có kèo; không có thì ẩn hẳn, đừng để banner rỗng dẫn
+          sang trang trống. */}
+      {oddsMatches.length > 0 && (
+        <section className="pb-10">
+          <Link
+            href={withLang("/keo", lang)}
+            className="group flex flex-wrap items-center justify-between gap-4 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
+          >
+            <div>
+              <p className="font-display text-lg font-bold">{dict.home.oddsTitle}</p>
+              <p className="mt-1 text-sm text-muted">
+                {dict.home.oddsToday.replace("{n}", String(keoHomNay))}
+                <span className="mx-2">·</span>
+                {dict.home.oddsWindow.replace("{n}", String(oddsMatches.length))}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5">
+              {dict.home.viewOdds} &rarr;
+            </span>
+          </Link>
         </section>
       )}
 
