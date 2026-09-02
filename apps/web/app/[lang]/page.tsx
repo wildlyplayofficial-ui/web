@@ -158,15 +158,14 @@ export default async function Home({ params }: Props) {
   // khối AI dưới trang Bảng). KHÔNG chế màu mới.
   const bangBac = {
     href: withLang("/daily-board", lang),
-    tieuDe: dict.board.title,
-    vien: "border-brand/30 bg-brand-dim/40 hover:border-brand/60",
-    nut: "bg-brand",
+    ten: dict.pick.curator,
+    cham: "bg-brand",
     so: [
       { nhan: dict.board.picksLabel, gia: picks.length },
       { nhan: dict.board.noPlaysLabel, gia: noPlays.length },
       { nhan: dict.board.watchingLabel, gia: watching.length },
     ],
-    ghiChu: null,
+    ghiChu: null as string | null,
   };
   // Băng AI chỉ đếm kèo của nó. Bỏ qua và Đang theo dõi là sổ của Chú Tám Banh,
   // in lại bên này là đếm trùng.
@@ -176,11 +175,11 @@ export default async function Home({ params }: Props) {
   const coKeoAI = scoutPicks.length > 0;
   const bangAI = {
     href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
-    tieuDe: coKeoAI && bacNghi ? dict.scout.headingSolo : dict.scout.heading,
-    vien: "border-[#6b9e9e]/40 bg-[#6b9e9e]/[.08] hover:border-[#6b9e9e]/70",
-    nut: "bg-[#6b9e9e]",
+    ten: dict.scout.name,
+    cham: "bg-[#6b9e9e]",
     so: coKeoAI ? [{ nhan: dict.board.picksLabel, gia: scoutPicks.length }] : [],
-    ghiChu: coKeoAI ? null : dict.scout.noPlay,
+    // Tên "Trợ lý AI" đã in ngay bên trái trong băng gộp → dùng bản không kèm tên.
+    ghiChu: coKeoAI ? null : dict.scout.noPlayShort,
   };
 
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
@@ -294,8 +293,15 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
-      {/* 1. Hero: brand positioning + curator record + form */}
-      <section className="relative overflow-hidden py-16 text-center md:py-20">
+      {/* 1. Hero: brand positioning + curator record + form
+          Đệm dọc thu lại trên ĐIỆN THOẠI (Peter chụp màn hình 2/9/2026: khối này
+          ăn trọn màn đầu, đẩy "Bảng Dự Đoán Hôm Nay" xuống dưới nếp gấp).
+          Đo trên màn 390x640 — chiều cao dùng được thật của điện thoại sau khi
+          trừ thanh trình duyệt:
+            trước  khối đầu 458px · nội dung thật ở 652px → phải cuộn mới thấy
+            sau    khối đầu 332px · nội dung thật ở 526px → lọt màn đầu
+          Máy tính bàn GIỮ NGUYÊN md:py-20, không đụng. */}
+      <section className="relative overflow-hidden py-7 text-center sm:py-12 md:py-20">
         <div className="hero-glow" aria-hidden />
         {/* Mobile pitch (slice) */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13] dark:opacity-[0.2] md:hidden" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid slice" aria-hidden>
@@ -324,12 +330,17 @@ export default async function Home({ params }: Props) {
           <path d="M 980 160 A 40 40 0 0 0 980 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
         </svg>
         <div className="relative">
+          {/* Nick 2/9/2026: trên ĐIỆN THOẠI bỏ bớt chữ ở khối đầu trang. Tiêu đề
+              rút còn vế đầu (vẫn là H1 thật, vẫn giữ từ khoá chính — KHÔNG ẩn hẳn,
+              Google index theo bản điện thoại trước), câu dẫn và khối phong độ ẩn
+              hẳn. Máy tính bàn giữ nguyên đầy đủ. */}
           <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
-            {dict.tagline}
+            <span className="sm:hidden">{dict.taglineShort}</span>
+            <span className="hidden sm:inline">{dict.tagline}</span>
           </h1>
-          <p className="mt-4 text-base text-muted sm:text-lg">{dict.board.subtitle}</p>
+          <p className="hidden text-muted sm:mt-4 sm:block sm:text-base md:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
-            <p className="mt-6 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm">
+            <p className="mt-3 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm sm:mt-6">
               <span className="text-muted">{dict.pick.curator}</span>
               <span className="font-semibold text-ink">
                 {record.wins}-{record.losses}-{record.pushes}
@@ -339,13 +350,16 @@ export default async function Home({ params }: Props) {
               >
                 {formatUnits(record.units_pl)}
               </span>
-              <span className="text-muted">
+              {/* Ngày "tính đến" đẩy viên thành 3 dòng trên màn 390px (tên "Chú Tám
+                  Banh" bị bẻ dọc). Ẩn trên điện thoại, giữ tỉ số W-L-P làm bằng
+                  chứng thành tích — đó là định vị của trang. */}
+              <span className="hidden text-muted sm:inline">
                 · {dict.board.asOf} {formatBoardDate(new Date(), lang)}
               </span>
             </p>
           )}
           {form.length > 0 && (
-            <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
+            <div className="mt-3 hidden flex-col items-center gap-1.5 text-sm sm:mt-4 sm:flex">
               {/* Nick 25/8: ghi rõ đây là sổ của ai. Khối này CHỈ lấy nhận định
                   của curator (§7.1), nên để trống tên thì người xem tưởng trang
                   giấu trận thua của Trợ lý AI — chính anh đã hiểu nhầm như vậy.
@@ -381,7 +395,10 @@ export default async function Home({ params }: Props) {
           are the first thing after the fixtures strip (Nick 16/8). Preseason
           countdown when the board is empty, so the homepage doesn't read as
           broken with "0 · 0 · 0" between seasons. */}
-      <section className="pb-10 pt-6">
+      {/* Nick 2/9: trên ĐIỆN THOẠI kéo khối "Nhận định nổi bật" sát băng Bảng Dự
+          Đoán hơn — khe 40px làm hai khối nhìn như hai phần rời nhau. Còn 16px
+          trên điện thoại, máy tính bàn giữ nguyên 40px vì màn rộng cần khe thở. */}
+      <section className="pb-4 pt-6 sm:pb-10">
         {preseason ? (
           <Link
             href={withLang("/competitions/premier-league/fixtures", lang)}
@@ -404,38 +421,43 @@ export default async function Home({ params }: Props) {
             </span>
           </Link>
         ) : (
-          <div className="flex flex-col gap-3">
-            {[bangBac, bangAI].map((b) => (
-              <Link
-                key={b.href}
-                href={b.href}
-                className={`group flex flex-wrap items-center justify-between gap-4 rounded-card border px-6 py-5 transition-colors ${b.vien}`}
-              >
-                <div>
-                  <p className="font-display text-lg font-bold">{b.tieuDe}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {formatBoardDate(new Date(), lang)}
-                    {b.so.map((o) => (
+          /* Nick 2/9: gộp HAI băng thành MỘT — trước đây ngày tháng và nút
+             "Xem Bảng Dự Đoán Hôm Nay" bị in hai lần liền nhau, đọc như lỗi.
+             Gộp phần KHUNG (tiêu đề + ngày + nút), KHÔNG gộp SỐ: mỗi bên vẫn
+             một dòng riêng, có tên và chấm màu riêng (xanh thương hiệu cho Chú
+             Tám Banh, #6b9e9e cho Trợ lý AI — đúng màu đã dùng ở /about,
+             /archive, /track-record). Cộng chung thành tích hai bên là phá
+             tường lửa Curator/Scout, thứ khiến trang mình đáng tin. */
+          <div className="rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5">
+            <p className="font-display text-lg font-bold">{dict.board.title}</p>
+            <p className="mt-1 text-sm text-muted">{formatBoardDate(new Date(), lang)}</p>
+            <div className="mt-4 flex flex-col gap-2">
+              {[bangBac, bangAI].map((b) => (
+                <Link
+                  key={b.href}
+                  href={b.href}
+                  className="group/hang flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm"
+                >
+                  <span className={`mt-1.5 h-2 w-2 shrink-0 self-start rounded-full ${b.cham}`} aria-hidden />
+                  <span className="font-semibold text-ink group-hover/hang:underline">{b.ten}</span>
+                  <span className="text-muted">
+                    {b.so.map((o, i) => (
                       <span key={o.nhan}>
-                        <span className="mx-2">·</span>
+                        {i > 0 && <span className="mx-2">·</span>}
                         {o.nhan}: <strong className="text-ink">{o.gia}</strong>
                       </span>
                     ))}
-                    {b.ghiChu === null ? null : (
-                      <span>
-                        <span className="mx-2">·</span>
-                        {b.ghiChu}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform group-hover:-translate-y-0.5 ${b.nut}`}
-                >
-                  {dict.home.viewBoard} &rarr;
-                </span>
-              </Link>
-            ))}
+                    {b.ghiChu}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            <Link
+              href={withLang("/daily-board", lang)}
+              className="group mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5"
+            >
+              {dict.home.viewBoard} &rarr;
+            </Link>
           </div>
         )}
       </section>
