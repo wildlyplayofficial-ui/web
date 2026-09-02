@@ -24,8 +24,14 @@ const DESK_KIND_COLORS: Record<string, string> = {
   news: "border-indigo-soft/40 text-indigo-soft",
 };
 
-// 50 thay vì 10: 272 bài từ 28 trang xuống 6 trang, Google bò tới cuối nhanh hơn.
+// 50 thay vì 10: ít trang thì Google bò tới cuối nhanh hơn. (Ghi chú cũ nói "272
+// bài / 6 trang" — số đó tính cả bài máy đẻ, nay mục lục chỉ còn bài Desk.)
 const PAGE_SIZE = 50;
+
+// Trần số bài kéo về. Trước đây mục lục trộn `posts` nên 100 chỉ là phần Desk;
+// giờ Desk là NGUỒN DUY NHẤT, nên trần này thành trần thật của cả mục lục —
+// vượt qua nó là trang 3 trở đi im lặng rỗng. 300 = ~6 trang, đủ xa (2/9: 53 bài).
+const TRAN_BAI = 300;
 
 function resolvePage(value: string | string[] | undefined): number {
   const n = typeof value === "string" ? parseInt(value, 10) : NaN;
@@ -130,7 +136,7 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
   // nhưng người đọc vẫn thấy chúng ở đây — nên thôi lấy `posts` ra hẳn. Bộ tab
   // đi theo luôn vì 5/7 tab chỉ trỏ vào loại bài máy đẻ, lọc xong là rỗng.
   // Bài cũ KHÔNG xoá khỏi kho, địa chỉ cũ vẫn mở được.
-  const articles = await getAnalysisArticles(undefined, 100);
+  const articles = await getAnalysisArticles(undefined, TRAN_BAI);
 
   const totalPages = Math.max(1, Math.ceil(articles.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
