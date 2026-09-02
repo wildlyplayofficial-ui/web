@@ -35,7 +35,9 @@ export async function GET(): Promise<Response> {
     // cùng một lỗi — sửa sitemap.ts mà quên file này thì bài rác vẫn được khai.
     ...posts
       .filter((p) => !LOAI_BAI_MAY_DE.has(p.type))
-      .map((p) => ({ path: "analysis", slug: p.slug, title: p.title, updated: p.updated })),
+      // Bài blog canonical về /blog/{slug} — nộp cho Google News URL không phải
+      // bản chính là tự đưa hai tín hiệu chỏi nhau.
+      .map((p) => ({ path: p.type === "blog" ? "blog" : "analysis", slug: p.slug, title: p.title, updated: p.updated })),
     ...deskArticles.map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
     // news_items live at /news/, not /analysis/. Use the real headline (not the
     // slug) so Google News shows a proper title, not "romero roi tottenham...".

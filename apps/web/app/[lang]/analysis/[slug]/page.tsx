@@ -106,12 +106,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // trong sitemap. Dùng canonical chứ KHÔNG noindex — hai URL trùng y hệt thì
   // canonical là công cụ đúng, noindex ở đây sẽ giết luôn nội dung bài.
   // `guide` không cần nhánh riêng: resolveArticle đã 301 nó về nhà từ trước.
-  const canonical = `${BASE}${withLang(post.type === "blog" ? `/blog/${slug}` : `/analysis/${slug}`, lang)}`;
+  const duongCanonical = post.type === "blog" ? `/blog/${slug}` : `/analysis/${slug}`;
+  const canonical = `${BASE}${withLang(duongCanonical, lang)}`;
 
   // Chỉ khai hreflang bản tiếng Việt — xem ghi chú ở guides/[slug]/page.tsx.
   // Nhánh Desk phía trên đã dùng buildAlternates từ trước; nhánh posts thì chưa,
   // nên 224/273 trang /analysis còn khai en/th/es (đo prod 26/8).
-  const { languages } = buildAlternates(`/analysis/${slug}`, lang);
+  // Dựng hreflang từ ĐÚNG đường canonical: khai hreflang trỏ một URL trong khi
+  // canonical trỏ URL khác là tự đưa cho Google hai tín hiệu chỏi nhau.
+  const { languages } = buildAlternates(duongCanonical, lang);
 
   return {
     title,

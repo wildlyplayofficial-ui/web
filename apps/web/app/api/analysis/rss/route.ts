@@ -40,12 +40,16 @@ export async function GET(): Promise<Response> {
         title: p.title,
         updated: p.updated,
         source: "post" as const,
+        // Bài blog canonical về /blog/{slug}; feed trỏ /analysis/{slug} là đưa
+        // cho đầu đọc và cho Google một URL không phải bản chính.
+        duong: p.type === "blog" ? "blog" : "analysis",
       })),
     ...deskArticles.map((a) => ({
       slug: a.slug,
       title: a.title,
       updated: a.updated,
       source: "desk" as const,
+      duong: "analysis" as const,
     })),
   ]
     .sort((a, b) => b.updated.localeCompare(a.updated))
@@ -56,8 +60,8 @@ export async function GET(): Promise<Response> {
   const rssItems = items.map(
     (item) => `    <item>
       <title>${escapeXml(item.title)}</title>
-      <link>${BASE}/analysis/${item.slug}</link>
-      <guid isPermaLink="true">${BASE}/analysis/${item.slug}</guid>
+      <link>${BASE}/${item.duong}/${item.slug}</link>
+      <guid isPermaLink="true">${BASE}/${item.duong}/${item.slug}</guid>
       <pubDate>${new Date(item.updated).toUTCString()}</pubDate>
       <dc:creator>${DESK}</dc:creator>
     </item>`,
