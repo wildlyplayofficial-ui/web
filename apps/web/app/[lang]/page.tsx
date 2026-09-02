@@ -294,8 +294,15 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
-      {/* 1. Hero: brand positioning + curator record + form */}
-      <section className="relative overflow-hidden py-16 text-center md:py-20">
+      {/* 1. Hero: brand positioning + curator record + form
+          Đệm dọc thu lại trên ĐIỆN THOẠI (Peter chụp màn hình 2/9/2026: khối này
+          ăn trọn màn đầu, đẩy "Bảng Dự Đoán Hôm Nay" xuống dưới nếp gấp).
+          Đo trên màn 390x640 — chiều cao dùng được thật của điện thoại sau khi
+          trừ thanh trình duyệt:
+            trước  khối đầu 458px · nội dung thật ở 652px → phải cuộn mới thấy
+            sau    khối đầu 332px · nội dung thật ở 526px → lọt màn đầu
+          Máy tính bàn GIỮ NGUYÊN md:py-20, không đụng. */}
+      <section className="relative overflow-hidden py-7 text-center sm:py-12 md:py-20">
         <div className="hero-glow" aria-hidden />
         {/* Mobile pitch (slice) */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13] dark:opacity-[0.2] md:hidden" viewBox="0 0 1100 400" preserveAspectRatio="xMidYMid slice" aria-hidden>
@@ -327,9 +334,9 @@ export default async function Home({ params }: Props) {
           <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
             {dict.tagline}
           </h1>
-          <p className="mt-4 text-base text-muted sm:text-lg">{dict.board.subtitle}</p>
+          <p className="mt-2 text-sm text-muted sm:mt-4 sm:text-base md:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
-            <p className="mt-6 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm">
+            <p className="mt-3 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm sm:mt-6">
               <span className="text-muted">{dict.pick.curator}</span>
               <span className="font-semibold text-ink">
                 {record.wins}-{record.losses}-{record.pushes}
@@ -345,7 +352,7 @@ export default async function Home({ params }: Props) {
             </p>
           )}
           {form.length > 0 && (
-            <div className="mt-4 flex flex-col items-center gap-1.5 text-sm">
+            <div className="mt-3 flex flex-col items-center gap-1.5 text-sm sm:mt-4">
               {/* Nick 25/8: ghi rõ đây là sổ của ai. Khối này CHỈ lấy nhận định
                   của curator (§7.1), nên để trống tên thì người xem tưởng trang
                   giấu trận thua của Trợ lý AI — chính anh đã hiểu nhầm như vậy.
