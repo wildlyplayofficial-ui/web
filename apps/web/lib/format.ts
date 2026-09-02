@@ -92,6 +92,16 @@ export function formatBoardDate(date: Date, lang: Lang): string {
   }).format(date);
 }
 
+/** Ngày rút gọn kiểu "2/9" — dùng cho ĐIỆN THOẠI, nơi bản dài "Thứ Tư, 2 tháng 9,
+ *  2026" chiếm trọn một dòng riêng trong băng Bảng Dự Đoán. */
+export function formatBoardDateShort(date: Date, lang: Lang): string {
+  return new Intl.DateTimeFormat(locales[lang], {
+    day: "numeric",
+    month: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 export function formatMonth(yyyyMm: string, lang: Lang): string {
   const [y, m] = yyyyMm.split("-").map(Number);
   return new Intl.DateTimeFormat(locales[lang], {

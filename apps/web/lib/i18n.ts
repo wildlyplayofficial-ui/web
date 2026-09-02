@@ -86,6 +86,10 @@ export interface Dict {
     emptyTitle: string;
     emptyBody: string;
     picksLabel: string;
+    /** Nhãn rút gọn cho ĐIỆN THOẠI — bản dài đẩy dòng số xuống 3 dòng trong băng
+     *  Bảng Dự Đoán ở trang chủ. Ngôn ngữ nào vốn đã ngắn thì để y nguyên. */
+    picksLabelShort: string;
+    watchingLabelShort: string;
     noPlaysLabel: string;
     watchingLabel: string;
     noPlaysTitle: string;
@@ -417,6 +421,8 @@ const en: Dict = {
     picksLabel: "Picks",
     noPlaysLabel: "No-plays",
     watchingLabel: "Watching",
+    picksLabelShort: "Picks",
+    watchingLabelShort: "Watching",
     noPlaysTitle: "No-plays today",
     noPlaysBody: "Evaluated and passed — no edge, no play.",
     resultsTitle: "Today's results",
@@ -739,6 +745,8 @@ const vi: Dict = {
     picksLabel: "Nhận định chọn",
     noPlaysLabel: "Bỏ qua",
     watchingLabel: "Đang theo dõi",
+    picksLabelShort: "Chọn",
+    watchingLabelShort: "Theo dõi",
     noPlaysTitle: "Trận bỏ qua hôm nay",
     noPlaysBody: "Đã phân tích nhưng không đưa ra nhận định — không có lợi thế thì không chơi.",
     resultsTitle: "Kết quả hôm nay",
@@ -1061,6 +1069,8 @@ const th: Dict = {
     picksLabel: "ทีเด็ด",
     noPlaysLabel: "ไม่เล่น",
     watchingLabel: "กำลังจับตา",
+    picksLabelShort: "ทีเด็ด",
+    watchingLabelShort: "กำลังจับตา",
     noPlaysTitle: "แมตช์ที่ไม่เล่นวันนี้",
     noPlaysBody: "วิเคราะห์แล้วแต่ไม่เล่น — ไม่มีความได้เปรียบ ก็ไม่เดิมพัน",
     resultsTitle: "ผลวันนี้",
@@ -1383,6 +1393,8 @@ const es: Dict = {
     picksLabel: "Picks",
     noPlaysLabel: "Descartados",
     watchingLabel: "En seguimiento",
+    picksLabelShort: "Picks",
+    watchingLabelShort: "En seguimiento",
     noPlaysTitle: "Partidos descartados hoy",
     noPlaysBody: "Analizados y descartados — sin ventaja, no hay jugada.",
     resultsTitle: "Resultados de hoy",
