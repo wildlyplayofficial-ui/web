@@ -3,3 +3,4 @@ pick-*.png
 thumb-*.png
 lich-tran-*.png
 .anh-tam/
+__pycache__/
