@@ -74,6 +74,8 @@ export interface Dict {
     learn: string;
   };
   tagline: string;
+  /** Bản ngắn cho ĐIỆN THOẠI — xem ghi chú ở app/[lang]/page.tsx. */
+  taglineShort: string;
   footerDisclaimer: string;
   board: {
     title: string;
@@ -395,6 +397,7 @@ const en: Dict = {
     learn: "Learn",
   },
   tagline: "Free Football Picks, Analysis & Betting Guides",
+  taglineShort: "Free Football Picks",
   footerDisclaimer: "Entertainment only. Play responsibly.",
   board: {
     title: "Daily Board",
@@ -714,6 +717,7 @@ const vi: Dict = {
     learn: "Học Hỏi",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
+  taglineShort: "Nhận Định Bóng Đá Miễn Phí",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
   board: {
     title: "Bảng Dự Đoán Hôm Nay",
@@ -1033,6 +1037,7 @@ const th: Dict = {
     learn: "เรียนรู้",
   },
   tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
+  taglineShort: "ทีเด็ดบอลฟรี",
   footerDisclaimer: "เพื่อความบันเทิงเท่านั้น โปรดเล่นอย่างมีความรับผิดชอบ",
   board: {
     title: "บอร์ดประจำวัน",
@@ -1352,6 +1357,7 @@ const es: Dict = {
     learn: "Aprender",
   },
   tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
+  taglineShort: "Picks de Fútbol Gratis",
   footerDisclaimer: "Solo entretenimiento. Juega con responsabilidad.",
   board: {
     title: "Pizarra Diaria",

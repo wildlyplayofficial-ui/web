@@ -331,10 +331,15 @@ export default async function Home({ params }: Props) {
           <path d="M 980 160 A 40 40 0 0 0 980 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
         </svg>
         <div className="relative">
+          {/* Nick 2/9/2026: trên ĐIỆN THOẠI bỏ bớt chữ ở khối đầu trang. Tiêu đề
+              rút còn vế đầu (vẫn là H1 thật, vẫn giữ từ khoá chính — KHÔNG ẩn hẳn,
+              Google index theo bản điện thoại trước), câu dẫn và khối phong độ ẩn
+              hẳn. Máy tính bàn giữ nguyên đầy đủ. */}
           <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
-            {dict.tagline}
+            <span className="sm:hidden">{dict.taglineShort}</span>
+            <span className="hidden sm:inline">{dict.tagline}</span>
           </h1>
-          <p className="mt-2 text-sm text-muted sm:mt-4 sm:text-base md:text-lg">{dict.board.subtitle}</p>
+          <p className="hidden text-muted sm:mt-4 sm:block sm:text-base md:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
             <p className="mt-3 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm sm:mt-6">
               <span className="text-muted">{dict.pick.curator}</span>
@@ -346,13 +351,16 @@ export default async function Home({ params }: Props) {
               >
                 {formatUnits(record.units_pl)}
               </span>
-              <span className="text-muted">
+              {/* Ngày "tính đến" đẩy viên thành 3 dòng trên màn 390px (tên "Chú Tám
+                  Banh" bị bẻ dọc). Ẩn trên điện thoại, giữ tỉ số W-L-P làm bằng
+                  chứng thành tích — đó là định vị của trang. */}
+              <span className="hidden text-muted sm:inline">
                 · {dict.board.asOf} {formatBoardDate(new Date(), lang)}
               </span>
             </p>
           )}
           {form.length > 0 && (
-            <div className="mt-3 flex flex-col items-center gap-1.5 text-sm sm:mt-4">
+            <div className="mt-3 hidden flex-col items-center gap-1.5 text-sm sm:mt-4 sm:flex">
               {/* Nick 25/8: ghi rõ đây là sổ của ai. Khối này CHỈ lấy nhận định
                   của curator (§7.1), nên để trống tên thì người xem tưởng trang
                   giấu trận thua của Trợ lý AI — chính anh đã hiểu nhầm như vậy.
