@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
+import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
 import { getAllMatchSlugs, getAllPostSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
@@ -116,13 +117,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  const newsRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
-    url: `${BASE}/analysis/${p.slug}`,
-    lastModified: safeLastMod(p.updated),
-    changeFrequency: "weekly",
-    priority: 0.6,
-    alternates: alternates(`/analysis/${p.slug}`),
-  }));
+  // Bảng `posts` gần như toàn bài MÁY ĐẺ thời WildlyPlay: tiếng Anh, mồ côi (đo
+  // 2/9: 272/418 URL bài trong sitemap không có link nội bộ nào trỏ tới). Trang bài
+  // đã đặt noindex cho cả nhóm (xem lib/bai-may-de.ts), mà khai một trang noindex
+  // vào sitemap thì Search Console báo "Submitted URL marked noindex" — đúng cái
+  // lỗi tự chuốc đã ghi ở phần hub CLB phía trên. Lọc hẳn ra.
+  // Còn lại chỉ `blog` (nội dung thật tiếng Việt); `guide` đã bị loại từ trong query.
+  const newsRoutes: MetadataRoute.Sitemap = posts
+    .filter((p) => !LOAI_BAI_MAY_DE.has(p.type))
+    .map((p) => ({
+      url: `${BASE}/analysis/${p.slug}`,
+      lastModified: safeLastMod(p.updated),
+      changeFrequency: "weekly",
+      priority: 0.6,
+      alternates: alternates(`/analysis/${p.slug}`),
+    }));
 
   // Trận TƯƠNG LAI xa hơn 14 ngày chưa vào sitemap — 154 trang rỗng tháng 9 đang
   // hút crawl budget (kiểm kê 25/8). Tới gần ngày đá tự vào lại vì sitemap là

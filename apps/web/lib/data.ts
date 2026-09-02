@@ -499,7 +499,7 @@ export const getAllReportSlugs = unstable_cache(getAllReportSlugsImpl, ["report-
 });
 
 /** All published post slugs for sitemap + news-sitemap. */
-async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; title: string }[]> {
+async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; title: string; type: string }[]> {
   const supabase = getSupabase();
   if (!supabase) {
     const seen = new Set<string>();
@@ -509,11 +509,13 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
       if (p.type === "guide" || seen.has(p.slug)) return false;
       seen.add(p.slug);
       return true;
-    }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title }));
+    }).map((p) => ({ slug: p.slug, updated: p.published_at ?? new Date().toISOString(), title: p.title, type: p.type }));
   }
   const { data, error } = await supabase
     .from("posts")
-    .select("slug, published_at, title")
+    // Kèm `type` để sitemap lọc được bài máy đẻ (xem lib/bai-may-de.ts): chúng đã
+    // noindex nên không được khai vào sitemap nữa.
+    .select("slug, published_at, title, type")
     .eq("status", "published")
     // Lấy bản TIẾNG VIỆT: bảng posts có 1 dòng mỗi ngôn ngữ, lọc theo lang chỉ
     // để mỗi slug ra đúng 1 dòng. Trước đây lọc "en" nên news-sitemap khai
@@ -525,7 +527,7 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
     .neq("type", "guide")
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllPostSlugs: ${error.message}`);
-  return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title }));
+  return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title, type: r.type }));
 }
 
 export const getAllPostSlugs = unstable_cache(getAllPostSlugsImpl, ["post-slugs"], {
