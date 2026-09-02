@@ -24,7 +24,10 @@ export interface NewsItem {
   source: string | null;
   byline: string;
   hero_card_url: string | null;
-  published_at: string;
+  /** CÓ THỂ NULL trong kho — bản ghi đăng bằng script dễ quên trường này.
+   *  Khai `string` là kiểu nói dối, và đó đúng là lý do TypeScript không bắt được
+   *  cú sập /news ngày 2/9/2026. */
+  published_at: string | null;
   status: string;
   /** true = vẫn hiện cho người đọc nhưng ẩn khỏi Google. Dùng cho bản tin đã bị
    *  bài mới hơn thay thế (vd 3 bài cùng vụ Barcola tranh nhau một từ khoá). */
