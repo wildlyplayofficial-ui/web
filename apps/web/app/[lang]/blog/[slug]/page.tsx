@@ -8,7 +8,9 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost } from "@/lib/data";
+import { trichCauHoiNhanh } from "@/lib/faq-from-markdown";
 import { locales } from "@/lib/format";
+import { buildFAQPage } from "@/lib/jsonld";
 import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
@@ -109,10 +111,22 @@ export default async function GuidePage({ params }: Props) {
   // Schema built from DB field names only — no user-generated HTML. < escaped to prevent injection.
   const schema = JSON.stringify(buildArticleSchema(post, slug, lang)).replace(/</g, "\\u003c");
 
+  // FAQPage rút từ mục "## Câu hỏi nhanh" trong thân bài. Từ 8/2023 Google chỉ
+  // hiện FAQ rich result cho site nhà nước và y tế, nên cái này KHÔNG ra ô FAQ
+  // trên trang kết quả — nó để AI/LLM trích lại câu trả lời. Chữ lấy từ DB nên
+  // phải escape `<` y như schema Article ở trên.
+  const cauHoiNhanh = trichCauHoiNhanh(post.body_md);
+  const faqSchema = cauHoiNhanh.length
+    ? JSON.stringify(buildFAQPage(cauHoiNhanh)).replace(/</g, "\\u003c")
+    : null;
+
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
       {/* JSON-LD: server-controlled data only, no user input */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />
+      {faqSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqSchema }} />
+      )}
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.blog.title, url: "/blog" }, { name: post.title, url: `/blog/${slug}` }]} />
 
       <Link
