@@ -1006,10 +1006,38 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     }
   }
 
+  // Trận CHỈ có BÀI VIẾT (không pick, không watching) vẫn render index: trang
+  // /match gọi getMatchBySlug, hàm đó tìm cả `posts` theo slug nên trả về non-null.
+  // Bỏ sót nguồn này thì sitemap gạt oan trang thật — đo trên production 8/9 ngay
+  // sau PR #248: 27 trang đang index bị rớt khỏi sitemap (Arsenal–Chelsea 6/9,
+  // Atlético–Real 20/9, Barcelona–Rayo 30/8…). Quét một lượt slug bài đã đăng rồi
+  // bật cờ cho trận khớp cả hai tên đội — cùng cách đối chiếu mà getMatchBySlug
+  // đang dùng (ilike %home%away%, không lọc theo ngày).
+  //
+  // Phân trang 1000 dòng một: Supabase cắt ở 1000 mà KHÔNG báo lỗi, lấy một phát
+  // rồi lọc là hỏng âm thầm khi bảng posts vượt ngưỡng.
+  const postSlugs: string[] = [];
+  for (let tu = 0; ; tu += 1000) {
+    const res = await supabase.from("posts").select("slug").eq("status", "published").range(tu, tu + 999);
+    if (res.error) throw new Error(`getAllMatchSlugs posts: ${res.error.message}`);
+    const lo = (res.data ?? []) as { slug: string }[];
+    postSlugs.push(...lo.map((r) => r.slug));
+    if (lo.length < 1000) break;
+  }
+  for (const e of slugMap.values()) {
+    if (e.hasContent) continue;
+    const vs = e.slug.indexOf("-vs-");
+    if (vs < 0) continue;
+    const home = e.slug.slice(0, vs);
+    const away = e.slug.slice(vs + 4, e.slug.length - 11); // bỏ đuôi "-YYYY-MM-DD"
+    if (!home || !away) continue;
+    if (postSlugs.some((s) => s.includes(home) && s.includes(away))) e.hasContent = true;
+  }
+
   return [...slugMap.values()];
 }
 
-export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v3"], {
+export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v4"], {
   revalidate: 300,
   tags: ["picks", "watching", "matches"],
 });
