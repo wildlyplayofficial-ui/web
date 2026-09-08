@@ -1024,6 +1024,14 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     postSlugs.push(...lo.map((r) => r.slug));
     if (lo.length < 1000) break;
   }
+  // So tên đội theo kiểu MỜ, đúng như getMatchBySlug đang làm (ilike `%a%b%`).
+  // Cùng một đội mà mỗi bảng ghi một kiểu: địa chỉ trận ghi "celta-vigo" còn bài
+  // ghi "rc-celta-de-vigo"; "brighton-hove-albion" vs "brighton-and-hove-albion".
+  // So bằng includes() thì trượt → trang vẫn index mà sitemap lại bỏ (2 ca đo được
+  // trên prod 8/9). Đo lại với luật mờ: 27/27 trang index được giữ, 0/208 trang
+  // noindex lọt vào.
+  const moTen = (ten: string) =>
+    new RegExp(ten.split("-").map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".*"));
   for (const e of slugMap.values()) {
     if (e.hasContent) continue;
     const vs = e.slug.indexOf("-vs-");
@@ -1031,13 +1039,15 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     const home = e.slug.slice(0, vs);
     const away = e.slug.slice(vs + 4, e.slug.length - 11); // bỏ đuôi "-YYYY-MM-DD"
     if (!home || !away) continue;
-    if (postSlugs.some((s) => s.includes(home) && s.includes(away))) e.hasContent = true;
+    const rHome = moTen(home);
+    const rAway = moTen(away);
+    if (postSlugs.some((s) => rHome.test(s) && rAway.test(s))) e.hasContent = true;
   }
 
   return [...slugMap.values()];
 }
 
-export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v4"], {
+export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v5"], {
   revalidate: 300,
   tags: ["picks", "watching", "matches"],
 });
