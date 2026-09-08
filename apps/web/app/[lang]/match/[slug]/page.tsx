@@ -241,7 +241,7 @@ export default async function MatchPage({ params }: Props) {
             </p>
             <p className="mt-1 text-sm text-muted">{formatKickoff(match.kickoffUtc, lang)}</p>
             <Link href={withLang(`/analysis/${kenh.bai}`, lang)} className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">
-              Chi tiết gói và cách {kenh.tenBai} &rarr;
+              {kenh.linkChu}{" "}&rarr;
             </Link>
           </section>
         );
