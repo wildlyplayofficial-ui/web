@@ -99,9 +99,15 @@ const GEO_CHECKS = {
 /** Article types that should pass GEO checks — only post-match content with real data. */
 const GEO_SCOPED_SLUGS = ['recap-', 'analysis-', 'post-mortem-'];
 
-export function lintSeoArticle(body: string, slug?: string, lang?: string): SeoLintResult {
+export function lintSeoArticle(body: string, slug?: string, lang?: string, title?: string): SeoLintResult {
   const flags: string[] = [];
   const wordCount = body.split(/\s+/).filter(Boolean).length;
+
+  // Title ≤60 chars — Google cắt title dài trên SERP, mất phần hấp dẫn nhất
+  // (tỷ số, tên cầu thủ). Audit 8/9: 6/12 bài dính. Máy chấm được → chặn ở cổng.
+  if (title && title.trim().length > 60) {
+    flags.push(`TITLE: over 60 chars (${title.trim().length}) — Google cắt trên SERP`);
+  }
 
   // Word count check — lower threshold for non-EN (Thai/Vietnamese are more compact)
   const isNonEn = lang ? lang !== 'en' : false;

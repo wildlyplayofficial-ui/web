@@ -339,6 +339,17 @@ async function dangLenFacebook(
 
 async function insertRows(deps: NewsGenDeps, rows: Record<string, unknown>[]): Promise<number> {
   if (rows.length === 0) return 0;
+  // Cổng title ≤60 ký tự (audit 8/9: 6/12 bài dính, Google cắt trên SERP).
+  // Dài quá → hạ xuống draft cho người sửa, KHÔNG drop im lặng (theo pattern
+  // cổng chất lượng sẵn có: draft thì không lên FB, không announce).
+  for (const r of rows) {
+    const hv = String(r.headline_vi ?? '').trim();
+    const he = String(r.headline_en ?? '').trim();
+    if ((hv.length > 60 || he.length > 60) && r.status === 'published') {
+      r.status = 'draft';
+      log.warn(`news-gen: title quá 60 ký tự (vi:${hv.length}/en:${he.length}) → hạ draft: ${r.slug}`);
+    }
+  }
   const { error } = await deps.sb.from('news_items')
     .upsert(rows, { onConflict: 'slug', ignoreDuplicates: true });
   if (error) { log.warn('news-gen: insert failed:', error.message); return 0; }
