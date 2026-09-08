@@ -758,8 +758,13 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       // pick + metadata dù pick tồn tại (đo 25/8).
       "bosnia-and-herzegovina": ["bosnia%herzegovina"],
     };
-    const homeVariants = REVERSE_SLUG[home] ?? [home.replace(/-/g, "%")];
-    const awayVariants = REVERSE_SLUG[away] ?? [away.replace(/-/g, "%")];
+    // Gộp cả ba nguồn thay vì chọn một: bảng gõ tay (mấy ca ngoài TEAM_CANONICAL
+    // như usa/united states), bảng nghịch dựng tự động, và chính slug.
+    const bienThe = (s: string) => [
+      ...new Set([...(REVERSE_SLUG[s] ?? []), ...(REVERSE_TU_CANONICAL[s] ?? []), s.replace(/-/g, "%")]),
+    ];
+    const homeVariants = bienThe(home);
+    const awayVariants = bienThe(away);
     const homeLike = homeVariants.map(v => `%${v}%`);
     const awayLike = awayVariants.map(v => `%${v}%`);
 
@@ -853,6 +858,25 @@ function cleanTeamName(name: string): string {
   const stripped = name.replace(/\s+Group\s+[A-Z]$/i, "").trim();
   return TEAM_CANONICAL[stripped] ?? stripped;
 }
+
+/** Bảng NGHỊCH của TEAM_CANONICAL, dựng TỰ ĐỘNG — đừng gõ tay.
+ *
+ *  Địa chỉ trang trận sinh từ tên CHUẨN ("Bournemouth" → "AFC Bournemouth" →
+ *  slug `afc-bournemouth`), nhưng bảng dữ liệu lưu tên GỐC ("Bournemouth").
+ *  getMatchBySlug tra ngược bằng `ilike %afc%bournemouth%` nên trượt → trang trả
+ *  noindex dù có watching thật, mà sitemap lại vẫn liệt kê. Đo trên prod 8/9
+ *  dính đúng 2 trận: Man City–Bournemouth 23/8 và Portugal–Congo DR 17/6.
+ *
+ *  Bảng gõ tay bên dưới (REVERSE_SLUG) từng thiếu chính hai ca này. Dựng từ
+ *  TEAM_CANONICAL thì mai mốt thêm đội vào đó là tự có, khỏi phải nhớ sửa hai chỗ. */
+const REVERSE_TU_CANONICAL: Record<string, string[]> = (() => {
+  const m: Record<string, string[]> = {};
+  for (const [goc, chuan] of Object.entries(TEAM_CANONICAL)) {
+    const khoa = slugify(chuan);
+    (m[khoa] ??= []).push(slugify(goc).replace(/-/g, "%"));
+  }
+  return m;
+})();
 
 export interface MatchListEntry {
   slug: string;
