@@ -76,3 +76,15 @@ describe('lintSeoArticle — mức độ sâu theo loại bài (Peter 8/9)', () 
     expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(false);
   });
 });
+
+describe('lintSeoArticle — mức chữ bài blog/guide', () => {
+  const w = (n: number) => 'Bóng đá là môn thể thao vua trên toàn thế giới. '.repeat(n);
+  it('bài blog dưới 1200 từ bị gắn cờ DEPTH', () => {
+    const r = lintSeoArticle(w(60), undefined, 'vi', 'Tiêu đề ngắn', 'blog'); // ~540 từ
+    expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(true);
+  });
+  it('bài blog đủ 1200 từ thì không bị gắn cờ', () => {
+    const r = lintSeoArticle(w(160), undefined, 'vi', 'Tiêu đề ngắn', 'blog'); // ~1440 từ
+    expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(false);
+  });
+});

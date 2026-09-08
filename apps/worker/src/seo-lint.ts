@@ -102,6 +102,8 @@ const GEO_SCOPED_SLUGS = ['recap-', 'analysis-', 'post-mortem-'];
 /** Mức chữ TỐI THIỂU theo loại bài (Peter chốt 8/9). Dưới mức = hạ draft, không đăng thẳng.
  *  no-play/watch card cố tình ngắn (≤2 câu) nên không đặt mức. */
 const DEPTH_TARGET: Record<string, number> = {
+  blog: 1200,     // bài evergreen /blog — tầng khoẻ nhất site, phải dày
+  guide: 700,
   analysis: 700,
   preview: 400,
   recap: 400,
