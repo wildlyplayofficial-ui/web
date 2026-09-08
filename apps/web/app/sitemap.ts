@@ -140,7 +140,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Jane 16/8 + trang top impression). Trận đã đá giữ (có tỷ số + match facts).
   const HORIZON_MS = 14 * 24 * 3600 * 1000;
   const cutoff = Date.now() + HORIZON_MS;
+  // Trang trận CHỈ có trong lịch mùa (chưa pick/watching/bài) render noindex —
+  // xem generateMetadata của /match/[slug]. Trước đây chúng vẫn nằm trong sitemap:
+  // sitemap bảo Google "vào index", trang lại bảo "đừng". Bản xuất GSC 8/9 cho
+  // thấy 318/481 trang kẹt "Discovered – currently not indexed" là /match, và
+  // CẢ 481 đều còn trong sitemap với "lần thu thập cuối" TRỐNG — Google chưa
+  // từng cào. Hàng đợi dài nên trang đáng cào bị xếp sau. Bỏ nhóm noindex ra để
+  // dồn hạn mức cào cho trang có nội dung thật.
   const matchRoutes: MetadataRoute.Sitemap = matches.filter((m) => {
+    if (!m.hasContent) return false;
     const kick = Date.parse(m.kickoffUtc);
     return Number.isNaN(kick) || kick <= cutoff;
   }).map((m) => ({
