@@ -516,7 +516,7 @@ export class SupabaseStore implements Store {
     // Skip for presence/watch-lite cards: intentionally minimal (≤2 sentences by design).
     if (!post.skipLint) {
       const { lintSeoArticle } = await import('./seo-lint');
-      const lint = lintSeoArticle(post.body_md, post.slug, post.lang);
+      const lint = lintSeoArticle(post.body_md, post.slug, post.lang, post.title);
       if (!lint.passed) {
         throw new Error(`seo-lint BLOCK for ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
       }

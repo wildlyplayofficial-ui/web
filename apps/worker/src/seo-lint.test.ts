@@ -29,3 +29,25 @@ describe('lintSeoArticle — script-consistency check (Nick 4/7 item ②)', () =
     expect(result.flags.some((f) => f.startsWith('SCRIPT:'))).toBe(false);
   });
 });
+
+describe('lintSeoArticle — title ≤60 gate (audit 8/9: 6/12 bài dính, Google cắt SERP)', () => {
+  const cleanBody = 'This is a solid analysis of the match with plenty of detail about tactics, form, and the odds movement over the past few days. '.repeat(3);
+
+  it('flags a title over 60 chars', () => {
+    const longTitle = 'Isak lập cú đúp giúp Liverpool thắng đậm Ipswich ngay tại Portman Road'; // 70 ký tự
+    const result = lintSeoArticle(cleanBody, undefined, 'en', longTitle);
+    expect(result.passed).toBe(false);
+    expect(result.flags.some((f) => f.startsWith('TITLE:'))).toBe(true);
+  });
+
+  it('passes a title at exactly 60 chars', () => {
+    const title60 = 'x'.repeat(60);
+    const result = lintSeoArticle(cleanBody, undefined, 'en', title60);
+    expect(result.flags.some((f) => f.startsWith('TITLE:'))).toBe(false);
+  });
+
+  it('does not flag when title is omitted (backward compat)', () => {
+    const result = lintSeoArticle(cleanBody, undefined, 'en');
+    expect(result.flags.some((f) => f.startsWith('TITLE:'))).toBe(false);
+  });
+});

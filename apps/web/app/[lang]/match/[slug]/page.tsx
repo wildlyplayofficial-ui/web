@@ -64,6 +64,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const canonicalSlug = buildMatchSlug(
       found.hit.homeName, found.hit.awayName, `${found.hit.date}T${found.hit.time}:00Z`,
     );
+    // Trang lịch-mùa CHÍNH CHỦ (slug = bản chính) nhưng chưa có pick/nội dung
+    // thật = trang mỏng (~160 từ khung + BXH auto). 318 trang kiểu này kẹt
+    // "Discovered – currently not indexed" và ngốn crawl budget (GSC 8/9,
+    // Peter duyệt). Noindex + BỎ canonical (không đặt cả hai — hai tín hiệu đá
+    // nhau); vẫn follow. Có pick là rơi vào nhánh `match` bên dưới → index lại.
+    if (canonicalSlug === slug) {
+      return { title, description, robots: { index: false, follow: true } };
+    }
     return {
       title,
       description,

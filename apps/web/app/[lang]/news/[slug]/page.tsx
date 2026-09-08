@@ -32,18 +32,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160)
     : headline;
 
+  // Bài "lịch đá HÔM NAY d-m" qua ngày là chữ "hôm nay" thành sai (audit 8/9:
+  // bài 30/8 vẫn sống nguyên "hôm nay" khi đã 8/9). Qua ngày (giờ VN) → noindex
+  // + đổi "hôm nay" trong <title> thành ngày cụ thể. Thân bài giữ nguyên —
+  // người vào thẳng vẫn đọc; chỉ dọn phần Google nhìn.
+  const staleDay = slug.match(/hom-nay-(\d{1,2})-(\d{1,2})/);
+  let staleDate: string | null = null;
+  if (staleDay) {
+    const year = item.published_at
+      ? new Date(item.published_at).getUTCFullYear()
+      : new Date().getUTCFullYear();
+    const slugDateUtc = Date.UTC(year, Number(staleDay[2]) - 1, Number(staleDay[1]));
+    const vnNow = new Date(Date.now() + 7 * 3_600_000);
+    const vnTodayUtc = Date.UTC(vnNow.getUTCFullYear(), vnNow.getUTCMonth(), vnNow.getUTCDate());
+    if (vnTodayUtc > slugDateUtc) staleDate = `${staleDay[1]}/${staleDay[2]}`;
+  }
+  const metaHeadline = staleDate ? headline.replace(/hôm nay/gi, `ngày ${staleDate}`) : headline;
+
   const canonical = `${BASE}${withLang(`/news/${slug}`, lang)}`;
   const alternates = buildAlternates(`/news/${slug}`, lang);
 
   return {
-    title: headline,
+    title: metaHeadline,
     description,
     alternates: { canonical, languages: alternates.languages },
-    // Bản tin đã bị bài mới hơn thay thế: giấu khỏi Google, GIỮ follow để vẫn
-    // dẫn được sang bài mới. Người đọc vào thẳng vẫn xem bình thường.
-    ...(item.noindex ? { robots: { index: false, follow: true } } : {}),
+    // Bản tin đã bị bài mới hơn thay thế HOẶC bài "hôm nay" đã qua ngày: giấu
+    // khỏi Google, GIỮ follow để vẫn dẫn được sang bài mới. Người đọc vào thẳng
+    // vẫn xem bình thường.
+    ...(item.noindex || staleDate ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
-      title: headline,
+      title: metaHeadline,
       description,
       type: "article",
       publishedTime: item.published_at ?? undefined,
