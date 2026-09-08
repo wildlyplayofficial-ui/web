@@ -14,6 +14,7 @@ import { buildMatchSlug, getMatchBySlug, getThesisTranslations, getVoteCounts, S
 import { teamFlag } from "@/lib/flags";
 import { teamBadge } from "@/lib/team-badges";
 import { formatKickoff, formatMatchDay } from "@/lib/format";
+import { conDaDuoc, kenhTheoGiai } from "@/lib/kenh-phat-song";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import type { MatchData } from "@/lib/types";
 
@@ -222,6 +223,25 @@ export default async function MatchPage({ params }: Props) {
           </div>);
         })()}
       </header>
+
+      {/* Xem ở đâu — chỉ hiện cho trận CHƯA đá và giải mình biết kênh.
+          Đo 9/9/2026: 0/187 trang /match nêu được kênh phát sóng, đúng cột đối thủ hơn mình. */}
+      {(() => {
+        const kenh = conDaDuoc(match.kickoffUtc) ? kenhTheoGiai(match.league) : null;
+        if (!kenh) return null;
+        return (
+          <section className="mt-8 rounded-card border border-line bg-card p-4 shadow-card">
+            <h2 className="font-display text-lg font-bold">Xem trận này ở đâu</h2>
+            <p className="mt-2 text-sm text-ink">
+              Kênh: <span className="font-semibold">{kenh.kenh}</span>
+            </p>
+            <p className="mt-1 text-sm text-muted">{formatKickoff(match.kickoffUtc, lang)}</p>
+            <Link href={withLang(`/analysis/${kenh.bai}`, lang)} className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">
+              Chi tiết gói và cách {kenh.tenBai} &rarr;
+            </Link>
+          </section>
+        );
+      })()}
 
       {match.picks.length > 0 && (<section className="mt-8"><h2 className={match.picks[0].author === "scout" ? "mb-3 font-display text-lg font-bold text-scout" : "mb-3 font-display text-lg font-bold"}>{match.picks[0].author === "scout" ? dict.match.scoutPick : dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
 

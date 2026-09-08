@@ -1,0 +1,49 @@
+/** Kênh phát sóng theo giải, cho khối "Xem trận này ở đâu" trên trang /match.
+ *
+ *  VÌ SAO CÓ FILE NÀY: đo 9/9/2026, 0/187 trang /match nêu được kênh phát sóng — trong khi
+ *  đó đúng là cột mà đối thủ hơn mình (đo 30/8), và là câu người Việt gõ khi tra một trận
+ *  ("MU Arsenal xem kênh nào", "trực tiếp ở đâu").
+ *
+ *  Số liệu KHÔNG BỊA: lấy từ chính mấy bài "xem giải X ở đâu" banhbong đã đăng, mở từng bài
+ *  ra đọc chứ không suy từ đường dẫn.
+ */
+
+export interface KenhGiai {
+  /** Tên kênh hiển thị cho người đọc. */
+  kenh: string;
+  /** Đường dẫn bài hướng dẫn xem giải đó (đã đăng, nằm trong /analysis). */
+  bai: string;
+  /** Chữ hiển thị cho đường dẫn. */
+  tenBai: string;
+}
+
+/** Khớp theo TIỀN TỐ tên giải. `MatchData.league` là chuỗi hiển thị dạng
+ *  "Premier League 2026-27" nên phải bỏ phần mùa giải khi so. */
+const BANG: ReadonlyArray<readonly [string, KenhGiai]> = [
+  ["Premier League", { kenh: "FPT Play", bai: "xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus", tenBai: "xem Ngoại hạng Anh 2026/27 ở đâu" }],
+  ["La Liga", { kenh: "SCTV", bai: "xem-la-liga-2026-27-o-dau-sctv", tenBai: "xem La Liga 2026/27 ở đâu" }],
+  ["Serie A", { kenh: "VTVcab", bai: "xem-serie-a-2026-27-o-dau-viet-nam", tenBai: "xem Serie A 2026/27 ở đâu" }],
+  ["Bundesliga", { kenh: "TV360", bai: "xem-bundesliga-2026-27-o-dau-tv360", tenBai: "xem Bundesliga 2026/27 ở đâu" }],
+  ["Ligue 1", { kenh: "VTVcab", bai: "xem-ligue-1-2026-27-o-dau-viet-nam", tenBai: "xem Ligue 1 2026/27 ở đâu" }],
+  ["Champions League", { kenh: "VTVcab, VTV", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu" }],
+];
+
+/** Tra kênh theo tên giải. Không biết thì trả null — KHÔNG đoán bừa một kênh nào đó,
+ *  thà không hiện còn hơn hiện sai. */
+export function kenhTheoGiai(league: string | null | undefined): KenhGiai | null {
+  if (!league) return null;
+  const ten = league.trim();
+  for (const [tienTo, kq] of BANG) {
+    if (ten.toLowerCase().startsWith(tienTo.toLowerCase())) return kq;
+  }
+  return null;
+}
+
+/** Trận đã đá xong thì KHÔNG hiện khối này — "xem ở đâu" cho trận tuần trước là vô nghĩa.
+ *  Đo 9/9: 181/187 trang trong sitemap là trận đã đá, chỉ 6 trận sắp đá. */
+export function conDaDuoc(kickoffUtc: string | null | undefined, now = new Date()): boolean {
+  if (!kickoffUtc) return false;
+  const t = new Date(kickoffUtc).getTime();
+  if (Number.isNaN(t)) return false;
+  return t > now.getTime();
+}
