@@ -51,3 +51,28 @@ describe('lintSeoArticle — title ≤60 gate (audit 8/9: 6/12 bài dính, Googl
     expect(result.flags.some((f) => f.startsWith('TITLE:'))).toBe(false);
   });
 });
+
+describe('lintSeoArticle — mức độ sâu theo loại bài (Peter 8/9)', () => {
+  const short = 'Trận đấu tối nay rất đáng xem. '.repeat(20); // ~120 từ
+  const long = 'Trận đấu tối nay rất đáng xem vì hai đội đều có phong độ tốt. '.repeat(80);
+
+  it('gắn cờ DEPTH khi bài analysis dưới 700 từ', () => {
+    const r = lintSeoArticle(short, undefined, 'vi', 'Tiêu đề ngắn gọn', 'analysis');
+    expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(true);
+  });
+
+  it('không gắn cờ DEPTH khi bài analysis đủ dài', () => {
+    const r = lintSeoArticle(long, undefined, 'vi', 'Tiêu đề ngắn gọn', 'analysis');
+    expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(false);
+  });
+
+  it('không gắn cờ DEPTH cho loại bài không đặt mức (no-play)', () => {
+    const r = lintSeoArticle(short, undefined, 'vi', 'Tiêu đề ngắn gọn', 'no-play');
+    expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(false);
+  });
+
+  it('không gắn cờ DEPTH khi không truyền type (tương thích ngược)', () => {
+    const r = lintSeoArticle(short, undefined, 'vi', 'Tiêu đề ngắn gọn');
+    expect(r.flags.some((f) => f.startsWith('DEPTH:'))).toBe(false);
+  });
+});

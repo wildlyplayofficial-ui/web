@@ -516,8 +516,15 @@ export class SupabaseStore implements Store {
     // Skip for presence/watch-lite cards: intentionally minimal (≤2 sentences by design).
     if (!post.skipLint) {
       const { lintSeoArticle } = await import('./seo-lint');
-      const lint = lintSeoArticle(post.body_md, post.slug, post.lang, post.title);
-      if (!lint.passed) {
+      const lint = lintSeoArticle(post.body_md, post.slug, post.lang, post.title, post.type);
+      // Lỗi "sửa được bằng cách viết lại" (bài mỏng, tiêu đề dài) → HẠ DRAFT cho
+      // người sửa, đừng ném lỗi làm đứng cả job. Lỗi nội dung nghiêm trọng (chữ
+      // cấm, script lạ, thiếu dữ liệu neo) vẫn CHẶN như cũ.
+      const soft = lint.flags.every((f) => f.startsWith('DEPTH:') || f.startsWith('TITLE:'));
+      if (!lint.passed && soft) {
+        log.warn(`seo-lint hạ draft ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
+        post.status = 'draft';
+      } else if (!lint.passed) {
         throw new Error(`seo-lint BLOCK for ${post.type}/${post.slug}/${post.lang}: ${lint.flags.join('; ')}`);
       }
     }

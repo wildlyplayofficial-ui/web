@@ -99,7 +99,17 @@ const GEO_CHECKS = {
 /** Article types that should pass GEO checks — only post-match content with real data. */
 const GEO_SCOPED_SLUGS = ['recap-', 'analysis-', 'post-mortem-'];
 
-export function lintSeoArticle(body: string, slug?: string, lang?: string, title?: string): SeoLintResult {
+/** Mức chữ TỐI THIỂU theo loại bài (Peter chốt 8/9). Dưới mức = hạ draft, không đăng thẳng.
+ *  no-play/watch card cố tình ngắn (≤2 câu) nên không đặt mức. */
+const DEPTH_TARGET: Record<string, number> = {
+  analysis: 700,
+  preview: 400,
+  recap: 400,
+  news: 400,
+  'post-mortem': 400,
+};
+
+export function lintSeoArticle(body: string, slug?: string, lang?: string, title?: string, type?: string): SeoLintResult {
   const flags: string[] = [];
   const wordCount = body.split(/\s+/).filter(Boolean).length;
 
@@ -109,11 +119,21 @@ export function lintSeoArticle(body: string, slug?: string, lang?: string, title
     flags.push(`TITLE: over 60 chars (${title.trim().length}) — Google cắt trên SERP`);
   }
 
-  // Word count check — lower threshold for non-EN (Thai/Vietnamese are more compact)
+  // Sàn CỨNG: dưới mức này là bài hỏng/cụt, chặn hẳn.
   const isNonEn = lang ? lang !== 'en' : false;
   const minWords = isNonEn ? 40 : 100;
   if (wordCount < minWords) {
     flags.push(`THIN: under ${minWords} words`);
+  }
+
+  // ĐỘ SÂU theo loại bài (Peter 8/9: "sao cứ bị lỗi ít chữ quài").
+  // Gốc rễ: sàn cũ 40 từ (VI) coi bài 50 chữ là ĐẠT nên bài mỏng lọt hoài, và
+  // skill wp-news-writer lại ghi "400 chữ chất > 1500 chữ nhồi" → cả người lẫn
+  // máy đều không chặn. Cờ này KHÔNG chặn cứng (tránh đứng pipeline) mà làm
+  // tín hiệu để nơi gọi hạ bài xuống draft cho người sửa.
+  const target = type ? DEPTH_TARGET[type] : undefined;
+  if (target && wordCount < target) {
+    flags.push(`DEPTH: ${wordCount} words, dưới mức ${target} cho bài '${type}' — hạ draft cho người viết dày thêm`);
   }
 
   // Rule checks
