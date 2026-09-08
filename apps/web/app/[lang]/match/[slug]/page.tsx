@@ -14,7 +14,7 @@ import { buildMatchSlug, getMatchBySlug, getThesisTranslations, getVoteCounts, S
 import { teamFlag } from "@/lib/flags";
 import { teamBadge } from "@/lib/team-badges";
 import { formatKickoff, formatMatchDay } from "@/lib/format";
-import { conDaDuoc, kenhTheoGiai } from "@/lib/kenh-phat-song";
+import { conDaDuoc, kenhTheoMaHoacTen } from "@/lib/kenh-phat-song";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import type { MatchData } from "@/lib/types";
 
@@ -227,7 +227,11 @@ export default async function MatchPage({ params }: Props) {
       {/* Xem ở đâu — chỉ hiện cho trận CHƯA đá và giải mình biết kênh.
           Đo 9/9/2026: 0/187 trang /match nêu được kênh phát sóng, đúng cột đối thủ hơn mình. */}
       {(() => {
-        const kenh = conDaDuoc(match.kickoffUtc) ? kenhTheoGiai(match.league) : null;
+        // Tra theo MÃ GIẢI trước — đo 9/9: cả 3 trang trận sắp đá đều có
+        // match.league RỖNG, tra theo tên giải thôi thì khối này hiện trên 0 trang.
+        const kenh = conDaDuoc(match.kickoffUtc)
+          ? kenhTheoMaHoacTen(ctx?.competitionId, match.league)
+          : null;
         if (!kenh) return null;
         return (
           <section className="mt-8 rounded-card border border-line bg-card p-4 shadow-card">

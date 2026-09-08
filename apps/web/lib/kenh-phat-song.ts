@@ -28,6 +28,27 @@ const BANG: ReadonlyArray<readonly [string, KenhGiai]> = [
   ["Champions League", { kenh: "VTVcab, VTV", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu" }],
 ];
 
+/** Tra theo MÃ GIẢI (`competitionId` từ `getMatchContext`) — đường CHÍNH.
+ *
+ *  ⚠️ Vì sao phải có đường này: đo 9/9/2026, cả 3 trang trận SẮP ĐÁ đều có
+ *  `match.league` RỖNG (dòng đầu trang chỉ hiện ngày + giờ, không có tên giải).
+ *  Tra theo `league` thôi thì khối kênh hiện trên ĐÚNG 0 TRANG — tính năng vô dụng.
+ *  `ctx.competitionId` thì luôn có khi trận nằm trong 5 giải có lịch tĩnh. */
+const THEO_MA: Readonly<Record<string, KenhGiai>> = {
+  "epl-2026": { kenh: "FPT Play", bai: "xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus", tenBai: "xem Ngoại hạng Anh 2026/27 ở đâu" },
+  "laliga-2026": { kenh: "SCTV", bai: "xem-la-liga-2026-27-o-dau-sctv", tenBai: "xem La Liga 2026/27 ở đâu" },
+  "seriea-2026": { kenh: "VTVcab", bai: "xem-serie-a-2026-27-o-dau-viet-nam", tenBai: "xem Serie A 2026/27 ở đâu" },
+  "bundesliga-2026": { kenh: "TV360", bai: "xem-bundesliga-2026-27-o-dau-tv360", tenBai: "xem Bundesliga 2026/27 ở đâu" },
+  "ligue1-2026": { kenh: "VTVcab", bai: "xem-ligue-1-2026-27-o-dau-viet-nam", tenBai: "xem Ligue 1 2026/27 ở đâu" },
+  "ucl-2026": { kenh: "VTVcab, VTV", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu" },
+};
+
+/** Tra kênh: ưu tiên MÃ GIẢI, không có mới lùi về tên giải hiển thị. */
+export function kenhTheoMaHoacTen(maGiai: string | null | undefined, league: string | null | undefined): KenhGiai | null {
+  if (maGiai && THEO_MA[maGiai]) return THEO_MA[maGiai];
+  return kenhTheoGiai(league);
+}
+
 /** Tra kênh theo tên giải. Không biết thì trả null — KHÔNG đoán bừa một kênh nào đó,
  *  thà không hiện còn hơn hiện sai. */
 export function kenhTheoGiai(league: string | null | undefined): KenhGiai | null {
