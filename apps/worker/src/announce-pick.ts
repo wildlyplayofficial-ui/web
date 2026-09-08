@@ -134,7 +134,7 @@ export function formatVoidMessage(pick: PickRow, siteUrl: string): string {
   ].join('\n');
 }
 
-/** Comment on a FB post with the OG data-card as attachment (§3: numbers as proof, hero stays branded). */
+/** Comment on a FB post, optionally with an attachment. (Từ 8/9 hero là OG card nên comment thường chỉ còn link.) */
 export async function postFacebookComment(
   fb: { pageId: string; pageToken: string },
   postId: string,
@@ -248,14 +248,22 @@ async function broadcast(
     try {
       let fbId: string;
       try {
-        // §3: FB hero = branded PICK visual (stopping power); OG data-card + link go in the first comment.
+        // Peter 8/9: FB hero = THẺ TRẬN (OG data-card, logo 2 đội) — trước đây hero
+        // là ảnh brand generic "DỰ ĐOÁN" nên mọi bài trông y hệt nhau (Peter bắt trên
+        // bài Cagliari–Lecce 7/9). Ảnh brand giờ chỉ là DỰ PHÒNG khi OG card lỗi.
         const { postPhotoToFacebook } = await import('./announce');
         // Caption đã có sẵn link dạng slug ở cuối formatPickMessage. Nối thêm link
         // dạng mã id vào đây là DÁN HAI LẦN cùng một trang — Jane phải xoá tay ở
         // từng bài (bắt được 29/8 trên bài Liverpool rồi lại Tottenham).
-        fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, msgFb);
-        void postFacebookComment(deps.facebook, fbId, `${deps.siteUrl}/play/${pick.id}`, ogCardUrl)
-          .catch((err) => log.warn(`FB OG comment failed for ${pick.id} — hero already posted:`, err));
+        try {
+          fbId = await postPhotoToFacebook(deps.facebook, ogCardUrl, msgFb);
+        } catch (err) {
+          log.warn(`FB OG-card hero failed for ${pick.id} — dùng ảnh brand dự phòng:`, err);
+          fbId = await postPhotoToFacebook(deps.facebook, brandImageUrl, msgFb);
+        }
+        // Thẻ trận đã là hero → comment chỉ cần link bài, khỏi đính card lần hai.
+        void postFacebookComment(deps.facebook, fbId, `${deps.siteUrl}/play/${pick.id}`)
+          .catch((err) => log.warn(`FB comment failed for ${pick.id} — hero already posted:`, err));
       } catch {
         fbId = await postToFacebook(deps.facebook, msgFb, `${deps.siteUrl}/play/${pick.id}`);
       }
