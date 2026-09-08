@@ -75,9 +75,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on banhbong.net.`;
   const ogImage = `/api/og/match/${slug}?v=${OG_VERSION}`;
 
+  // Trận CÓ trong DB nhưng chưa có pick / watching / bài viết = trang mỏng (chỉ tên
+  // đội + giờ + BXH auto ~160 từ, có trang BXH còn 0đ/0 trận). ~318 trang kiểu này bị
+  // Google "Discovered – currently not indexed". Noindex để dồn crawl budget cho trang
+  // có pick/analysis thật; vẫn follow để Google bò tiếp link nội bộ.
+  const isThin = match.picks.length === 0 && !match.watching && match.posts.length === 0;
+
   return {
     title,
     description,
+    ...(isThin ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title: `${title} | banhbong.net`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     twitter: { card: "summary_large_image", title: `${title} | banhbong.net`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     alternates: buildAlternates(`/match/${slug}`, lang),
