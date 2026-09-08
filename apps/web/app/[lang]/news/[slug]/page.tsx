@@ -47,7 +47,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const vnTodayUtc = Date.UTC(vnNow.getUTCFullYear(), vnNow.getUTCMonth(), vnNow.getUTCDate());
     if (vnTodayUtc > slugDateUtc) staleDate = `${staleDay[1]}/${staleDay[2]}`;
   }
-  const metaHeadline = staleDate ? headline.replace(/hôm nay/gi, `ngày ${staleDate}`) : headline;
+  // "Hôm Nay 30/8" → "ngày 30/8" (headline thường đã kèm ngày ngay sau chữ
+  // "hôm nay" — thay thẳng kẻo ra "ngày 30/8 30/8", dính thật bản đầu 8/9).
+  const metaHeadline = staleDate
+    ? headline.replace(/hôm nay\s*(?=\d{1,2}\s*[\/-]\s*\d{1,2})/gi, "ngày ").replace(/hôm nay/gi, `ngày ${staleDate}`)
+    : headline;
 
   const canonical = `${BASE}${withLang(`/news/${slug}`, lang)}`;
   const alternates = buildAlternates(`/news/${slug}`, lang);
