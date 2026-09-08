@@ -5,6 +5,7 @@ import Link from "next/link";
 import { teamFlag } from "@/lib/flags";
 import { formatUnits } from "@/lib/format";
 import { withLang, type Lang } from "@/lib/i18n";
+import { buildPlaySlug } from "@/lib/play-slug";
 import type { Pick } from "@/lib/types";
 
 /** CLV = (publish / close - 1) × 100. Only when close is known. */
@@ -108,7 +109,7 @@ export function ArchiveRow({
           nên 21/23 trang /play/ thành mồ côi: có trong sitemap mà không đường vào. */}
       <div className={`px-4 pb-3 ${expanded && thesis ? "pt-2" : "pt-0"}`}>
         <Link
-          href={withLang(`/play/${pick.id}`, lang)}
+          href={withLang(`/play/${buildPlaySlug(pick)}`, lang)}
           className="inline-block font-display text-xs font-semibold text-brand hover:underline"
         >
           {lang === "vi" ? "Xem nhận định đầy đủ" : "View full play"} &rarr;

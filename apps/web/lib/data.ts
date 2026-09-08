@@ -9,6 +9,7 @@ import { viPersona, viPersonaFields } from "./persona";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
 import type { MatchData, Pick, Post, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
+import { buildPlaySlug } from "./play-slug";
 
 /**
  * Data layer. Every function queries Supabase when configured and falls back
@@ -57,18 +58,10 @@ export const getTodaysPicks = unstable_cache(getTodaysPicksImpl, ["todays-picks"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Build an SEO-friendly slug for a pick: home-vs-away-selection-date (Nick 17/6).
- *  Date suffix prevents collision when same teams meet again in a different round. */
-export function buildPlaySlug(pick: Pick): string {
-  const date = pick.kickoff_utc.slice(0, 10);
-  const homeSl = slugify(pick.home_team);
-  const awaySl = slugify(pick.away_team);
-  let selSl = slugify(pick.selection);
-  // Avoid duplicating team name in slug (e.g. "bosnia-vs-X-bosnia" → "bosnia-vs-X-home")
-  if (selSl === homeSl) selSl = "home";
-  else if (selSl === awaySl) selSl = "away";
-  return `${homeSl}-vs-${awaySl}-${selSl}-${date}`;
-}
+// Chuyển sang `./play-slug` để component "use client" (archive-row) dùng chung
+// một hàm, khỏi đẻ bản sao thứ hai rồi lệch nhau. Vẫn xuất lại ở đây cho các
+// chỗ đang import từ "@/lib/data" (data.ts cũng tự dùng bên dưới).
+export { buildPlaySlug };
 
 /** Look up a pick by its SEO slug. Returns the first match (slugs should be unique per match+selection). */
 async function getPickBySlugImpl(slug: string): Promise<Pick | null> {

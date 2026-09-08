@@ -307,7 +307,7 @@ export default async function DailyBoard({ params }: Props) {
             {todaysResults.map((p) => (
               <Link
                 key={p.id}
-                href={withLang(`/play/${p.id}`, lang)}
+                href={withLang(`/play/${buildPlaySlug(p)}`, lang)}
                 className="flex items-center gap-3 rounded-card border border-line bg-card p-4 transition-colors hover:border-brand/30"
               >
                 <span
