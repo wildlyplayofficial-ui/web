@@ -10,6 +10,7 @@ import {
   getTodaysPicks,
   getTrackRecordForAuthor,
 } from "@/lib/data";
+import { buildPlaySlug } from "@/lib/play-slug";
 import { formatBoardDate, formatBoardDateShort, formatUnits, locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
@@ -374,7 +375,7 @@ export default async function Home({ params }: Props) {
                 {form.map((p) => (
                   <Link
                     key={p.id}
-                    href={withLang(`/play/${p.id}`, lang)}
+                    href={withLang(`/play/${buildPlaySlug(p)}`, lang)}
                     prefetch={false}
                     title={`${p.home_team} ${p.home_score ?? ""}-${p.away_score ?? ""} ${p.away_team}`}
                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold transition-transform hover:-translate-y-0.5 ${formClass[p.status] ?? "border-line bg-card text-muted"}`}
