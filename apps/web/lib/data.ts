@@ -871,6 +871,9 @@ export interface MatchListEntry {
   liveStatus: "live" | "ft" | null;
   minute: string | null;
   league: string;
+  /** Trang /match có nội dung thật (pick/watching/live) hay chỉ nằm trong lịch mùa.
+   *  Trang chỉ-có-trong-lịch render noindex, nên KHÔNG được đưa vào sitemap. */
+  hasContent: boolean;
 }
 
 /** All matches that have any content — for sitemap and matches list. */
@@ -890,6 +893,9 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     // Nick gõ lệch 30 phút là chuyện thường (Man City 12:30 vs 13:00 thật), nên
     // nguồn tin hơn được sửa giờ đè lên, kể cả khi bản ghi tay mới hơn.
     kickoffTrust = 0,
+    // false = chỉ lấy từ lịch mùa, trang sẽ render noindex (xem generateMetadata
+    // của /match/[slug]: getMatchBySlug trả null → noindex).
+    coNoiDung = true,
   ) => {
     home = cleanTeamName(home);
     away = cleanTeamName(away);
@@ -911,12 +917,14 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
         liveStatus: liveStatus ?? existing?.liveStatus ?? null,
         minute: minute ?? existing?.minute ?? null,
         league: league || existing?.league || "",
+        hasContent: (existing?.hasContent ?? false) || coNoiDung,
       });
     } else {
       if (homeScore !== null) { existing.homeScore = homeScore; existing.awayScore = awayScore; }
       if (pickStatus) existing.pickStatus = pickStatus;
       if (liveStatus) { existing.liveStatus = liveStatus; existing.minute = minute; }
       if (league && !existing.league) existing.league = league;
+      if (coNoiDung) existing.hasContent = true;
     }
   };
 
@@ -994,14 +1002,14 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
   for (const [mua, giai] of MUA) {
     for (const f of mua) {
       if (f.date < tuNgay || f.date > denNgay) continue;
-      addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, giai, 1);
+      addEntry(f.homeName, f.awayName, `${f.date}T${f.time}:00Z`, f.date, null, null, null, null, null, giai, 1, false);
     }
   }
 
   return [...slugMap.values()];
 }
 
-export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v2"], {
+export const getAllMatchSlugs = unstable_cache(getAllMatchSlugsImpl, ["match-slugs-v3"], {
   revalidate: 300,
   tags: ["picks", "watching", "matches"],
 });
