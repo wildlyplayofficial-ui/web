@@ -15,7 +15,7 @@ import { teamFlag } from "@/lib/flags";
 import { teamBadge } from "@/lib/team-badges";
 import { formatKickoff, formatMatchDay } from "@/lib/format";
 import { conDaDuoc, kenhTheoMaHoacTen } from "@/lib/kenh-phat-song";
-import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { MatchData } from "@/lib/types";
 
 export const revalidate = 300;
@@ -118,6 +118,41 @@ function canonicalSlug(slug: string): string | null {
   return changed ? out : null;
 }
 
+/** Khối "Xem trận này ở đâu" — dùng cho CẢ HAI nhánh của trang.
+ *
+ *  Đo 9/9/2026: khối này chỉ hiện trên nhánh CÓ nội dung biên tập. Trang trận
+ *  chưa có pick/watching/bài thì `getMatchBySlug` trả null, rơi xuống nhánh rỗng,
+ *  và nhánh đó KHÔNG có khối kênh — trong khi đó mới là phần đông trang /match.
+ *  Ví dụ thật: crystal-palace-vs-ipswich-town-2026-09-12 không có, còn
+ *  brighton-hove-albion-vs-arsenal-2026-09-19 (đã có bài) thì có.
+ */
+function KhoiKenh({ kickoffUtc, maGiai, league, lang }: {
+  kickoffUtc: string | null | undefined;
+  maGiai: string | null | undefined;
+  league: string | null | undefined;
+  lang: Lang;
+}) {
+  // Tra theo MÃ GIẢI trước — đo 9/9: trang trận sắp đá đều có league RỖNG,
+  // tra theo tên giải thôi thì khối này hiện trên 0 trang.
+  const kenh = conDaDuoc(kickoffUtc) ? kenhTheoMaHoacTen(maGiai, league) : null;
+  if (!kenh) return null;
+  return (
+    <section className="mt-8 rounded-card border border-line bg-card p-4 shadow-card">
+      <h2 className="font-display text-lg font-bold">Xem trận này ở đâu</h2>
+      <p className="mt-2 text-sm text-ink">
+        Kênh: <span className="font-semibold">{kenh.kenh}</span>
+      </p>
+      <p className="mt-1 text-sm text-muted">{formatKickoff(kickoffUtc as string, lang)}</p>
+      <Link
+        href={withLang(`/analysis/${kenh.bai}`, lang)}
+        className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink"
+      >
+        {kenh.linkChu}{" "}&rarr;
+      </Link>
+    </section>
+  );
+}
+
 export default async function MatchPage({ params }: Props) {
   const { slug, lang: rawLang } = await params;
   const canonical = canonicalSlug(slug);
@@ -171,6 +206,8 @@ export default async function MatchPage({ params }: Props) {
             {hb ? <img src={hb} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : hf ? <span className="mr-1.5">{hf}</span> : null}{homeName} <span className="text-muted">vs</span> {ab ? <img src={ab} alt="" width={28} height={28} className="mr-1.5 inline-block h-7 w-7 object-contain align-[-5px]" /> : af ? <span className="mr-1.5">{af}</span> : null}{awayName}
           </h1>
         </header>
+        <KhoiKenh kickoffUtc={ctx?.kickoffUtc ?? `${datePart}T00:00:00Z`}
+                  maGiai={ctx?.competitionId} league={null} lang={lang} />
         {ctx
           ? <MatchFacts ctx={ctx} lang={lang} />
           : <div className="mt-8 rounded-card border border-line bg-card px-6 py-12 text-center"><p className="text-muted">{dict.match.noContent}</p></div>}
@@ -224,28 +261,7 @@ export default async function MatchPage({ params }: Props) {
         })()}
       </header>
 
-      {/* Xem ở đâu — chỉ hiện cho trận CHƯA đá và giải mình biết kênh.
-          Đo 9/9/2026: 0/187 trang /match nêu được kênh phát sóng, đúng cột đối thủ hơn mình. */}
-      {(() => {
-        // Tra theo MÃ GIẢI trước — đo 9/9: cả 3 trang trận sắp đá đều có
-        // match.league RỖNG, tra theo tên giải thôi thì khối này hiện trên 0 trang.
-        const kenh = conDaDuoc(match.kickoffUtc)
-          ? kenhTheoMaHoacTen(ctx?.competitionId, match.league)
-          : null;
-        if (!kenh) return null;
-        return (
-          <section className="mt-8 rounded-card border border-line bg-card p-4 shadow-card">
-            <h2 className="font-display text-lg font-bold">Xem trận này ở đâu</h2>
-            <p className="mt-2 text-sm text-ink">
-              Kênh: <span className="font-semibold">{kenh.kenh}</span>
-            </p>
-            <p className="mt-1 text-sm text-muted">{formatKickoff(match.kickoffUtc, lang)}</p>
-            <Link href={withLang(`/analysis/${kenh.bai}`, lang)} className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-ink">
-              {kenh.linkChu}{" "}&rarr;
-            </Link>
-          </section>
-        );
-      })()}
+      <KhoiKenh kickoffUtc={match.kickoffUtc} maGiai={ctx?.competitionId} league={match.league} lang={lang} />
 
       {match.picks.length > 0 && (<section className="mt-8"><h2 className={match.picks[0].author === "scout" ? "mb-3 font-display text-lg font-bold text-scout" : "mb-3 font-display text-lg font-bold"}>{match.picks[0].author === "scout" ? dict.match.scoutPick : dict.match.curatorPick}</h2><div className="flex flex-col gap-4">{match.picks.map((pick) => (<PickCard key={pick.id} pick={pick} lang={lang} votes={votes[pick.id]} thesisText={translations[pick.id]?.[lang] ?? pick.thesis} hideLinks />))}</div></section>)}
 
