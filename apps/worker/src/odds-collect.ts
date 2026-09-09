@@ -182,6 +182,11 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
     return 0;
   }
   let i = 0;
+  // Cả 3 khoá đều 429 rồi thì DỪNG CẢ NHỊP, đừng thử tiếp giải sau.
+  // Vì sao: đo nhật ký prod 9/9/2026 — khi cạn khoá, máy vẫn thử đủ 3 khoá cho
+  // TỪNG giải, học đi học lại cùng một điều "hết lượt" bảy lần. Đếm được 73 lượt
+  // gọi hỏng, 14 giải bị bỏ trong một khung log. Nick bắt được lúc đang đốt.
+  let canHetKhoa = false;
   const api = async (path: string): Promise<unknown> => {
     // Thử lần lượt từng khoá; chỉ đổi khoá khi bị chặn vì hết lượt (429).
     for (let lan = 0; lan < khoa.length; lan++) {
@@ -191,6 +196,7 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
       log.warn(`odds-collect: khoá ${i + 1}/${khoa.length} hết lượt, đổi khoá`);
       i = (i + 1) % khoa.length;
     }
+    canHetKhoa = true;
     throw new Error('odds-api 429 — mọi khoá đều hết lượt');
   };
 
@@ -201,6 +207,10 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
       events = (await api(`events?sport=football&league=${slug}`)) as OddsEvent[];
     } catch (err) {
       log.warn(`odds-collect: bỏ ${slug} — ${err instanceof Error ? err.message : err}`);
+      if (canHetKhoa) {
+        log.warn('odds-collect: mọi khoá đã cạn — DỪNG nhịp này, không thử tiếp giải sau');
+        break;
+      }
       continue;
     }
     const upcoming = events.filter((e) => {
@@ -216,7 +226,13 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
         rows.push(...buildOddsRows(ev, compId, markets));
       } catch (err) {
         log.warn(`odds-collect: bỏ trận ${ev.home} vs ${ev.away} — ${err instanceof Error ? err.message : err}`);
+        // Cạn khoá thì thoát luôn vòng trận, không đốt tiếp 3 lượt/trận.
+        if (canHetKhoa) break;
       }
+    }
+    if (canHetKhoa) {
+      log.warn('odds-collect: mọi khoá đã cạn giữa chừng — DỪNG nhịp này');
+      break;
     }
   }
 

@@ -152,6 +152,19 @@ describe('collectOddsTick — không được làm chết worker', () => {
     expect(s.inserted).toEqual([]);
   });
 
+  it('cạn hết khoá thì DỪNG NHỊP, không thử tiếp giải sau', async () => {
+    // Đo nhật ký prod 9/9/2026: khi cạn khoá, máy vẫn thử đủ 3 khoá cho TỪNG giải
+    // — 73 lượt gọi hỏng, 14 giải bị bỏ, học lại cùng một điều bảy lần.
+    // Giờ phải dừng ngay sau giải đầu: 2 khoá × 1 giải = ĐÚNG 2 lượt gọi.
+    const s = store();
+    const fetchImpl = vi.fn(async () => ({ ok: false, status: 429 }) as Response);
+    await collectOddsTick({
+      apiKey: ['a', 'b'], store: s as never, fetchImpl: fetchImpl as never,
+      now: () => Date.now(),
+    });
+    expect(fetchImpl.mock.calls.length).toBe(2);
+  });
+
   it('ghi xong thì báo web bỏ đệm, không ghi được thì không báo', async () => {
     const goi: string[][] = [];
     const revalidate = async (tags: string[]) => { goi.push(tags); };
