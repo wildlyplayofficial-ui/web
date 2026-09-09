@@ -50,7 +50,18 @@ const fix = await layHet(
   (q) => q.is('home_score', null),
 );
 
-const byId = new Map(fix.filter((f) => f.livescore_match_id).map((f) => [String(f.livescore_match_id), f]));
+// MỘT mã livescore có thể ứng với NHIỀU dòng fixtures — kho đang có 318 dòng nhân
+// bản (đo 9/9/2026: "Liverpool" và "Liverpool FC" thành 2 trận, cùng mã 1877265).
+// Map<mã, MỘT dòng> thì chỉ dòng cuối thắng, dòng kia mãi mãi trống. Phải giữ MẢNG,
+// và điền cho TẤT CẢ dòng cùng mã. Trước khi vá: chạy lần 1 điền 194, chạy lần 2 vẫn
+// còn 114 trận nữa — đúng số dòng bị Map nuốt.
+const byId = new Map();
+for (const f of fix) {
+  if (!f.livescore_match_id) continue;
+  const k = String(f.livescore_match_id);
+  if (!byId.has(k)) byId.set(k, []);
+  byId.get(k).push(f);
+}
 const byNames = new Map();
 for (const f of fix) {
   const k = `${norm(f.home_team_name)}|${norm(f.away_team_name)}`;
@@ -62,17 +73,20 @@ let l1 = 0, l2 = 0, unm = 0;
 const updates = [];
 const nameLog = [];
 for (const m of live) {
-  let target = byId.get(String(m.id));
+  let targets = byId.get(String(m.id));
   let via = 'id';
-  if (!target) {
+  if (!targets || !targets.length) {
     const cands = byNames.get(`${norm(m.home_team)}|${norm(m.away_team)}`) || [];
-    target = cands.find((f) => dayDiff(f.kickoff_utc, m.kickoff_utc) <= 1);
+    // Ghép theo tên thì mơ hồ hơn — chỉ nhận khi có ĐÚNG MỘT ứng viên trong ±1 ngày,
+    // nhiều ứng viên là không biết trận nào, thà để trống.
+    const gan = cands.filter((f) => dayDiff(f.kickoff_utc, m.kickoff_utc) <= 1);
+    targets = gan.length === 1 ? gan : [];
     via = 'name+date';
   }
-  if (!target) { unm++; continue; }
-  if (via === 'id') l1++;
-  else { l2++; nameLog.push(`${m.home_team} vs ${m.away_team} @${String(m.kickoff_utc).slice(0, 10)}`); }
-  updates.push({ fixId: target.id, hs: m.home_score, as: m.away_score });
+  if (!targets.length) { unm++; continue; }
+  if (via === 'id') l1 += targets.length;
+  else { l2 += targets.length; nameLog.push(`${m.home_team} vs ${m.away_team} @${String(m.kickoff_utc).slice(0, 10)}`); }
+  for (const t of targets) updates.push({ fixId: t.id, hs: m.home_score, as: m.away_score });
 }
 
 console.log(`finished(live)=${live.length}  fixtures-trống=${fix.length}`);
