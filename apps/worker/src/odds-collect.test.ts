@@ -249,4 +249,36 @@ describe('collectOddsTick — không được làm chết worker', () => {
     // chỉ gọi danh sách trận của 5 giải, không gọi kèo trận nào
     expect(fetchImpl.mock.calls.every((c) => String(c[0]).includes('events?'))).toBe(true);
   });
+
+  it('chạm trần CAP thì hoãn trận XA nhất, lấy trận sắp đá trước (soonest-first)', async () => {
+    // 100 trận sắp đá, cách nhau 1 phút — vượt xa trần mặc định 60 lượt/nhịp.
+    const nowMs = new Date('2026-08-23T07:00:00Z').getTime();
+    const many = Array.from({ length: 100 }, (_, k) => ({
+      ...EVENT, id: 500000 + k,
+      date: new Date(nowMs + (k + 1) * 60_000).toISOString(),
+    }));
+    const s = store();
+    const daGoi: number[] = [];
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      const u = String(url);
+      // chỉ giải đầu trả danh sách, các giải sau rỗng — cô lập phép đo vào một giải
+      if (u.includes('events?')) {
+        return { ok: true, json: async () => (u.includes('england-premier-league') ? many : []) } as Response;
+      }
+      const m = u.match(/eventId=(\d+)/);
+      if (m) daGoi.push(Number(m[1]));
+      return { ok: true, json: async () => ({ bookmakers: { Bet365: [{ name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] }] } }) } as Response;
+    });
+    await collectOddsTick({
+      apiKey: 'k', store: s as never, fetchImpl: fetchImpl as never,
+      now: () => nowMs,
+    });
+    // KHÔNG lấy hết 100 trận — bị trần chặn lại
+    expect(daGoi.length).toBeGreaterThan(0);
+    expect(daGoi.length).toBeLessThanOrEqual(60);
+    expect(daGoi.length).toBeLessThan(100);
+    // Trận được lấy phải là các trận SỚM NHẤT: id nhỏ = sớm hơn theo cách dựng
+    const chuaLay = many.map((e) => e.id).filter((id) => !daGoi.includes(id));
+    expect(Math.max(...daGoi)).toBeLessThan(Math.min(...chuaLay));
+  });
 });

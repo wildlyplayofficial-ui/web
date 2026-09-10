@@ -55,6 +55,16 @@ const GAN_MS = 24 * 3_600_000;
 const GIO_LAY_TRAN_XA = [0, 12];
 
 /**
+ * Trần lượt gọi MỖI NHỊP — chốt cứng để một nhịp KHÔNG BAO GIỜ đốt hết khoá.
+ * Nick 10/9: 3 khoá = 300 lượt/giờ, NHƯNG ba nơi cùng xài chung ba khoá đó
+ * (odds-collect này · clv.ts CLV · event-lookup.ts lúc /pick). Nên odds-collect
+ * chỉ được ăn một phần, chừa chỗ cho hai nơi kia. Mặc định 60; đổi bằng biến môi
+ * trường ODDS_MAX_CALLS_PER_TICK, khỏi deploy lại. Vượt trần thì HOÃN trận xa
+ * nhất sang nhịp sau — trận sắp đá (đã sắp soonest-first) luôn được lấy trước.
+ */
+const CAP_MOI_NHIP = Math.max(10, Number(process.env.ODDS_MAX_CALLS_PER_TICK) || 60);
+
+/**
  * Vì sao phải giãn (Nick báo cạn khoá 10/9/2026, đo lại từ log):
  * mỗi nhịp tốn 6 lượt lấy danh sách + MỘT LƯỢT RIÊNG CHO TỪNG TRẬN. Bảng đang
  * có 52 trận trong cửa sổ 96 tiếng → ~58 lượt/nhịp, 8 nhịp/ngày → ~460 lượt.
@@ -209,7 +219,10 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
   // TỪNG giải, học đi học lại cùng một điều "hết lượt" bảy lần. Đếm được 73 lượt
   // gọi hỏng, 14 giải bị bỏ trong một khung log. Nick bắt được lúc đang đốt.
   let canHetKhoa = false;
+  let luotGoi = 0;      // đếm mọi lượt gọi khoá trong nhịp này (events + odds)
+  let hoanLai = false;  // đã chạm trần CAP → hoãn phần còn lại sang nhịp sau
   const api = async (path: string): Promise<unknown> => {
+    luotGoi += 1;
     // Thử lần lượt từng khoá; chỉ đổi khoá khi bị chặn vì hết lượt (429).
     for (let lan = 0; lan < khoa.length; lan++) {
       const res = await f(`https://api.odds-api.io/v3/${path}&apiKey=${khoa[i]}`);
@@ -238,10 +251,14 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
       }
       continue;
     }
-    const upcoming = events.filter((e) => {
-      const t = new Date(e.date).getTime();
-      return t > now && t < now + HORIZON_MS;
-    });
+    const upcoming = events
+      .filter((e) => {
+        const t = new Date(e.date).getTime();
+        return t > now && t < now + HORIZON_MS;
+      })
+      // Sắp gần → xa. Chạm trần CAP thì trận bị hoãn là trận XA nhất, không phải
+      // trận sắp đá — đúng thứ tự ưu tiên của bảng /keo.
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     ghiNhanSoTran(slug, upcoming.length);
     for (const ev of upcoming) {
       const conXa = new Date(ev.date).getTime() - now > GAN_MS;
@@ -249,6 +266,7 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
         boQua += 1;
         continue;
       }
+      if (luotGoi >= CAP_MOI_NHIP) { hoanLai = true; break; }
       daChup.add(ev.id);
       try {
         const data = (await api(`odds?eventId=${ev.id}&bookmakers=Bet365`)) as
@@ -263,6 +281,10 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
     }
     if (canHetKhoa) {
       log.warn('odds-collect: mọi khoá đã cạn giữa chừng — DỪNG nhịp này');
+      break;
+    }
+    if (hoanLai) {
+      log.warn(`odds-collect: chạm trần ${CAP_MOI_NHIP} lượt/nhịp — hoãn trận xa còn lại sang nhịp sau`);
       break;
     }
   }
