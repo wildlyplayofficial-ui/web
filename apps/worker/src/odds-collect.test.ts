@@ -191,6 +191,48 @@ describe('collectOddsTick — không được làm chết worker', () => {
     expect(goi).toEqual([]);
   });
 
+  it('trận còn xa: lần đầu vẫn lấy (giữ kèo mở), lần sau giãn, tới giờ mới lấy lại', async () => {
+    // Trận cách 3 ngày — trong cửa sổ 96 tiếng nhưng ngoài ngưỡng 24 tiếng.
+    const XA = { ...EVENT, id: 99001, date: '2026-08-26T15:30:00Z' };
+    const chay = async (gio: string) => {
+      const s = store();
+      const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+        if (String(url).includes('events?')) return { ok: true, json: async () => [XA] } as Response;
+        return { ok: true, json: async () => ({ bookmakers: { Bet365: [{ name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] }] } }) } as Response;
+      });
+      await collectOddsTick({
+        apiKey: 'k', store: s as never, fetchImpl: fetchImpl as never,
+        now: () => new Date(gio).getTime(),
+      });
+      return fetchImpl.mock.calls.filter((c) => String(c[0]).includes('odds?eventId=')).length;
+    };
+
+    // Lần ĐẦU thấy trận này → phải lấy ngay dù còn xa, nếu không mất kèo mở.
+    expect(await chay('2026-08-23T07:00:00Z')).toBeGreaterThan(0);
+    // Nhịp thường sau đó → giãn, không tốn lượt nào cho trận xa.
+    expect(await chay('2026-08-23T10:00:00Z')).toBe(0);
+    // Tới giờ lấy lại trong ngày (00h/12h UTC) → lấy lại.
+    expect(await chay('2026-08-24T12:00:00Z')).toBeGreaterThan(0);
+  });
+
+  it('trận sắp đá (trong 24 tiếng) thì nhịp nào cũng lấy, không giãn', async () => {
+    const GAN = { ...EVENT, id: 99002, date: '2026-08-23T20:00:00Z' };
+    const chay = async () => {
+      const s = store();
+      const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+        if (String(url).includes('events?')) return { ok: true, json: async () => [GAN] } as Response;
+        return { ok: true, json: async () => ({ bookmakers: { Bet365: [{ name: 'ML', odds: [{ home: '2.0', draw: '3.0', away: '4.0' }] }] } }) } as Response;
+      });
+      await collectOddsTick({
+        apiKey: 'k', store: s as never, fetchImpl: fetchImpl as never,
+        now: () => new Date('2026-08-23T07:00:00Z').getTime(),
+      });
+      return fetchImpl.mock.calls.filter((c) => String(c[0]).includes('odds?eventId=')).length;
+    };
+    expect(await chay()).toBeGreaterThan(0);
+    expect(await chay()).toBeGreaterThan(0); // lần hai vẫn lấy
+  });
+
   it('bỏ qua trận quá xa (ngoài 4 ngày) để khỏi phí lượt gọi', async () => {
     const s = store();
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {
