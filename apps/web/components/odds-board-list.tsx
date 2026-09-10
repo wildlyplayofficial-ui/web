@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   leagueLabelForCompetition,
   leagueLogoForCompetition,
   type OddsBoardMatch,
 } from "@/lib/odds-data";
-import type { DayGroup } from "./odds-filter";
+import { normalize, type DayGroup } from "./odds-filter";
 import { ChiTietTran, pct } from "./odds-detail";
 import type { Lang } from "@/lib/i18n";
 import { TeamCrest } from "@/components/team-crest";
@@ -31,13 +31,29 @@ function KickoffTime({ iso, lang }: { iso: string; lang: Lang }) {
   return <span className="font-display text-base font-bold tabular-nums text-ink">{time}</span>;
 }
 
+/** Anchor theo trận cho bài viết deep-link (Nick 10/9): /keo#tran-<chủ>-vs-<khách>,
+ *  tên đội bỏ dấu, thường hoá, khoảng trắng thành "-" (vd #tran-chelsea-vs-leeds-united). */
+export function matchAnchor(home: string, away: string): string {
+  const slug = (s: string) => normalize(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `tran-${slug(home)}-vs-${slug(away)}`;
+}
+
 /** Dòng gọn: giờ + tên trận + 1X2 hiện tại (nếu có). Bấm để xoè chi tiết. */
 function MatchRow({ match, lang }: { match: OddsBoardMatch; lang: Lang }) {
   const [open, setOpen] = useState(false);
   const ml = match.markets.ML?.[0]?.current;
+  const anchor = matchAnchor(match.homeTeam, match.awayTeam);
+
+  // Vào trang bằng hash của trận này → tự xoè + cuộn tới (bài viết deep-link vào đây)
+  useEffect(() => {
+    if (decodeURIComponent(window.location.hash) === `#${anchor}`) {
+      setOpen(true);
+      requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }));
+    }
+  }, [anchor]);
 
   return (
-    <div className="rounded-card border border-line bg-card">
+    <div id={anchor} className="scroll-mt-24 rounded-card border border-line bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
