@@ -147,8 +147,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // CẢ 481 đều còn trong sitemap với "lần thu thập cuối" TRỐNG — Google chưa
   // từng cào. Hàng đợi dài nên trang đáng cào bị xếp sau. Bỏ nhóm noindex ra để
   // dồn hạn mức cào cho trang có nội dung thật.
+  //
+  // 10/9/2026 — SIẾT THÊM MỘT NẤC (Peter chốt). Lọc theo `hasContent` ở trên đã
+  // kéo 736 → 481, nhưng bản xuất GSC 10/9 cho thấy vẫn còn 158/191 trang /match
+  // mình NỘP mà Google chưa từng cào — 83%. Giờ chỉ nộp trang CÓ BÀI VIẾT thật
+  // (`coBai`); trang chỉ có pick/watching thì bỏ, vì pick đã có trang /play riêng
+  // trong sitemap rồi, nộp thêm /match là nộp hai lần một nội dung.
+  // Trang vẫn sống và vẫn có link nội bộ trỏ tới — chỉ thôi mời Google.
+  // ⚠️ Điều kiện này PHẢI khớp với `isThin` trong /match/[slug]/page.tsx. Lệch nhau
+  // là sitemap bảo "vào index" còn trang bảo "đừng" — đúng lỗi đã ghi ở trên.
   const matchRoutes: MetadataRoute.Sitemap = matches.filter((m) => {
-    if (!m.hasContent) return false;
+    if (!m.coBai) return false;
     const kick = Date.parse(m.kickoffUtc);
     return Number.isNaN(kick) || kick <= cutoff;
   }).map((m) => ({
