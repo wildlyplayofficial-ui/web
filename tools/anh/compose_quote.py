@@ -154,12 +154,77 @@ def dung(cf, ra):
     return ra
 
 
+# ── Kiểu LƯỚI: mỗi câu một hàng, chữ một nửa ảnh một nửa, đổi bên xen kẽ ──────
+# Peter chốt 10/9 sau khi coi bản chân dung: "hình này không có biểu cảm gì hết".
+# Đúng — ảnh chân dung studio mặt đơ, mà cái hay của đoạn hội thoại này nằm ở
+# vẻ mặt lúc nói. Nên kiểu này ăn ảnh CHỤP LÚC PHỎNG VẤN, mỗi câu một ảnh.
+# Ảnh là của đài phát, PHẢI ghi nguồn ở chân thẻ.
+CAO_HANG = 380
+
+
+def _lap_day(im, w, h):
+    """Cắt ảnh cho ĐẦY ô w×h, giữ đúng tỷ lệ, không bóp méo mặt người."""
+    ty = max(w / im.width, h / im.height)
+    im = im.resize((max(1, int(im.width * ty)), max(1, int(im.height * ty))), Image.LANCZOS)
+    x = (im.width - w) // 2
+    y = (im.height - h) // 2
+    return im.crop((x, y, x + w, y + h))
+
+
+def dung_luoi(cf, ra):
+    cau = cf['cau']
+    dau = 170
+    H = dau + CAO_HANG * len(cau) + 62
+    bg = _nen(H).convert('RGBA')
+    d = ImageDraw.Draw(bg)
+    brand_bb.stamp(bg, W=W, mark_px=54, top=40, safe=LE)
+
+    fp = F(30)
+    t = cf['pill']
+    w = d.textlength(t, font=fp)
+    d.rounded_rectangle((LE, 118, LE + w + 56, 176), 29, fill=VANG)
+    d.text((LE + 28, 130), t, font=fp, fill=(20, 20, 20))
+
+    fq = FS(36)
+    fa = F(26)
+    nua = W // 2
+    y = dau + 36
+    for i, c in enumerate(cau):
+        anh_ben_phai = i % 2 == 0            # xen kẽ như mẫu Peter gửi
+        x_anh = nua if anh_ben_phai else 0
+        x_chu = 0 if anh_ben_phai else nua
+        im = _lap_day(Image.open(c['anh']).convert('RGB'), nua, CAO_HANG)
+        bg.paste(im, (x_anh, y))
+
+        loi = '“' + c['loi'].strip().strip('“”"') + '”'
+        dong = _xuong_dong(d, loi, fq, nua - 2 * LE)
+        ten = cf['nguoi'][c['ai']]['ten'].upper()
+        cao_chu = len(dong) * 48 + 46
+        yy = y + (CAO_HANG - cao_chu) // 2
+        for dg in dong:
+            d.text((x_chu + LE, yy), dg, font=fq, fill=TRANG)
+            yy += 48
+        d.text((x_chu + LE, yy + 12), ten, font=fa,
+               fill=VANG if c['ai'] == 0 else GLOW)
+        y += CAO_HANG
+
+    # Ghi nguồn ở góc TRÁI: hàng cuối bên phải là ảnh, chữ xám đè lên ảnh sáng
+    # thì đọc không ra. Bên trái luôn là nền xanh sẫm nên chữ nổi rõ.
+    fn = FS(24)
+    t = 'Ảnh: ' + cf.get('nguon', '')
+    d.text((LE, H - 44), t, font=fn, fill=MO)
+    bg.convert('RGB').save(ra, quality=94, optimize=True)
+    return ra
+
+
 def main():
     if len(sys.argv) < 3:
         raise SystemExit('dùng: python compose_quote.py the.json ra.png')
     with open(sys.argv[1], encoding='utf-8') as f:
         cf = json.load(f)
-    print('đã dựng', dung(cf, sys.argv[2]))
+    # Có ảnh phỏng vấn cho TỪNG câu thì dựng kiểu lưới; không thì kiểu chân dung.
+    ham = dung_luoi if all(c.get('anh') for c in cf['cau']) else dung
+    print('đã dựng', ham(cf, sys.argv[2]))
 
 
 if __name__ == '__main__':
