@@ -15,39 +15,41 @@ const nextConfig: NextConfig = {
     return [
       // Bỏ hẳn ba bản ngoại ngữ (Nick + Peter chốt 23/8) — site chỉ còn tiếng Việt.
       // 301 để gom hết tín hiệu về bản VI thay vì để 3.264 URL bốn thứ tiếng chia
-      // nhau ngân sách bò của một domain mới. Phải đặt TRƯỚC các luật khác có
-      // tiền tố :lang, nếu không luật kia bắt trước và bỏ sót.
-      { source: "/:lang(en|th|es)", destination: "/", statusCode: 301 },
-      { source: "/:lang(en|th|es)/:path*", destination: "/:path*", statusCode: 301 },
+      // nhau ngân sách bò của một domain mới. Hai luật bắt-tất-cả đã dời xuống CUỐI
+      // danh sách (10/9) — xem chú thích ở đó.
+      //
+      // LUẬT CHUNG cho mọi dòng dưới đây: đích phải là ĐƯỜNG CUỐI, không mang lại
+      // tiền tố /:lang. Viết đích là /:lang/... thì proxy còn phải cắt tiền tố thêm
+      // một nhịp nữa (apps/web/proxy.ts) — đo 10/9: 77 địa chỉ đi 2-4 nhịp vì lỗi này.
       // 308 permanent redirect old /goalline URLs to /daily-line
       { source: "/goalline", destination: "/daily-line", permanent: true },
       { source: "/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
-      { source: "/:lang(en|vi|th|es)/goalline", destination: "/:lang/daily-line", permanent: true },
-      { source: "/:lang(en|vi|th|es)/goalline/:path*", destination: "/:lang/daily-line/:path*", permanent: true },
+      { source: "/:lang(en|vi|th|es)/goalline", destination: "/daily-line", permanent: true },
+      { source: "/:lang(en|vi|th|es)/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
       // 2/9/2026: hai bài tổng kết chuyển nhượng đăng nhầm mục Phân tích, đã dời
       // sang Tin tức. Luật Peter chốt cùng ngày: MỌI nội dung chuyển nhượng vào
       // /news, kể cả bài tổng kết cả kỳ — /analysis chỉ để phân tích chuyên môn.
       { source: "/analysis/chuyen-nhuong-chelsea-he-2026", destination: "/news/chuyen-nhuong-chelsea-he-2026", permanent: true },
       { source: "/analysis/chuyen-nhuong-manchester-united-he-2026", destination: "/news/chuyen-nhuong-manchester-united-he-2026", permanent: true },
-      { source: "/:lang(en|vi|th|es)/analysis/chuyen-nhuong-chelsea-he-2026", destination: "/:lang/news/chuyen-nhuong-chelsea-he-2026", permanent: true },
-      { source: "/:lang(en|vi|th|es)/analysis/chuyen-nhuong-manchester-united-he-2026", destination: "/:lang/news/chuyen-nhuong-manchester-united-he-2026", permanent: true },
+      { source: "/:lang(en|vi|th|es)/analysis/chuyen-nhuong-chelsea-he-2026", destination: "/news/chuyen-nhuong-chelsea-he-2026", permanent: true },
+      { source: "/:lang(en|vi|th|es)/analysis/chuyen-nhuong-manchester-united-he-2026", destination: "/news/chuyen-nhuong-manchester-united-he-2026", permanent: true },
       // 301 redirect evergreen guides from /news/ to /guides/ (moved 28/6/2026)
       { source: "/news/what-is-asian-handicap", destination: "/guides/what-is-asian-handicap", permanent: true },
       { source: "/news/what-is-devigging", destination: "/guides/what-is-devigging", permanent: true },
       { source: "/news/no-play-discipline", destination: "/guides/no-play-discipline", permanent: true },
       { source: "/news/what-makes-a-good-tipster", destination: "/guides/what-makes-a-good-tipster", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/what-is-asian-handicap", destination: "/:lang/guides/what-is-asian-handicap", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/what-is-devigging", destination: "/:lang/guides/what-is-devigging", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/no-play-discipline", destination: "/:lang/guides/no-play-discipline", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/what-makes-a-good-tipster", destination: "/:lang/guides/what-makes-a-good-tipster", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/what-is-asian-handicap", destination: "/guides/what-is-asian-handicap", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/what-is-devigging", destination: "/guides/what-is-devigging", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/no-play-discipline", destination: "/guides/no-play-discipline", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/what-makes-a-good-tipster", destination: "/guides/what-makes-a-good-tipster", permanent: true },
       // 301 redirect old /guides/transparency-report-* to /transparency/*
       { source: "/guides/transparency-report-:slug", destination: "/transparency/:slug", permanent: true },
-      { source: "/:lang(en|vi|th|es)/guides/transparency-report-:slug", destination: "/:lang/transparency/:slug", permanent: true },
+      { source: "/:lang(en|vi|th|es)/guides/transparency-report-:slug", destination: "/transparency/:slug", permanent: true },
       // 301 migrate /standings -> /competitions (moved 9/7/2026, IA rebuild)
       { source: "/standings", destination: "/competitions", statusCode: 301 },
       { source: "/standings/:path*", destination: "/competitions/:path*", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/standings", destination: "/:lang/competitions", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/standings/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/standings", destination: "/competitions", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/standings/:path*", destination: "/competitions/:path*", statusCode: 301 },
       // 301 redirect old articles from /news/ to /analysis/ (moved 10/7/2026, IA rebuild).
       // Only redirect prefixes that belong EXCLUSIVELY to old posts (posts table).
       // DO NOT redirect preview-*/result-*/standings-* — those are live news_items.
@@ -56,27 +58,33 @@ const nextConfig: NextConfig = {
       { source: "/news/recap-:slug", destination: "/analysis/recap-:slug", statusCode: 301 },
       { source: "/news/analysis-:slug", destination: "/analysis/analysis-:slug", statusCode: 301 },
       { source: "/news/post-mortem-:slug", destination: "/analysis/post-mortem-:slug", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/news-:slug", destination: "/:lang/analysis/news-:slug", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/no-play-:slug", destination: "/:lang/analysis/no-play-:slug", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/recap-:slug", destination: "/:lang/analysis/recap-:slug", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/analysis-:slug", destination: "/:lang/analysis/analysis-:slug", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/news/post-mortem-:slug", destination: "/:lang/analysis/post-mortem-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/news-:slug", destination: "/analysis/news-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/no-play-:slug", destination: "/analysis/no-play-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/recap-:slug", destination: "/analysis/recap-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/analysis-:slug", destination: "/analysis/analysis-:slug", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/news/post-mortem-:slug", destination: "/analysis/post-mortem-:slug", statusCode: 301 },
       // Guide slugs (specific, no prefix pattern)
       { source: "/news/how-de-vigging-works", destination: "/guides/what-is-devigging", permanent: true },
       { source: "/news/kelly-criterion-betting", destination: "/guides/kelly-criterion-betting", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/:lang/guides/what-is-devigging", permanent: true },
-      { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/:lang/guides/kelly-criterion-betting", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/guides/what-is-devigging", permanent: true },
+      { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/guides/kelly-criterion-betting", permanent: true },
       // /giai/* là URL giải thời WildlyPlay, chưa từng được 301 sang IA mới.
       // Hậu quả đo được 23/8: `site:banhbong.net` chỉ trả về ĐÚNG MỘT URL và URL đó
       // là /giai/europa-league — đang 404. Thứ duy nhất Google biết về site là một
       // trang hỏng. Europa League không có trang riêng nên trỏ về danh sách giải;
       // các slug còn lại map 1-1 sang /competitions/.
       { source: "/giai/europa-league", destination: "/competitions", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/giai/europa-league", destination: "/:lang/competitions", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/giai/europa-league", destination: "/competitions", statusCode: 301 },
       { source: "/giai", destination: "/competitions", statusCode: 301 },
       { source: "/giai/:path*", destination: "/competitions/:path*", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/giai", destination: "/:lang/competitions", statusCode: 301 },
-      { source: "/:lang(en|vi|th|es)/giai/:path*", destination: "/:lang/competitions/:path*", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/giai", destination: "/competitions", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/giai/:path*", destination: "/competitions/:path*", statusCode: 301 },
+      // BẮT-TẤT-CẢ ngoại ngữ — phải nằm CUỐI, sau mọi luật :lang cụ thể ở trên.
+      // Đặt trên đầu (như trước 10/9) thì nó cướp hết: /en/goalline bị nó cắt tiền tố
+      // thành /goalline rồi mới bị luật goalline bắt tiếp — hai nhịp. Nay luật cụ thể
+      // bắt trước và trả thẳng đích cuối, cái này chỉ còn lo phần đuôi chưa ai nhận.
+      { source: "/:lang(en|th|es)", destination: "/", statusCode: 301 },
+      { source: "/:lang(en|th|es)/:path*", destination: "/:path*", statusCode: 301 },
       // RSS feed redirect — must come before the catch-all /news/:slug* below
       { source: "/news/rss.xml", destination: "/api/analysis/rss", statusCode: 301 },
       // /news mở lại thành mục riêng (Peter 8/8) — bỏ 4 dòng 301 catch-all cũ.
