@@ -11,6 +11,8 @@ import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/li
 import type { AnalysisArticle } from "@/lib/types";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
+import { baiQuaHan } from "@/lib/bai-qua-han";
+import { KhoiDaKetThuc } from "@/components/khoi-da-ket-thuc";
 import { SITE_URL, DESK, OG_VERSION } from "@/lib/brand";
 
 export const revalidate = 300;
@@ -209,6 +211,7 @@ function DeskArticleView({
   lang: Lang;
   dict: ReturnType<typeof getDict>;
 }) {
+  const quaHan = baiQuaHan(article.slug);
   const published = new Intl.DateTimeFormat(locales[lang], {
     day: "numeric",
     month: "long",
@@ -272,6 +275,8 @@ function DeskArticleView({
           Phân tích do {DESK} (AI) thực hiện
         </p>
       </header>
+
+      {quaHan && <KhoiDaKetThuc tin={quaHan} lang={lang} />}
 
       {/* Hero image — branded Desk OG card when no hero_image is set */}
       <div className="mt-6 overflow-hidden rounded-card">
