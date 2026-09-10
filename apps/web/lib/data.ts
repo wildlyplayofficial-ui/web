@@ -889,8 +889,18 @@ export interface MatchListEntry {
   minute: string | null;
   league: string;
   /** Trang /match có nội dung thật (pick/watching/live) hay chỉ nằm trong lịch mùa.
-   *  Trang chỉ-có-trong-lịch render noindex, nên KHÔNG được đưa vào sitemap. */
+   *  Dùng cho DANH SÁCH /matches. */
   hasContent: boolean;
+  /** CÓ BÀI VIẾT thật kèm theo trận này. Chặt hơn `hasContent` — pick hay watching
+   *  KHÔNG tính. Chỉ cờ này mới được đưa vào sitemap và mới cho lập chỉ mục.
+   *
+   *  Vì sao tách ra (Peter chốt 10/9/2026): bản xuất GSC hôm đó cho thấy 318/481
+   *  trang "đã phát hiện – chưa lập chỉ mục" là /match, và 158 trong số đó VẪN
+   *  còn trong sitemap với lần-thu-thập-cuối trống. Lọc theo `hasContent` (đợt
+   *  8/9) đã kéo 736 → 481 nhưng chưa đủ: Google vẫn bỏ qua 83% số trang /match
+   *  mình nộp. Trang trận chỉ có pick thì bản thân pick đã có trang /play riêng
+   *  nằm trong sitemap rồi — nộp thêm trang /match là nộp hai lần một nội dung. */
+  coBai: boolean;
 }
 
 /** All matches that have any content — for sitemap and matches list. */
@@ -935,6 +945,7 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
         minute: minute ?? existing?.minute ?? null,
         league: league || existing?.league || "",
         hasContent: (existing?.hasContent ?? false) || coNoiDung,
+        coBai: existing?.coBai ?? false,
       });
     } else {
       if (homeScore !== null) { existing.homeScore = homeScore; existing.awayScore = awayScore; }
@@ -1058,7 +1069,7 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
     if (!home || !away) continue;
     const rHome = moTen(home);
     const rAway = moTen(away);
-    if (postSlugs.some((s) => rHome.test(s) && rAway.test(s))) e.hasContent = true;
+    if (postSlugs.some((s) => rHome.test(s) && rAway.test(s))) { e.hasContent = true; e.coBai = true; }
   }
 
   return [...slugMap.values()];

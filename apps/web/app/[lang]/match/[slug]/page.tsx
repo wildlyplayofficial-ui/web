@@ -88,7 +88,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // đội + giờ + BXH auto ~160 từ, có trang BXH còn 0đ/0 trận). ~318 trang kiểu này bị
   // Google "Discovered – currently not indexed". Noindex để dồn crawl budget cho trang
   // có pick/analysis thật; vẫn follow để Google bò tiếp link nội bộ.
-  const isThin = match.picks.length === 0 && !match.watching && match.posts.length === 0;
+  // 10/9/2026: siết còn ĐÚNG MỘT điều kiện — có bài viết thật hay không.
+  // Trước đây pick hoặc watching cũng đủ để index, nhưng đo GSC hôm đó: 158/191
+  // trang /match mình nộp Google chưa từng cào. Pick đã có trang /play riêng nên
+  // trang /match chỉ-có-pick là nội dung nộp hai lần.
+  // ⚠️ PHẢI khớp với điều kiện `coBai` lọc matchRoutes trong app/sitemap.ts.
+  const isThin = match.posts.length === 0;
 
   return {
     title,
