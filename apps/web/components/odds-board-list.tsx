@@ -44,16 +44,15 @@ function MatchRow({ match, lang }: { match: OddsBoardMatch; lang: Lang }) {
   const ml = match.markets.ML?.[0]?.current;
   const anchor = matchAnchor(match.homeTeam, match.awayTeam);
 
-  // Vào trang bằng hash của trận này → tự xoè + cuộn tới (bài viết deep-link vào đây)
+  // Vào trang bằng hash của trận này thì XOÈ SẴN chi tiết. Việc cuộn tới để
+  // odds-board.tsx lo: bảng màn rộng và danh sách điện thoại cùng mang một mã
+  // trận, phải chọn đúng cái đang HIỆN mới cuộn được (cái kia đang display:none).
   useEffect(() => {
-    if (decodeURIComponent(window.location.hash) === `#${anchor}`) {
-      setOpen(true);
-      requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }));
-    }
+    if (decodeURIComponent(window.location.hash) === `#${anchor}`) setOpen(true);
   }, [anchor]);
 
   return (
-    <div id={anchor} className="scroll-mt-24 rounded-card border border-line bg-card">
+    <div data-tran={anchor} className="scroll-mt-24 rounded-card border border-line bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
