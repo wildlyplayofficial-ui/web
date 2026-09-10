@@ -124,7 +124,7 @@ export default async function NewsDetail({ params }: Props) {
   const headline = getHeadline(item, lang);
   const body = getBody(item, lang);
   const kickoffUtc = item.match_id ? await getKickoffByMatchId(item.match_id) : null;
-  const quaHan = baiQuaHan(slug, kickoffUtc);
+  const quaHan = baiQuaHan(slug, kickoffUtc, item.type);
 
   // JSON-LD: built from our own DB fields, JSON.stringify + escape ensures safety
   const schema = JSON.stringify(

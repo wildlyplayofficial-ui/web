@@ -68,12 +68,22 @@ export const BAI_QUA_HAN: Record<string, BaiQuaHan> = {
   //   đá tối 10/9 và rạng sáng 11/9 — bài VẪN CÒN DÙNG ĐƯỢC.
 };
 
-/** Trận đã đá xong chưa. Trả về thông tin bài kết quả nếu có. */
-export function baiQuaHan(slug: string, kickoffUtc?: string | null): BaiQuaHan | null {
+/** Trận đã đá xong chưa. Trả về thông tin bài kết quả nếu có.
+ *
+ *  `loai` BẮT BUỘC phải là "preview" thì nhánh tự động mới chạy. Bài KẾT QUẢ
+ *  cũng gắn `match_id` và giờ trận cũng đã qua — thiếu điều kiện này thì bài
+ *  "Chelsea 6-3 Leeds" sẽ tự dán nhãn "trận này đã kết thúc" lên chính nó.
+ *  Hôm nay chưa lộ vì bài kết quả đang bỏ trống `match_id`, nhưng ngày nào
+ *  người ta điền vào là hỏng ngay, mà hỏng kiểu không ai báo lỗi. */
+export function baiQuaHan(
+  slug: string,
+  kickoffUtc?: string | null,
+  loai?: string | null,
+): BaiQuaHan | null {
   const ghiTay = BAI_QUA_HAN[slug];
   if (ghiTay) return ghiTay;
-  // Đường tự động cho bài có gắn trận: không cần ai ghi tay nữa.
-  if (!kickoffUtc) return null;
+  // Đường tự động cho bài trước trận có gắn trận: không cần ai ghi tay nữa.
+  if (loai !== "preview" || !kickoffUtc) return null;
   const gio = Date.parse(kickoffUtc);
   return Number.isNaN(gio) || gio >= Date.now() ? null : {};
 }
