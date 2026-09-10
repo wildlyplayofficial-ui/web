@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   leagueLabelForCompetition,
   leagueLogoForCompetition,
@@ -8,6 +8,7 @@ import {
   type OddsBoardMatch,
 } from "@/lib/odds-data";
 import { ChiTietTran } from "./odds-detail";
+import { matchAnchor } from "./odds-board-list";
 import { locMucChinh, sangMalay } from "./odds-filter";
 import { teamBadge } from "@/lib/team-badges";
 
@@ -160,6 +161,11 @@ function gioVN(iso: string): { ngay: string; gio: string } {
 
 function KhoiTran({ match }: { match: OddsBoardMatch }) {
   const [moRong, setMoRong] = useState(false);
+  // Bài viết deep-link tới #tran-<chủ>-vs-<khách> thì xoè sẵn chi tiết trận đó.
+  useEffect(() => {
+    const a = matchAnchor(match.homeTeam, match.awayTeam);
+    if (decodeURIComponent(window.location.hash) === `#${a}`) setMoRong(true);
+  }, [match.homeTeam, match.awayTeam]);
   const chap = locMucChinh(match.markets.Spread ?? []);
   const tx = locMucChinh(match.markets.Totals ?? []);
   const chapH1 = locMucChinh(match.markets["Spread HT"] ?? []);
@@ -238,7 +244,7 @@ export function OddsTable({ days }: { days: DayGroup[] }) {
             </tr>
             {day.matches.map((m) => (
               <Fragment key={m.eventId}>
-                <tr>
+                <tr data-tran={matchAnchor(m.homeTeam, m.awayTeam)} className="scroll-mt-24">
                   {/* Nick 25/8: nhãn giải in đậm, cỡ chữ lớn hơn, có logo bên cạnh. */}
                   <td colSpan={7} className="bg-card/60 px-3 py-1.5">
                     <span className="flex items-center gap-2 font-display text-sm font-bold text-ink">
