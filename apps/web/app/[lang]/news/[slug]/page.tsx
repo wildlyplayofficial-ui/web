@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { baiQuaHan } from "@/lib/bai-qua-han";
+import { KhoiDaKetThuc } from "@/components/khoi-da-ket-thuc";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getNewsItemBySlug, getHeadline, getBody, getKickoffByMatchId } from "@/lib/news";
@@ -122,6 +124,7 @@ export default async function NewsDetail({ params }: Props) {
   const headline = getHeadline(item, lang);
   const body = getBody(item, lang);
   const kickoffUtc = item.match_id ? await getKickoffByMatchId(item.match_id) : null;
+  const quaHan = baiQuaHan(slug, kickoffUtc);
 
   // JSON-LD: built from our own DB fields, JSON.stringify + escape ensures safety
   const schema = JSON.stringify(
@@ -171,6 +174,8 @@ export default async function NewsDetail({ params }: Props) {
           </p>
         )}
       </header>
+
+      {quaHan && <KhoiDaKetThuc tin={quaHan} lang={lang} />}
 
       <div className="mt-6 overflow-hidden rounded-card">
         <img
