@@ -219,8 +219,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // euro-qualifiers được nộp cho Google dưới dạng 404, còn giải soft-launch bằng
   // cờ lại sống mà vắng mặt trong sitemap — hai mặt của cùng một lỗi (5/8).
   // World Cup (362) giữ trang gốc nhưng bỏ trang con: trang giải ẩn tab cho WC.
-  const subPages = (c: { livescoreId: number }) =>
-    c.livescoreId !== 362 ? ["", "/fixtures", "/form"] : [""];
+  //
+  // 10/9/2026 — ĐẢO LẠI quyết định 4/8 ở trên: 2 trang con nay đặt noindex, nên
+  // BỎ HẲN khỏi sitemap. Lý do đo được: 18 trang con chỉ 109-232 chữ, là bảng
+  // trần không câu văn, trong khi cả site đang bị Google trả về "đã thu thập –
+  // chưa lập chỉ mục" (19/459 trang còn chỉ mục, lượt hiện 103/ngày xuống 1/ngày
+  // từ 4/9). Và khai URL noindex vào sitemap là tự chuốc lỗi "Submitted URL
+  // marked noindex" — đúng cái lỗi đã ghi hai lần ở đầu tệp này.
+  // Trang vẫn sống, vẫn follow, người dùng bấm tab vẫn xem được.
+  const subPages = (_c: { livescoreId: number }) => [""];
   const visible = await Promise.all(
     competitions.map(async (c) => {
       if (!c.slug) return false;

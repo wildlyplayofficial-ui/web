@@ -35,6 +35,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .replace("{season}", comp.season),
     alternates: buildAlternates(`/competitions/${slug}/fixtures`, lang),
     openGraph: { title: `${title} | banhbong.net` },
+    // Bảng trần, không có một câu văn nào: đo 10/9/2026 cả 18 trang con
+    // /fixtures + /form chỉ 109-232 chữ (mỏng nhất wc-afc-qualifiers 109).
+    // Cùng lúc đó cả site đang bị Google trả về "đã thu thập – chưa lập chỉ
+    // mục", 19/459 trang còn chỉ mục. Mời Google lập chỉ mục một cái bảng
+    // không chữ chỉ làm loãng thêm. follow:true để vẫn dẫn link sang trang
+    // giải — người dùng bấm tab vẫn xem bình thường, chỉ không nộp cho Google.
+    robots: { index: false, follow: true },
   };
 }
 
