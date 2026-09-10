@@ -5,11 +5,10 @@ import { notFound } from "next/navigation";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
 import { fetchCompetitionTable } from "@/lib/standings";
-import { getCompetitionFixtures, getCompetitionForm, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
+import { getCompetitionForm, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
 import { KnockoutBracket, MatchCard } from "@/components/knockout-bracket";
-import { LeagueFixtures } from "@/components/league-fixtures";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { CompetitionNews } from "@/components/competition-news";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
@@ -47,6 +46,17 @@ export async function generateStaticParams() {
 async function resolveCompetition(slug: string) {
   const competitions = await getStandingsCompetitions().catch(() => []);
   return competitions.find((c) => c.slug === slug) ?? null;
+}
+
+/** Giờ Việt Nam dạng "20:05 10/9/2026" — dùng cho mốc cập nhật dưới bảng. */
+function capNhatVN(): string {
+  const f = new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit", minute: "2-digit",
+    day: "numeric", month: "numeric", year: "numeric",
+  });
+  const p = Object.fromEntries(f.formatToParts(new Date()).map((x) => [x.type, x.value]));
+  return `${p.hour}:${p.minute} ${p.day}/${p.month}/${p.year}`;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -100,11 +110,12 @@ export default async function StandingSlugPage({ params }: Props) {
   const EURO_LEAGUES = new Set(["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1"]);
   const showQualification = EURO_LEAGUES.has(slug);
 
-  const [tableRows, knockoutRounds, fixtureDays, formMap, deskArticles] = await Promise.all([
+  // fixtureDays đã bỏ 10/9: getCompetitionFixtures() được gọi rồi gán vào biến mà
+  // không dùng ở đâu trong tệp này — lịch nằm ở tab /fixtures riêng. Mỗi lượt dựng
+  // lại trang tốn thừa một lượt gọi API.
+  const [tableRows, knockoutRounds, formMap, deskArticles] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId).catch(() => []),
     isWorldCup ? getKnockoutRounds(comp.livescoreId).catch(() => []) : Promise.resolve([]),
-    // League schedule-by-date: non-WC competitions only (WC uses the bracket).
-    isWorldCup ? Promise.resolve([]) : getCompetitionFixtures(comp.livescoreId).catch(() => []),
     // livescore's table has no form for leagues — derive it from results.
     isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId).catch((): Record<string, string> => ({})),
     getAnalysisArticles(undefined, 30),
@@ -174,7 +185,12 @@ export default async function StandingSlugPage({ params }: Props) {
               className="h-16 w-16 flex-shrink-0 object-contain"
             />
           )}
-          <h1 className="gradient-text font-display text-4xl font-bold">{compName}</h1>
+          {/* H1 phải mang từ khoá "bảng xếp hạng" — trước 10/9 chỉ ghi tên giải
+              ("Ngoại hạng Anh") trong khi <title> đã là "Bảng xếp hạng Ngoại hạng Anh".
+              Đo 10/9: trang không có heading nào chứa cụm người ta thực sự gõ. */}
+          <h1 className="gradient-text font-display text-4xl font-bold">
+            {dict.standings.titleFor.replace("{name}", compName)}
+          </h1>
         </div>
         {comp.season && (
           <p className="mt-3 text-muted">
@@ -293,7 +309,21 @@ export default async function StandingSlugPage({ params }: Props) {
         </>
       ) : (
         /* Single flat table (EPL, La Liga, etc.) — standings only, fixtures in /fixtures tab */
-        <LeagueTable teams={sortedRows} labels={dict.standings} showQualification={showQualification} />
+        <section>
+          {/* Khối bảng trước đây render trần, không h2 cũng không caption — máy đọc
+              trang không biết cục dữ liệu này là cái gì. */}
+          <h2 className="mb-3 font-display text-xl font-bold">
+            {comp.season
+              ? dict.standings.seasonNote.replace("{season}", comp.season)
+              : dict.standings.titleFor.replace("{name}", compName)}
+          </h2>
+          <LeagueTable teams={sortedRows} labels={dict.standings} showQualification={showQualification} />
+          {/* Mốc tươi mới: description hứa "cập nhật trực tiếp" mà trên trang không
+              có dấu hiệu nào. Trang dựng lại mỗi giờ (revalidate = 3600). */}
+          <p className="mt-3 text-xs text-muted">
+            {`Cập nhật ${capNhatVN()} (giờ Việt Nam)`}
+          </p>
+        </section>
       )}
     </div>
   );
