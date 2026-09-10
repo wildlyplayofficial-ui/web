@@ -46,6 +46,28 @@ const MARKETS = new Set([
 /** Trận xa hơn 4 ngày kèo còn loãng và tốn lượt gọi (giới hạn 100/giờ). */
 const HORIZON_MS = 96 * 3_600_000;
 
+/** Trận sắp đá thì lấy kèo MỖI NHỊP — đây mới là lúc kèo chạy thật. */
+const GAN_MS = 24 * 3_600_000;
+/** Giờ UTC được phép lấy lại kèo cho trận còn xa — 2 lần/ngày.
+ *  Chốt theo GIỜ chứ không đếm nhịp: đếm nhịp thì mỗi lần deploy lại reset,
+ *  và phép thử phải phụ thuộc thứ tự chạy. Theo giờ thì đưa `now` nào vào
+ *  cũng ra đúng một kết quả. */
+const GIO_LAY_TRAN_XA = [0, 12];
+
+/**
+ * Vì sao phải giãn (Nick báo cạn khoá 10/9/2026, đo lại từ log):
+ * mỗi nhịp tốn 6 lượt lấy danh sách + MỘT LƯỢT RIÊNG CHO TỪNG TRẬN. Bảng đang
+ * có 52 trận trong cửa sổ 96 tiếng → ~58 lượt/nhịp, 8 nhịp/ngày → ~460 lượt.
+ * Khoá tụt 97→63 rồi 63→0 trong một lần chạy, đúng dạng "burst" Nick đo được.
+ *
+ * Không cắt cửa sổ 96 tiếng vì bán điểm của trang /keo là KÈO MỞ và biến động
+ * từ lúc mở — cắt cửa sổ là mất phần đầu của đường kèo. Thay vào đó: trận mới
+ * vào cửa sổ vẫn lấy NGAY (giữ đúng kèo mở), trận đã có ảnh mà còn xa thì giãn.
+ */
+/** Trận đã chụp ít nhất một lần. Trận LẦN ĐẦU thấy luôn được lấy ngay, dù xa —
+ *  nhờ vậy vẫn giữ đúng KÈO MỞ, thứ mà trang /keo bán. */
+const daChup = new Set<number>();
+
 export interface OddsRow {
   event_id: number;
   competition_id: string;
@@ -200,6 +222,9 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
     throw new Error('odds-api 429 — mọi khoá đều hết lượt');
   };
 
+  const laNhipXa = GIO_LAY_TRAN_XA.includes(new Date(now).getUTCHours());
+  let boQua = 0;
+
   const rows: OddsRow[] = [];
   for (const [slug, compId] of ODDS_LEAGUES) {
     let events: OddsEvent[];
@@ -219,6 +244,12 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
     });
     ghiNhanSoTran(slug, upcoming.length);
     for (const ev of upcoming) {
+      const conXa = new Date(ev.date).getTime() - now > GAN_MS;
+      if (conXa && !laNhipXa && daChup.has(ev.id)) {
+        boQua += 1;
+        continue;
+      }
+      daChup.add(ev.id);
       try {
         const data = (await api(`odds?eventId=${ev.id}&bookmakers=Bet365`)) as
           { bookmakers?: Record<string, OddsMarket[]> };
@@ -249,7 +280,7 @@ export async function collectOddsTick(deps: Deps): Promise<number> {
     }
     written += Math.min(500, rows.length - i);
   }
-  log.info(`odds-collect: ghi ${written} dòng kèo`);
+  log.info(`odds-collect: ghi ${written} dòng kèo · bỏ qua ${boQua} trận còn xa (tiết kiệm ${boQua} lượt khoá)`);
   // Bảng kèo đệm 15 phút. Không gọi chỗ này thì kèo vừa thu phải chờ hết đệm
   // mới lên trang — Nick 25/8 vào xem ngay sau khi deploy vẫn thấy bảng cũ.
   if (written > 0 && deps.revalidate) await deps.revalidate(['odds']);
