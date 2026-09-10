@@ -28,12 +28,16 @@ def _asset(ten):
         f'Không thấy asset {ten}. Đã tìm: {d or "(không có trong repo)"} và {canh}. '
         f'Nếu là logo mới, commit vào apps/web/public/brand/ rồi khai trong _TRONG_REPO — '
         f'ĐỪNG gửi qua Telegram dạng ảnh, nó mất nền trong.')
-def stamp(bg, W=2400, mark_px=110, top=70, color_mark=True):   # color_mark giữ cho khỏi gãy chỗ gọi cũ, không còn tác dụng
+def stamp(bg, W=2400, mark_px=110, top=70, color_mark=True, safe=None):   # color_mark giữ cho khỏi gãy chỗ gọi cũ, không còn tác dụng
+    # `safe` cho khuôn CỠ KHÁC 2400 mượn lại đúng cách đóng dấu này. Lề 200px là
+    # tính cho hero ngang; thẻ dọc 1080 mà chừa 200 thì logo dồn vào giữa.
+    # Mặc định None = giữ nguyên 200 cho mọi chỗ gọi cũ.
     # LUÔN dùng bb-mark-white — MỘT hành vi duy nhất, không phụ thuộc máy nào có
     # tệp gì. Bản trước còn nhánh "dùng bb-mark-color nếu tệp nằm cạnh script":
     # máy Jane có tệp đó, máy Gwen không, nên CÙNG code + CÙNG đầu vào ra HAI ảnh
     # khác nhau (Jane đo được 2 mã băm lệch). Đó là thứ tệ hơn cả lỗi — nó làm
     # hai bên không đối chiếu được với nhau.
+    SAFE = 200 if safe is None else safe
     src = _asset('bb-mark-white.png')
     m = Image.open(src).convert('RGBA'); m = m.resize((mark_px, int(m.height * mark_px / m.width)), Image.LANCZOS)
     bg.paste(m, (SAFE, top), m)
