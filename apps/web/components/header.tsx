@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useParams, useSearchParams } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
@@ -29,35 +29,15 @@ function stripLangPrefix(pathname: string): string {
   return pathname.replace(LANG_PREFIX_RE, "/");
 }
 
-function LocaleSwitch({ lang, onNavigate }: { lang: Lang; onNavigate?: () => void }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  // VN-first (Nick 16/8): switcher chỉ còn tiếng Việt → ẩn hẳn nút chọn ngôn ngữ
-  // (bỏ EN, nối tiếp việc Peter ẩn th/es hồi 8/8). Bài en/th/es vẫn truy cập qua
-  // URL, chỉ không hiện lựa chọn. Còn 1 ngôn ngữ thì switcher vô nghĩa → ẩn hẳn.
-  const shown: readonly Lang[] = ["vi"];
-  if (shown.length < 2) return null;
-  const bare = stripLangPrefix(pathname);
-  const qs = searchParams.toString();
-  const bareFull = qs ? `${bare}?${qs}` : bare;
-  return (
-    <div className="flex gap-1 rounded-lg bg-card p-1">
-      {shown.map((l) => (
-        <Link
-          key={l}
-          href={withLang(bareFull, l)}
-          prefetch={false}
-          onClick={onNavigate}
-          className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
-            l === lang ? "bg-brand text-bg" : "text-muted hover:text-ink"
-          }`}
-        >
-          {l}
-        </Link>
-      ))}
-    </div>
-  );
-}
+// LocaleSwitch ĐÃ XOÁ 10/9/2026.
+// Từ 16/8 nó luôn `return null` (site chỉ còn tiếng Việt) nên không vẽ ra gì cả —
+// nhưng nó gọi useSearchParams() TRƯỚC dòng return, mà hook thì không đặt sau
+// điều kiện được. Next thấy useSearchParams trong trang prerender tĩnh là ném cả
+// cụm Suspense gần nhất sang client. Cụm đó chính là <HeaderWithData> ở
+// app/[lang]/layout.tsx:77 → TOÀN BỘ HEADER biến mất khỏi HTML máy chủ.
+// Đo 10/9 trước khi xoá: trang chủ và /competitions/premier-league đều có
+// <template data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING">, đếm <header> = 0.
+// Một thành phần chết làm cả bộ điều hướng của site không vào được HTML.
 
 /**
  * A nav cluster rendered as a dropdown of links. Inline list on mobile
@@ -270,7 +250,6 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
             })}
           </ul>
           <div className="flex items-center gap-2">
-            <LocaleSwitch lang={lang} onNavigate={() => setOpen(false)} />
             <ThemeToggle onToggle={() => setOpen(false)} />
           </div>
         </nav>
