@@ -3,7 +3,7 @@
  * a pick, AI writes a bilingual pre-match article and it auto-publishes to /news.
  * A preview failure must NEVER break the pick publication — every path logs and returns.
  */
-import { callClaude, disclosureBlock, isPlaceholderTeam, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
+import { callClaude, CHU_TAM_VOICE, disclosureBlock, isPlaceholderTeam, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import type { NewPost, PickRow, PostLang, Store } from './store';
 import { authorTypeOf } from './store';
@@ -35,6 +35,7 @@ ${persona}'s thesis: ${pick.thesis}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit. Frame as analysis, not advice.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "the line looks generous" or "the price implies" instead.
 ${VI_LEXICON_RULE}
+${CHU_TAM_VOICE}
 - ATOMIC ANSWER FIRST: The very first sentence of each section MUST be a self-contained factual statement with the pick and odds — e.g. "${persona === 'the Scout' ? 'The Scout' : 'The Curator'} picks ${pick.selection} @ ${pick.odds_publish} for ${pick.home_team} vs ${pick.away_team}." This sentence should be liftable by an AI as a standalone answer.
 - Then expand with a specific tactical or analytical angle — never a template opener.
 - End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section's own language exactly:
