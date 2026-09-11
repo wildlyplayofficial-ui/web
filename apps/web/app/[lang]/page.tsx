@@ -73,6 +73,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const HERO_TODAY: Record<string, string> = { vi: "Hôm nay", en: "Today", th: "วันนี้", es: "Hoy" };
+const REC_WIN: Record<string, string> = { vi: "đúng", en: "won", th: "ชนะ", es: "acierto" };
+const REC_LOSS: Record<string, string> = { vi: "sai", en: "lost", th: "แพ้", es: "fallo" };
+const REC_PUSH: Record<string, string> = { vi: "hoà", en: "push", th: "เสมอ", es: "nulo" };
+const REC_30D: Record<string, string> = { vi: "30 ngày", en: "30 days", th: "30 วัน", es: "30 días" };
+
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
@@ -203,6 +209,9 @@ export default async function Home({ params }: Props) {
     .filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30)
     .reverse()
     .slice(-15);
+  const settled30 = curatorSettled.filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30);
+  const win30 = settled30.filter((p) => p.status === "won").length;
+  const loss30 = settled30.filter((p) => p.status === "lost").length;
   const units30 = unitsLast30(curatorSettled);
   const formLetter: Record<string, string> = { won: "W", lost: "L", push: "P" };
   const formClass: Record<string, string> = {
@@ -317,32 +326,25 @@ export default async function Home({ params }: Props) {
         <div className="hero-glow" aria-hidden />
         <div className="relative grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-start">
         <div className="text-center md:text-left">
-          {/* Nick 2/9/2026: trên ĐIỆN THOẠI bỏ bớt chữ ở khối đầu trang. Tiêu đề
-              rút còn vế đầu (vẫn là H1 thật, vẫn giữ từ khoá chính — KHÔNG ẩn hẳn,
-              Google index theo bản điện thoại trước), câu dẫn và khối phong độ ẩn
-              hẳn. Máy tính bàn giữ nguyên đầy đủ. */}
+          {/* Eyebrow ngày + tiêu đề (mockup Nick 11/9): HÔM NAY · thứ, ngày tháng */}
+          <p className="mb-1.5 font-display text-xs font-bold uppercase tracking-wider text-brand sm:mb-2 sm:text-sm">
+            {HERO_TODAY[lang] ?? HERO_TODAY.en} · {new Intl.DateTimeFormat(locales[lang], { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date())}
+          </p>
           <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
-            <span className="sm:hidden">{dict.taglineShort}</span>
-            <span className="hidden sm:inline">{dict.tagline}</span>
+            {dict.taglineShort}
           </h1>
           <p className="hidden text-muted sm:mt-4 sm:block sm:text-base md:text-lg">{dict.board.subtitle}</p>
           {record.settled > 0 && (
-            <p className="mt-3 inline-flex items-center gap-3 rounded-full border border-line bg-card px-5 py-2 font-display text-sm sm:mt-6">
+            <p className="mt-3 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-line bg-card px-5 py-2 font-display text-sm sm:mt-6 md:justify-start">
               <span className="text-muted">{dict.pick.curator}</span>
               <span className="font-semibold text-ink">
-                {record.wins}-{record.losses}-{record.pushes}
+                {record.wins} {REC_WIN[lang] ?? REC_WIN.en} · {record.losses} {REC_LOSS[lang] ?? REC_LOSS.en} · {record.pushes} {REC_PUSH[lang] ?? REC_PUSH.en}
               </span>
-              <span
-                className={`font-semibold ${record.units_pl >= 0 ? "text-brand" : "text-loss"}`}
-              >
-                {formatUnits(record.units_pl)}
-              </span>
-              {/* Ngày "tính đến" đẩy viên thành 3 dòng trên màn 390px (tên "Chú Tám
-                  Banh" bị bẻ dọc). Ẩn trên điện thoại, giữ tỉ số W-L-P làm bằng
-                  chứng thành tích — đó là định vị của trang. */}
-              <span className="hidden text-muted sm:inline">
-                · {dict.board.asOf} {formatBoardDate(new Date(), lang)}
-              </span>
+              {(win30 > 0 || loss30 > 0) && (
+                <span className="font-semibold text-brand">
+                  {"\u25B2"} {REC_30D[lang] ?? REC_30D.en}: {win30} {REC_WIN[lang] ?? REC_WIN.en} / {loss30} {REC_LOSS[lang] ?? REC_LOSS.en}
+                </span>
+              )}
             </p>
           )}
           {form.length > 0 && (
