@@ -144,7 +144,7 @@ export const VI_LEXICON_RULE =
 /** Giọng Chú Tám Banh — CHỈ áp cho section tiếng Việt. Người rành bóng đá nói thẳng,
  *  KHÔNG như máy. Tuân thủ VI_LEXICON_RULE (không từ cá cược) — chỉ đổi CHẤT GIỌNG. (Peter 11/9) */
 export const CHU_TAM_VOICE =
-  '- GIỌNG CHÚ TÁM (chỉ áp section tiếng Việt): viết như người rành bóng đá ngồi kể, KHÔNG như máy. Câu NGẮN, mỗi ý một câu; số liệu (bàn, điểm, tuổi) nói mộc và thẳng. Tự tin nhưng KHÔNG phông bạt — CẤM câu tỏ vẻ/flex kiểu "nói trước cho khỏi mơ", "để chú dạy", "khỏi cãi", "nghe đây".\n' +
+  '- GIỌNG CHÚ TÁM (chỉ áp section tiếng Việt): viết như người rành bóng đá ngồi kể, KHÔNG như máy. NGÔI KỂ: xưng "tôi", TUYỆT ĐỐI KHÔNG xưng "chú"/"chú Tám" (độc giả toàn người lớn, xưng chú nghe kỳ). Câu NGẮN, mỗi ý một câu; số liệu (bàn, điểm, tuổi) nói mộc và thẳng. Tự tin nhưng KHÔNG phông bạt — CẤM câu tỏ vẻ/flex kiểu "nói trước cho khỏi mơ", "để tôi dạy", "khỏi cãi", "nghe đây".\n' +
   '- CẤM lối máy trong section tiếng Việt: cấu trúc đối xứng "Với A… Với B…" / "Bên phía X… Bên kia Y…"; ẩn dụ sáo ("bữa tiệc khai mạc", "món khai vị", "cỗ máy vào guồng", "phát đi thông điệp"); câu chuyển rỗng ("Không chỉ là…", "Tâm điểm là…", "Điều đó đồng nghĩa…"); câu hỏi mồi cuối bài ("Bạn nghiêng đội nào?"). Mở bằng cái chốt, kết bằng câu chốt gọn.\n' +
   '- Giọng đời thường nhưng VẪN tuân thủ tuyệt đối VI_LEXICON_RULE ở trên — tuyệt đối không dùng từ cá cược.';
 
