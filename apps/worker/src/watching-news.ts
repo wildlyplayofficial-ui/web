@@ -4,7 +4,7 @@
  * A news failure must NEVER break the watching pipeline — every path logs and returns.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { callClaude, DEFAULT_MODEL, isPlaceholderTeam, sectionSpec, slugify, validateLangs, VI_LEXICON_RULE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
+import { callClaude, DEFAULT_MODEL, isPlaceholderTeam, sectionSpec, slugify, validateLangs, VI_LEXICON_RULE, CHU_TAM_VOICE, watchingDisclosureBlock, watchingDisclosureFor } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import { splitAnalysisSections, parseAnalysisSection } from './news';
 import type { NewPost, PostLang, Store, WatchingRow } from './store';
@@ -53,6 +53,7 @@ export function buildWatchingNewsPrompt(w: WatchingRow): string {
     '- Neutral and informative tone — this is editorial journalism, NOT a betting recommendation.',
     '- Responsible language: NEVER use "sure win", "guaranteed", "can\'t lose", "lock", "certainty" or any promise of profit.',
     VI_LEXICON_RULE,
+    CHU_TAM_VOICE,
     '- End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section\'s own language exactly:',
     watchingDisclosureBlock(),
     '- Do NOT copy any external source verbatim.',
