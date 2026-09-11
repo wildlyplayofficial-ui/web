@@ -378,7 +378,7 @@ export default async function Home({ params }: Props) {
              gộp ngày vào dòng tiêu đề (dạng ngắn "2/9") và làm nút gọn lại. KHÔNG bỏ
              thông tin nào: máy tính bàn vẫn nguyên vẹn, điện thoại vẫn đủ tên, đủ số,
              đủ ngày. */
-          <div className="rounded-card border border-brand/30 bg-brand-dim/40 px-4 py-4 sm:px-6 sm:py-5">
+          <div className="rounded-card border border-brand/25 bg-brand-dim/20 p-5 shadow-card sm:p-6">
             <p className="font-display text-base font-bold sm:text-lg">
               {dict.board.title}
               <span className="ml-2 text-sm font-normal text-muted sm:hidden">
