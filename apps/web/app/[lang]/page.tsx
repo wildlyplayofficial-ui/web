@@ -18,6 +18,7 @@ import { localizedCompetitionName } from "@/lib/competition-logos";
 import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
 import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { HotPickCard } from "@/components/hot-pick-card";
+import { TranDangXemCard } from "@/components/tran-dang-xem-card";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
@@ -288,6 +289,13 @@ export default async function Home({ params }: Props) {
       timeZone: "Asia/Ho_Chi_Minh",
     }).format(new Date(iso));
 
+  // Thẻ "Trận đáng xem hôm nay" (hero cột phải, mockup Nick 10/9): ưu tiên
+  // pick hôm nay → trận đang theo dõi gần giờ đá nhất → trận sắp đá gần nhất.
+  const curatorWatching = watching.filter((w) => (w.author ?? "curator") === "curator" && !w.presence);
+  // Trận đang theo dõi có giờ đá SỚM NHẤT (getActiveWatching chỉ trả trận còn hiệu lực).
+  const heroWatching = curatorWatching.slice().sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc))[0] ?? null;
+  const heroNextMatch = sapDa[0] ?? null;
+
   return (
     <>
       {/* Top scoreboard rail (ESPN strip) — reuses the same match data as HomeNextMatches. */}
@@ -333,7 +341,8 @@ export default async function Home({ params }: Props) {
           <rect x="1050" y="130" width="50" height="140" fill="none" stroke="currentColor" strokeWidth="1.5" rx="2" className="text-[#0f9e7a] dark:text-brand" />
           <path d="M 980 160 A 40 40 0 0 0 980 240" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0f9e7a] dark:text-brand" />
         </svg>
-        <div className="relative">
+        <div className="relative grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-start">
+        <div className="text-center md:text-left">
           {/* Nick 2/9/2026: trên ĐIỆN THOẠI bỏ bớt chữ ở khối đầu trang. Tiêu đề
               rút còn vế đầu (vẫn là H1 thật, vẫn giữ từ khoá chính — KHÔNG ẩn hẳn,
               Google index theo bản điện thoại trước), câu dẫn và khối phong độ ẩn
@@ -392,6 +401,12 @@ export default async function Home({ params }: Props) {
               </span>
             </div>
           )}
+        </div>
+        {(heroPick || heroWatching || heroNextMatch) && (
+          <div className="mx-auto w-full max-w-md md:mx-0">
+            <TranDangXemCard pick={heroPick} pickThesis={heroThesis} watching={heroWatching} nextMatch={heroNextMatch} lang={lang} />
+          </div>
+        )}
         </div>
       </section>
 
