@@ -2,7 +2,7 @@
  * Post-mortem newsroom article: when Curator /approve a pick,
  * generate a public post-mortem article (NGON_NGU — chỉ tiếng Việt) and publish it on the web.
  */
-import { callClaude, DEFAULT_MODEL, disclosureBlock, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE } from './recap';
+import { callClaude, DEFAULT_MODEL, disclosureBlock, sectionSpec, slugify, splitLangSections, VI_LEXICON_RULE, CHU_TAM_VOICE } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import { parseAnalysisSection } from './news';
 import type { NewPost, PostLang, PickRow, Store } from './store';
@@ -41,6 +41,7 @@ Thesis: ${pick.thesis}
   - Win-hype: edge, value, value bet, +EV, beat the bookie, no luck needed, thesis validated perfectly.
   - Loss-excuse: unlucky, deserved to win, deserved better, hard luck, bad break, wrong call, robbed, harsh result.
 ${VI_LEXICON_RULE}
+${CHU_TAM_VOICE}
 - Do NOT invent stats or events not in the data above.
 - End each section with this disclosure as plain text (no bold, no italic, no markdown formatting), matching that section's own language exactly:
 ${disclosureBlock(authorTypeOf(pick.author))}

@@ -3,7 +3,7 @@
  * auto-generate a discipline-framed article (NGON_NGU — chỉ tiếng Việt) and publish it on the web.
  * A failure must NEVER break the /noplay reply — every path logs and returns.
  */
-import { callClaude, disclosureBlock, sectionSpec, slugify, splitLangSections, DEFAULT_MODEL, VI_LEXICON_RULE } from './recap';
+import { callClaude, disclosureBlock, sectionSpec, slugify, splitLangSections, DEFAULT_MODEL, VI_LEXICON_RULE, CHU_TAM_VOICE } from './recap';
 import { NGON_NGU } from './ngon-ngu';
 import { parseAnalysisSection } from './news';
 import type { NewPost, PostLang, Store } from './store';
@@ -59,6 +59,7 @@ ${disclosureBlock(authorTypeOf(np.author))}
 - Responsible language: NEVER use "sure win", "guaranteed", "lock" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie". Use "nothing worth backing" or "no reason to play" instead.
 ${VI_LEXICON_RULE}
+${CHU_TAM_VOICE}
 - Do NOT copy any external source verbatim.
 - Lead with tension, a specific insight, or a surprising angle — never a template opener.
 </rules>

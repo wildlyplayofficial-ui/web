@@ -141,6 +141,13 @@ export const VI_LEXICON_RULE =
   '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)\n' +
   '- TÊN NHÂN VẬT BẢN VI (Nick chốt 21/8): trong section tiếng Việt gọi Curator là "Admin" và Scout là "Trợ lý AI" — TUYỆT ĐỐI KHÔNG để nguyên chữ "Curator" hay "Scout" trong bản VI. (Section EN/TH/ES giữ nguyên tên gốc.)';
 
+/** Giọng Chú Tám Banh — CHỈ áp cho section tiếng Việt. Người rành bóng đá nói thẳng,
+ *  KHÔNG như máy. Tuân thủ VI_LEXICON_RULE (không từ cá cược) — chỉ đổi CHẤT GIỌNG. (Peter 11/9) */
+export const CHU_TAM_VOICE =
+  '- GIỌNG CHÚ TÁM (chỉ áp section tiếng Việt): viết như người rành bóng đá ngồi kể, KHÔNG như máy. Câu NGẮN, mỗi ý một câu; số liệu (bàn, điểm, tuổi) nói mộc và thẳng. Tự tin nhưng KHÔNG phông bạt — CẤM câu tỏ vẻ/flex kiểu "nói trước cho khỏi mơ", "để chú dạy", "khỏi cãi", "nghe đây".\n' +
+  '- CẤM lối máy trong section tiếng Việt: cấu trúc đối xứng "Với A… Với B…" / "Bên phía X… Bên kia Y…"; ẩn dụ sáo ("bữa tiệc khai mạc", "món khai vị", "cỗ máy vào guồng", "phát đi thông điệp"); câu chuyển rỗng ("Không chỉ là…", "Tâm điểm là…", "Điều đó đồng nghĩa…"); câu hỏi mồi cuối bài ("Bạn nghiêng đội nào?"). Mở bằng cái chốt, kết bằng câu chốt gọn.\n' +
+  '- Giọng đời thường nhưng VẪN tuân thủ tuyệt đối VI_LEXICON_RULE ở trên — tuyệt đối không dùng từ cá cược.';
+
 /** Betting-specific closing-line phrasing. Deliberately narrow so ordinary
  *  football language ("closing stages", "closed out the win") never matches. */
 const CLOSING_LINE_MENTION = /\bclosing (?:odds|line|price)\b|\bclosed at \d/i;
@@ -182,6 +189,7 @@ ${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
 ${VI_LEXICON_RULE}
+${CHU_TAM_VOICE}
 - No emoji spam.
 - End each section with the updated record line.
 - Output plain text only — no markdown headers other than the four flag headers.
@@ -343,6 +351,7 @@ ${CLV_RULE}
 - Responsible language: NEVER use "sure win", "guaranteed", "can't lose" or any promise of profit.
 - BANNED VOCABULARY (do not use these words even in negated form): "edge", "value", "value bet", "+EV", "beat the bookie".
 ${VI_LEXICON_RULE}
+${CHU_TAM_VOICE}
 - Lead with thesis evaluation — never a generic scoreline summary.
 - End each section with the updated record line, followed by this disclosure as plain text, matching that section's own language exactly:
 ${disclosureBlock(authorTypeOf(pick.author))}
