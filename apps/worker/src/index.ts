@@ -430,7 +430,7 @@ const server = createServer(async (req, res) => {
       if (preview) void preview(pick);
       if (translateThesis) void translateThesis(pick);
       if (publishAnalysis && pick.publish_score_home == null) void publishAnalysis(pick);
-      void announcePick({ api: bot.api, channelChatId, store, siteUrl, facebook }, pick);
+      void announcePick({ api: bot.api, channelChatId, store, siteUrl, facebook, env: aiEnv }, pick);
       void revalidate(['picks']);
       res.writeHead(200).end(JSON.stringify({ ok: true }));
       return;
