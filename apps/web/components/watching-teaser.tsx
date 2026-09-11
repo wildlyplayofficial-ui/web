@@ -30,6 +30,13 @@ const BUZZ_AI_LABEL: Record<string, string> = {
   es: "Resumen IA de",
 };
 
+const BUZZ_AI_NOSRC_LABEL: Record<string, string> = {
+  en: "Compiled by AI",
+  vi: "Tổng hợp bởi AI",
+  th: "รวบรวมโดย AI",
+  es: "Compilado por IA",
+};
+
 const CONFIDENCE_LABELS: Record<string, Record<string, string>> = {
   high: { en: "High", vi: "Cao", th: "สูง", es: "Alto" },
   medium: { en: "Medium", vi: "Trung bình", th: "ปานกลาง", es: "Medio" },
@@ -133,8 +140,9 @@ function WatchingCard({ item, dict, lang, hideLinks = false }: { item: WatchingR
             ))}
           </ul>
           <p className="mt-2 text-xs text-muted/60">
-            {BUZZ_AI_LABEL[lang] ?? BUZZ_AI_LABEL.en}
-            {buzz.sources && buzz.sources.length > 0 && ` (${buzz.sources.join(", ")})`}
+            {buzz.sources && buzz.sources.length > 0
+              ? `${BUZZ_AI_LABEL[lang] ?? BUZZ_AI_LABEL.en} (${buzz.sources.join(", ")})`
+              : (BUZZ_AI_NOSRC_LABEL[lang] ?? BUZZ_AI_NOSRC_LABEL.en)}
           </p>
         </div>
       )}
