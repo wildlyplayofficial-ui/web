@@ -29,15 +29,6 @@ export const revalidate = 300;
 /** Ngoại hạng Anh trên Livescore — giải duy nhất có lịch tĩnh cả mùa. */
 const EPL_LIVESCORE_ID = 2;
 
-/** Units P/L over the 30 days before now (form widget, batch 4). */
-function unitsLast30(picks: { settled_at: string | null; kickoff_utc: string; units_pl: number | null }[]): number {
-  const cutoff = Date.now() - 30 * 86_400_000;
-  const sum = picks
-    .filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff)
-    .reduce((total, p) => total + (p.units_pl ?? 0), 0);
-  return Math.round(sum * 100) / 100;
-}
-
 function formatPostDate(iso: string | null, lang: Lang): string {
   if (!iso) return "";
   return new Intl.DateTimeFormat(locales[lang], {
@@ -202,23 +193,12 @@ export default async function Home({ params }: Props) {
     ? (await getThesisTranslations([heroPick.id]))[heroPick.id]?.[lang] ?? heroPick.thesis
     : null;
 
-  // Form widget (Nick 13/6: show all within last 30 days, swipeable, scroll to newest).
+  // Thành tích 30 ngày của curator (dùng cho viên record ở hero).
   const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
   const cutoff30 = Date.now() - 30 * 86_400_000;
-  const form = curatorSettled
-    .filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30)
-    .reverse()
-    .slice(-15);
   const settled30 = curatorSettled.filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30);
   const win30 = settled30.filter((p) => p.status === "won").length;
   const loss30 = settled30.filter((p) => p.status === "lost").length;
-  const units30 = unitsLast30(curatorSettled);
-  const formLetter: Record<string, string> = { won: "W", lost: "L", push: "P" };
-  const formClass: Record<string, string> = {
-    won: "border-brand/30 bg-brand-dim text-brand",
-    lost: "border-loss/30 bg-loss/10 text-loss",
-    push: "border-line bg-card text-muted",
-  };
 
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
   // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
@@ -346,36 +326,6 @@ export default async function Home({ params }: Props) {
                 </span>
               )}
             </p>
-          )}
-          {form.length > 0 && (
-            <div className="mt-3 hidden flex-col items-center gap-1.5 text-sm sm:mt-4 sm:flex">
-              {/* Nick 25/8: ghi rõ đây là sổ của ai. Khối này CHỈ lấy nhận định
-                  của curator (§7.1), nên để trống tên thì người xem tưởng trang
-                  giấu trận thua của Trợ lý AI — chính anh đã hiểu nhầm như vậy.
-                  Lấy tên từ dict cho khớp với chỗ khác, không đóng cứng chuỗi. */}
-              <span className="text-muted">
-                {dict.board.formTitle} — {dict.pick.curator}
-              </span>
-              <div className="flex flex-wrap justify-center gap-1.5 py-1">
-                {form.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={withLang(`/play/${buildPlaySlug(p)}`, lang)}
-                    prefetch={false}
-                    title={`${p.home_team} ${p.home_score ?? ""}-${p.away_score ?? ""} ${p.away_team}`}
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold transition-transform hover:-translate-y-0.5 ${formClass[p.status] ?? "border-line bg-card text-muted"}`}
-                  >
-                    {formLetter[p.status] ?? "\u2013"}
-                  </Link>
-                ))}
-              </div>
-              <span className="text-xs text-muted">
-                {dict.board.last30}{" "}
-                <strong className={units30 >= 0 ? "text-brand" : "text-loss"}>
-                  {formatUnits(units30)}
-                </strong>
-              </span>
-            </div>
           )}
         </div>
         {(heroPick || heroWatching || heroNextMatch) && (
