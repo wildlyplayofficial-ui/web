@@ -6,6 +6,7 @@
 import type { Api } from 'grammy';
 import { type PickRow, type Store } from './store';
 import { log } from './log';
+import { callClaude, VI_LEXICON_RULE } from './recap';
 
 export interface AnnouncePickDeps {
   api: Pick<Api, 'sendMessage' | 'sendPhoto'>;
@@ -13,6 +14,43 @@ export interface AnnouncePickDeps {
   store: Store;
   siteUrl: string;
   facebook?: { pageId: string; pageToken: string };
+  /** AI env để tự đẻ hook caption FB (Peter 11/9). Vắng = không auto-hook, caption như cũ. */
+  env?: { apiKey: string | undefined; model?: string };
+}
+
+/** Guard cho hook AI (Peter 11/9): 1 câu tiếng Việt, không từ cá cược, độ dài hợp lý. Pure — testable. */
+const HOOK_BANNED = ['kèo', 'nhà cái', 'cá cược', 'cá độ', 'đặt cược', 'lô đề', 'soi kèo', 'gỡ thua', 'tài xỉu', 'tài/xỉu'];
+export function cleanHook(raw: string | null): string | null {
+  if (!raw) return null;
+  const s = raw.replace(/^["'\s]+|["'\s]+$/g, '').split('\n')[0].replace(/\s+/g, ' ').trim();
+  if (s.length < 15 || s.length > 200) return null;
+  const low = s.toLowerCase();
+  if (HOOK_BANNED.some((w) => low.includes(w))) return null;
+  return s;
+}
+
+/** Best-effort: AI viết 1 câu hook tiếng Việt cho caption FB. Null nếu lỗi/không đạt — NEVER throws. */
+export async function genPickHookVi(
+  pick: PickRow,
+  env: { apiKey: string | undefined; model?: string },
+): Promise<string | null> {
+  const prompt = `<role>Bạn viết caption Facebook tiếng Việt cho trang nhận định bóng đá banhbong.net.</role>
+<data>
+Trận: ${pick.home_team} vs ${pick.away_team} (${pick.league})
+Dự đoán: ${pick.selection}${pick.line != null ? ` (mức ${pick.line})` : ''} · mức tự tin: ${pick.confidence ?? 'vừa'}
+Luận điểm nền (có thể tiếng Anh): ${pick.thesis}
+</data>
+<rules>
+- Viết ĐÚNG 1 CÂU tiếng Việt (tối đa ~25 từ) làm hook mồi người đọc — KHÔNG lặp thông tin đã có trên thẻ.
+- Giọng người rành bóng đá, xưng "tôi", KHÔNG xưng "chú". KHÔNG phông bạt/flex.
+${VI_LEXICON_RULE}
+- Chỉ trả về ĐÚNG 1 câu, không markdown, không giải thích, không xuống dòng.
+</rules>`;
+  try {
+    return cleanHook(await callClaude(env, prompt, `fb-hook pick ${pick.id}`, 120));
+  } catch {
+    return null;
+  }
 }
 
 /** Post Restructure v1: card extras parsed from /pick but not persisted on the row. */
@@ -187,12 +225,20 @@ export async function announcePick(
     log.info(`bỏ qua đăng trùng pick ${pick.id} — sổ channel_log đã có tin`);
     return;
   }
+  // Caption FB khỏi trơ (Peter 11/9): pick không có hook viết tay → AI đẻ 1 câu hook tiếng Việt.
+  // CHỈ áp cho FB (caption FB rơi về tên trận khi thiếu hook); TG giữ nguyên. Best-effort — hook
+  // lỗi thì fbExtras = extras, caption y như cũ, KHÔNG chặn việc đăng pick.
+  let fbExtras = extras;
+  if (!extras.hook && deps.env?.apiKey) {
+    const hook = await genPickHookVi(pick, deps.env);
+    if (hook) fbExtras = { ...extras, hook };
+  }
   // Telegram: in đậm phần chính bằng HTML; Facebook: bản thường (nhấn mạnh sẵn bằng CHỮ HOA).
   await broadcast(
     deps,
     pick,
     formatPickMessage(pick, deps.siteUrl, extras, true),
-    formatPickMessage(pick, deps.siteUrl, extras, false, false),
+    formatPickMessage(pick, deps.siteUrl, fbExtras, false, false),
     'pick announce',
   );
 }

@@ -134,6 +134,7 @@ export function createBot(deps: BotDeps): Bot {
       store: deps.store,
       siteUrl: deps.siteUrl,
       facebook: deps.facebook,
+      env: deps.aiEnv,
     }, row, { hook: result.pick.hook, againstMarket: result.pick.againstMarket });
   });
 

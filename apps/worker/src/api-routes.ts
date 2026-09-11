@@ -148,7 +148,7 @@ export async function handleApiRoute(
       if (deps.preview) void deps.preview(row);
       if (deps.translateThesis) void deps.translateThesis(row);
       if (deps.publishAnalysis && row.publish_score_home == null) void deps.publishAnalysis(row);
-      void announcePick(deps.announceDeps, row, { hook: result.pick.hook, againstMarket: result.pick.againstMarket });
+      void announcePick({ ...deps.announceDeps, env: deps.aiEnv }, row, { hook: result.pick.hook, againstMarket: result.pick.againstMarket });
       json(res, 200, {
         ok: true, id: row.id, match: `${row.home_team} vs ${row.away_team}`, selection: row.selection,
         // T7 (launch blocker): author_type is ALWAYS derived here from `author` — never accept it from the client.

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { announcePick, announceVoid, formatPickMessage, formatVoidMessage, postToFacebook, type AnnouncePickDeps } from './announce-pick';
+import { announcePick, announceVoid, cleanHook, formatPickMessage, formatVoidMessage, postToFacebook, type AnnouncePickDeps } from './announce-pick';
 import { MemoryStore, type NewPick } from './store';
 
 function publishedPick(overrides: Partial<NewPick> = {}): NewPick {
@@ -76,6 +76,26 @@ describe('formatPickMessage — 3-second card (Post Restructure v1 §2.1)', () =
     const hook = 'Swiss press suffocates deep blocks — market slept on it.';
     expect(formatPickMessage(pick, SITE, { hook })).toContain(`\u{1F4DD} ${hook}`);
     expect(formatPickMessage(pick, SITE)).not.toContain('\u{1F4DD}');
+  });
+});
+
+describe('cleanHook — guard hook AI caption FB (Peter 11/9)', () => {
+  it('trims quotes/whitespace and keeps a valid one-liner', () => {
+    expect(cleanHook('  "Tôi nghiêng chủ nhà đêm nay, sân nhà là lợi thế thật."  '))
+      .toBe('Tôi nghiêng chủ nhà đêm nay, sân nhà là lợi thế thật.');
+  });
+  it('takes only the first line', () => {
+    expect(cleanHook('Tôi nghiêng chủ nhà, đội khách đang xuống phong độ.\ndòng thừa'))
+      .toBe('Tôi nghiêng chủ nhà, đội khách đang xuống phong độ.');
+  });
+  it('rejects betting vocabulary (VI_LEXICON)', () => {
+    expect(cleanHook('Tôi soi kèo trận này, cửa trên ngon ăn lắm.')).toBeNull();
+    expect(cleanHook('Nhà cái đang treo giá rất thơm cho chủ nhà.')).toBeNull();
+  });
+  it('rejects too short / empty / null', () => {
+    expect(cleanHook(null)).toBeNull();
+    expect(cleanHook('Ngắn quá')).toBeNull();
+    expect(cleanHook('')).toBeNull();
   });
 });
 
