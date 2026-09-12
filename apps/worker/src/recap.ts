@@ -371,7 +371,7 @@ WHY: States the price move as a plain fact, keeps the numbers exact, stays hones
 
 <output>
 Write ${sectionSpec()}.
-Each section: 150-250 words, markdown allowed (short paragraphs, no H1).
+Each section: 400-550 words (MINIMUM 400 — a recap under 400 words is auto-downgraded to draft and never publishes). Go deeper to earn the length: evaluate the pre-match thesis, walk the key phases of how the result unfolded, add relevant context — do NOT pad with empty filler. Markdown allowed (short paragraphs, no H1).
 </output>
 
 <self_critique>
