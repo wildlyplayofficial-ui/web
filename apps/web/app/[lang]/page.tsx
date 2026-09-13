@@ -235,7 +235,11 @@ export default async function Home({ params }: Props) {
       title: p.title,
       league: "",
       published_at: p.published_at ?? "",
-      hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}&v=${OG_VERSION}`,
+      // Thẻ recap dùng CHUNG khuôn với /api/og/news: bài recap nằm trong bảng
+      // posts (getPost đọc được), có pick_ids đã chấm → route dựng THẺ KẾT QUẢ
+      // (tỉ số + HAI huy hiệu đội + cầu thủ). Trước đây trỏ /editorial ra thẻ
+      // chữ trơn KHÔNG có logo đội — Peter chê xấu 13/9.
+      hero: `/api/og/news/${p.slug}?locale=${lang}&v=${OG_VERSION}`,
       // Recap posts thường không có meta_description → rơi về tóm tắt lấy từ đầu
       // thân bài (Nick 13/9: thẻ nổi bật thiếu phần tóm tắt dưới tiêu đề).
       excerpt: p.meta_description || analysisExcerpt(p.body_md),
