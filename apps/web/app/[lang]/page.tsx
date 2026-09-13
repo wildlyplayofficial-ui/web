@@ -236,7 +236,9 @@ export default async function Home({ params }: Props) {
       league: "",
       published_at: p.published_at ?? "",
       hero: `/api/og/editorial?title=${encodeURIComponent(p.title)}&v=${OG_VERSION}`,
-      excerpt: p.meta_description ?? "",
+      // Recap posts thường không có meta_description → rơi về tóm tắt lấy từ đầu
+      // thân bài (Nick 13/9: thẻ nổi bật thiếu phần tóm tắt dưới tiêu đề).
+      excerpt: p.meta_description || analysisExcerpt(p.body_md),
       href: withLang(`/analysis/${p.slug}`, lang),
       nhan: dict.analysis.tabs.recap,
     })),
