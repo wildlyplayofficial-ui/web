@@ -2,8 +2,8 @@ import { OgCard, ogResponse, loadMarkDataUri } from "../_shared";
 
 /**
  * Branded editorial OG card (1200×630) for utility/evergreen pages
- * (guides hub, calculators hub + individual calcs, transparency) AND recap
- * post cards on the homepage.
+ * (guides hub, calculators hub + individual calcs, transparency).
+ * (Thẻ recap trên trang chủ đã chuyển sang /api/og/news để có logo đội — 13/9.)
  * Query params: ?title=...&subtitle=...
  * Brand-green card + banhbong.net mark — NO player, NO crests.
  * (Peter 25/8 + 13/9: đừng dán 1 cầu thủ bất kỳ — bài Ligue 1 mà ra ảnh Haaland

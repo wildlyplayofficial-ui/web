@@ -25,6 +25,7 @@ export const SAME_AS = [
 /**
  * Bump khi đổi LAYOUT thẻ OG (/api/og/*) — gắn vào MỌI URL og:image để đổi URL,
  * buộc edge cache + Facebook/Telegram lấy thẻ mới (v3: sửa lệch trái, Nick 25/8;
- * v4: recap OG bỏ ảnh Haaland, Nick+Peter 13/9).
+ * v4: recap OG bỏ ảnh Haaland, Nick+Peter 13/9;
+ * v5: thẻ recap chuyển sang khuôn KẾT QUẢ có logo 2 đội, Peter 13/9).
  */
-export const OG_VERSION = 4;
+export const OG_VERSION = 5;
