@@ -203,7 +203,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const deskRoutes: MetadataRoute.Sitemap = deskArticles.map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
-    lastModified: safeLastMod(a.updated),
+    lastModified: safeLastMod(a.modified),
     changeFrequency: "weekly",
     priority: 0.7,
     alternates: alternates(`/analysis/${a.slug}`),
