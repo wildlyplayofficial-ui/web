@@ -64,13 +64,13 @@ export const getAnalysisArticleBySlug = unstable_cache(
 
 /** All published Desk article slugs for sitemap. */
 async function getAllAnalysisArticleSlugsImpl(): Promise<
-  { slug: string; updated: string; title: string }[]
+  { slug: string; updated: string; modified: string; title: string }[]
 > {
   const supabase = getSupabase();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("analysis_articles")
-    .select("slug, published_at, title")
+    .select("slug, published_at, updated_at, title")
     .eq("status", "published")
     .order("published_at", { ascending: false });
   if (error) {
@@ -80,13 +80,19 @@ async function getAllAnalysisArticleSlugsImpl(): Promise<
   return (data ?? []).map((r) => ({
     slug: r.slug,
     updated: r.published_at ?? new Date().toISOString(),
+    // `updated` vẫn là ngày ĐĂNG (news-sitemap + RSS cần ngày đăng). `modified` là
+    // ngày SỬA, chỉ sitemap.xml dùng: nâng cấp bài mà lastmod đứng yên ở ngày đăng
+    // thì Google không có tín hiệu quay lại thu thập (đo 14/9: xem-mls kẹt ở
+    // "đã thu thập – chưa lập chỉ mục", lastmod vẫn 9/8).
+    modified: r.updated_at ?? r.published_at ?? new Date().toISOString(),
     title: r.title,
   }));
 }
 
 export const getAllAnalysisArticleSlugs = unstable_cache(
   getAllAnalysisArticleSlugsImpl,
-  ["analysis-article-slugs"],
+  // Đổi khoá khi thêm `modified`: khoá cũ trả bản đệm thiếu trường này tới 1 giờ.
+  ["analysis-article-slugs-v2"],
   { revalidate: 3600, tags: ["analysis-articles"] },
 );
 
