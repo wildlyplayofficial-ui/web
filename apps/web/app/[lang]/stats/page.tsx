@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_VERSION } from "@/lib/brand";
+import { CHU_TAM, OG_VERSION } from "@/lib/brand";
 import { getSettledPicks } from "@/lib/data";
 import { formatUnits, locales, marketLabels } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, type Lang } from "@/lib/i18n";
@@ -158,7 +158,7 @@ export default async function StatsPage({ params }: Props) {
       </section>
 
       <div className="mb-6 text-center">
-        <h2 className="font-display text-2xl font-bold text-brand">{lang === "vi" ? "Nhận định chính" : "Main Picks"} &middot; Admin</h2>
+        <h2 className="font-display text-2xl font-bold text-brand">{lang === "vi" ? `Nhận định chính · ${CHU_TAM}` : "Main Picks · Admin"}</h2>
         <p className="mt-2 text-xs text-muted">Real analyst &middot; highest conviction &middot; primary ledger</p>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
