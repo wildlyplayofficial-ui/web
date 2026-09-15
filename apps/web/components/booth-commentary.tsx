@@ -36,7 +36,7 @@ export function BoothCommentary({ lines, eventType, eventMinute, lang }: Props) 
     <div className="rounded-lg border border-line/50 bg-card/50 px-4 py-3">
       <div className="mb-2 flex items-center gap-2">
         <span className="font-display text-xs font-bold uppercase tracking-wider text-muted">
-          The Booth
+          {lang === "vi" ? "Bình luận trực tiếp" : "The Booth"}
         </span>
         {eventMinute && (
           <span className="font-display text-[10px] font-semibold text-brand">
@@ -87,11 +87,11 @@ export function BoothSection({
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-400" />
         </span>
-        The Booth
+        {lang === "vi" ? "Bình luận trực tiếp" : "The Booth"}
       </h3>
       <p className="text-xs text-muted">
         {lang === "vi"
-          ? "Phân tích trực tiếp bởi Sonny & Cole — bình luận AI, không phải tư vấn cá cược."
+          ? "Trợ lý AI bình luận theo diễn biến trận (hai giọng Sonny & Cole) — không phải tư vấn cá cược."
           : lang === "th"
             ? "วิเคราะห์สดโดย Sonny & Cole — คอมเมนต์ AI ไม่ใช่คำแนะนำการเดิมพัน"
             : lang === "es"

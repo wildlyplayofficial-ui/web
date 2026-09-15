@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { OG_VERSION } from "@/lib/brand";
+import { OG_VERSION, PETE } from "@/lib/brand";
+import { authorByName, authorSchema } from "@/lib/authors";
+import { AuthorByline } from "@/components/author-byline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { baiQuaHan } from "@/lib/bai-qua-han";
@@ -100,11 +102,7 @@ function buildArticleSchema(
       ? { datePublished: item.published_at, dateModified: item.published_at }
       : {}),
     mainEntityOfPage: `${BASE}${withLang(`/news/${slug}`, lang)}`,
-    author: {
-      "@type": "Organization",
-      name: item.byline || "banhbong.net News",
-      url: BASE,
-    },
+    author: authorSchema(item.byline || PETE),
     publisher: {
       "@type": "Organization",
       name: "banhbong.net",
@@ -166,7 +164,7 @@ export default async function NewsDetail({ params }: Props) {
             format="long"
             timeZone="Asia/Ho_Chi_Minh"
           />
-          {" \u00b7 "}{item.byline || "banhbong.net News"}
+          {" \u00b7 "}<AuthorByline name={item.byline || PETE} lang={lang} />
         </p>
         {kickoffUtc && (
           <p className="mt-1 text-sm text-muted">
@@ -237,7 +235,7 @@ export default async function NewsDetail({ params }: Props) {
       </nav>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        {dict.watching.disclosureWatching}
+        {authorByName(item.byline)?.disclosure ?? dict.watching.disclosureWatching}
       </p>
     </article>
   );

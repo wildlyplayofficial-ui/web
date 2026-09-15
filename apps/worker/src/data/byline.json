@@ -1,5 +1,5 @@
 {
-  "_": "Gương của apps/web/lib/brand.ts (DESK, NEWS_DESK). Worker không import được apps/web nên phải chép; src/byline.test.ts đọc cả hai file và chặn nếu lệch.",
-  "desk": "Banh Bóng Desk",
-  "news": "Banh Bóng News"
+  "_": "Gương của apps/web/lib/brand.ts (CHU_TAM, PETE). Peter chốt 15/9: bài phân tích/nhận định/xem trước trận ghi chuTam, bài tin tức + blog ghi pete. Worker không import được apps/web nên phải chép; src/byline.test.ts đọc cả hai file và chặn nếu lệch.",
+  "chuTam": "Chú Tám Banh",
+  "pete": "Pete Nguyễn"
 }

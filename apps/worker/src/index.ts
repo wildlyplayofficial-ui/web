@@ -345,7 +345,7 @@ const server = createServer(async (req, res) => {
   // Auth check — fail CLOSED: a missing/empty REVALIDATE_SECRET must reject every
   // request, not wave them all through. The old `WEBHOOK_SECRET && ...` form meant a
   // dropped env var silently opened every worker endpoint (including /api/analysis,
-  // which publishes under the "Banh Bóng Desk" byline) with no error to notice.
+  // which publishes articles to the live site) with no error to notice.
   if (!WEBHOOK_SECRET || req.headers['x-webhook-secret'] !== WEBHOOK_SECRET) {
     res.writeHead(401).end('Unauthorized');
     return;

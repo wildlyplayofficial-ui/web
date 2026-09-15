@@ -153,8 +153,6 @@ const MIN_PUBLISH_BODY_LEN = 80;
 
 const SOURCE = 'LiveScore API';
 const SOURCE_URL = 'https://livescore-api.com/';
-/** Tên toà soạn: một nơi duy nhất quyết định (gương của apps/web/lib/brand.ts). */
-const BYLINE = bylineJson.news;
 const LS_TABLE = 'https://livescore-api.com/api-client/leagues/table.json';
 
 // ── Slugs ────────────────────────────────────────────────────────────────────
@@ -268,7 +266,8 @@ function buildRow(
 ): Record<string, unknown> {
   const now = new Date().toISOString();
   const row: Record<string, unknown> = {
-    slug, type, source: SOURCE, source_url: SOURCE_URL, byline: BYLINE,
+    // Tên tác giả (Peter chốt 15/9, gương của apps/web/lib/brand.ts): xem trước trận → Chú Tám Banh, tin → Pete Nguyễn.
+    slug, type, source: SOURCE, source_url: SOURCE_URL, byline: type === 'preview' ? bylineJson.chuTam : bylineJson.pete,
     competition_id: opts.competitionId, match_id: opts.matchId, pick_id: opts.pickId,
     status: opts.publish ? 'published' : 'draft',
     published_at: opts.publish ? now : null,

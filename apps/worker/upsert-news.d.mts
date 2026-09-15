@@ -35,7 +35,7 @@ export interface BaiTrung {
   vi_sao: string;
 }
 
-export const NEWS_BYLINE: string;
+export function bylineTheoLoai(type: string): string;
 export const VN_TZ: string;
 export const NEWS_TYPES: string[];
 export const STATUSES: string[];

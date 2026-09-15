@@ -30,9 +30,6 @@ const SONNET_MODEL = 'claude-sonnet-4-6';
 const GUARDIAN_BASE = 'https://content.guardianapis.com/search';
 const GNEWS_RSS_BASE = 'https://news.google.com/rss/search';
 const P2_SOURCE = 'Guardian API + Google News';
-/** P1 và P2 ghi cùng một bảng nên phải cùng một tên toà soạn. Trước 25/8 chỗ này
- *  gõ tay "banhbong.net News" — tên thứ ba trong repo, chưa kịp ra bài nào. */
-const P2_BYLINE = bylineJson.news;
 const P2_MAX_TOKENS = 6000;
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -243,10 +240,7 @@ Rules:
 - If a source reports a player as "doubtful" — write exactly that. Never upgrade to "will miss" or "will start".
 - H2H data above is verified — use those exact numbers.
 - Neutral, informative tone — editorial journalism, NOT a betting recommendation.
-- Responsible language: NEVER use "sure win", "guaranteed", "can't lose".
-- End each language section with:
----
-banhbong.net News | AI-assisted coverage | ${input.dateUtc}`;
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose".`;
 }
 
 // ── P2 Enrichment pipeline ──────────────────────────────────────────────────
@@ -359,11 +353,7 @@ function parseP2Output(
       }
     }
 
-    // Append disclosure if not already present
-    const disclosureMark = 'AI-assisted';
-    if (!body.includes(disclosureMark)) {
-      body += `\n\n---\nbanhbong.net News | AI-assisted summary from Guardian, Google News | ${input.dateUtc}`;
-    }
+    // Dòng khai AI không chèn vào thân bài nữa: trang /news in dòng khai theo tác giả (Peter chốt 15/9).
 
     // Add pick reference if available
     if (input.pickUrl && input.pickAuthor && !body.includes(input.pickUrl)) {
@@ -473,10 +463,7 @@ Rules:
 - If a source mentions a goalscorer or key incident, cite it: [Source: Guardian/headline].
 - H2H data above is verified — use those exact numbers.
 - Neutral, informative tone — editorial journalism, NOT a betting recommendation.
-- Responsible language: NEVER use "sure win", "guaranteed", "can't lose".
-- End each language section with:
----
-banhbong.net News | AI-assisted match report | ${input.dateUtc}`;
+- Responsible language: NEVER use "sure win", "guaranteed", "can't lose".`;
 }
 
 /** Generate P2 enriched result for a single match. Null on failure → P1 fallback. */
@@ -554,7 +541,8 @@ export function buildP2Row(
     type: opts.type ?? 'preview',
     source: P2_SOURCE,
     source_url: 'https://www.theguardian.com/football',
-    byline: P2_BYLINE,
+    // Cùng luật với news-gen.ts (Peter chốt 15/9): xem trước trận → Chú Tám Banh, tin → Pete Nguyễn.
+    byline: (opts.type ?? 'preview') === 'preview' ? bylineJson.chuTam : bylineJson.pete,
     competition_id: opts.competitionId,
     match_id: opts.matchId,
     pick_id: opts.pickId,

@@ -139,7 +139,7 @@ export const CLV_RULE =
  *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
 export const VI_LEXICON_RULE =
   '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)\n' +
-  '- TÊN NHÂN VẬT BẢN VI (Nick chốt 21/8): trong section tiếng Việt gọi Curator là "Admin" và Scout là "Trợ lý AI" — TUYỆT ĐỐI KHÔNG để nguyên chữ "Curator" hay "Scout" trong bản VI. (Section EN/TH/ES giữ nguyên tên gốc.)';
+  '- TÊN NHÂN VẬT BẢN VI (Nick chốt 21/8, đổi Admin → Chú Tám Banh theo Peter 15/9): trong section tiếng Việt gọi Curator là "Chú Tám Banh" và Scout là "Trợ lý AI" — TUYỆT ĐỐI KHÔNG để nguyên chữ "Curator", "Admin" hay "Scout" trong bản VI. (Section EN/TH/ES giữ nguyên tên gốc.)';
 
 /** Giọng Chú Tám Banh — CHỈ áp cho section tiếng Việt. Người rành bóng đá nói thẳng,
  *  KHÔNG như máy. Tuân thủ VI_LEXICON_RULE (không từ cá cược) — chỉ đổi CHẤT GIỌNG. (Peter 11/9) */

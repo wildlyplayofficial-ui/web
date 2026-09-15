@@ -1,7 +1,7 @@
 import { getAnalysisArticleBySlug } from "@/lib/analysis-articles";
 import { OgCard, ogResponse, loadMarkDataUri, loadBadgeDataUri } from "../../_shared";
 import { teamBadge } from "@/lib/team-badges";
-import { SITE_NAME, DESK } from "@/lib/brand";
+import { SITE_NAME } from "@/lib/brand";
 
 /**
  * Dynamic share image (PNG 1200x630) for Desk-authored analysis articles.
@@ -70,7 +70,7 @@ export async function GET(
       title={article.title}
       topRight={article.league || null}
       footer={SITE_NAME}
-      footerRight={`${DESK} (AI) · ${dateLine}`}
+      footerRight={`${article.byline} · ${dateLine}`}
     />,
     { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },
   );

@@ -1,7 +1,7 @@
 import { getAllPostSlugs } from "@/lib/data";
 import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
-import { SITE_URL, SITE_NAME, DESK } from "@/lib/brand";
+import { SITE_URL, SITE_NAME, PETE } from "@/lib/brand";
 
 /**
  * GET /api/analysis/rss — RSS feed for /analysis section.
@@ -43,6 +43,7 @@ export async function GET(): Promise<Response> {
         // Bài blog canonical về /blog/{slug}; feed trỏ /analysis/{slug} là đưa
         // cho đầu đọc và cho Google một URL không phải bản chính.
         duong: p.type === "blog" ? "blog" : "analysis",
+        tacGia: p.type === "blog" ? PETE : SITE_NAME,
       })),
     ...deskArticles.map((a) => ({
       slug: a.slug,
@@ -50,6 +51,7 @@ export async function GET(): Promise<Response> {
       updated: a.updated,
       source: "desk" as const,
       duong: "analysis" as const,
+      tacGia: a.byline,
     })),
   ]
     .sort((a, b) => b.updated.localeCompare(a.updated))
@@ -63,7 +65,7 @@ export async function GET(): Promise<Response> {
       <link>${BASE}/${item.duong}/${item.slug}</link>
       <guid isPermaLink="true">${BASE}/${item.duong}/${item.slug}</guid>
       <pubDate>${new Date(item.updated).toUTCString()}</pubDate>
-      <dc:creator>${DESK}</dc:creator>
+      <dc:creator>${escapeXml(item.tacGia)}</dc:creator>
     </item>`,
   );
 
