@@ -125,7 +125,8 @@ export function buildPerson(name: string = CHU_TAM) {
     url: a ? `${BASE}${a.path}` : `${BASE}/about`,
     jobTitle: a?.role,
     description: a?.bio,
-    sameAs: [...SAME_AS],
+    // Hồ sơ riêng của tác giả; tác giả chưa có hồ sơ thì giữ kênh của site như trước.
+    sameAs: a?.sameAs.length ? [...a.sameAs] : [...SAME_AS],
     worksFor: {
       "@type": "Organization",
       name: SITE_NAME,

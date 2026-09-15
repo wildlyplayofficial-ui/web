@@ -14,6 +14,8 @@ export interface AuthorProfile {
   role: string;
   bio: string;
   disclosure: string;
+  /** Hồ sơ mạng xã hội của chính người này, đi vào schema sameAs + link trên trang hồ sơ. */
+  sameAs: readonly string[];
 }
 
 export const AUTHORS: readonly AuthorProfile[] = [
@@ -25,6 +27,7 @@ export const AUTHORS: readonly AuthorProfile[] = [
     // Chép từ persona trên /about (app/[lang]/about/copy.ts) — sửa thì sửa cả hai.
     bio: "Chú Tám Banh là người thật đứng sau mọi nhận định trên banhbong.net — theo bóng đá châu Âu hơn 15 năm, chuyên Ngoại hạng Anh và các giải lớn châu Âu. Mỗi trận đều tự đọc số liệu, xem phong độ và đội hình rồi mới đặt bút. Không nhận định gượng ép: không thấy lợi thế thì ghi rõ là bỏ qua. Thành tích thắng thua công khai từ ngày đầu, không sửa, không xoá.",
     disclosure: "Chú Tám Banh chọn trận và góc nhìn · AI viết bài từ số liệu",
+    sameAs: [],
   },
   {
     name: PETE,
@@ -33,6 +36,8 @@ export const AUTHORS: readonly AuthorProfile[] = [
     role: "Biên tập tin tức · Blog",
     bio: "Pete Nguyễn biên tập mảng tin tức và blog của banhbong.net: tin chuyển nhượng, kết quả, bảng xếp hạng và các bài blog bóng đá. AI hỗ trợ viết từ nguồn công khai, nguồn tin ghi rõ trong từng bài.",
     disclosure: "Pete Nguyễn biên tập · AI hỗ trợ viết",
+    // Peter tạo 15/9/2026.
+    sameAs: ["https://www.linkedin.com/in/pete-nguy%E1%BB%85n-518324437"],
   },
 ];
 
@@ -58,6 +63,6 @@ export function authorBySlug(slug: string): AuthorProfile | null {
 export function authorSchema(name: string) {
   const a = authorByName(name);
   return a
-    ? { "@type": "Person", name: a.name, url: `${SITE_URL}${a.path}` }
+    ? { "@type": "Person", name: a.name, url: `${SITE_URL}${a.path}`, ...(a.sameAs.length ? { sameAs: [...a.sameAs] } : {}) }
     : { "@type": "Organization", name, url: SITE_URL };
 }
