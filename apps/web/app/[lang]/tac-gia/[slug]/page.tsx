@@ -86,7 +86,7 @@ export default async function AuthorPage({ params }: Props) {
           </Link>
           {a.sameAs.map((url) => (
             <a key={url} href={url} target="_blank" rel="me noopener" className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
-              {url.includes("linkedin.com") ? "LinkedIn" : new URL(url).hostname} &rarr;
+              {url.includes("linkedin.com") ? "LinkedIn" : new URL(url).hostname}{" "}&rarr;
             </a>
           ))}
         </nav>
