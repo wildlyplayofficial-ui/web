@@ -30,10 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TrackRecordHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [curator, scout] = await Promise.all([
-    getTrackRecordForAuthor("curator"),
-    getTrackRecordForAuthor("scout"),
-  ]);
+  const curator = await getTrackRecordForAuthor("curator");
 
   const sections = [
     {
@@ -65,8 +62,8 @@ export default async function TrackRecordHub({ params }: Props) {
         <p className="mx-auto mt-3 max-w-[600px] text-muted">{dict.archive.subtitle}</p>
       </section>
 
-      {/* Live record summary */}
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      {/* Live record summary — thẻ Trợ lý AI đã gỡ (Peter duyệt 15/9/2026), còn một thẻ nên bỏ lưới 2 cột. */}
+      <div className="mt-10 grid gap-4">
         <div className="rounded-card border border-brand/30 bg-brand-dim/30 p-6">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-bold text-bg">C</span>
@@ -80,22 +77,6 @@ export default async function TrackRecordHub({ params }: Props) {
           </div>
           <p className="mt-1 text-xs text-muted">{curator.settled} {lang === "vi" ? "nhận định đã có kết quả" : "settled plays"}</p>
         </div>
-
-        {scout.settled > 0 && (
-          <div className="rounded-card border border-[#6b9e9e]/30 bg-[#6b9e9e]/[.06] p-6">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6b9e9e] text-sm font-bold text-bg">S</span>
-              <span className="font-display text-lg font-bold">Trợ lý AI</span>
-            </div>
-            <div className="mt-3 flex items-baseline gap-3">
-              <span className="font-display text-2xl font-bold">{scout.wins}-{scout.losses}-{scout.pushes}</span>
-              <span className={`font-display text-lg font-semibold ${scout.units_pl >= 0 ? "text-[#6b9e9e]" : "text-loss"}`}>
-                {formatUnits(scout.units_pl)}
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-muted">{scout.settled} {lang === "vi" ? "nhận định đã có kết quả · AI vận hành" : "settled plays · AI-operated"}</p>
-          </div>
-        )}
       </div>
 
       {/* Section links */}

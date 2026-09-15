@@ -137,17 +137,11 @@ export default async function StatsPage({ params }: Props) {
   const dict = getDict(lang);
   const allPicks = await getSettledPicks();
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
-  const scoutPicks = allPicks.filter((p) => p.author === "scout");
 
   const summary = summarize(picks);
   const byLeague = groupStats(picks, (p) => normalizeLeague(p.league));
   const byMarket = groupStats(picks, (p) => marketLabels[p.market]);
   const points = cumulativeUnits(picks);
-
-  const scoutSummary = scoutPicks.length > 0 ? summarize(scoutPicks) : null;
-  const scoutByLeague = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => normalizeLeague(p.league)) : [];
-  const scoutByMarket = scoutPicks.length > 0 ? groupStats(scoutPicks, (p) => marketLabels[p.market]) : [];
-  const scoutPoints = scoutPicks.length > 0 ? cumulativeUnits(scoutPicks) : [];
 
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-12">
@@ -189,45 +183,6 @@ export default async function StatsPage({ params }: Props) {
           <StatsTable heading={dict.stats.byLeague} firstCol={dict.stats.league} rows={byLeague} dict={dict} />
           <StatsTable heading={dict.stats.byMarket} firstCol={dict.stats.market} rows={byMarket} dict={dict} />
         </>
-      )}
-
-      {/* ── Scout section — hidden when 0 settled picks (§7.1 rule 2) ── */}
-      {scoutSummary && scoutPicks.length > 0 && (
-        <section className="mt-14 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8">
-          <div className="text-center">
-            <h2 className="font-display text-2xl font-bold text-[#6b9e9e]">
-              {lang === "vi" ? "Nhận định phụ" : "Alternative Picks"} &middot; Trợ lý AI
-            </h2>
-            <p className="mt-2 text-xs text-muted">
-              {lang === "vi" ? "Nhân vật giả tưởng do AI vận hành của banhbong.net · độ tin cậy thấp hơn · sổ theo dõi riêng" : "Fictional, AI-operated banhbong.net persona · lower confidence · separate ledger"}
-            </p>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            <StatBlock
-              label={dict.archive.record}
-              value={`${scoutSummary.wins}-${scoutSummary.losses}-${scoutSummary.pushes}`}
-            />
-            <StatBlock
-              label={dict.archive.unitsPl}
-              value={formatUnits(scoutSummary.units_pl)}
-              className={plClass(scoutSummary.units_pl)}
-            />
-            <StatBlock label={dict.stats.settled} value={`${scoutSummary.settled}`} />
-            <StatBlock label={dict.stats.roi} value={formatPct(scoutSummary.roi)} className={plClass(scoutSummary.roi)} />
-            <StatBlock label={dict.stats.avgClv} value={formatPct(scoutSummary.avgClv)} className={plClass(scoutSummary.avgClv)} />
-          </div>
-
-          {scoutPoints.length > 0 && (
-            <>
-              <h3 className="mt-8 font-display text-lg font-semibold text-[#6b9e9e]">Cumulative Units P/L</h3>
-              <UnitsChart points={scoutPoints} lang={lang} />
-            </>
-          )}
-
-          <StatsTable heading={`${dict.stats.byLeague}`} firstCol={dict.stats.league} rows={scoutByLeague} dict={dict} />
-          <StatsTable heading={`${dict.stats.byMarket}`} firstCol={dict.stats.market} rows={scoutByMarket} dict={dict} />
-        </section>
       )}
 
       <p className="mt-10 text-center text-xs text-muted">{dict.archive.unitsNote}</p>
