@@ -65,7 +65,10 @@ function CardFrame({
           {home}
         </p>
         <span className="shrink-0 text-center text-xs leading-tight text-muted">
-          {time}
+          {/* Ngày và giờ xuống 2 dòng: gộp 1 dòng "19 thg 9 · 02:00 giờ VN" rộng 130px, đẩy tên đội khách tràn mép thẻ ở màn 390px (đo 15/9/2026). */}
+          {time.split(" · ").map((part) => (
+            <span key={part} className="block">{part}</span>
+          ))}
           <span className="block font-display text-sm text-ink">vs</span>
         </span>
         <p className="flex items-center justify-end text-right font-display text-base font-bold sm:text-lg">
