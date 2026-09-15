@@ -19,6 +19,12 @@ import { buildPlaySlug } from "./play-slug";
 
 const SETTLED = ["won", "lost", "push"] as const;
 
+/** Trợ lý AI (author "scout") gỡ khỏi web công khai — Peter duyệt 15/9/2026 trong group
+ *  banhbong ("bỏ trợ lí AI đi"). Dữ liệu vẫn nằm nguyên trong DB, chỉ không đọc ra trang.
+ *  Cột `author` là NOT NULL mặc định 'curator' (add_pick_author.sql) nên lọc neq không
+ *  làm rơi dòng nào của Chú Tám Banh. */
+const AN_AUTHOR = "scout";
+
 function utcDayRange(date: Date): { start: string; end: string } {
   const start = new Date(date);
   start.setUTCHours(0, 0, 0, 0);
@@ -46,6 +52,7 @@ async function getTodaysPicksImpl(): Promise<Pick[]> {
     .select("*")
     .gte("published_at", startIso)
     .eq("status", "published")
+    .neq("author", AN_AUTHOR)
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getTodaysPicks: ${error.message}`);
   return (data ?? []) as Pick[];
@@ -75,6 +82,7 @@ async function getPickBySlugImpl(slug: string): Promise<Pick | null> {
     .from("picks")
     .select("*")
     .neq("status", "draft")
+    .neq("author", AN_AUTHOR)
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getPickBySlug: ${error.message}`);
   return (data as Pick[])?.find((p) => buildPlaySlug(p) === slug) ?? null;
@@ -98,6 +106,7 @@ async function getPickImpl(id: string): Promise<Pick | null> {
     .select("*")
     .eq("id", id)
     .neq("status", "draft")
+    .neq("author", AN_AUTHOR)
     .maybeSingle();
   if (error) throw new Error(`getPick: ${error.message}`);
   return (data as Pick) ?? null;
@@ -121,6 +130,7 @@ async function getSettledPicksImpl(month?: string): Promise<Pick[]> {
     .from("picks")
     .select("*")
     .in("status", [...SETTLED])
+    .neq("author", AN_AUTHOR)
     .order("kickoff_utc", { ascending: false });
   if (month) {
     const start = `${month}-01T00:00:00Z`;
@@ -226,6 +236,7 @@ async function getPostsImpl(lang: Lang): Promise<Post[]> {
       .from("posts")
       .select("*")
       .eq("status", "published")
+      .neq("author", AN_AUTHOR)
       .in("lang", ["en", lang])
       .order("published_at", { ascending: false });
     if (error) throw new Error(`getPosts: ${error.message}`);
@@ -261,7 +272,8 @@ async function getPostImpl(slug: string, lang: Lang): Promise<Post | null> {
       .from("posts")
       .select("*")
       .eq("slug", slug)
-      .eq("status", "published");
+      .eq("status", "published")
+      .neq("author", AN_AUTHOR);
     if (error) throw new Error(`getPost: ${error.message}`);
     candidates = (data ?? []) as Post[];
   }
@@ -284,7 +296,8 @@ async function getPostLangsImpl(slug: string): Promise<Lang[]> {
     .from("posts")
     .select("lang")
     .eq("slug", slug)
-    .eq("status", "published");
+    .eq("status", "published")
+    .neq("author", AN_AUTHOR);
   if (error) throw new Error(`getPostLangs: ${error.message}`);
   return (data ?? []).map((r) => r.lang as Lang);
 }
@@ -352,6 +365,7 @@ async function getRecentRecapPostsImpl(lang: Lang, limit: number): Promise<Post[
     .select("*")
     .eq("status", "published")
     .eq("type", "recap")
+    .neq("author", AN_AUTHOR)
     .in("lang", ["en", lang])
     .order("published_at", { ascending: false })
     .limit(limit * 8); // headroom: rows are per-language duplicates of each slug
@@ -518,6 +532,7 @@ async function getAllPostSlugsImpl(): Promise<{ slug: string; updated: string; t
     // type=guide đã có nhà riêng (/guides + /transparency). Đổ thêm sang
     // /analysis tạo 13 cặp URL trùng tự cạnh tranh (kiểm kê 25/8) — loại hẳn.
     .neq("type", "guide")
+    .neq("author", AN_AUTHOR)
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getAllPostSlugs: ${error.message}`);
   return (data ?? []).map((r) => ({ slug: r.slug, updated: r.published_at ?? new Date().toISOString(), title: r.title, type: r.type }));
@@ -609,6 +624,7 @@ export async function getPostsByPickIds(pickIds: string[], lang: string): Promis
     .select("*")
     .eq("status", "published")
     .eq("lang", lang)
+    .neq("author", AN_AUTHOR)
     .overlaps("pick_ids", pickIds)
     .order("published_at", { ascending: false })
     .limit(5);
@@ -626,6 +642,7 @@ export async function getAllPickRefs(): Promise<{ id: string; slug: string; upda
     .from("picks")
     .select("*")
     .neq("status", "draft")
+    .neq("author", AN_AUTHOR)
     .order("kickoff_utc", { ascending: false });
   if (error) throw new Error(`getAllPickRefs: ${error.message}`);
   return ((data ?? []) as Pick[]).map(
@@ -648,6 +665,7 @@ async function getActiveWatchingImpl(): Promise<WatchingRow[]> {
     .from("watching")
     .select("*")
     .eq("status", "active")
+    .neq("author", AN_AUTHOR)
     .order("kickoff_utc", { ascending: true });
   if (error) throw new Error(`getActiveWatching: ${error.message}`);
   return (data ?? []) as WatchingRow[];
@@ -669,6 +687,7 @@ async function getTodaysNoPlaysImpl(): Promise<WatchingRow[]> {
     .from("watching")
     .select("*")
     .eq("status", "expired")
+    .neq("author", AN_AUTHOR)
     .gte("kickoff_utc", `${dayStart}T00:00:00Z`)
     .lt("kickoff_utc", `${nextDay}T00:00:00Z`)
     .order("kickoff_utc", { ascending: true });
@@ -778,6 +797,7 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       supabase
         .from("watching")
         .select("*")
+        .neq("author", AN_AUTHOR)
         .or(homeOr)
         .or(awayOr)
         .gte("kickoff_utc", start)
@@ -788,6 +808,7 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
       supabase
         .from("picks")
         .select("*")
+        .neq("author", AN_AUTHOR)
         .or(homeOr)
         .or(awayOr)
         .gte("kickoff_utc", start)
@@ -798,6 +819,7 @@ async function getMatchBySlugImpl(slug: string): Promise<MatchData | null> {
         .from("posts")
         .select("*")
         .eq("status", "published")
+        .neq("author", AN_AUTHOR)
         .or([
           ...homeVariants.flatMap(h => awayVariants.map(a => `slug.ilike.%${h}%${a}%`)),
           ...awayVariants.flatMap(a => homeVariants.map(h => `slug.ilike.%${a}%${h}%`)),
@@ -966,10 +988,12 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
       .from("picks")
       .select("home_team, away_team, kickoff_utc, settled_at, home_score, away_score, status, league")
       .neq("status", "draft")
+      .neq("author", AN_AUTHOR)
       .neq("status", "void"),
     supabase
       .from("watching")
-      .select("home_team, away_team, kickoff_utc, created_at, league"),
+      .select("home_team, away_team, kickoff_utc, created_at, league")
+      .neq("author", AN_AUTHOR),
     supabase
       .from("match_live_state")
       .select("home_team, away_team, kickoff_utc, home_score, away_score, status, minute, updated_at")
@@ -1046,7 +1070,7 @@ async function getAllMatchSlugsImpl(): Promise<MatchListEntry[]> {
   // rồi lọc là hỏng âm thầm khi bảng posts vượt ngưỡng.
   const postSlugs: string[] = [];
   for (let tu = 0; ; tu += 1000) {
-    const res = await supabase.from("posts").select("slug").eq("status", "published").range(tu, tu + 999);
+    const res = await supabase.from("posts").select("slug").eq("status", "published").neq("author", AN_AUTHOR).range(tu, tu + 999);
     if (res.error) throw new Error(`getAllMatchSlugs posts: ${res.error.message}`);
     const lo = (res.data ?? []) as { slug: string }[];
     postSlugs.push(...lo.map((r) => r.slug));

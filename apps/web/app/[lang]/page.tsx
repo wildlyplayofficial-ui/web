@@ -144,17 +144,7 @@ export default async function Home({ params }: Props) {
       : null;
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
-  // Nick 29/8: băng "Bảng Dự Đoán Hôm Nay" phải NHÂN ĐÔI — một băng của Chú Tám Banh,
-  // một băng của Trợ lý AI, mỗi bên màu riêng. Trước chỉ có một băng đếm kèo Chú Tám
-  // Banh nên hôm có kèo AI mà băng vẫn ghi "Nhận định chọn: 0" — Nick bắt được.
-  const scoutPicks = allPicks.filter((p) => p.author === "scout");
-  // Băng Chú Tám Banh LUÔN đứng trước, kể cả hôm bác nghỉ — hỏi Nick 29/8 có cho
-  // băng AI nhảy lên trên không, anh trả lời "Không nhảy lên trên".
-  // Bác nghỉ thì chỉ ĐỔI TIÊU ĐỀ băng AI thành "Kèo Hôm Nay", không đổi thứ tự.
-  const bacNghi = picks.length === 0;
-  // Màu lấy đúng màu đã dùng cho hai nhân vật ở mọi trang khác — xanh thương hiệu
-  // cho Chú Tám Banh, #6b9e9e cho Trợ lý AI (giống /about, /archive, /track-record,
-  // khối AI dưới trang Bảng). KHÔNG chế màu mới.
+  // Băng Trợ lý AI đã gỡ (Peter duyệt 15/9/2026) — chỉ còn băng của Chú Tám Banh.
   const bangBac = {
     href: withLang("/daily-board", lang),
     ten: dict.pick.curator,
@@ -166,22 +156,6 @@ export default async function Home({ params }: Props) {
       { nhan: dict.board.watchingLabel, nhanNgan: dict.board.watchingLabelShort, gia: watching.length },
     ],
     ghiChu: null as string | null,
-  };
-  // Băng AI chỉ đếm kèo của nó. Bỏ qua và Đang theo dõi là sổ của Chú Tám Banh,
-  // in lại bên này là đếm trùng.
-  // Hôm không có kèo AI thì băng VẪN HIỆN, chỉ đổi phần số thành câu "không có kèo
-  // phụ hôm nay" — giống khối AI dưới /daily-board. Trước đây ẩn hẳn băng, hoá ra
-  // Nick nhìn thấy một băng lại tưởng mã chưa lên (sáng 30/8); Nick chốt cho hiện.
-  const coKeoAI = scoutPicks.length > 0;
-  const bangAI = {
-    href: `${withLang("/daily-board", lang)}#tro-ly-ai`,
-    ten: dict.scout.name,
-    cham: "bg-[#6b9e9e]",
-    so: coKeoAI
-      ? [{ nhan: dict.board.picksLabel, nhanNgan: dict.board.picksLabelShort, gia: scoutPicks.length }]
-      : [],
-    // Tên "Trợ lý AI" đã in ngay bên trái trong băng gộp → dùng bản không kèm tên.
-    ghiChu: coKeoAI ? null : dict.scout.noPlayShort,
   };
 
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
@@ -375,10 +349,8 @@ export default async function Home({ params }: Props) {
           /* Nick 2/9: gộp HAI băng thành MỘT — trước đây ngày tháng và nút
              "Xem Bảng Dự Đoán Hôm Nay" bị in hai lần liền nhau, đọc như lỗi.
              Gộp phần KHUNG (tiêu đề + ngày + nút), KHÔNG gộp SỐ: mỗi bên vẫn
-             một dòng riêng, có tên và chấm màu riêng (xanh thương hiệu cho Chú
-             Tám Banh, #6b9e9e cho Trợ lý AI — đúng màu đã dùng ở /about,
-             /archive, /track-record). Cộng chung thành tích hai bên là phá
-             tường lửa Curator/Scout, thứ khiến trang mình đáng tin. */
+             một dòng riêng, có tên và chấm màu riêng. Dòng Trợ lý AI đã gỡ
+             (Peter duyệt 15/9/2026), còn lại dòng của Chú Tám Banh. */
           /* Nick 2/9 (đợt 2): thu chiều cao băng này trên ĐIỆN THOẠI — nó cao 262px,
              là khối to nhất đứng giữa người đọc và bài viết. Cắt bằng cách bóp lề,
              gộp ngày vào dòng tiêu đề (dạng ngắn "2/9") và làm nút gọn lại. KHÔNG bỏ
@@ -393,7 +365,7 @@ export default async function Home({ params }: Props) {
             </p>
             <p className="mt-1 hidden text-sm text-muted sm:block">{formatBoardDate(new Date(), lang)}</p>
             <div className="mt-3 flex flex-col gap-2 sm:mt-4">
-              {[bangBac, bangAI].map((b) => (
+              {[bangBac].map((b) => (
                 <Link
                   key={b.href}
                   href={b.href}
@@ -683,10 +655,6 @@ export default async function Home({ params }: Props) {
             <li className="flex items-start gap-3">
               <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-brand" aria-hidden />
               <span>{dict.home.trustCurator}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[#6b9e9e]" aria-hidden />
-              <span>{dict.home.trustScout}</span>
             </li>
           </ul>
           <div className="mt-5 flex flex-wrap gap-4">

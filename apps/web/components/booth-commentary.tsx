@@ -91,7 +91,7 @@ export function BoothSection({
       </h3>
       <p className="text-xs text-muted">
         {lang === "vi"
-          ? "Trợ lý AI bình luận theo diễn biến trận (hai giọng Sonny & Cole) — không phải tư vấn cá cược."
+          ? "Bình luận tự động theo diễn biến trận (hai giọng Sonny & Cole) — không phải tư vấn cá cược."
           : lang === "th"
             ? "วิเคราะห์สดโดย Sonny & Cole — คอมเมนต์ AI ไม่ใช่คำแนะนำการเดิมพัน"
             : lang === "es"

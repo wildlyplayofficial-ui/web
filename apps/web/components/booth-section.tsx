@@ -16,7 +16,7 @@ export function BoothSection({ entries, lang }: { entries: BoothEntry[]; lang: L
         {lang === "vi" ? "Bình luận trực tiếp" : "The Booth"}
       </h3>
       <p className="text-xs text-muted">
-        {lang === "vi" ? "Trợ lý AI bình luận theo diễn biến trận (hai giọng Sonny & Cole) — không phải tư vấn cá cược."
+        {lang === "vi" ? "Bình luận tự động theo diễn biến trận (hai giọng Sonny & Cole) — không phải tư vấn cá cược."
           : lang === "th" ? "\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e2a\u0e14\u0e42\u0e14\u0e22 Sonny & Cole \u2014 \u0e04\u0e2d\u0e21\u0e40\u0e21\u0e19\u0e15\u0e4c AI \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e01\u0e32\u0e23\u0e40\u0e14\u0e34\u0e21\u0e1e\u0e31\u0e19"
             : lang === "es" ? "An\u00e1lisis en vivo por Sonny & Cole \u2014 comentario IA, no consejo de apuestas."
               : "Live analysis by Sonny & Cole \u2014 AI commentary, not betting advice."}

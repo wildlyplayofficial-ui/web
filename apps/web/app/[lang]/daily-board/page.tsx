@@ -54,22 +54,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DailyBoard({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, settledPicks, watching, noPlays, scoutRecord, curatorRecord] = await Promise.all([
+  const [allPicks, settledPicks, watching, noPlays, curatorRecord] = await Promise.all([
     getTodaysPicks(),
     getSettledPicks(),
     getActiveWatching(),
     getTodaysNoPlays(),
-    getTrackRecordForAuthor("scout"),
     getTrackRecordForAuthor("curator"),
   ]);
-  // §7.1: split picks by author — curator picks go to the board, scout picks to the Scout section
+  // §7.1: curator picks only — khối Trợ lý AI đã gỡ (Peter duyệt 15/9/2026).
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
-  const scoutPicks = allPicks.filter((p) => p.author === "scout");
-  // Nick 29/8: Chú Tám Banh KHÔNG có kèo thì khối Trợ lý AI phải NỔI lên làm kèo
-  // chính của ngày; có kèo rồi thì lùi lại làm kèo phụ như cũ. Trang không bao giờ trống.
-  // Vẫn giữ nguyên chữ "Trợ lý AI", nhãn độ-tin-thấp-hơn và dòng công bố — to lên mà
-  // bỏ mấy nhãn đó là người đọc tưởng kèo của người thật, mà hai sổ đang để riêng.
-  const scoutNoiBat = picks.length === 0 && scoutPicks.length > 0;
 
   // Hero prediction — top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
@@ -240,58 +233,7 @@ export default async function DailyBoard({ params }: Props) {
         </section>
       )}
 
-      {/* 4. §7.1 Scout section — hidden when scout has 0 settled picks (pre-launch rule) */}
-      {scoutRecord.settled > 0 && (
-        <section
-          // Băng Trợ lý AI trên trang chủ nhảy thẳng xuống đây (Nick 29/8).
-          id="tro-ly-ai"
-          className={
-            scoutNoiBat
-              ? "mb-8 rounded-card border-2 border-[#6b9e9e]/70 bg-[#6b9e9e]/[.10] px-5 py-10 shadow-lg"
-              : "mb-8 rounded-card border border-dashed border-[#6b9e9e]/40 bg-[#6b9e9e]/[.04] px-5 py-8"
-          }
-        >
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-            <h2 className={scoutNoiBat ? "font-display text-3xl font-bold text-[#6b9e9e]" : "font-display text-xl font-bold text-[#6b9e9e]"}>
-              {scoutNoiBat ? dict.scout.headingSolo : dict.scout.heading} 🤖
-            </h2>
-            <span className="rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3 py-0.5 font-display text-[0.7rem] font-semibold uppercase tracking-wide text-[#6b9e9e]">
-              {dict.scout.badge}
-            </span>
-          </div>
-
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#6b9e9e]/30 bg-[#6b9e9e]/10 px-3.5 py-1 font-display text-xs">
-            <span className="text-muted">Trợ lý AI</span>
-            <span className="font-semibold text-ink">
-              {scoutRecord.wins}-{scoutRecord.losses}-{scoutRecord.pushes}
-            </span>
-            <span className={`font-semibold ${scoutRecord.units_pl >= 0 ? "text-brand" : "text-loss"}`}>
-              {formatUnits(scoutRecord.units_pl)}
-            </span>
-            <span className="text-muted">· {dict.board.asOf} {formatBoardDate(new Date(), lang)}</span>
-          </p>
-
-          {scoutPicks.length > 0 ? (
-            <div className="mt-5 flex flex-col gap-5">
-              {scoutPicks.map((pick) => (
-                <PickCard
-                  key={pick.id}
-                  pick={pick}
-                  lang={lang}
-                  votes={votes[pick.id]}
-                  thesisText={translations[pick.id]?.[lang] ?? pick.thesis}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-5 text-sm text-muted">{dict.scout.noPlay}</p>
-          )}
-
-          <p className="mt-5 text-xs text-muted">
-            {dict.scout.disclosure}
-          </p>
-        </section>
-      )}
+      {/* 4. Khối Trợ lý AI (Scout) đã gỡ — Peter duyệt 15/9/2026. */}
 
       {/* 5. Watching — pipeline is active */}
       {watching.length > 0 && (
@@ -320,7 +262,7 @@ export default async function DailyBoard({ params }: Props) {
                     {p.home_team} {p.home_score ?? ""}&ndash;{p.away_score ?? ""} {p.away_team}
                   </span>
                   <span className="block truncate text-sm text-muted">
-                    {p.selection} · {(p.author ?? "curator") === "scout" ? "Trợ lý AI" : "Admin"}
+                    {p.selection} · Admin
                   </span>
                 </span>
                 <span className={`shrink-0 font-display text-sm font-semibold ${(p.units_pl ?? 0) >= 0 ? "text-brand" : "text-loss"}`}>
