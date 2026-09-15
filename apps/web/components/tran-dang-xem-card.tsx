@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatKickoff } from "@/lib/format";
+import { formatKickoff, formatMatchDay } from "@/lib/format";
 import { type Lang, withLang } from "@/lib/i18n";
 import { buildPlaySlug } from "@/lib/play-slug";
 import { buildMatchSlug } from "@/lib/data";
@@ -152,7 +152,10 @@ export function TranDangXemCard({
         badgeTone="muted"
         home={nextMatch.homeName}
         away={nextMatch.awayName}
-        time={nextMatch.time}
+        // nextMatch.time là giờ UTC từ lịch giải — in thẳng thì 02:00 VN hiện thành 19:00 (đo 15/9/2026).
+        time={nextMatch.time && !nextMatch.provisional
+          ? formatKickoff(`${nextMatch.date}T${nextMatch.time}:00Z`, lang)
+          : formatMatchDay(`${nextMatch.date}T00:00:00Z`, lang)}
         body={t(OFF_MSG, lang)}
         cta={{ label: t(CTA_FIXTURES, lang), href: withLang("/matches", lang), ghost: true }}
       />
