@@ -6,6 +6,8 @@ import {
   loadTeamPlayerDataUri, loadBadgeDataUri,
 } from "../../_shared";
 import { teamBadge } from "@/lib/team-badges";
+import { PETE } from "@/lib/brand";
+import { postAuthorName } from "@/lib/authors";
 import { TheTranPick } from "../../play/[id]/card";
 import { dungTheTran } from "../../play/[id]/route";
 
@@ -100,6 +102,7 @@ async function card(
   type: string,
   lang: Lang,
   headers: Record<string, string>,
+  author: string,
 ): Promise<Response> {
   // Thẻ cũ chỉ có nền xanh + một dòng chữ: đo bằng tools/do-thumbnail.py ra
   // 87,6% vùng phẳng / 71,1% ô giữa, ngưỡng là 55/60 — rớt nặng, và là ảnh
@@ -163,7 +166,7 @@ async function card(
       player={player}
       showPlayer={Boolean(player)}
       footer="banhbong.net"
-      footerRight="banhbong.net News"
+      footerRight={author}
     />,
     { headers },
   );
@@ -198,12 +201,12 @@ export async function GET(
         return ogResponse(TheTranPick(await dungTheTran(pick)) as React.ReactElement, { headers });
       }
     }
-    return card(post.meta_title ?? post.title, post.type, lang, headers);
+    return card(post.meta_title ?? post.title, post.type, lang, headers, postAuthorName(post));
   }
 
   // Fallback: news_items table (auto-gen preview/result/standings)
   const newsItem = await getNewsItemBySlug(slug);
   if (!newsItem) return new Response("Not found", { status: 404 });
 
-  return card(getHeadline(newsItem, lang), newsItem.type, lang, headers);
+  return card(getHeadline(newsItem, lang), newsItem.type, lang, headers, newsItem.byline || PETE);
 }

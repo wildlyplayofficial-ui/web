@@ -28,7 +28,7 @@
  *     "status": "published"                  // tuỳ chọn, mặc định published
  *   }
  *
- * KHÔNG có trường "byline": tên toà soạn lấy từ hằng số dùng chung
+ * KHÔNG có trường "byline": tên tác giả tính theo loại bài từ hằng số dùng chung
  * src/data/byline.json (gương của apps/web/lib/brand.ts). Đặt "byline" trong file
  * là LỖI và script từ chối cả mẻ — đường đăng cũ nhận byline làm THAM SỐ nên gõ
  * nhầm là lọt thẳng lên web (đã từng có bài mang tên toà soạn không tồn tại).
@@ -48,8 +48,11 @@ const BYLINES = JSON.parse(
   readFileSync(new URL('./src/data/byline.json', import.meta.url), 'utf8'),
 );
 
-/** Tên toà soạn. Hằng số — KHÔNG nhận từ tham số dòng lệnh, KHÔNG nhận từ file. */
-export const NEWS_BYLINE = BYLINES.desk;
+/** Tên tác giả theo loại bài (Peter chốt 15/9): xem trước trận → Chú Tám Banh, còn lại → Pete Nguyễn.
+ *  Tính từ `type` — KHÔNG nhận từ tham số dòng lệnh, KHÔNG nhận từ file. */
+export function bylineTheoLoai(type) {
+  return type === 'preview' ? BYLINES.chuTam : BYLINES.pete;
+}
 
 export const VN_TZ = 'Asia/Ho_Chi_Minh';
 
@@ -140,7 +143,7 @@ export function kiemTraBai(bai) {
   if (!bai || typeof bai !== 'object' || Array.isArray(bai)) return ['không phải một đối tượng JSON'];
 
   if ('byline' in bai) {
-    loi.push('không được đặt "byline" — tên toà soạn là hằng số dùng chung, xem src/data/byline.json');
+    loi.push('không được đặt "byline" — tên tác giả tính theo loại bài, xem src/data/byline.json');
   }
   if (!slugAnToan(bai.slug)) {
     loi.push(`slug không hợp lệ: ${JSON.stringify(bai.slug)} (chỉ a-z 0-9 và dấu -, không mở đầu bằng "news-")`);
@@ -198,7 +201,7 @@ export function kiemTraBai(bai) {
 // ── Dựng dòng ghi vào bảng ──────────────────────────────────────────────────
 
 /**
- * Dựng đúng một dòng `news_items`. Byline LUÔN là hằng số — mọi giá trị byline
+ * Dựng đúng một dòng `news_items`. Byline LUÔN tính theo loại bài — mọi giá trị byline
  * trong `bai` bị bỏ qua ở đây, và bị bộ lọc chặn từ trước.
  */
 export function dungDong(bai, now = new Date()) {
@@ -223,7 +226,7 @@ export function dungDong(bai, now = new Date()) {
     // Bài nháp không có ngày đăng — giống buildRow() trong src/news-gen.ts.
     published_at: dang === 'published' ? moc : null,
     updated_at: nowIso,
-    byline: NEWS_BYLINE,
+    byline: bylineTheoLoai(bai.type),
   };
   for (const lang of ['th', 'es']) {
     if (typeof bai[`headline_${lang}`] === 'string') dong[`headline_${lang}`] = bai[`headline_${lang}`].trim();
@@ -391,7 +394,7 @@ async function main() {
   for (const d of dong) {
     const r = veLai.get(d.slug);
     if (!r) { console.error(`  ✗ ${d.slug} KHÔNG thấy trong bảng`); thieu++; continue; }
-    const saiByline = r.byline !== NEWS_BYLINE;
+    const saiByline = r.byline !== d.byline;
     if (saiByline) thieu++;
     console.log(`  ${saiByline ? '✗' : '✓'} ${d.slug} · ${r.status}`
       + ` · ngày VN ${r.published_at ? ngayVN(r.published_at) : '(nháp)'} · byline "${r.byline}"`);

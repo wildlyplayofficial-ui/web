@@ -69,6 +69,15 @@ interface ValidatedPayload {
   status: AnalysisStatus;
 }
 
+const AUTHOR_NAMES: string[] = [bylineJson.chuTam, bylineJson.pete];
+
+/** Peter chốt 15/9: xem trước/nhận định → Chú Tám Banh, còn lại (tổng kết, tin, "Lịch thi đấu…") → Pete Nguyễn.
+ *  Byline gửi kèm chỉ được nhận khi là đúng một trong hai tên; tên cũ bị thay theo loại bài. */
+function authorByline(requested: unknown, kind: string, title: string): string {
+  if (typeof requested === 'string' && AUTHOR_NAMES.includes(requested.trim())) return requested.trim();
+  return kind === 'preview' && !/^Lịch thi đấu/i.test(title) ? bylineJson.chuTam : bylineJson.pete;
+}
+
 function validatePayload(payload: Json): { ok: true; data: ValidatedPayload } | { ok: false; error: string } {
   const errors: string[] = [];
 
@@ -104,7 +113,7 @@ function validatePayload(payload: Json): { ok: true; data: ValidatedPayload } | 
       title,
       league,
       body,
-      byline: typeof payload.byline === 'string' ? payload.byline.trim() : bylineJson.desk,
+      byline: authorByline(payload.byline, kind, title),
       match_id: typeof payload.match_id === 'string' ? payload.match_id : null,
       linked_pick_id: typeof payload.linked_pick_id === 'string' ? payload.linked_pick_id : null,
       hero_image: typeof payload.hero_image === 'string' ? payload.hero_image : null,
@@ -187,7 +196,7 @@ export async function handleAnalysisRoute(
     if (typeof payload.title === 'string') patch.title = payload.title.trim();
     if (typeof payload.body === 'string') patch.body = payload.body;
     if (typeof payload.league === 'string') patch.league = payload.league.trim();
-    if (typeof payload.byline === 'string') patch.byline = payload.byline.trim();
+    if (typeof payload.byline === 'string' && AUTHOR_NAMES.includes(payload.byline.trim())) patch.byline = payload.byline.trim();
     if (typeof payload.match_id === 'string') patch.match_id = payload.match_id;
     if (typeof payload.linked_pick_id === 'string') patch.linked_pick_id = payload.linked_pick_id;
     if (typeof payload.hero_image === 'string') patch.hero_image = payload.hero_image;

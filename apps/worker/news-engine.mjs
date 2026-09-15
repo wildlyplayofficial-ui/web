@@ -268,7 +268,8 @@ async function publish(sb, { slug, title, body, kind, league, heroImage, thumbIm
   const nowIso = new Date().toISOString();
   const { error } = await sb.from('analysis_articles').upsert({
     slug, kind, tier: 'T1_covered', league, title, body,
-    byline: BYLINES.desk, author_type: 'desk_ai',
+    // Peter chốt 15/9: xem trước trận → Chú Tám Banh; tổng kết/tin → Pete Nguyễn.
+    byline: kind === 'preview' && !/^Lịch thi đấu/i.test(title) ? BYLINES.chuTam : BYLINES.pete, author_type: 'desk_ai',
     hero_image: heroImage, thumb_image: thumbImage ?? null, match_id: matchId ?? null,
     status: 'published', published_at: nowIso,
   }, { onConflict: 'slug' });

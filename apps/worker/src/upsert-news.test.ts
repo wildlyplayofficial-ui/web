@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  NEWS_BYLINE, MIN_BODY_CHARS,
+  bylineTheoLoai, MIN_BODY_CHARS,
   dungDong, kiemTraBai, mocThoiGian, ngayVN, phanLoai, slugAnToan,
   type NewsInput,
 } from '../upsert-news.mjs';
@@ -34,12 +34,13 @@ describe('bài mẫu qua được bộ lọc (nếu test này đỏ thì mấy t
 
 describe('byline không thể ghi đè', () => {
   it('dùng đúng hằng số dùng chung', () => {
-    expect(dungDong(baiTot()).byline).toBe(NEWS_BYLINE);
-    expect(NEWS_BYLINE).toBe('Banh Bóng Desk');
+    expect(dungDong(baiTot()).byline).toBe(bylineTheoLoai(baiTot().type));
+    expect(bylineTheoLoai('preview')).toBe('Chú Tám Banh');
+    expect(bylineTheoLoai('transfer')).toBe('Pete Nguyễn');
   });
 
   it('bộ lọc CHẶN bài có trường byline, dù gõ đúng tên', () => {
-    const loi = kiemTraBai({ ...baiTot(), byline: 'Banh Bóng Desk' });
+    const loi = kiemTraBai({ ...baiTot(), byline: 'Pete Nguyễn' });
     expect(loi.join(' ')).toContain('không được đặt "byline"');
   });
 
@@ -50,7 +51,7 @@ describe('byline không thể ghi đè', () => {
 
   it('kể cả lọt qua được bộ lọc, dòng ghi ra vẫn mang hằng số', () => {
     const dong = dungDong({ ...baiTot(), byline: 'WildlyPlay Desk' } as NewsInput);
-    expect(dong.byline).toBe(NEWS_BYLINE);
+    expect(dong.byline).toBe(bylineTheoLoai(baiTot().type));
     expect(dong.byline).not.toBe('WildlyPlay Desk');
   });
 

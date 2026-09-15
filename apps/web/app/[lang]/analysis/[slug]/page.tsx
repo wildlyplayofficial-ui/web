@@ -13,7 +13,9 @@ import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
 import { baiQuaHan } from "@/lib/bai-qua-han";
 import { KhoiDaKetThuc } from "@/components/khoi-da-ket-thuc";
-import { SITE_URL, DESK, OG_VERSION } from "@/lib/brand";
+import { SITE_URL, PETE, OG_VERSION } from "@/lib/brand";
+import { authorByName, authorSchema, postAuthorName } from "@/lib/authors";
+import { AuthorByline } from "@/components/author-byline";
 
 export const revalidate = 300;
 
@@ -148,16 +150,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** Byline for a post: neutral "banhbong.net" for general news coverage (no position),
- *  persona-specific for pick-driven content.
- *  "Admin" đổi thành "Chú Tám Banh" (Nick chốt 23/8): Google yêu cầu tin tức có tên
- *  tác giả thật thay vì chức danh chung, và tên này dễ gọi với người đọc Việt. */
-function postByline(post: { type: string; author?: string }): string {
-  if (post.type === "news" || post.type === "guide") return "banhbong.net";
-  if (post.author === "scout") return "Trợ lý AI @ banhbong.net";
-  return "Chú Tám Banh @ banhbong.net";
-}
-
 function buildArticleSchema(
   title: string,
   description: string | undefined,
@@ -176,11 +168,7 @@ function buildArticleSchema(
     dateModified: publishedAt ?? undefined,
     mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
     image: imageUrl ?? `${BASE}/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`,
-    author: {
-      "@type": "Organization",
-      name: authorName,
-      url: BASE,
-    },
+    author: authorSchema(authorName),
     publisher: {
       "@type": "Organization",
       name: "banhbong.net",
@@ -226,7 +214,7 @@ function DeskArticleView({
     article.meta_description?.trim()
       || article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
     article.published_at,
-    DESK,
+    article.byline,
     article.slug,
     lang,
     // Ảnh schema phải là URL tuyệt đối và ĐÚNG route: bài desk không có hero từng
@@ -268,11 +256,11 @@ function DeskArticleView({
         </h1>
         <p className="mt-3 text-sm text-muted">
           <time dateTime={article.published_at}>{published}</time>
-          {" \u00b7 "}{article.byline}
+          {" \u00b7 "}<AuthorByline name={article.byline} lang={lang} />
         </p>
         {/* AI disclosure (spec section 2C) */}
         <p className="mt-1 text-xs text-muted/70 italic">
-          Phân tích do {DESK} (AI) thực hiện
+          {authorByName(article.byline)?.disclosure ?? "Bài viết có AI hỗ trợ"}
         </p>
       </header>
 
@@ -350,7 +338,7 @@ function DeskArticleView({
 
       {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        Phân tích do {DESK} (AI) thực hiện. {dict.analysis.disclaimer}
+        {authorByName(article.byline)?.disclosure ?? "Bài viết có AI hỗ trợ"}. {dict.analysis.disclaimer}
       </p>
     </article>
   );
@@ -393,7 +381,7 @@ export default async function AnalysisArticlePage({ params }: Props) {
     post.meta_title ?? post.title,
     post.meta_description ?? undefined,
     post.published_at,
-    postByline(post),
+    postAuthorName(post),
     slug,
     lang,
   );
@@ -426,7 +414,7 @@ export default async function AnalysisArticlePage({ params }: Props) {
         {published && (
           <p className="mt-3 text-sm text-muted">
             <time dateTime={post.published_at ?? undefined}>{published}</time>
-            {" \u00b7 "}{postByline(post)}
+            {" \u00b7 "}<AuthorByline name={postAuthorName(post)} lang={lang} />
           </p>
         )}
       </header>
@@ -508,7 +496,9 @@ export default async function AnalysisArticlePage({ params }: Props) {
       </nav>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        {post.pick_ids.length === 0
+        {post.type === "news" || post.type === "blog"
+          ? authorByName(PETE)?.disclosure
+          : post.pick_ids.length === 0
           ? dict.watching.disclosureWatching
           : post.author === "scout" ? dict.pick.disclosureScout : dict.pick.disclosure}
       </p>

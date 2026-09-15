@@ -24,17 +24,17 @@ function hangSo(ten: string): string {
 }
 
 describe('byline: worker khớp apps/web/lib/brand.ts', () => {
-  it('desk khớp DESK', () => {
-    expect(bylineJson.desk).toBe(hangSo('DESK'));
+  it('chuTam khớp CHU_TAM', () => {
+    expect(bylineJson.chuTam).toBe(hangSo('CHU_TAM'));
   });
 
-  it('news khớp NEWS_DESK', () => {
-    expect(bylineJson.news).toBe(hangSo('NEWS_DESK'));
+  it('pete khớp PETE', () => {
+    expect(bylineJson.pete).toBe(hangSo('PETE'));
   });
 
-  it('chỉ có đúng hai tên toà soạn, không sinh thêm biến thể', () => {
+  it('chỉ có đúng hai tên tác giả (Peter chốt 15/9), không sinh thêm biến thể', () => {
     const ten = Object.entries(bylineJson).filter(([k]) => !k.startsWith('_')).map(([, v]) => v);
-    expect(ten.sort()).toEqual(['Banh Bóng Desk', 'Banh Bóng News']);
+    expect(ten.sort()).toEqual(['Chú Tám Banh', 'Pete Nguyễn']);
   });
 
   it('không còn tên thương hiệu đã bỏ', () => {
@@ -42,7 +42,7 @@ describe('byline: worker khớp apps/web/lib/brand.ts', () => {
   });
 });
 
-describe('byline: không còn chuỗi tên toà soạn gõ tay trong code ghi DB', () => {
+describe('byline: không còn chuỗi tên tác giả gõ tay trong code ghi DB', () => {
   const FILES = [
     './news-gen.ts', './news-gen-p2.ts', './analysis-api.ts',
     '../jane-upsert-article.mjs', '../news-engine.mjs', '../upsert-news.mjs',
@@ -55,6 +55,7 @@ describe('byline: không còn chuỗi tên toà soạn gõ tay trong code ghi DB
       const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
       expect(code).not.toMatch(/['"`]Banh Bóng (?:Desk|News)['"`]/);
       expect(code).not.toMatch(/['"`]banhbong\.net News['"`]/);
+      expect(code).not.toMatch(/['"`](?:Chú Tám Banh|Pete Nguyễn)['"`]/);
       expect(code).toMatch(/byline/i);
     });
   }

@@ -2,7 +2,9 @@
 // sơ đồ khái niệm cá cược, và luật ẩn bản tiếng Việt (Nick+Peter 28/7).
 // Blog là bóng đá thường nên index bình thường.
 import type { Metadata } from "next";
-import { OG_VERSION } from "@/lib/brand";
+import { OG_VERSION, PETE } from "@/lib/brand";
+import { authorByName, authorSchema } from "@/lib/authors";
+import { AuthorByline } from "@/components/author-byline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -78,11 +80,8 @@ function buildArticleSchema(post: {
     inLanguage: post.lang,
     mainEntityOfPage: `${BASE}${withLang(`/blog/${slug}`, lang)}`,
     image: `${BASE}/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`,
-    author: {
-      "@type": "Organization",
-      name: "banhbong.net",
-      url: BASE,
-    },
+    // Blog mang tên Pete Nguyễn (Peter chốt 15/9).
+    author: authorSchema(PETE),
     publisher: {
       "@type": "Organization",
       name: "banhbong.net",
@@ -141,7 +140,7 @@ export default async function GuidePage({ params }: Props) {
         {published && (
           <p className="mt-3 text-sm text-muted">
             <time dateTime={post.published_at ?? undefined}>{published}</time>
-            {" \u00b7 banhbong.net"}
+            {" \u00b7 "}<AuthorByline name={PETE} lang={lang} />
           </p>
         )}
       </header>
@@ -180,7 +179,7 @@ export default async function GuidePage({ params }: Props) {
         </Link>
       </nav>
 
-      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{dict.pick.disclosure}</p>
+      <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{authorByName(PETE)?.disclosure}</p>
     </article>
   );
 }

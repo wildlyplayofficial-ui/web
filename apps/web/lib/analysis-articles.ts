@@ -64,13 +64,13 @@ export const getAnalysisArticleBySlug = unstable_cache(
 
 /** All published Desk article slugs for sitemap. */
 async function getAllAnalysisArticleSlugsImpl(): Promise<
-  { slug: string; updated: string; modified: string; title: string }[]
+  { slug: string; updated: string; modified: string; title: string; byline: string }[]
 > {
   const supabase = getSupabase();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("analysis_articles")
-    .select("slug, published_at, updated_at, title")
+    .select("slug, published_at, updated_at, title, byline")
     .eq("status", "published")
     .order("published_at", { ascending: false });
   if (error) {
@@ -86,13 +86,15 @@ async function getAllAnalysisArticleSlugsImpl(): Promise<
     // "đã thu thập – chưa lập chỉ mục", lastmod vẫn 9/8).
     modified: r.updated_at ?? r.published_at ?? new Date().toISOString(),
     title: r.title,
+    byline: r.byline,
   }));
 }
 
 export const getAllAnalysisArticleSlugs = unstable_cache(
   getAllAnalysisArticleSlugsImpl,
   // Đổi khoá khi thêm `modified`: khoá cũ trả bản đệm thiếu trường này tới 1 giờ.
-  ["analysis-article-slugs-v2"],
+  // v3: thêm `byline` cho <dc:creator> của RSS (tác giả theo bài, 15/9).
+  ["analysis-article-slugs-v3"],
   { revalidate: 3600, tags: ["analysis-articles"] },
 );
 

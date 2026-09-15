@@ -4,7 +4,8 @@
  * Inject via <script type="application/ld+json"> in page metadata.
  */
 
-import { SITE_NAME, SITE_URL, SAME_AS } from "@/lib/brand";
+import { SITE_NAME, SITE_URL, SAME_AS, CHU_TAM } from "@/lib/brand";
+import { authorByName } from "@/lib/authors";
 const BASE = SITE_URL;
 
 /** Mô tả thực thể theo ngôn ngữ — AI Overview trả lời bằng tiếng người dùng, để
@@ -113,14 +114,17 @@ export function buildFAQPage(faqs: Array<{ question: string; answer: string }>) 
   };
 }
 
-export function buildPerson() {
+/** Person của tác giả (mặc định Chú Tám Banh — người chọn trận, /about).
+ *  Trước 15/9 tên là "Admin" kèm mô tả tiếng Anh, lệch với persona trên trang. */
+export function buildPerson(name: string = CHU_TAM) {
+  const a = authorByName(name);
   return {
     "@context": "https://schema.org",
     "@type": "Person",
-    name: "Admin",
-    url: `${BASE}/about`,
-    description:
-      "The human behind banhbong.net's football picks. Every play is hand-researched and only posted when there's a genuine edge. Full public track record — wins and losses, from day one. Entertainment only.",
+    name: a?.name ?? name,
+    url: a ? `${BASE}${a.path}` : `${BASE}/about`,
+    jobTitle: a?.role,
+    description: a?.bio,
     sameAs: [...SAME_AS],
     worksFor: {
       "@type": "Organization",
