@@ -30,7 +30,7 @@ export interface AboutCopy {
   metaDescription: string;
   intro: string;
   cards: ReadonlyArray<{ heading: string; body: string }>;
-  personas: [Persona, Persona];
+  personas: [Persona];
   promiseTitle: string;
   promises: readonly string[];
   methodTitle: string;
@@ -79,11 +79,6 @@ export const copy: Record<Lang, AboutCopy> = {
         name: "The Curator",
         role: "Human-picked",
         description: "A real person who researches every match, finds the angle, and submits the pick. The Curator is the human gate \u2014 every play starts with a human decision. Record tracked separately, transparent from day one.",
-      },
-      {
-        name: "The Scout",
-        role: "AI-operated \u00b7 Lower confidence",
-        description: "An openly AI-operated persona that runs its own analysis. The Scout carries a separate ledger, a lower-confidence badge, and full AI disclosure on every pick. Never blended with The Curator\u2019s record.",
       },
     ],
     promiseTitle: "The promise",
@@ -151,11 +146,6 @@ export const copy: Record<Lang, AboutCopy> = {
         name: "Chú Tám Banh",
         role: "Người thật chọn trận",
         description: "Chú Tám Banh là người thật đứng sau mọi nhận định trên banhbong.net — theo bóng đá châu Âu hơn 15 năm, chuyên Ngoại hạng Anh và các giải lớn châu Âu. Mỗi trận đều tự đọc số liệu, xem phong độ và đội hình rồi mới đặt bút. Không nhận định gượng ép: không thấy lợi thế thì ghi rõ là bỏ qua. Thành tích thắng thua công khai từ ngày đầu, không sửa, không xoá.",
-      },
-      {
-        name: "Trợ lý AI",
-        role: "AI vận hành · Độ tin cậy thấp hơn",
-        description: "Persona do AI vận hành công khai, chạy phân tích riêng. Trợ lý AI có sổ theo dõi riêng, huy hiệu độ tin cậy thấp hơn, và công bố nguồn AI trên mọi nhận định. Không bao giờ trộn với thành tích của Chú Tám Banh.",
       },
     ],
     promiseTitle: "Cam kết",
@@ -225,11 +215,6 @@ export const copy: Record<Lang, AboutCopy> = {
         role: "\u0e04\u0e31\u0e14\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e42\u0e14\u0e22\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c",
         description: "\u0e04\u0e19\u0e08\u0e23\u0e34\u0e07\u0e17\u0e35\u0e48\u0e04\u0e49\u0e19\u0e04\u0e27\u0e49\u0e32\u0e17\u0e38\u0e01\u0e41\u0e21\u0e15\u0e0a\u0e4c \u0e2b\u0e32\u0e21\u0e38\u0e21\u0e21\u0e2d\u0e07 \u0e41\u0e25\u0e30\u0e2a\u0e48\u0e07\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 Admin \u0e04\u0e37\u0e2d\u0e14\u0e48\u0e32\u0e19\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c \u2014 \u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14\u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01\u0e01\u0e32\u0e23\u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e43\u0e08\u0e02\u0e2d\u0e07\u0e04\u0e19 \u0e2a\u0e16\u0e34\u0e15\u0e34\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e41\u0e22\u0e01 \u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a\u0e15\u0e31\u0e49\u0e07\u0e41\u0e15\u0e48\u0e27\u0e31\u0e19\u0e41\u0e23\u0e01",
       },
-      {
-        name: "The Scout",
-        role: "AI \u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23 \u00b7 \u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32",
-        description: "Persona \u0e17\u0e35\u0e48\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e42\u0e14\u0e22 AI \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22 \u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c\u0e41\u0e22\u0e01\u0e2a\u0e48\u0e27\u0e19 The Scout \u0e21\u0e35\u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e41\u0e22\u0e01 \u0e1b\u0e49\u0e32\u0e22\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 \u0e41\u0e25\u0e30\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e1c\u0e22 AI \u0e17\u0e38\u0e01\u0e17\u0e35\u0e40\u0e14\u0e47\u0e14 \u0e44\u0e21\u0e48\u0e1c\u0e2a\u0e21\u0e01\u0e31\u0e1a Admin",
-      },
     ],
     promiseTitle: "\u0e04\u0e33\u0e21\u0e31\u0e48\u0e19\u0e2a\u0e31\u0e0d\u0e0d\u0e32",
     promises: [
@@ -296,11 +281,6 @@ export const copy: Record<Lang, AboutCopy> = {
         name: "The Curator",
         role: "Seleccionado por un humano",
         description: "Una persona real que investiga cada partido, encuentra el \u00e1ngulo y env\u00eda el pick. The Curator es la puerta humana \u2014 cada jugada comienza con una decisi\u00f3n humana. Historial separado, transparente desde el d\u00eda uno.",
-      },
-      {
-        name: "The Scout",
-        role: "Operado por IA \u00b7 Menor confianza",
-        description: "Un personaje operado abiertamente por IA con su propio an\u00e1lisis. The Scout tiene un historial separado, insignia de menor confianza y divulgaci\u00f3n completa de IA en cada pick. Nunca mezclado con el historial de The Curator.",
       },
     ],
     promiseTitle: "La promesa",

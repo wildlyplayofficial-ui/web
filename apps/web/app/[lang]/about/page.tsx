@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // giữa câu như trước (intro.slice(0,160)).
     title: c.metaTitle,
     description: c.metaDescription,
-    openGraph: { title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: `/api/og/editorial?title=${encodeURIComponent(lang === "vi" ? "Về banhbong.net" : "About banhbong.net")}&subtitle=${encodeURIComponent(lang === "vi" ? "Chú Tám Banh chọn trận · Pete Nguyễn biên tập tin" : "The Curator — human-picked. The Scout — openly AI.")}&v=${OG_VERSION}`, width: 1200, height: 630 }] },
+    openGraph: { title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: `/api/og/editorial?title=${encodeURIComponent(lang === "vi" ? "Về banhbong.net" : "About banhbong.net")}&subtitle=${encodeURIComponent(lang === "vi" ? "Chú Tám Banh chọn trận · Pete Nguyễn biên tập tin" : "The Curator — human-picked.")}&v=${OG_VERSION}`, width: 1200, height: 630 }] },
     alternates: buildAlternates("/about", lang),
   };
 }
@@ -85,8 +85,8 @@ export default async function AboutPage({ params }: Props) {
         ))}
       </div>
 
-      {/* Personas: Curator (human) + Scout (AI) — firewall */}
-      <div className="mt-12 grid gap-6 md:grid-cols-2">
+      {/* Tác giả: Curator (Chú Tám Banh) + Pete Nguyễn bản VI. Thẻ Scout / Trợ lý AI bỏ theo Peter 15/9/2026. */}
+      <div className={`mt-12 grid gap-6 ${lang === "vi" ? "md:grid-cols-2" : ""}`}>
         <div className="rounded-card border border-brand/30 bg-brand-dim/30 p-6">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-lg font-bold text-bg">C</span>
@@ -97,34 +97,23 @@ export default async function AboutPage({ params }: Props) {
           </div>
           <p className="mt-4 text-sm leading-relaxed text-muted">{c.personas[0].description}</p>
         </div>
-        <div className="rounded-card border border-[#6b9e9e]/30 bg-[#6b9e9e]/[.06] p-6">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6b9e9e] text-lg font-bold text-bg">S</span>
-            <div>
-              <h2 className="font-display text-lg font-bold">{c.personas[1].name}</h2>
-              <p className="text-xs font-semibold text-[#6b9e9e]">{c.personas[1].role}</p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm leading-relaxed text-muted">{c.personas[1].description}</p>
-        </div>
-      </div>
-
-      {/* Pete Nguyễn — biên tập tin tức + blog (Peter chốt 15/9). Chỉ bản VI: hồ sơ tác giả chỉ có tiếng Việt. */}
-      {lang === "vi" && (() => {
-        const pete = authorByName(PETE);
-        return pete ? (
-          <div className="mt-6 rounded-card border border-line bg-card p-6">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-lg font-bold text-bg">P</span>
-              <div>
-                <h2 className="font-display text-lg font-bold"><Link href={pete.path} className="hover:text-brand">{pete.name}</Link></h2>
-                <p className="text-xs font-semibold text-muted">{pete.role}</p>
+        {/* Pete Nguyễn — biên tập tin tức + blog (Peter chốt 15/9). Chỉ bản VI: hồ sơ tác giả chỉ có tiếng Việt. */}
+        {lang === "vi" && (() => {
+          const pete = authorByName(PETE);
+          return pete ? (
+            <div className="rounded-card border border-line bg-card p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-lg font-bold text-bg">P</span>
+                <div>
+                  <h2 className="font-display text-lg font-bold"><Link href={pete.path} className="hover:text-brand">{pete.name}</Link></h2>
+                  <p className="text-xs font-semibold text-muted">{pete.role}</p>
+                </div>
               </div>
+              <p className="mt-4 text-sm leading-relaxed text-muted">{pete.bio}</p>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-muted">{pete.bio}</p>
-          </div>
-        ) : null;
-      })()}
+          ) : null;
+        })()}
+      </div>
 
       {/* The promise */}
       <section className="mt-12 rounded-card border border-line bg-card p-8">
