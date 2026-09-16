@@ -68,6 +68,20 @@ const nextConfig: NextConfig = {
       { source: "/news/kelly-criterion-betting", destination: "/guides/kelly-criterion-betting", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/how-de-vigging-works", destination: "/guides/what-is-devigging", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/kelly-criterion-betting", destination: "/guides/kelly-criterion-betting", permanent: true },
+      // 16/9/2026: hai bài cùng một trận derby Man Utd 0-1 Man City (bản 14/9 và bản
+      // 16/9). Khoá chống trùng đang bắt theo slug/tiêu đề nên cùng sự kiện khác chữ
+      // vẫn lọt — phải bắt theo CẶP ĐỘI + NGÀY ĐÁ. Peter chốt giữ bản 16/9 vì nó còn
+      // trong cửa sổ 48h của Google News và đã nộp IndexNow; bản 14/9 đã rớt cửa sổ.
+      {
+        source: "/news/man-united-0-1-man-city-haaland-pro-ref-thua-nhan-sai-sot-var",
+        destination: "/news/man-utd-thua-man-city-0-1-haaland-ghi-ban-pro-ref-thua-nhan-var-sai",
+        statusCode: 301,
+      },
+      {
+        source: "/:lang(en|vi|th|es)/news/man-united-0-1-man-city-haaland-pro-ref-thua-nhan-sai-sot-var",
+        destination: "/news/man-utd-thua-man-city-0-1-haaland-ghi-ban-pro-ref-thua-nhan-var-sai",
+        statusCode: 301,
+      },
       // /giai/* là URL giải thời WildlyPlay, chưa từng được 301 sang IA mới.
       // Hậu quả đo được 23/8: `site:banhbong.net` chỉ trả về ĐÚNG MỘT URL và URL đó
       // là /giai/europa-league — đang 404. Thứ duy nhất Google biết về site là một

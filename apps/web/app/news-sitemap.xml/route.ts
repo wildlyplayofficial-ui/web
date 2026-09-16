@@ -70,7 +70,11 @@ ${urls.join("\n")}
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      // Đệm 1 tiếng ở CDN làm bài MỚI NHẤT vắng mặt tới 60 phút: đo 16/9, bản
+      // /news-sitemap.xml ghim lúc 05:36 có 16 URL, cùng lúc bản ?pha= render
+      // mới có 18 URL (đủ 2 bài đăng 05:17). revalidateTag('news') KHÔNG gỡ được
+      // bản CDN này — cửa Google News chỉ 48h nên mỗi lần đăng là mất 1 tiếng.
+      "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=0",
     },
   });
 }
