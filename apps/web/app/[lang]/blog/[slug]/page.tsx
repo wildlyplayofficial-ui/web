@@ -43,6 +43,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // hướng cho chính mình. Đo trên prod 26/8: 690 thẻ hreflang hỏng trên 237 trang.
   const { languages } = buildAlternates(`/blog/${slug}`, lang);
 
+  // Thumbnail = ảnh BÌA của bài, tức ảnh đầu tiên trong thân bài. Trước 23/9 luôn ghép
+  // cứng /api/og/guide nên mọi bài ra CÙNG một thẻ chữ nền xanh (Peter: "lúc nào cũng
+  // lỗi thumbnail"). Bảng `posts` không có cột ảnh nào nên phải lấy từ body_md.
+  // Đo prod 23/9: 25/25 bài có ảnh đầu thân bài và cả 25 đều là ảnh bìa.
+  const anhBia = post.body_md.match(/!\[[^\]]*\]\(([^)\s]+)\)/)?.[1];
+  const ogImage = anhBia
+    ? { url: `${anhBia}${anhBia.includes("?") ? "&" : "?"}v=${OG_VERSION}` }
+    : { url: `/api/og/guide?slug=${slug}&type=blog&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 };
+
   return {
     title,
     description,
@@ -52,13 +61,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at ?? undefined,
-      images: [{ url: `/api/og/guide?slug=${slug}&type=blog&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [ogImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [{ url: `/api/og/guide?slug=${slug}&type=blog&title=${encodeURIComponent(title)}&locale=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [ogImage],
     },
   };
 }
