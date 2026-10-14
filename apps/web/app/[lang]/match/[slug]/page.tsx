@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const homeName = deslug(slug.slice(0, vsIdx));
     const awayName = deslug(slug.slice(vsIdx + 4, slug.length - dateMatch[1].length - 1));
     if (!homeName || !awayName) return { title: "Not found" };
-    const title = `${homeName} vs ${awayName} \u2014 Preview, Pick & Result`;
+    const title = `${homeName} vs ${awayName} \u2014 Nhận định, dự đoán & kết quả`;
     const description = `${homeName} vs ${awayName}. Expert prediction, odds analysis, and match result on banhbong.net.`;
 
     // Nhánh này nhận MỌI ngày trong địa chỉ. Đo 2/9/2026 trên trận Ipswich–Liverpool:
@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Preview, Pick & Result`;
+  const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Nhận định, dự đoán & kết quả`;
   const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on banhbong.net.`;
   const ogImage = `/api/og/match/${slug}?v=${OG_VERSION}`;
 
@@ -99,7 +99,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     ...(isThin ? { robots: { index: false, follow: true } } : {}),
-    openGraph: { title: `${title} | banhbong.net`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
+    openGraph: { title: `${title} | banhbong.net`, description, locale: "vi_VN", images: [{ url: ogImage, width: 1200, height: 630 }] },
     twitter: { card: "summary_large_image", title: `${title} | banhbong.net`, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     alternates: buildAlternates(`/match/${slug}`, lang),
   };

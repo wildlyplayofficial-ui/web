@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: SITE_NAME,
     type: "website",
-    locale: "en_US",
+    locale: "vi_VN",
     title: DEFAULT_TITLE,
     description:
       "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis and odds tools.",
