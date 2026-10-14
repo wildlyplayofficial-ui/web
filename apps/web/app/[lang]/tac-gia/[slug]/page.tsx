@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: a.bio,
     alternates: { canonical: withLang(a.path, lang) },
     openGraph: {
+      locale: "vi_VN",
       title,
       description: a.bio,
       type: "profile",

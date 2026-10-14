@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
-    openGraph: { title: `${copy[lang].title} | banhbong.net`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
+    openGraph: { locale: "vi_VN", title: `${copy[lang].title} | banhbong.net`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
   };
 }
 

@@ -46,6 +46,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     description: dict.analysis.seoDescription,
     ...canonicalTrang("/analysis", lang, await searchParams),
     openGraph: {
+      locale: "vi_VN",
       title: `${dict.analysis.title} | banhbong.net`,
       description: dict.analysis.seoDescription,
       images: [{ url: `/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems&v=${OG_VERSION}`, width: 1200, height: 630 }],

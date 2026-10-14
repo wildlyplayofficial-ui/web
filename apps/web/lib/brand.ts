@@ -20,7 +20,6 @@ export const DEFAULT_TITLE = "banhbong.net — Free Football Picks, Analysis & B
 export const SAME_AS = [
   "https://t.me/banhbongnet",
   "https://facebook.com/xemthethaotructiep",
-  "https://x.com/WildlyPlayGlob",
 ] as const;
 /**
  * Bump khi đổi LAYOUT thẻ OG (/api/og/*) — gắn vào MỌI URL og:image để đổi URL,

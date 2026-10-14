@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: dict.calculators.subtitle,
     alternates: buildAlternates("/calculators", lang),
     openGraph: {
+      locale: "vi_VN",
       title: `${dict.calculators.title} | banhbong.net`,
       description: dict.calculators.subtitle,
       images: [{ url: `/api/og/editorial?title=Free%20Betting%20Calculators&subtitle=De-vig%2C%20odds%20converter%2C%20and%20Kelly%20criterion&v=${OG_VERSION}`, width: 1200, height: 630 }],

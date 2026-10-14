@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates,
-    openGraph: { title: `${title} | banhbong.net`, description, images: [image] },
+    openGraph: { locale: "vi_VN", title: `${title} | banhbong.net`, description, images: [image] },
     twitter: { card: "summary_large_image", title: `${title} | banhbong.net`, description, images: [image] },
   };
 }

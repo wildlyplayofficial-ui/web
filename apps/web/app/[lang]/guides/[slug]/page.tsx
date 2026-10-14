@@ -61,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     robots: isViBlockedGuide(lang, slug) ? { index: false, follow: true } : undefined,
     alternates: { canonical, languages },
     openGraph: {
+      locale: "vi_VN",
       title,
       description,
       type: "article",

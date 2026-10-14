@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description:
     "Daily Line — a daily Over/Under prediction game on aggregate football goals. Pick your side, climb the leaderboard. Entertainment only.",
   openGraph: {
+    locale: "vi_VN",
     images: [{ url: `/api/og/daily-line?v=${OG_VERSION}`, width: 1200, height: 630 }],
   },
 };

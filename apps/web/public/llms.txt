@@ -1,0 +1,39 @@
+# banhbong.net
+
+> banhbong.net (Banh Bóng Network) là trang tin tức và phân tích bóng đá tiếng Việt: tin chuyển nhượng, kết quả, nhận định trước trận, kèo bóng đá hôm nay và bảng xếp hạng các giải lớn châu Âu (Ngoại hạng Anh, La Liga, Serie A...) cùng đội tuyển Việt Nam.
+
+Nhận định trước trận do Chú Tám Banh chọn trận và góc nhìn, AI viết bài từ số liệu. Tin tức và blog do Pete Nguyễn biên tập, AI hỗ trợ viết từ nguồn công khai. Thành tích nhận định công khai, không sửa, không xoá.
+
+## Mục chính
+
+- [Tin tức bóng đá](https://www.banhbong.net/news): tin chuyển nhượng, kết quả, diễn biến mới nhất
+- [Nhận định trước trận](https://www.banhbong.net/analysis): nhận định, xem trước và tổng kết trận đấu
+- [Kèo bóng đá hôm nay](https://www.banhbong.net/keo): kèo châu Á, tài xỉu, 1X2 và xác suất thực sau khi loại margin
+- [Lịch thi đấu](https://www.banhbong.net/matches): các trận sắp diễn ra; mỗi trận có trang riêng dạng /match/<doi-nha>-vs-<doi-khach>-<yyyy-mm-dd>
+- [Bảng xếp hạng các giải](https://www.banhbong.net/competitions)
+- [Blog bóng đá](https://www.banhbong.net/blog)
+- [Hướng dẫn](https://www.banhbong.net/guides)
+
+## Trang đội bóng
+
+- [Manchester United](https://www.banhbong.net/doi/man-united)
+- [Arsenal](https://www.banhbong.net/doi/arsenal)
+- [Chelsea](https://www.banhbong.net/doi/chelsea)
+- [Manchester City](https://www.banhbong.net/doi/man-city)
+- [Việt Nam](https://www.banhbong.net/doi/vietnam)
+
+## Tác giả
+
+- [Chú Tám Banh](https://www.banhbong.net/tac-gia/chu-tam-banh): phân tích, nhận định trước trận
+- [Pete Nguyễn](https://www.banhbong.net/tac-gia/pete-nguyen): biên tập tin tức, blog
+
+## Giới thiệu
+
+- [Về banhbong.net](https://www.banhbong.net/about)
+- [Thành tích nhận định](https://www.banhbong.net/track-record)
+- [Minh bạch](https://www.banhbong.net/transparency)
+
+## Sơ đồ trang
+
+- [Sitemap](https://www.banhbong.net/sitemap.xml)
+- [News sitemap](https://www.banhbong.net/news-sitemap.xml)

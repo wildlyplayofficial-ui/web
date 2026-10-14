@@ -38,6 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: dict.board.seoDescription,
     alternates: buildAlternates("/daily-board", lang),
     openGraph: {
+      locale: "vi_VN",
       title: `${dict.board.title} | banhbong.net`,
       description: dict.board.seoDescription,
       images: [{ url: `/api/og/home?v=${OG_VERSION}`, width: 1200, height: 630 }],
