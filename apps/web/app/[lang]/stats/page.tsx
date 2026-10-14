@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.stats.title,
     description: dict.stats.subtitle,
-    openGraph: { title: `${dict.stats.title} | banhbong.net`, description: dict.stats.subtitle, images: [{ url: `/api/og/record?page=stats&v=${OG_VERSION}`, width: 1200, height: 630 }] },
+    openGraph: { locale: "vi_VN", title: `${dict.stats.title} | banhbong.net`, description: dict.stats.subtitle, images: [{ url: `/api/og/record?page=stats&v=${OG_VERSION}`, width: 1200, height: 630 }] },
     alternates: buildAlternates("/stats", lang),
   };
 }

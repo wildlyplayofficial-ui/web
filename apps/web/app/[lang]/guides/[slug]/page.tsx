@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // 5 guide còn lại + mọi ngôn ngữ khác index bình thường. (Nick chốt danh sách 4/8)
     robots: isViBlockedGuide(lang, slug) ? { index: false, follow: true } : undefined,
     alternates: { canonical, languages },
-    openGraph: {
+    openGraph: { locale: "vi_VN",
       title,
       description,
       type: "article",

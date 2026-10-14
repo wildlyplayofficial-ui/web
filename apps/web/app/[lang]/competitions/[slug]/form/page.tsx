@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .replace("{name}", compName)
       .replace("{season}", comp.season),
     alternates: buildAlternates(`/competitions/${slug}/form`, lang),
-    openGraph: { title: `${title} | banhbong.net` },
+    openGraph: { locale: "vi_VN", title: `${title} | banhbong.net` },
     // Bảng trần, không có một câu văn nào: đo 10/9/2026 cả 18 trang con
     // /fixtures + /form chỉ 109-232 chữ (mỏng nhất wc-afc-qualifiers 109).
     // Cùng lúc đó cả site đang bị Google trả về "đã thu thập – chưa lập chỉ

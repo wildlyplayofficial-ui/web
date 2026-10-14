@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const awayName = deslug(slug.slice(vsIdx + 4, slug.length - dateMatch[1].length - 1));
     if (!homeName || !awayName) return { title: "Not found" };
     const title = `${homeName} vs ${awayName} \u2014 Nhận định, dự đoán & kết quả`;
-    const description = `${homeName} vs ${awayName}. Expert prediction, odds analysis, and match result on banhbong.net.`;
+    const description = `${homeName} vs ${awayName}. Nhận định, dự đoán, phân tích kèo và kết quả trận đấu trên banhbong.net.`;
 
     // Nhánh này nhận MỌI ngày trong địa chỉ. Đo 2/9/2026 trên trận Ipswich–Liverpool:
     // sáu địa chỉ 2/9 … 7/9 đều trả 200 và đều TỰ NHẬN mình là bản chính → mỗi trận
@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${match.homeTeam} vs ${match.awayTeam} \u2014 Nhận định, dự đoán & kết quả`;
-  const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Expert prediction, odds analysis, and match result on banhbong.net.`;
+  const description = `${match.homeTeam} vs ${match.awayTeam} \u2014 ${match.league}. Nhận định, dự đoán, phân tích kèo và kết quả trận đấu trên banhbong.net.`;
   const ogImage = `/api/og/match/${slug}?v=${OG_VERSION}`;
 
   // Trận CÓ trong DB nhưng chưa có pick / watching / bài viết = trang mỏng (chỉ tên

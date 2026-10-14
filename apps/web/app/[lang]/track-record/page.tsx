@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${dict.nav.trackRecord} | banhbong.net`,
     description: dict.archive.subtitle,
     alternates: buildAlternates("/track-record", lang),
-    openGraph: {
+    openGraph: { locale: "vi_VN",
       title: `${dict.nav.trackRecord} | banhbong.net`,
       description: dict.archive.subtitle,
       images: [{ url: `/api/og/record?page=archive&v=${OG_VERSION}`, width: 1200, height: 630 }],

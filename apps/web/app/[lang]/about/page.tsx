@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // giữa câu như trước (intro.slice(0,160)).
     title: c.metaTitle,
     description: c.metaDescription,
-    openGraph: { title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: `/api/og/editorial?title=${encodeURIComponent(lang === "vi" ? "Về banhbong.net" : "About banhbong.net")}&subtitle=${encodeURIComponent(lang === "vi" ? "Chú Tám Banh chọn trận · Pete Nguyễn biên tập tin" : "The Curator — human-picked.")}&v=${OG_VERSION}`, width: 1200, height: 630 }] },
+    openGraph: { locale: "vi_VN", title: `${c.title} | banhbong.net`, description: c.metaDescription, images: [{ url: `/api/og/editorial?title=${encodeURIComponent(lang === "vi" ? "Về banhbong.net" : "About banhbong.net")}&subtitle=${encodeURIComponent(lang === "vi" ? "Chú Tám Banh chọn trận · Pete Nguyễn biên tập tin" : "The Curator — human-picked.")}&v=${OG_VERSION}`, width: 1200, height: 630 }] },
     alternates: buildAlternates("/about", lang),
   };
 }
@@ -207,7 +207,6 @@ export default async function AboutPage({ params }: Props) {
         <p className="mt-2 text-sm leading-relaxed text-muted">{c.contactBody}</p>
         <div className="mt-4 flex flex-wrap gap-4">
           <a href="https://t.me/banhbongnet" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Telegram</a>
-          <a href="https://x.com/WildlyPlayGlob" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">X / Twitter</a>
           <a href="https://www.facebook.com/xemthethaotructiep" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Facebook</a>
         </div>
       </section>

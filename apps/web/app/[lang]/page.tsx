@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: `banhbong.net — ${dict.tagline}` },
     description: dict.home.seoDescription,
     alternates: buildAlternates("/", lang),
-    openGraph: {
+    openGraph: { locale: "vi_VN",
       title: `banhbong.net — ${dict.tagline}`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
