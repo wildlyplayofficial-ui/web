@@ -46,7 +46,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return {
     title: dict.news.title,
     description: dict.news.subtitle,
-    openGraph: { locale: "vi_VN",
+    openGraph: {
+      locale: "vi_VN",
       title: `${dict.news.title} | banhbong.net`,
       description: dict.news.subtitle,
       images: [{ url: `/api/og/editorial?title=News&subtitle=Match%20news%20and%20updates&v=${OG_VERSION}`, width: 1200, height: 630 }],

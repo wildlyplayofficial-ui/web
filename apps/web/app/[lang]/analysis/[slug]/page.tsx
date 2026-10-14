@@ -80,7 +80,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: desk.title,
       description,
       alternates: { canonical, languages: alternates.languages },
-      openGraph: { locale: "vi_VN",
+      openGraph: {
+        locale: "vi_VN",
         title: desk.title,
         description,
         type: "article",

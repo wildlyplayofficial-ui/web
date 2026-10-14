@@ -89,7 +89,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: L.sub(team.name),
     alternates: buildAlternates(`/doi/${slug}`, lang),
     robots: { index: dense, follow: true },
-    openGraph: { locale: "vi_VN",
+    openGraph: {
+      locale: "vi_VN",
       title: `${L.about(team.name)} | banhbong.net`,
       description: L.sub(team.name),
       images: team.crest ? [{ url: team.crest }] : undefined,

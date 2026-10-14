@@ -37,7 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: withLang("/keo", lang) },
-    openGraph: { locale: "vi_VN",
+    openGraph: {
+      locale: "vi_VN",
       title: `${title} | banhbong.net`,
       description,
       images: [{ url: `/api/og/editorial?title=${encodeURIComponent("Kèo Bóng Đá Hôm Nay")}&subtitle=${encodeURIComponent("Kèo mở · kèo hiện tại · xác suất thực")}&v=${OG_VERSION}`, width: 1200, height: 630 }],

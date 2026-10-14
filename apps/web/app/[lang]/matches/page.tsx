@@ -20,7 +20,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return {
     title: dict.matches.allMatches,
     description: dict.matches.matchesSubtitle,
-    openGraph: { locale: "vi_VN",
+    openGraph: {
+      locale: "vi_VN",
       title: `${dict.matches.allMatches} | banhbong.net`,
       description: dict.matches.matchesSubtitle,
       images: [{ url: `/api/og/editorial?title=Today%27s%20Matches&subtitle=World%20Cup%202026%20fixtures%20and%20predictions&v=${OG_VERSION}`, width: 1200, height: 630 }],
