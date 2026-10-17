@@ -62,8 +62,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!found) {
       return { title, description, robots: { index: false, follow: true } };
     }
+    // Ngày của bản chính lấy theo GIỜ ĐÁ trang đang in (getMatchContext: CSDL có mã
+    // Livescore > lịch mùa đã chốt > giờ tạm), không lấy thẳng lịch mùa. Lịch mùa
+    // còn ngày tạm: đo 17/10 Espanyol–Atlético, Villarreal–Elche, Venezia–Napoli
+    // đá 17/10 nhưng lịch ghi 18/10 → trang 17 trỏ canonical về trang 18 đang
+    // noindex, Google không nhận trang nào.
+    const ctx = await getMatchContext(
+      slug.slice(0, vsIdx),
+      slug.slice(vsIdx + 4, slug.length - dateMatch[1].length - 1),
+      dateMatch[1],
+    );
     const canonicalSlug = buildMatchSlug(
-      found.hit.homeName, found.hit.awayName, `${found.hit.date}T${found.hit.time}:00Z`,
+      found.hit.homeName, found.hit.awayName, ctx?.kickoffUtc ?? `${found.hit.date}T${found.hit.time}:00Z`,
     );
     // Trang lịch-mùa CHÍNH CHỦ (slug = bản chính) nhưng chưa có pick/nội dung
     // thật = trang mỏng (~160 từ khung + BXH auto). 318 trang kiểu này kẹt

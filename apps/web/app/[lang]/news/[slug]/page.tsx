@@ -8,7 +8,7 @@ import { baiQuaHan } from "@/lib/bai-qua-han";
 import { KhoiDaKetThuc } from "@/components/khoi-da-ket-thuc";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getNewsItemBySlug, getHeadline, getBody, getKickoffByMatchId } from "@/lib/news";
+import { getNewsItemBySlug, getHeadline, getBody, getKickoffByMatchId, staleHomNayDate } from "@/lib/news";
 import { getTeamHub } from "@/lib/teams";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LocalDate } from "@/components/local-date";
@@ -40,17 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // bài 30/8 vẫn sống nguyên "hôm nay" khi đã 8/9). Qua ngày (giờ VN) → noindex
   // + đổi "hôm nay" trong <title> thành ngày cụ thể. Thân bài giữ nguyên —
   // người vào thẳng vẫn đọc; chỉ dọn phần Google nhìn.
-  const staleDay = slug.match(/hom-nay-(\d{1,2})-(\d{1,2})/);
-  let staleDate: string | null = null;
-  if (staleDay) {
-    const year = item.published_at
-      ? new Date(item.published_at).getUTCFullYear()
-      : new Date().getUTCFullYear();
-    const slugDateUtc = Date.UTC(year, Number(staleDay[2]) - 1, Number(staleDay[1]));
-    const vnNow = new Date(Date.now() + 7 * 3_600_000);
-    const vnTodayUtc = Date.UTC(vnNow.getUTCFullYear(), vnNow.getUTCMonth(), vnNow.getUTCDate());
-    if (vnTodayUtc > slugDateUtc) staleDate = `${staleDay[1]}/${staleDay[2]}`;
-  }
+  const staleDate = staleHomNayDate(slug, item.published_at);
   // "Hôm Nay 30/8" → "ngày 30/8" (headline thường đã kèm ngày ngay sau chữ
   // "hôm nay" — thay thẳng kẻo ra "ngày 30/8 30/8", dính thật bản đầu 8/9).
   const metaHeadline = staleDate

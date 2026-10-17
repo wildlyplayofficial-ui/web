@@ -37,6 +37,19 @@ export interface NewsItem {
   teams: string[] | null;
 }
 
+/** Bài "lịch đá HÔM NAY d-m" đã qua ngày (giờ VN) → trả "d/m", còn hạn → null.
+ *  Trang bài dùng để đặt noindex, sitemap dùng để bỏ URL — chung một hàm cho hai
+ *  bên khỏi lệch (17/10: sitemap vẫn khai lich-da-hom-nay-30-8 đang noindex). */
+export function staleHomNayDate(slug: string, publishedAt: string | null | undefined): string | null {
+  const staleDay = slug.match(/hom-nay-(\d{1,2})-(\d{1,2})/);
+  if (!staleDay) return null;
+  const year = publishedAt ? new Date(publishedAt).getUTCFullYear() : new Date().getUTCFullYear();
+  const slugDateUtc = Date.UTC(year, Number(staleDay[2]) - 1, Number(staleDay[1]));
+  const vnNow = new Date(Date.now() + 7 * 3_600_000);
+  const vnTodayUtc = Date.UTC(vnNow.getUTCFullYear(), vnNow.getUTCMonth(), vnNow.getUTCDate());
+  return vnTodayUtc > slugDateUtc ? `${staleDay[1]}/${staleDay[2]}` : null;
+}
+
 export function getHeadline(item: NewsItem, lang: Lang): string {
   const key = `headline_${lang}` as keyof NewsItem;
   return (item[key] as string) || item.headline_en;

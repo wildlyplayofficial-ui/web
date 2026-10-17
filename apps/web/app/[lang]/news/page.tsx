@@ -52,7 +52,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       description: dict.news.subtitle,
       images: [{ url: `/api/og/editorial?title=News&subtitle=Match%20news%20and%20updates&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
-    ...canonicalTrang("/news", lang, await searchParams),
+    ...canonicalTrang("/news", lang, await searchParams, true, true),
   };
 }
 

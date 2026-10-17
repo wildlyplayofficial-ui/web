@@ -3,7 +3,8 @@ import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
 import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
-import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
+import { getAllNewsItemSlugs, getNewsByTeam, staleHomNayDate } from "@/lib/news";
+import { getRedirectMatcher } from "@/lib/redirect-match";
 import { TEAM_HUBS } from "@/lib/teams";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
@@ -215,7 +216,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /news article pages: only the /news index was declared (line above), never the
   // individual news_items — so every published news item (transfers, previews…) was
   // orphaned from Google despite being live. Declare each one (Jane 15/8).
-  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.map((n) => ({
+  // Bài "hôm nay d-m" qua ngày tự noindex (news/[slug]/page.tsx) → không khai.
+  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.filter((n) => !staleHomNayDate(n.slug, n.updated)).map((n) => ({
     url: `${BASE}/news/${n.slug}`,
     lastModified: safeLastMod(n.updated),
     changeFrequency: "weekly",
@@ -265,5 +267,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  // URL bị luật redirects() bắt thì không khai — khai URL 301 là Search Console báo
+  // "Page with redirect" (17/10: bài man-united-0-1-… đã 301 vẫn nằm trong sitemap).
+  const isRedirected = await getRedirectMatcher();
+  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes]
+    .filter((r) => !isRedirected(r.url.slice(BASE.length) || "/"));
 }

@@ -29,6 +29,10 @@ export function canonicalTrang(
    *  gõ `?page=999` vẫn trả đúng nội dung cũ. Tự trỏ canonical vào một tham số bị
    *  bỏ qua là đẻ ra vô số địa chỉ trùng, hại hơn cái đang sửa. */
   coPhanTrang = true,
+  /** Trang 2..N: noindex nhưng GIỮ follow + canonical tự trỏ (không trỏ nơi khác,
+   *  nên không đá nhau). /news bật cờ này 17/10/2026 (Peter duyệt): trang 2..N nặng
+   *  300–700KB, toàn tin ngắn đã có trang riêng — cho Google đi qua, đừng lập chỉ mục. */
+  noindexTrangSau = false,
 ): Pick<Metadata, "alternates" | "robots"> {
   const coLoc = KHOA_LOC.some((k) => typeof sp[k] === "string" && sp[k] !== "");
   const trang = Math.max(1, parseInt(String(sp.page ?? "1"), 10) || 1);
@@ -36,5 +40,8 @@ export function canonicalTrang(
     return { alternates: buildAlternates(duongDan, lang), robots: { index: false, follow: true } };
   }
   const tuTro = coPhanTrang && trang > 1;
-  return { alternates: buildAlternates(tuTro ? `${duongDan}?page=${trang}` : duongDan, lang) };
+  return {
+    alternates: buildAlternates(tuTro ? `${duongDan}?page=${trang}` : duongDan, lang),
+    ...(tuTro && noindexTrangSau ? { robots: { index: false, follow: true } } : {}),
+  };
 }
