@@ -283,6 +283,9 @@ body {
   white-space: nowrap;
   color: var(--color-ink);
 }
+.prose-md td img {
+  max-width: none;
+}
 .prose-md tbody tr:hover {
   background: var(--color-card-hover, var(--color-card));
 }
