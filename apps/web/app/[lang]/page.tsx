@@ -9,6 +9,7 @@ import {
   getThesisTranslations,
   getTodaysPicks,
   getTrackRecordForAuthor,
+  getBlogs,
 } from "@/lib/data";
 import { buildPlaySlug } from "@/lib/play-slug";
 import { formatBoardDate, formatBoardDateShort, formatUnits, locales } from "@/lib/format";
@@ -74,7 +75,7 @@ const REC_30D: Record<string, string> = { vi: "30 ngày", en: "30 days", th: "30
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, blogs] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -91,6 +92,7 @@ export default async function Home({ params }: Props) {
       getNewsItems(undefined, 6),
       getOddsBoard(),
       getRecentRecapPosts(lang, 2),
+      getBlogs(lang).then((b) => b.slice(0, 6)).catch(() => []),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -513,6 +515,41 @@ export default async function Home({ params }: Props) {
                     {getHeadline(n, lang)}
                   </p>
                 </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 3a-ter. BÀI MỚI — 6 bài /blog mới nhất (Peter duyệt 19/10). Trước đó trang
+          chủ chỉ có link menu /blog, không link bài blog nào — bài nằm sâu, Google
+          cào chậm (đo prod 19/10). Render phía server để link nằm sẵn trong HTML. */}
+      {blogs.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">Bài mới</h2>
+            <Link
+              href={withLang("/blog", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              Xem tất cả &rarr;
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {blogs.map((b) => (
+              <Link
+                key={b.id}
+                href={withLang(`/blog/${b.slug}`, lang)}
+                prefetch={false}
+                className="group rounded-card border border-line bg-card p-4 transition-colors hover:border-brand/30"
+              >
+                <time className="text-xs text-muted" dateTime={b.published_at ?? undefined}>
+                  {formatPostDate(b.published_at, lang)}
+                </time>
+                <p className="mt-1.5 line-clamp-2 font-display text-sm font-bold leading-snug transition-colors group-hover:text-brand">
+                  {b.title}
+                </p>
               </Link>
             ))}
           </div>
