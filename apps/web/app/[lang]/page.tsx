@@ -71,6 +71,8 @@ const REC_WIN: Record<string, string> = { vi: "đúng", en: "won", th: "ชน�
 const REC_LOSS: Record<string, string> = { vi: "sai", en: "lost", th: "แพ้", es: "fallo" };
 const REC_PUSH: Record<string, string> = { vi: "hoà", en: "push", th: "เสมอ", es: "nulo" };
 const REC_30D: Record<string, string> = { vi: "30 ngày", en: "30 days", th: "30 วัน", es: "30 días" };
+const BLOG_NEW: Record<string, string> = { vi: "Bài mới", en: "New posts", th: "บทความใหม่", es: "Artículos nuevos" };
+const SEE_ALL: Record<string, string> = { vi: "Xem tất cả", en: "See all", th: "ดูทั้งหมด", es: "Ver todo" };
 
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
@@ -527,13 +529,13 @@ export default async function Home({ params }: Props) {
       {blogs.length > 0 && (
         <section className="pb-10">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-display text-xl font-bold">Bài mới</h2>
+            <h2 className="font-display text-xl font-bold">{BLOG_NEW[lang] ?? BLOG_NEW.vi}</h2>
             <Link
               href={withLang("/blog", lang)}
               prefetch={false}
               className="text-sm font-semibold text-brand hover:underline"
             >
-              Xem tất cả &rarr;
+              {SEE_ALL[lang] ?? SEE_ALL.vi} &rarr;
             </Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
