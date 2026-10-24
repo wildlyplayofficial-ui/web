@@ -22,13 +22,17 @@ export interface KenhGiai {
 
 /** Khớp theo TIỀN TỐ tên giải. `MatchData.league` là chuỗi hiển thị dạng
  *  "Premier League 2026-27" nên phải bỏ phần mùa giải khi so. */
+/** ⚠️ Cúp C1 từng ghi "VTVcab, VTV" — chữ VTV không có nguồn nào đỡ. Tra 9/9/2026:
+ *  VOV (2/8/2024) nói VTVcab giữ bản quyền các giải CLB của UEFA (C1, C2, C3, Siêu
+ *  Cúp, UYL) TRỌN BA MÙA 2024/25–2026/27; bài "xem Cúp C1 ở đâu" của mình cũng ghi
+ *  vậy. Bỏ chữ VTV cho khớp. Thà nêu ít mà chắc còn hơn nêu thừa một cái tên sai. */
 const BANG: ReadonlyArray<readonly [string, KenhGiai]> = [
   ["Premier League", { kenh: "FPT Play", bai: "xem-ngoai-hang-anh-2026-27-o-dau-fpt-play-thay-k-plus", tenBai: "xem Ngoại hạng Anh 2026/27 ở đâu", linkChu: "Cách xem Ngoại hạng Anh 2026/27" }],
   ["La Liga", { kenh: "SCTV", bai: "xem-la-liga-2026-27-o-dau-sctv", tenBai: "xem La Liga 2026/27 ở đâu", linkChu: "Cách xem La Liga 2026/27" }],
   ["Serie A", { kenh: "VTVcab", bai: "xem-serie-a-2026-27-o-dau-viet-nam", tenBai: "xem Serie A 2026/27 ở đâu", linkChu: "Cách xem Serie A 2026/27" }],
   ["Bundesliga", { kenh: "TV360", bai: "xem-bundesliga-2026-27-o-dau-tv360", tenBai: "xem Bundesliga 2026/27 ở đâu", linkChu: "Cách xem Bundesliga 2026/27" }],
   ["Ligue 1", { kenh: "VTVcab", bai: "xem-ligue-1-2026-27-o-dau-viet-nam", tenBai: "xem Ligue 1 2026/27 ở đâu", linkChu: "Cách xem Ligue 1 2026/27" }],
-  ["Champions League", { kenh: "VTVcab, VTV", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu", linkChu: "Cách xem Cúp C1 2026/27" }],
+  ["Champions League", { kenh: "VTVcab", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu", linkChu: "Cách xem Cúp C1 2026/27" }],
 ];
 
 /** Tra theo MÃ GIẢI (`competitionId` từ `getMatchContext`) — đường CHÍNH.
@@ -43,7 +47,7 @@ const THEO_MA: Readonly<Record<string, KenhGiai>> = {
   "seriea-2026": { kenh: "VTVcab", bai: "xem-serie-a-2026-27-o-dau-viet-nam", tenBai: "xem Serie A 2026/27 ở đâu", linkChu: "Cách xem Serie A 2026/27" },
   "bundesliga-2026": { kenh: "TV360", bai: "xem-bundesliga-2026-27-o-dau-tv360", tenBai: "xem Bundesliga 2026/27 ở đâu", linkChu: "Cách xem Bundesliga 2026/27" },
   "ligue1-2026": { kenh: "VTVcab", bai: "xem-ligue-1-2026-27-o-dau-viet-nam", tenBai: "xem Ligue 1 2026/27 ở đâu", linkChu: "Cách xem Ligue 1 2026/27" },
-  "ucl-2026": { kenh: "VTVcab, VTV", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu", linkChu: "Cách xem Cúp C1 2026/27" },
+  "ucl-2026": { kenh: "VTVcab", bai: "xem-cup-c1-2026-27-o-dau-vtvcab", tenBai: "xem Cúp C1 2026/27 ở đâu", linkChu: "Cách xem Cúp C1 2026/27" },
 };
 
 /** Tra kênh: ưu tiên MÃ GIẢI, không có mới lùi về tên giải hiển thị. */
