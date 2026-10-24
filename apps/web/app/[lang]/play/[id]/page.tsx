@@ -16,7 +16,7 @@ import { getBoothForPick } from "@/lib/booth-data";
 import { BoothSection } from "@/components/booth-section";
 import { teamFlag } from "@/lib/flags";
 import { badgeFor, formatKickoff, formatPostedAt, marketLabels } from "@/lib/format";
-import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+import { getDict, resolveLang, withLang } from "@/lib/i18n";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,7 +53,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang(rawLang);
   const pick = UUID_RE.test(id) ? await getPick(id) : await getPickBySlug(id);
   if (!pick) return { title: "Not found" };
-  const slug = buildPlaySlug(pick);
   const settled = pick.status !== "published";
   const title = lang === "vi"
     ? (settled
@@ -67,11 +66,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // ?lang=vi: without it FB/Zalo scrape the English card even on the Vietnamese
   // page (Nick caught this live 22/8 — Hull vs MU card showed "Featured Pick").
   const image = lang === "vi" ? `/api/og/play/${pick.id}?lang=vi&v=${OG_VERSION}` : `/api/og/play/${pick.id}?v=${OG_VERSION}`;
-  const alternates = buildAlternates(`/play/${slug}`, lang);
+  // 19/10/2026 (Peter duyệt): trang /play là thẻ kèo mỏng, nội dung trận đã có
+  // ở /match và bài viết — để index là nộp Google hàng trăm trang mỏng, ngốn hạn
+  // mức cào. Noindex, vẫn follow; bỏ canonical (không đặt cả hai — hai tín hiệu
+  // đá nhau, cùng luật bên /match/[slug]). Đã gỡ khỏi app/sitemap.ts.
   return {
     title,
     description,
-    alternates,
+    robots: { index: false, follow: true },
     openGraph: { locale: "vi_VN", title: `${title} | banhbong.net`, description, images: [image] },
     twitter: { card: "summary_large_image", title: `${title} | banhbong.net`, description, images: [image] },
   };

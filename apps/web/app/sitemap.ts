@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
+import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
@@ -42,7 +42,7 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [matches, guides, blogs, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllMatchSlugs(), getAllGuideSlugs(), getAllBlogSlugs(), getAllReportSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
+  const [matches, guides, blogs, reports, competitions, deskArticles, newsItems] = await Promise.all([getAllMatchSlugs(), getAllGuideSlugs(), getAllBlogSlugs(), getAllReportSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs()]);
 
   // Hub theo CLB: CHỈ khai hub nào đủ bài để được index. Hub dưới ngưỡng tự đặt
   // noindex (xem doi/[slug]/page.tsx), mà khai một trang noindex vào sitemap thì
@@ -71,6 +71,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     )
   ).filter((x): x is NonNullable<typeof x> => x !== null);
+
+  // Mốc nội dung mới nhất của cả site (tin, bài, trận). Trang chủ + trang
+  // cập nhật hằng ngày (giải đấu, kèo, bảng…) lấy mốc này thay vì đóng băng ở
+  // VI_REPOSITION: Google thấy lastmod 28/7 suốt ba tháng thì thôi tin lastmod.
+  // Trận lấy ngày đá làm mốc nên có thể ở tương lai — bỏ các mốc đó, không thì
+  // mốc lúc nào cũng thành "bây giờ" và mất nghĩa.
+  const now = Date.now();
+  const freshest = safeLastMod(
+    [
+      ...newsItems.map((n) => n.updated),
+      ...deskArticles.map((a) => a.modified),
+      ...blogs.map((b) => b.updated),
+      ...matches.map((m) => m.updated),
+    ]
+      .filter((d): d is string => Boolean(d) && Date.parse(d) <= now)
+      .reduce<string | null>((max, d) => (!max || Date.parse(d) > Date.parse(max) ? d : max), null),
+  );
 
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
@@ -103,21 +120,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/tac-gia/chu-tam-banh`, changeFrequency: "weekly", priority: 0.6, alternates: alternates("/tac-gia/chu-tam-banh") },
     { url: `${BASE}/tac-gia/pete-nguyen`, changeFrequency: "weekly", priority: 0.6, alternates: alternates("/tac-gia/pete-nguyen") },
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
-  ] as MetadataRoute.Sitemap).map((r) => ({ ...r, lastModified: VI_REPOSITION }));
+  ] as MetadataRoute.Sitemap).map((r) => ({
+    ...r,
+    lastModified: r.changeFrequency === "daily" || r.changeFrequency === "hourly" ? freshest : VI_REPOSITION,
+  }));
 
-  // /play/ pick pages: every settled play now lives on the prefix-less Vietnamese
-  // canonical (self-canonical, no /match override, no /en 301). Declare each so
-  // Google indexes the VI-safe pick surface. (Nick 21/8, retires the 16/8 rule)
-  const playRoutes: MetadataRoute.Sitemap = settledPicks.map((pick) => {
-    const slug = buildPlaySlug(pick);
-    return {
-      url: `${BASE}/play/${slug}`,
-      lastModified: safeLastMod(pick.settled_at ?? pick.kickoff_utc),
-      changeFrequency: "weekly",
-      priority: 0.6,
-      alternates: alternates(`/play/${slug}`),
-    };
-  });
+  // /play/ đã RA KHỎI sitemap (19/10/2026, Peter duyệt): trang đặt noindex, follow
+  // — xem play/[id]/page.tsx. Khai URL noindex là tự chuốc "Submitted URL marked
+  // noindex". Thay luật Nick 21/8.
 
   // Bảng `posts` KHÔNG còn khai URL nào qua đường /analysis/{slug} nữa — biến
   // newsRoutes cũ đã xoá hẳn vì cả ba nhóm trong bảng đều có chỗ khác để đi:
@@ -258,12 +268,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .flatMap((c) =>
       subPages(c).map((sub) => ({
         url: `${BASE}/competitions/${c.slug}${sub}`,
-        lastModified: VI_REPOSITION,
+        lastModified: freshest,
         changeFrequency: "daily" as const,
         priority: sub === "" ? 0.7 : 0.6,
         alternates: alternates(`/competitions/${c.slug}${sub}`),
       })),
     );
 
-  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
