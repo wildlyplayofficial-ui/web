@@ -45,6 +45,12 @@ export function laTrangLichCaMua(slug: string): boolean {
   return MAU_TRANG_LICH.test(slug) && !/-vong-\d/.test(slug) && !slug.includes("asean-cup-2026");
 }
 
+/** Bài blog lịch / BXH / xem ở đâu theo cả mùa — trang chủ trỏ vào nhóm này.
+ *  Bỏ lịch "cuối tuần" (qua tuần là cũ) và ASEAN Cup 2026 (đá xong 5/10). */
+export function laBlogLichCaMua(slug: string): boolean {
+  return /^(xem-.*-o-dau|lich-thi-dau-|bxh-)/.test(slug) && !slug.includes("cuoi-tuan") && !slug.includes("asean-cup-2026");
+}
+
 const HAN_BAI_MOI_MS = 21 * 24 * 3_600_000;
 
 function conMoi(ngayDang: string | null | undefined): boolean {

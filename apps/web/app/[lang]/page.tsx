@@ -5,6 +5,7 @@ import {
   getActiveWatching,
   getSettledPicks,
   getTodaysNoPlays,
+  getAllBlogSlugs,
   getRecentRecapPosts,
   getThesisTranslations,
   getTodaysPicks,
@@ -21,6 +22,7 @@ import { HotPickCard } from "@/components/hot-pick-card";
 import { TranDangXemCard } from "@/components/tran-dang-xem-card";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laTrangLichCaMua } from "@/lib/chi-muc";
+import { KhoiTrangTru } from "@/components/khoi-trang-tru";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 import { getOddsBoard } from "@/lib/odds-data";
@@ -75,7 +77,7 @@ const REC_30D: Record<string, string> = { vi: "30 ngày", en: "30 days", th: "30
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich, blogs] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -97,12 +99,9 @@ export default async function Home({ params }: Props) {
       getAllAnalysisArticleSlugs()
         .then((all) => all.filter((a) => laTrangLichCaMua(a.slug)))
         .catch(() => []),
+      // 9/11: trang chủ 0 link sang /blog → 37/37 bài blog Google chưa biết.
+      getAllBlogSlugs().catch(() => []),
     ]);
-  const nhomLich = [
-    { ten: "Xem ở đâu", bai: trangLich.filter((a) => a.slug.startsWith("xem-")) },
-    { ten: "Lịch thi đấu cả mùa", bai: trangLich.filter((a) => a.slug.startsWith("lich-thi-dau-")) },
-    { ten: "Đá mấy giờ (giờ Việt Nam)", bai: trangLich.filter((a) => a.slug.includes("-da-may-gio-")) },
-  ].filter((n) => n.bai.length > 0);
 
   const todayKey = new Date().toISOString().slice(0, 10);
 
@@ -636,33 +635,12 @@ export default async function Home({ params }: Props) {
         </section>
       )}
 
-      {nhomLich.length > 0 && (
-        <section className="pb-10" aria-labelledby="lich-xem-o-dau">
-          <h2 id="lich-xem-o-dau" className="mb-4 font-display text-xl font-bold">
-            Lịch thi đấu &amp; xem bóng đá ở đâu
-          </h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            {nhomLich.map((n) => (
-              <div key={n.ten} className="rounded-card border border-line bg-card p-5">
-                <h3 className="font-display text-base font-bold">{n.ten}</h3>
-                <ul className="mt-3 flex flex-col gap-2 text-sm">
-                  {n.bai.map((a) => (
-                    <li key={a.slug}>
-                      <Link
-                        href={withLang(`/analysis/${a.slug}`, lang)}
-                        prefetch={false}
-                        className="text-ink transition-colors hover:text-brand hover:underline"
-                      >
-                        {a.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <KhoiTrangTru
+        lang={lang}
+        trangLich={trangLich}
+        blogs={blogs}
+        giai={competitions.filter((c) => c.status === "active" && c.slug)}
+      />
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">
