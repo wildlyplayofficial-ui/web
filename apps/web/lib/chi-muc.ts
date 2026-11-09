@@ -33,7 +33,7 @@ export const NEWS_GIU_INDEX = new Set([
 const ANALYSIS_GIU_INDEX = new Set([
   "ba-doi-len-hang-ngoai-hang-anh-2026-27-ai-tru-duoc",
   "lich-derby-dai-chien-ngoai-hang-anh-2026-27",
-  "thu-hang-arsenal-coventry-city-bxh-ngoai-hang-anh",
+  // 9/11: bỏ "thu-hang-arsenal-coventry..." — BXH sau vòng 1, ~500 chữ, đã cũ.
 ]);
 
 /** Bài "xem ở đâu / lịch thi đấu / mấy giờ" — nhóm duy nhất từng ăn click. */
@@ -57,5 +57,7 @@ export function newsDuocIndex(slug: string, ngayDang?: string | null): boolean {
 }
 
 export function analysisDuocIndex(slug: string, ngayDang?: string | null): boolean {
-  return conMoi(ngayDang) || MAU_TRANG_LICH.test(slug) || ANALYSIS_GIU_INDEX.has(slug);
+  // 9/11: bài lịch TỪNG VÒNG (vòng 1/3/4…) và ASEAN Cup 2026 đã đá xong → noindex,
+  // chỉ giữ index bài lịch cả mùa. Trang vẫn mở cho người vào thẳng.
+  return conMoi(ngayDang) || laTrangLichCaMua(slug) || ANALYSIS_GIU_INDEX.has(slug);
 }
