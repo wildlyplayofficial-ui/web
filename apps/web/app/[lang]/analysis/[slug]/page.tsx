@@ -17,6 +17,9 @@ import { KhoiDaKetThuc } from "@/components/khoi-da-ket-thuc";
 import { SITE_URL, PETE, OG_VERSION } from "@/lib/brand";
 import { authorByName, authorSchema, postAuthorName } from "@/lib/authors";
 import { AuthorByline } from "@/components/author-byline";
+import { getStandingsCompetitions } from "@/lib/standings-extra";
+import { localizedCompetitionName } from "@/lib/competition-logos";
+import { cungGiai } from "@/lib/giai-cua-bai";
 
 export const revalidate = 300;
 
@@ -201,10 +204,13 @@ function DeskArticleView({
   article,
   lang,
   dict,
+  giai,
 }: {
   article: AnalysisArticle;
   lang: Lang;
   dict: ReturnType<typeof getDict>;
+  /** Trang BXH của giải bài này thuộc về (nếu có) — link ngược về hub (9/11). */
+  giai?: { slug: string; ten: string };
 }) {
   const quaHan = baiQuaHan(article.slug);
   const published = new Intl.DateTimeFormat(locales[lang], {
@@ -336,6 +342,11 @@ function DeskArticleView({
 
       {/* Internal links */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
+        {giai && (
+          <Link href={withLang(`/competitions/${giai.slug}`, lang)} className="rounded-full border border-brand/40 px-3 py-1.5 font-semibold text-brand transition-colors hover:bg-brand/10">
+            {`Bảng xếp hạng ${giai.ten}`} &rarr;
+          </Link>
+        )}
         <Link href={withLang("/analysis", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
           {dict.nav.analysis} &rarr;
         </Link>
@@ -360,7 +371,12 @@ export default async function AnalysisArticlePage({ params }: Props) {
   // Try Desk article first
   const deskArticle = await getAnalysisArticleBySlug(slug);
   if (deskArticle) {
-    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} />;
+    // Link ngược về trang giải (hub ↔ bài, 9/11). Chỉ giải đang mở (status
+    // active) — giải tắt thì trang giải 404. Lỗi nguồn giải thì bỏ link, bài vẫn lên.
+    const comps = await getStandingsCompetitions().catch(() => []);
+    const c = comps.find((x) => x.status === "active" && x.slug && cungGiai(deskArticle.league, x.name));
+    const giai = c ? { slug: c.slug, ten: localizedCompetitionName(c.slug, c.name, lang) } : undefined;
+    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} giai={giai} />;
   }
 
   // Fall back to posts table (existing behavior)

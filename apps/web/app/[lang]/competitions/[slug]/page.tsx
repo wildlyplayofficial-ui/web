@@ -13,6 +13,8 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { CompetitionNews } from "@/components/competition-news";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
+import { cungGiai } from "@/lib/giai-cua-bai";
+import { laBaiTru } from "@/lib/chi-muc";
 
 export const revalidate = 3600;
 
@@ -119,25 +121,21 @@ export default async function StandingSlugPage({ params }: Props) {
     isWorldCup ? getKnockoutRounds(comp.livescoreId).catch(() => []) : Promise.resolve([]),
     // livescore's table has no form for leagues — derive it from results.
     isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId).catch((): Record<string, string> => ({})),
-    getAnalysisArticles(undefined, 30),
+    // 300 = cùng tham số với mục lục /analysis → dùng chung bản đệm. Khối "bài
+    // mới" vẫn chỉ xét 30 bài mới nhất như cũ; khối "trang trụ" xét hết.
+    getAnalysisArticles(undefined, 300),
   ]);
 
-  // `analysis_articles.league` là chữ tự do do người viết đặt ("Premier League")
-  // nên không khớp cứng với competitions.name ("English Premier League"). So
-  // theo dạng đã chuẩn hoá, một chiều nào chứa chiều kia cũng tính là khớp —
-  // "laliga" vs "ligamx" không dính nhau nên không sợ lẫn giải.
+  // Khớp bài ↔ giải theo cột league tự do: xem lib/giai-cua-bai.ts.
   //
   // Chỉ hiện ở bản VI: `analysis_articles` mới có một cột `title`/`body`, toàn
   // bộ bài Desk hiện viết tiếng Việt. Nick đã báo lỗi tiêu đề tiếng Việt lòi ra
   // trang tiếng Anh — bỏ chốt này khi bài có cột đa ngôn ngữ.
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const compKey = norm(comp.name);
-  const compArticles = (lang === "vi" ? deskArticles : [])
-    .filter((a) => {
-      const leagueKey = norm(a.league ?? "");
-      return leagueKey.length > 0 && (compKey.includes(leagueKey) || leagueKey.includes(compKey));
-    })
-    .slice(0, 3);
+  const baiCuaGiai = (lang === "vi" ? deskArticles : []).filter((a) => cungGiai(a.league, comp.name));
+  const compArticles = baiCuaGiai.filter((a) => deskArticles.indexOf(a) < 30).slice(0, 3);
+  // Trang trụ của giải (lịch cả mùa / xem ở đâu / mấy giờ) — 9/11: trang giải
+  // trỏ thẳng vào chúng, bài đó trỏ ngược về đây (analysis/[slug]).
+  const trangTru = baiCuaGiai.filter((a) => laBaiTru(a.slug) && !compArticles.includes(a));
 
   // Backfill the empty API form with the computed last-5 results.
   const rows = tableRows.map((r) => (r.form ? r : { ...r, form: formMap[r.name] ?? "" }));
@@ -208,6 +206,27 @@ export default async function StandingSlugPage({ params }: Props) {
       </section>
 
       <CompetitionNews articles={compArticles} lang={lang} title={dict.news.title} />
+
+      {trangTru.length > 0 && (
+        <section className="mb-10 rounded-card border border-line bg-card p-5" aria-labelledby="trang-tru-giai">
+          <h2 id="trang-tru-giai" className="font-display text-lg font-bold">
+            {`Lịch thi đấu, giờ đá & xem ${compName} ở đâu`}
+          </h2>
+          <ul className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            {trangTru.map((a) => (
+              <li key={a.slug}>
+                <Link
+                  href={withLang(`/analysis/${a.slug}`, lang)}
+                  prefetch={false}
+                  className="text-ink transition-colors hover:text-brand hover:underline"
+                >
+                  {a.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Tabs — hidden for WC. Label localize qua dict (trước hardcode tiếng Anh —
           Jane flag 28/7). Tái dùng key sẵn cho cả 4 lang: nav.standings/schedule/form. */}

@@ -51,6 +51,11 @@ export function laBlogLichCaMua(slug: string): boolean {
   return /^(xem-.*-o-dau|lich-thi-dau-|bxh-)/.test(slug) && !slug.includes("cuoi-tuan") && !slug.includes("asean-cup-2026");
 }
 
+/** Bài trụ lâu năm (lịch cả mùa / xem ở đâu / mấy giờ + bài giữ index) — trang giải trỏ vào nhóm này. */
+export function laBaiTru(slug: string): boolean {
+  return laTrangLichCaMua(slug) || ANALYSIS_GIU_INDEX.has(slug);
+}
+
 const HAN_BAI_MOI_MS = 21 * 24 * 3_600_000;
 
 function conMoi(ngayDang: string | null | undefined): boolean {
