@@ -26,7 +26,9 @@ export const AUTHORS: readonly AuthorProfile[] = [
     role: "Phân tích · Nhận định trước trận",
     // Chép từ persona trên /about (app/[lang]/about/copy.ts) — sửa thì sửa cả hai.
     bio: "Chú Tám Banh là người thật đứng sau mọi nhận định trên banhbong.net — theo bóng đá châu Âu hơn 15 năm, chuyên Ngoại hạng Anh và các giải lớn châu Âu. Mỗi trận đều tự đọc số liệu, xem phong độ và đội hình rồi mới đặt bút. Không nhận định gượng ép: không thấy lợi thế thì ghi rõ là bỏ qua. Thành tích thắng thua công khai từ ngày đầu, không sửa, không xoá.",
-    disclosure: "Chú Tám Banh chọn trận và góc nhìn · AI viết bài từ số liệu",
+    // Dòng khai AI trên TỪNG bài bỏ 9/11 (Peter chốt): site mới, ít uy tín mà tự dán nhãn
+    // trên mọi bài là bất lợi. Khai AI giữ ở bio tác giả + trang Giới thiệu.
+    disclosure: "Chú Tám Banh chọn trận và góc nhìn · số liệu ghi nguồn trong bài",
     sameAs: [],
   },
   {
@@ -35,7 +37,7 @@ export const AUTHORS: readonly AuthorProfile[] = [
     path: "/tac-gia/pete-nguyen",
     role: "Biên tập tin tức · Blog",
     bio: "Pete Nguyễn biên tập mảng tin tức và blog của banhbong.net: tin chuyển nhượng, kết quả, bảng xếp hạng và các bài blog bóng đá. AI hỗ trợ viết từ nguồn công khai, nguồn tin ghi rõ trong từng bài.",
-    disclosure: "Pete Nguyễn biên tập · AI hỗ trợ viết",
+    disclosure: "Pete Nguyễn biên tập · nguồn tin ghi rõ trong bài",
     // Peter tạo 15/9/2026.
     sameAs: ["https://www.linkedin.com/in/pete-nguy%E1%BB%85n-518324437"],
   },

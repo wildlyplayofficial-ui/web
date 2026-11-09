@@ -981,7 +981,7 @@ const vi: Dict = {
     titlePastScout: "Trợ lý AI \u0111\u00e3 theo d\u00f5i",
     noteScout: "Ghi ch\u00fa t\u1eeb Trợ lý AI",
     disclosureScout: "AI ch\u1ecdn k\u00e8o, AI vi\u1ebft b\u00e0i \u2014 Trợ lý AI l\u00e0 nh\u00e2n v\u1eadt AI th\u1eed nghi\u1ec7m, kh\u00f4ng ph\u1ea3i ng\u01b0\u1eddi th\u1eadt.",
-    disclosureWatching: "B\u00e0i vi\u1ebft b\u1edfi AI. Kh\u00f4ng xu\u1ed1ng k\u00e8o \u2014 ch\u00fang t\u00f4i theo d\u00f5i tr\u1eadn n\u00e0y, kh\u00f4ng \u0111\u1eb7t c\u01b0\u1ee3c.",
+    disclosureWatching: "Tin tổng hợp từ nguồn công khai, nguồn ghi rõ trong bài.",
     badge: "THEO D\u00d5I \u00b7 KH\u00d4NG PH\u1ea2I PICK",
   },
   match: {

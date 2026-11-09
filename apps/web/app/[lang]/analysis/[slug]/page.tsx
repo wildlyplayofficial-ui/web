@@ -162,6 +162,7 @@ function buildArticleSchema(
   slug: string,
   lang: Lang,
   imageUrl?: string,
+  modifiedAt?: string | null,
 ) {
   return {
     "@context": "https://schema.org",
@@ -169,7 +170,9 @@ function buildArticleSchema(
     headline: title,
     description,
     datePublished: publishedAt ?? undefined,
-    dateModified: publishedAt ?? undefined,
+    // Bài sửa sau ngày đăng phải khai ngày sửa thật (soi 9/11: trang sửa 15/9 vẫn khai
+    // dateModified = ngày đăng, Google tưởng chưa từng cập nhật).
+    dateModified: modifiedAt ?? publishedAt ?? undefined,
     mainEntityOfPage: `${BASE}${withLang(`/analysis/${slug}`, lang)}`,
     image: imageUrl ?? `${BASE}/api/og/news/${slug}?locale=${lang}&v=${OG_VERSION}`,
     author: authorSchema(authorName),
@@ -228,6 +231,7 @@ function DeskArticleView({
         ? article.hero_image
         : `${BASE}${article.hero_image}`
       : `${BASE}/api/og/analysis/${article.slug}?locale=${lang}&v=${OG_VERSION}`,
+    article.updated_at,
   );
 
   return (
@@ -264,7 +268,7 @@ function DeskArticleView({
         </p>
         {/* AI disclosure (spec section 2C) */}
         <p className="mt-1 text-xs text-muted/70 italic">
-          {authorByName(article.byline)?.disclosure ?? "Bài viết có AI hỗ trợ"}
+          {authorByName(article.byline)?.disclosure ?? "banhbong.net biên tập"}
         </p>
       </header>
 
@@ -342,7 +346,7 @@ function DeskArticleView({
 
       {/* Firewall: Desk articles do NOT show Curator/Scout record (spec section 2C) */}
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-        {authorByName(article.byline)?.disclosure ?? "Bài viết có AI hỗ trợ"}. {dict.analysis.disclaimer}
+        {authorByName(article.byline)?.disclosure ?? "banhbong.net biên tập"}. {dict.analysis.disclaimer}
       </p>
     </article>
   );

@@ -39,6 +39,12 @@ const ANALYSIS_GIU_INDEX = new Set([
 /** Bài "xem ở đâu / lịch thi đấu / mấy giờ" — nhóm duy nhất từng ăn click. */
 const MAU_TRANG_LICH = /^(xem-.*-o-dau|lich-thi-dau-|.*-da-may-gio-)/;
 
+/** Trang lịch/xem ở đâu theo CẢ MÙA (bỏ bài lịch từng vòng — qua vòng là cũ) — trang chủ trỏ vào nhóm này. */
+export function laTrangLichCaMua(slug: string): boolean {
+  // ASEAN Cup 2026 đá xong 5/10 — giải đã hết, không đưa lên trang chủ.
+  return MAU_TRANG_LICH.test(slug) && !/-vong-\d/.test(slug) && !slug.includes("asean-cup-2026");
+}
+
 const HAN_BAI_MOI_MS = 21 * 24 * 3_600_000;
 
 function conMoi(ngayDang: string | null | undefined): boolean {
