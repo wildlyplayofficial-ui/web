@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { newsDuocIndex } from "@/lib/chi-muc";
 import { OG_VERSION, PETE } from "@/lib/brand";
 import { authorByName, authorSchema } from "@/lib/authors";
 import { AuthorByline } from "@/components/author-byline";
@@ -67,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Bản tin đã bị bài mới hơn thay thế HOẶC bài "hôm nay" đã qua ngày: giấu
     // khỏi Google, GIỮ follow để vẫn dẫn được sang bài mới. Người đọc vào thẳng
     // vẫn xem bình thường.
-    ...(item.noindex || staleDate ? { robots: { index: false, follow: true } } : {}),
+    ...(item.noindex || staleDate || !newsDuocIndex(slug) ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: metaHeadline,
       description,

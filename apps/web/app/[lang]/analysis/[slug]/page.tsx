@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { analysisDuocIndex } from "@/lib/chi-muc";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -78,6 +79,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : deskOgCard(desk, lang);
     return {
       title: desk.title,
+      // Dọn chỉ mục 9/11: chỉ nhóm lịch/xem ở đâu + bài từng có lượt hiện (lib/chi-muc.ts).
+      ...(analysisDuocIndex(desk.slug) ? {} : { robots: { index: false, follow: true } }),
       description,
       alternates: { canonical, languages: alternates.languages },
       openGraph: {

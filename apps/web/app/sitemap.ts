@@ -5,6 +5,7 @@ import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks,
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
+import { newsDuocIndex, analysisDuocIndex } from "@/lib/chi-muc";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
 /** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8). */
@@ -204,7 +205,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/transparency/${r.slug}`),
   }));
 
-  const deskRoutes: MetadataRoute.Sitemap = deskArticles.map((a) => ({
+  // Dọn chỉ mục 9/11 (Peter chốt): chỉ nộp bài được mời index — khớp robots ở trang bài.
+  const deskRoutes: MetadataRoute.Sitemap = deskArticles.filter((a) => analysisDuocIndex(a.slug)).map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
     lastModified: safeLastMod(a.modified),
     changeFrequency: "weekly",
@@ -215,7 +217,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /news article pages: only the /news index was declared (line above), never the
   // individual news_items — so every published news item (transfers, previews…) was
   // orphaned from Google despite being live. Declare each one (Jane 15/8).
-  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.map((n) => ({
+  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.filter((n) => newsDuocIndex(n.slug)).map((n) => ({
     url: `${BASE}/news/${n.slug}`,
     lastModified: safeLastMod(n.updated),
     changeFrequency: "weekly",
