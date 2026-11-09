@@ -51,7 +51,10 @@ export async function GET(
 
   // Logo 2 đội trên thẻ soi kèo (Peter 25/8: "bài soi kèo phải có logo").
   // teams[] ghi tên hiển thị ("Real Madrid") — tra thẳng bảng badge theo tên.
-  const teamNames = (article.teams ?? []).slice(0, 2);
+  // Bài tổng hợp (roundup: lịch cả mùa, xem ở đâu…) có teams[] là thẻ chủ đề chép
+  // chung ("man-united, arsenal, chelsea…") chứ không phải 2 đội của trận → thẻ lịch
+  // Man Utd từng in logo Arsenal (soi 9/11). Chỉ bài theo trận mới gắn logo.
+  const teamNames = article.kind === "roundup" ? [] : (article.teams ?? []).slice(0, 2);
   const crests = (
     await Promise.all(
       teamNames.map((t) => {

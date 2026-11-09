@@ -28,4 +28,4 @@ export const SAME_AS = [
  * v5: thẻ recap chuyển sang khuôn KẾT QUẢ có logo 2 đội, Peter 13/9;
  * v6: chân thẻ analysis in tên tác giả thay "Banh Bóng Desk (AI)", Peter 15/9).
  */
-export const OG_VERSION = 6;
+export const OG_VERSION = 7;
