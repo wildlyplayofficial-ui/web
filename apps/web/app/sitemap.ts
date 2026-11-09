@@ -206,7 +206,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Dọn chỉ mục 9/11 (Peter chốt): chỉ nộp bài được mời index — khớp robots ở trang bài.
-  const deskRoutes: MetadataRoute.Sitemap = deskArticles.filter((a) => analysisDuocIndex(a.slug)).map((a) => ({
+  const deskRoutes: MetadataRoute.Sitemap = deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated)).map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
     lastModified: safeLastMod(a.modified),
     changeFrequency: "weekly",
@@ -217,7 +217,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /news article pages: only the /news index was declared (line above), never the
   // individual news_items — so every published news item (transfers, previews…) was
   // orphaned from Google despite being live. Declare each one (Jane 15/8).
-  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.filter((n) => newsDuocIndex(n.slug)).map((n) => ({
+  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.filter((n) => newsDuocIndex(n.slug, n.updated)).map((n) => ({
     url: `${BASE}/news/${n.slug}`,
     lastModified: safeLastMod(n.updated),
     changeFrequency: "weekly",

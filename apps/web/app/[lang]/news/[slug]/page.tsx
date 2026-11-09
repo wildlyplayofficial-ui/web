@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Bản tin đã bị bài mới hơn thay thế HOẶC bài "hôm nay" đã qua ngày: giấu
     // khỏi Google, GIỮ follow để vẫn dẫn được sang bài mới. Người đọc vào thẳng
     // vẫn xem bình thường.
-    ...(item.noindex || staleDate || !newsDuocIndex(slug) ? { robots: { index: false, follow: true } } : {}),
+    ...(item.noindex || staleDate || !newsDuocIndex(slug, item.published_at) ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: metaHeadline,
       description,

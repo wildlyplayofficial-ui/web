@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: desk.title,
       // Dọn chỉ mục 9/11: chỉ nhóm lịch/xem ở đâu + bài từng có lượt hiện (lib/chi-muc.ts).
-      ...(analysisDuocIndex(desk.slug) ? {} : { robots: { index: false, follow: true } }),
+      ...(analysisDuocIndex(desk.slug, desk.published_at) ? {} : { robots: { index: false, follow: true } }),
       description,
       alternates: { canonical, languages: alternates.languages },
       openGraph: {

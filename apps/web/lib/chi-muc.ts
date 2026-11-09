@@ -6,8 +6,9 @@
  * nhu cầu thật, phần còn lại noindex + rút khỏi sitemap. Trang vẫn sống, vẫn
  * follow, người đọc vào thẳng vẫn xem được.
  *
- * - /news: chỉ giữ tin từng có lượt hiện (danh sách cứng bên dưới). Tin mới đăng
- *   sau này mặc định KHÔNG index — muốn index thì thêm slug vào đây.
+ * - Bài đăng chưa quá 21 ngày LUÔN được index (Jane góp 9/11): bài mới chưa kịp có
+ *   lượt hiện, tắt luôn là giết nó từ trứng. Qua 21 ngày mới xét danh sách.
+ * - /news: sau 21 ngày chỉ giữ tin từng có lượt hiện (danh sách cứng bên dưới).
  * - /analysis: giữ nhóm "xem giải X ở đâu / lịch thi đấu / mấy giờ" (khớp mẫu,
  *   tự áp cho bài mới cùng loại) + vài bài từng có lượt hiện.
  */
@@ -38,10 +39,17 @@ const ANALYSIS_GIU_INDEX = new Set([
 /** Bài "xem ở đâu / lịch thi đấu / mấy giờ" — nhóm duy nhất từng ăn click. */
 const MAU_TRANG_LICH = /^(xem-.*-o-dau|lich-thi-dau-|.*-da-may-gio-)/;
 
-export function newsDuocIndex(slug: string): boolean {
-  return NEWS_GIU_INDEX.has(slug);
+const HAN_BAI_MOI_MS = 21 * 24 * 3_600_000;
+
+function conMoi(ngayDang: string | null | undefined): boolean {
+  const t = ngayDang ? Date.parse(ngayDang) : NaN;
+  return Number.isFinite(t) && Date.now() - t < HAN_BAI_MOI_MS;
 }
 
-export function analysisDuocIndex(slug: string): boolean {
-  return MAU_TRANG_LICH.test(slug) || ANALYSIS_GIU_INDEX.has(slug);
+export function newsDuocIndex(slug: string, ngayDang?: string | null): boolean {
+  return conMoi(ngayDang) || NEWS_GIU_INDEX.has(slug);
+}
+
+export function analysisDuocIndex(slug: string, ngayDang?: string | null): boolean {
+  return conMoi(ngayDang) || MAU_TRANG_LICH.test(slug) || ANALYSIS_GIU_INDEX.has(slug);
 }
