@@ -22,18 +22,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dict = getDict(lang);
   const canonical = withLang("/blog", lang);
   return {
-    title: dict.blog.title,
+    title: dict.blog.seoTitle,
     description: dict.blog.seoDescription,
     alternates: { canonical },
     openGraph: {
       locale: "vi_VN",
-      title: `${dict.blog.title} | banhbong.net`,
+      title: `${dict.blog.seoTitle} | banhbong.net`,
       description: dict.blog.seoDescription,
       images: [{ url: `/api/og/editorial?title=Blog&subtitle=B%C3%B3ng%20%C4%91%C3%A1%20m%E1%BB%97i%20ng%C3%A0y&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${dict.blog.title} | banhbong.net`,
+      title: `${dict.blog.seoTitle} | banhbong.net`,
       description: dict.blog.seoDescription,
     },
   };

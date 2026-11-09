@@ -196,6 +196,8 @@ export interface Dict {
   };
   blog: {
     title: string;
+    /** <title> trang /blog — "Blog" trần không nói trang về gì (9/11). */
+    seoTitle: string;
     subtitle: string;
     seoDescription: string;
     empty: string;
@@ -528,6 +530,7 @@ const en: Dict = {
   },
   blog: {
     title: "Blog",
+    seoTitle: "Football blog: fixtures, standings, records",
     subtitle: "Football stories, rankings, transfer windows and the numbers behind the season.",
     seoDescription: "Football blog from banhbong.net — rankings, transfer windows, records and season stories. No betting instruction, just the game.",
     empty: "No posts yet.",
@@ -755,7 +758,7 @@ const vi: Dict = {
     asOf: "tính đến",
   },
   home: {
-    seoDescription: "Nhận định bóng đá miễn phí mỗi ngày do người thật chọn. Mọi nhận định công khai vĩnh viễn — thắng lẫn thua. Phân tích trận đấu, công cụ tỷ lệ và hướng dẫn cho Premier League, La Liga, Serie A, Bundesliga và nhiều giải khác.",
+    seoDescription: "Nhận định bóng đá miễn phí mỗi ngày, công khai cả thắng lẫn thua. Lịch thi đấu giờ Việt Nam, xem ở đâu, BXH Ngoại hạng Anh, La Liga, Serie A, Bundesliga.",
     latestAnalysis: "Phân tích mới nhất",
     latestPredictions: "Nhận định mới nhất",
     latestNews: "Tin mới nhất",
@@ -852,8 +855,9 @@ const vi: Dict = {
   },
   blog: {
     title: "Blog",
+    seoTitle: "Blog bóng đá: lịch thi đấu, bảng xếp hạng, kỷ lục",
     subtitle: "Chuyện bóng đá mỗi ngày — bảng xếp hạng, chuyển nhượng, kỷ lục và những con số của mùa giải.",
-    seoDescription: "Blog bóng đá của banhbong.net: bảng xếp hạng, kỳ chuyển nhượng, kỷ lục và chuyện mùa giải. Không hướng dẫn cá cược, chỉ nói chuyện bóng đá.",
+    seoDescription: "Blog bóng đá banhbong.net: lịch thi đấu tuyển Việt Nam, BXH V-League, xem Europa League ở đâu, kỷ lục Ngoại hạng Anh, World Cup và chuyện mùa giải.",
     empty: "Chưa có bài viết.",
     backToBlog: "Quay lại Blog",
   },
@@ -1176,6 +1180,7 @@ const th: Dict = {
   },
   blog: {
     title: "บล็อก",
+    seoTitle: "บล็อกฟุตบอล: โปรแกรม ตารางคะแนน สถิติ",
     subtitle: "เรื่องราวฟุตบอล อันดับ ตลาดซื้อขาย และตัวเลขของฤดูกาล",
     seoDescription: "บล็อกฟุตบอลจาก banhbong.net — อันดับ ตลาดซื้อขาย สถิติ และเรื่องราวของฤดูกาล",
     empty: "ยังไม่มีบทความ",
@@ -1500,6 +1505,7 @@ const es: Dict = {
   },
   blog: {
     title: "Blog",
+    seoTitle: "Blog de fútbol: calendario, clasificaciones, récords",
     subtitle: "Historias de fútbol, clasificaciones, mercado de fichajes y los números de la temporada.",
     seoDescription: "Blog de fútbol de banhbong.net: clasificaciones, fichajes, récords e historias de la temporada.",
     empty: "Aún no hay entradas.",
