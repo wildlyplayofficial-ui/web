@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/brand";
 import { VI_BLOCKED_GUIDE_SLUGS } from "@/lib/vi-blocked-guides";
-import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, buildPlaySlug, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
+import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks, isFeatureEnabled, getAllBlogSlugs} from "@/lib/data";
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
@@ -18,9 +18,9 @@ const BASE = SITE_URL;
 // đã bỏ, nếu không Google vẫn bò /en /th /es rồi ăn 301 vô ích.
 const LANGS = ["vi"] as const;
 
-// Ngày reposition VI-legal (28/7/2026) — set lastModified cho trang static/hub để
-// Google biết nội dung vừa đổi và re-crawl bản VI mới sớm (trước chỉ có changeFrequency).
-const VI_REPOSITION = new Date("2026-07-28");
+// 9/11/2026: bỏ mốc cứng VI_REPOSITION (28/7) cho trang tĩnh/trang giải. Ngày giả
+// đứng yên 3 tháng làm Google thôi tin lastmod. Giờ trang mục lục lấy ngày của bài
+// mới nhất bên trong; trang không có nguồn ngày thật thì KHÔNG khai lastmod.
 
 /** lastModified không bao giờ được ở TƯƠNG LAI: trang trận lấy ngày đá làm mốc sửa,
  *  nên 203/816 URL khai ngày 24/8, 29/8… trong khi hôm nay 23/8 (kiểm 23/8/2026).
@@ -30,6 +30,13 @@ function safeLastMod(value: string | number | Date | null | undefined): Date {
   const d = value ? new Date(value) : new Date();
   const now = new Date();
   return Number.isNaN(d.getTime()) || d > now ? now : d;
+}
+
+/** Ngày mới nhất trong danh sách (ISO), hoặc undefined nếu không có ngày nào —
+ *  khi đó trang không khai lastmod thay vì khai ngày bịa. */
+function moiNhat(dates: (string | null | undefined)[]): Date | undefined {
+  const ts = dates.map((d) => (d ? Date.parse(d) : NaN)).filter((t) => Number.isFinite(t));
+  return ts.length ? safeLastMod(Math.max(...ts)) : undefined;
 }
 
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
@@ -73,13 +80,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
   ).filter((x): x is NonNullable<typeof x> => x !== null);
 
+  // lastmod trang mục lục = ngày bài/kèo mới nhất bên trong.
+  const lmPick = moiNhat(settledPicks.map((p) => p.settled_at ?? p.kickoff_utc));
+  const lmAnalysis = moiNhat(deskArticles.map((a) => a.modified));
+  const lmNews = moiNhat(newsItems.map((n) => n.updated));
+  const lmBlog = moiNhat(blogs.map((b) => b.updated));
+  const lmGuide = moiNhat(guides.map((g) => g.updated));
+  const lmReport = moiNhat(reports.map((r) => r.updated));
+  const lmMatch = moiNhat(matches.filter((m) => m.coBai).map((m) => m.updated));
+  const lmHome = moiNhat([lmPick, lmAnalysis, lmNews, lmBlog].map((d) => d?.toISOString()));
+  const LASTMOD: Record<string, Date | undefined> = {
+    "": lmHome,
+    "/daily-board": lmPick,
+    "/track-record": lmPick,
+    "/archive": lmPick,
+    "/stats": lmPick,
+    "/matches": lmMatch,
+    "/analysis": lmAnalysis,
+    "/news": lmNews,
+    "/guides": lmGuide,
+    "/blog": lmBlog,
+    "/transparency": lmReport,
+  };
+
   const staticRoutes: MetadataRoute.Sitemap = ([
     { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
     { url: `${BASE}/daily-board`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-board") },
-    // /keo bị bỏ quên khỏi sitemap từ lúc dựng trang (Gwen phát hiện 25/8): trang
-    // để index, follow và cập nhật mỗi 3 tiếng, nhưng không có mặt trong 829 URL
-    // của sitemap. Ưu tiên 0.9 ngang /daily-board vì cùng là trang trụ.
-    { url: `${BASE}/keo`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/keo") },
+    // /keo RÚT khỏi sitemap 9/11: trang mỏng (~160 chữ, đo GSC 9/11 "đã thu thập –
+    // chưa lập chỉ mục"). Trang vẫn sống, vẫn index/follow — chỉ thôi mời Google.
     { url: `${BASE}/daily-line`, changeFrequency: "daily", priority: 0.9, alternates: alternates("/daily-line") },
     { url: `${BASE}/daily-line/leaderboard`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/daily-line/leaderboard") },
     { url: `${BASE}/daily-line/archive`, changeFrequency: "daily", priority: 0.6, alternates: alternates("/daily-line/archive") },
@@ -104,21 +132,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/tac-gia/chu-tam-banh`, changeFrequency: "weekly", priority: 0.6, alternates: alternates("/tac-gia/chu-tam-banh") },
     { url: `${BASE}/tac-gia/pete-nguyen`, changeFrequency: "weekly", priority: 0.6, alternates: alternates("/tac-gia/pete-nguyen") },
     { url: `${BASE}/responsible-play`, changeFrequency: "monthly", priority: 0.3, alternates: alternates("/responsible-play") },
-  ] as MetadataRoute.Sitemap).map((r) => ({ ...r, lastModified: VI_REPOSITION }));
-
-  // /play/ pick pages: every settled play now lives on the prefix-less Vietnamese
-  // canonical (self-canonical, no /match override, no /en 301). Declare each so
-  // Google indexes the VI-safe pick surface. (Nick 21/8, retires the 16/8 rule)
-  const playRoutes: MetadataRoute.Sitemap = settledPicks.map((pick) => {
-    const slug = buildPlaySlug(pick);
-    return {
-      url: `${BASE}/play/${slug}`,
-      lastModified: safeLastMod(pick.settled_at ?? pick.kickoff_utc),
-      changeFrequency: "weekly",
-      priority: 0.6,
-      alternates: alternates(`/play/${slug}`),
-    };
+  ] as MetadataRoute.Sitemap).map((r) => {
+    const lm = LASTMOD[r.url.slice(BASE.length)];
+    return lm ? { ...r, lastModified: lm } : r;
   });
+
+  // /play/* RÚT khỏi sitemap 9/11 (Peter duyệt GĐ1): trang kèo từng trận, đo GSC
+  // 9/11 không trang nào được lập chỉ mục. Trang vẫn sống, vẫn có link nội bộ.
 
   // Bảng `posts` KHÔNG còn khai URL nào qua đường /analysis/{slug} nữa — biến
   // newsRoutes cũ đã xoá hẳn vì cả ba nhóm trong bảng đều có chỗ khác để đi:
@@ -181,7 +201,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // trang vẫn sống, vẫn follow, chỉ không nộp cho Google nữa.
   const blogRoutes: MetadataRoute.Sitemap = blogs.map((b) => ({
     url: `${BASE}/blog/${b.slug}`,
-    lastModified: new Date(b.updated),
+    lastModified: safeLastMod(b.updated),
     changeFrequency: "monthly" as const,
     priority: 0.6,
     alternates: alternates(`/blog/${b.slug}`),
@@ -260,12 +280,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .flatMap((c) =>
       subPages(c).map((sub) => ({
         url: `${BASE}/competitions/${c.slug}${sub}`,
-        lastModified: VI_REPOSITION,
+        // Không khai lastmod: bảng điểm đổi theo trận, không có cột ngày sửa thật.
         changeFrequency: "daily" as const,
         priority: sub === "" ? 0.7 : 0.6,
         alternates: alternates(`/competitions/${c.slug}${sub}`),
       })),
     );
 
-  return [...staticRoutes, ...hubRoutes, ...playRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }
