@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { OG_VERSION } from "@/lib/brand";
+import { OG_VERSION, SITE_URL } from "@/lib/brand";
+import { cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran, type CauHoi } from "@/lib/du-doan-schema";
 import { getMucDuDoan, type MucDuDoan } from "@/lib/du-doan";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -15,24 +16,38 @@ export const revalidate = 300;
 
 type Props = { params: Promise<{ lang: string }> };
 
-// 41 ký tự + " | banhbong.net" từ template gốc = 56 (≤60).
-const TIEU_DE = "Dự đoán bóng đá hôm nay – nhận định tỷ số";
-const MO_TA =
-  "Dự đoán tỷ số từng trận Ngoại hạng Anh và các giải lớn, kèm bảng đúng/sai công khai: tỷ số dự đoán đặt cạnh tỷ số thật sau mỗi trận.";
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
+  // Ngày theo giờ VN (kiểu PredictZ "Tips Today - {ngày}"); trang revalidate 300s nên qua ngày tự đổi.
+  const { tieuDe, moTa } = metaDuDoan(Date.now());
   return {
-    title: TIEU_DE,
-    description: MO_TA,
+    title: tieuDe,
+    description: moTa,
     alternates: buildAlternates("/du-doan", lang),
     openGraph: {
       locale: "vi_VN",
-      title: `${TIEU_DE} | banhbong.net`,
-      description: MO_TA,
+      title: `${tieuDe} | banhbong.net`,
+      description: moTa,
       images: [{ url: `/api/og/editorial?title=D%E1%BB%B1%20%C4%91o%C3%A1n&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
   };
+}
+
+/** Câu hỏi nhanh: hiện ra trang (FAQ schema phải khớp chữ người đọc thấy). */
+function HoiNhanh({ ds }: { ds: CauHoi[] }) {
+  return (
+    <section aria-labelledby="hoi-nhanh" className="mt-12">
+      <h2 id="hoi-nhanh" className="font-display text-2xl font-bold">Hỏi nhanh</h2>
+      <dl className="mt-4 divide-y divide-line rounded-card border border-line bg-card">
+        {ds.map((c) => (
+          <div key={c.hoi} className="px-4 py-3">
+            <dt className="font-display text-sm font-bold">{c.hoi}</dt>
+            <dd className="mt-1 text-sm text-muted">{c.dap}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
 }
 
 const gioVN = (iso: string) =>
@@ -89,10 +104,27 @@ export default async function DuDoanHub({ params }: Props) {
   const hang = dungHang(muc, curator, odds, await getTranDaDa(doiCanPhongDo(muc)));
   // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
   const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
+  const hoi = cauHoiDuDoan(muc, hang);
+  // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd).
+  const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL));
 
   return (
     <div className="mx-auto max-w-[800px] px-5 py-12">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Dự đoán", url: "/du-doan" }]} />
+      {suKien.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLd({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              name: "Dự đoán bóng đá",
+              itemListElement: suKien.map((item, i) => ({ "@type": "ListItem", position: i + 1, item })),
+            }),
+          }}
+        />
+      )}
+      {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <h1 className="gradient-text font-display text-4xl font-bold">Dự đoán bóng đá hôm nay</h1>
       <p className="mt-2 text-sm text-muted">Tỷ số dự đoán từng trận, chấm đúng/sai sau trận.</p>
 
@@ -118,6 +150,8 @@ export default async function DuDoanHub({ params }: Props) {
       )}
 
       <BangDungSai muc={muc} lang={lang} />
+
+      {hoi.length > 0 && <HoiNhanh ds={hoi} />}
 
       <p className="mt-10 text-xs text-muted">
         Xem thêm{" "}

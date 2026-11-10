@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { tongKetTheoTacGia } from "@/lib/du-doan-cham";
 import type { MucDuDoan } from "@/lib/du-doan";
+import { tenKhach, tenNha } from "@/lib/du-doan-nguon";
 import { withLang, type Lang } from "@/lib/i18n";
+
+/** "19:00 T4 11/11" theo giờ VN. */
+const gioVN = (iso: string) =>
+  new Date(iso).toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+  });
 
 /**
  * Bảng đúng/sai của hub /du-doan: trận đã đá, tỷ số dự đoán đặt cạnh tỷ số thật.
@@ -12,6 +24,8 @@ export function BangDungSai({ muc, lang }: { muc: MucDuDoan[]; lang: Lang }) {
   const daCham = muc.filter((m): m is MucDuDoan & { ketQua: NonNullable<MucDuDoan["ketQua"]> } => m.ketQua !== null);
   const choTySo = muc.filter((m) => m.chot && !m.sapDa && !m.ketQua).length;
   const tong = tongKetTheoTacGia(daCham.map((m) => ({ tacGia: m.bai.byline, ...m.ketQua })));
+  // Trận sắp đá gần nhất đã chốt tỷ số — nói rõ khi nào bảng có dòng đầu tiên.
+  const keTiep = muc.filter((m) => m.chot && m.sapDa).sort((a, b) => (a.kickoffUtc ?? "").localeCompare(b.kickoffUtc ?? ""))[0];
   const pt = (n: number, d: number) => (d > 0 ? `${Math.round((n / d) * 100)}%` : "–");
 
   return (
@@ -38,9 +52,20 @@ export function BangDungSai({ muc, lang }: { muc: MucDuDoan[]; lang: Lang }) {
       )}
 
       {daCham.length === 0 ? (
-        <p className="mt-5 rounded-card border border-line bg-card px-6 py-8 text-center text-sm text-muted">
-          Chưa có trận nào được chấm.
-        </p>
+        <div className="mt-5 rounded-card border border-dashed border-line bg-card px-6 py-6 text-center text-sm">
+          <p className="font-display font-bold">Chưa có trận chấm</p>
+          {keTiep?.duDoan && keTiep.kickoffUtc ? (
+            <p className="mt-1 text-muted">
+              Trận đầu được chấm:{" "}
+              <Link href={withLang(`/analysis/${keTiep.bai.slug}`, lang)} className="font-semibold text-ink hover:text-brand">
+                {tenNha(keTiep.duDoan)} vs {tenKhach(keTiep.duDoan)}
+              </Link>
+              , sau {gioVN(keTiep.kickoffUtc)}.
+            </p>
+          ) : (
+            <p className="mt-1 text-muted">Trận có tỷ số chốt trước giờ đá sẽ hiện ở đây sau khi kết thúc.</p>
+          )}
+        </div>
       ) : (
         <div className="mt-5 overflow-x-auto rounded-card border border-line">
           <table className="w-full text-sm">
@@ -58,7 +83,7 @@ export function BangDungSai({ muc, lang }: { muc: MucDuDoan[]; lang: Lang }) {
                 <tr key={m.bai.slug} className="border-t border-line">
                   <td className="px-4 py-2">
                     <Link href={withLang(`/analysis/${m.bai.slug}`, lang)} className="font-semibold hover:text-brand">
-                      {m.ketQua.that.home} – {m.ketQua.that.away}
+                      {m.duDoan ? `${tenNha(m.duDoan)} – ${tenKhach(m.duDoan)}` : `${m.ketQua.that.home} – ${m.ketQua.that.away}`}
                     </Link>
                     <span className="block text-xs text-muted">{m.bai.byline}</span>
                   </td>

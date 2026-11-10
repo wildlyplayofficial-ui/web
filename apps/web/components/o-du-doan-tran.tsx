@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DoiLogo } from "@/components/doi-logo";
-import { OPhongDo } from "@/components/phong-do";
+import { OKetQua, OPhongDo, OTySoDuDoan } from "@/components/phong-do";
 import { cauKetQua, type HangDuDoan } from "@/lib/du-doan-hang";
 import { chieuDuDoan, mauChieu } from "@/lib/phong-do";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
@@ -81,10 +81,18 @@ export function ODuDoanTran({ h, lang, lienKet = false }: { h: HangDuDoan; lang:
           {h.gio} · {thuNgay(h.kickoffUtc)}
         </p>
         {h.that && (
-          <p className="mt-2 text-center text-xs">
-            {h.that[0]}-{h.that[1]} ·{" "}
-            <span className={h.dung ? "font-bold text-brand" : "font-bold text-loss"}>{h.dung ? t.correct : t.wrong}</span>
-          </p>
+          <div className="mt-3">
+            <div className="flex items-stretch justify-center gap-2">
+              <OTySoDuDoan du={h.du} chu={{ home: t.homeShort, draw: t.draw, away: t.awayShort }} className="min-w-[96px] text-sm" />
+              <OKetQua that={h.that} dung={h.dung} nhan={t.result} className="min-w-[96px] text-sm" />
+            </div>
+            {h.dung !== null && (
+              <p className={`mt-1.5 text-center text-xs font-bold ${h.dung ? "text-brand" : "text-loss"}`}>
+                {h.dung ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
+                {h.dungTySo && ` · ${t.exactScore}`}
+              </p>
+            )}
+          </div>
         )}
       </div>
       </div>

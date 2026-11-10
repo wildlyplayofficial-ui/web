@@ -1,0 +1,128 @@
+/**
+ * JSON-LD + câu hỏi nhanh cho dự đoán (bản mổ xẻ PredictZ 10/11: mỗi trận một
+ * SportsEvent, FAQ có số thật). Hàm THUẦN — số lấy từ dữ liệu đã chấm, không bịa.
+ * Import TƯƠNG ĐỐI để vitest chạy không cần alias.
+ */
+import { tongKetTheoTacGia } from "./du-doan-cham";
+import type { MucDuDoan } from "./du-doan";
+import type { HangDuDoan } from "./du-doan-hang";
+
+const doi = (name: string) => ({ "@type": "SportsTeam", name });
+
+/** Câu dự đoán ngắn: "Việt Nam thắng 2-1" / "Hòa 1-1". */
+export function cauDuDoan(h: Pick<HangDuDoan, "nha" | "khach" | "du">): string | null {
+  if (!h.du) return null;
+  const [a, b] = h.du;
+  return a === b ? `Hòa ${a}-${b}` : `${a > b ? h.nha : h.khach} thắng ${a}-${b}`;
+}
+
+/** Một trận → SportsEvent. Trận đã đá vẫn để EventScheduled (schema.org không có
+ *  trạng thái "đã xong"); kết quả ghi vào description. */
+export function suKienTran(h: HangDuDoan, base: string) {
+  const du = cauDuDoan(h);
+  const moTa = [
+    du ? `Dự đoán: ${du}` : null,
+    h.that ? `Kết quả: ${h.nha} ${h.that[0]}-${h.that[1]} ${h.khach}` : null,
+  ].filter(Boolean).join(". ");
+  return {
+    "@type": "SportsEvent",
+    name: `${h.nha} vs ${h.khach}`,
+    startDate: h.kickoffUtc,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    sport: "Football",
+    url: `${base}/analysis/${h.slug}`,
+    homeTeam: doi(h.nha),
+    awayTeam: doi(h.khach),
+    competitor: [doi(h.nha), doi(h.khach)],
+    ...(h.san ? { location: { "@type": "Place", name: h.san } } : {}),
+    ...(moTa ? { description: moTa } : {}),
+  };
+}
+
+export interface CauHoi {
+  hoi: string;
+  dap: string;
+}
+
+const pt = (n: number, d: number) => `${Math.round((n / d) * 100)}%`;
+
+const gioNgayVN = (iso: string) =>
+  new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(iso));
+
+/**
+ * Câu hỏi nhanh cho /du-doan. Chỉ sinh câu nào có số thật; chưa có trận chốt tỷ
+ * số thì trả mảng rỗng (không hiện khối). Thành tích tách THEO TÁC GIẢ (firewall
+ * Curator/Scout — không gộp một tổng).
+ */
+export function cauHoiDuDoan(muc: readonly MucDuDoan[], hang: readonly HangDuDoan[]): CauHoi[] {
+  const chot = muc.filter((m) => m.chot);
+  if (chot.length === 0) return [];
+  const daCham = chot.filter((m) => m.ketQua);
+  const sapDa = chot.filter((m) => m.sapDa).length;
+  const ds: CauHoi[] = [
+    {
+      hoi: "banhbong.net đã dự đoán bao nhiêu trận?",
+      dap: `${chot.length} trận có tỷ số chốt trước giờ bóng lăn: ${daCham.length} trận đã chấm, ${sapDa} trận sắp đá.`,
+    },
+  ];
+  if (daCham.length > 0) {
+    const tong = tongKetTheoTacGia(daCham.map((m) => ({ tacGia: m.bai.byline, ...m.ketQua! })));
+    ds.push({
+      hoi: "Dự đoán đúng bao nhiêu trận?",
+      dap: tong
+        .map((t) => `${t.tacGia}: ${t.dungKetQua}/${t.tran} trận đúng kết quả (${pt(t.dungKetQua, t.tran)}), ${t.dungTySo}/${t.tran} trận đúng tỷ số.`)
+        .join(" "),
+    });
+  }
+  const ke = hang.filter((h) => h.sapDa && h.du).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))[0];
+  if (ke) {
+    ds.push({
+      hoi: "Trận sắp tới có dự đoán là trận nào?",
+      dap: `${ke.nha} vs ${ke.khach}, ${gioNgayVN(ke.kickoffUtc)} (giờ Việt Nam). Dự đoán: ${cauDuDoan(ke)}.`,
+    });
+  }
+  ds.push({
+    hoi: "Chấm đúng/sai thế nào?",
+    dap: "Chỉ chấm tỷ số chốt trước giờ bóng lăn. Đúng kết quả là đoán đúng thắng, hòa hay thua; đúng tỷ số là trúng cả hai con số. Tỷ số thật lấy từ dữ liệu trận sau khi kết thúc.",
+  });
+  return ds;
+}
+
+export function faqSchema(ds: readonly CauHoi[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: ds.map((c) => ({
+      "@type": "Question",
+      name: c.hoi,
+      acceptedAnswer: { "@type": "Answer", text: c.dap },
+    })),
+  };
+}
+
+/** Chuỗi JSON an toàn để nhúng <script type="application/ld+json">. */
+export const jsonLd = (data: object) => JSON.stringify(data).replace(/</g, "\\u003c");
+
+/** "10/11/2026" theo giờ VN. */
+const ngayVNChu = (t: number | Date) =>
+  new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric" }).format(t);
+
+/** Title + description /du-doan có ngày (giờ VN). Title chưa kèm " | banhbong.net"
+ *  (template gốc gắn thêm 15 ký tự) → giữ ≤45 để tổng ≤60; description ≤160. */
+export function metaDuDoan(now: number | Date): { tieuDe: string; moTa: string } {
+  const ngay = ngayVNChu(now);
+  return {
+    tieuDe: `Dự đoán bóng đá hôm nay ${ngay}`,
+    moTa: `Dự đoán tỷ số từng trận ngày ${ngay} (giờ Việt Nam): Ngoại hạng Anh và các giải lớn, kèm bảng đúng/sai công khai sau mỗi trận.`,
+  };
+}

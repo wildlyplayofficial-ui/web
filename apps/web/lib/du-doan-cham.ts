@@ -8,6 +8,7 @@
  */
 import { duDoanCua, type DuDoanDayDu } from "./du-doan-nguon";
 import type { AnalysisArticle, DuDoan } from "./types";
+import type { MucDuDoan } from "./du-doan";
 
 /** Chữ cá cược: bài dính chữ này không được lên hub (luật pháp lý VN). Slug mất dấu
  *  nên so theo TỪ NGUYÊN ("cuoc" đứng riêng sẽ bắt nhầm "cuộc đua"). */
@@ -101,3 +102,15 @@ export function tongKetTheoTacGia(rows: readonly ({ tacGia: string } & KetQuaCha
   }
   return [...theo.values()];
 }
+
+/** Một bài → một mục: xếp sắp/đã đá, chấm nếu đã có tỷ số. Hàm thuần. */
+export function dungMuc(b: AnalysisArticle, tySo: readonly TySoThat[], now: number): MucDuDoan {
+  const duDoan = duDoanCua(b);
+  const kickoffUtc = duDoan?.kickoff_utc ?? null;
+  const ko = kickoffUtc ? Date.parse(kickoffUtc) : NaN;
+  const sapDa = Number.isFinite(ko) && ko > now;
+  const chot = duDoanChot(b);
+  const that = chot && !sapDa ? timTySo(chot, tySo) : null;
+  return { bai: b, duDoan, kickoffUtc, sapDa, chot, ketQua: chot && that ? { ...cham(chot, that), that } : null };
+}
+

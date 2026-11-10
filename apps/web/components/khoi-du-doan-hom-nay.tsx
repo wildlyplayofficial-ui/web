@@ -54,8 +54,12 @@ export function KhoiDuDoanHomNay({
   record: TrackRecord;
 }) {
   const t = getDict(lang).duDoan;
-  // Trận nổi bật = trận chưa đá gần nhất (hôm nay trước), không có thì bỏ ô.
-  const noiBat = rows.filter((r) => r.sapDa).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))[0] ?? null;
+  // Trận nổi bật = trận chưa đá gần nhất (hôm nay trước); hết trận sắp đá thì trận
+  // vừa chấm xong gần nhất (ô dự đoán cạnh ô kết quả); không có cả hai thì bỏ ô.
+  const noiBat =
+    rows.filter((r) => r.sapDa).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))[0] ??
+    rows.filter((r) => r.that).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc))[0] ??
+    null;
   return (
     <section aria-labelledby="du-doan-hom-nay" className="mt-5 space-y-4">
       <h2 id="du-doan-hom-nay" className="font-display text-2xl font-bold sm:text-3xl">{t.title}</h2>

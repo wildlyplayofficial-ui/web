@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { getAnalysisArticles } from "./analysis-articles";
 import { getSupabase } from "./supabase";
-import { cham, duDoanChot, laBaiDuDoan, timTySo, type DuDoanChot, type KetQuaCham, type TySoThat } from "./du-doan-cham";
+import { dungMuc, laBaiDuDoan, type DuDoanChot, type KetQuaCham, type TySoThat } from "./du-doan-cham";
 import { duDoanCua, type DuDoanDayDu } from "./du-doan-nguon";
 import type { AnalysisArticle } from "./types";
 
@@ -68,6 +68,14 @@ const getTySoThat = unstable_cache(getTySoThatImpl, ["du-doan-ty-so-that"], { re
 
 const ngayLech = (iso: string, ngay: number) => new Date(Date.parse(iso) + ngay * 86_400_000).toISOString();
 
+/** Mục của MỘT bài (ô dự đoán đầu bài): chỉ kéo tỷ số quanh giờ đá của trận đó. */
+export async function getMucMotBai(b: AnalysisArticle): Promise<MucDuDoan> {
+  const ko = duDoanCua(b)?.kickoff_utc;
+  const now = Date.now();
+  const tySo = ko && Date.parse(ko) < now ? await getTySoThat(ngayLech(ko, -2), ngayLech(ko, 2)).catch(() => []) : [];
+  return dungMuc(b, tySo, now);
+}
+
 export async function getMucDuDoan(): Promise<MucDuDoan[]> {
   const bai = (await getAnalysisArticles(undefined, TRAN_BAI)).filter(laBaiDuDoan);
   const now = Date.now();
@@ -80,15 +88,7 @@ export async function getMucDuDoan(): Promise<MucDuDoan[]> {
     ? await getTySoThat(ngayLech(daDa[0], -2), ngayLech(daDa[daDa.length - 1], 2))
     : [];
 
-  const muc = bai.map((b): MucDuDoan => {
-    const duDoan = duDoanCua(b);
-    const kickoffUtc = duDoan?.kickoff_utc ?? null;
-    const ko = kickoffUtc ? Date.parse(kickoffUtc) : NaN;
-    const sapDa = Number.isFinite(ko) && ko > now;
-    const chot = duDoanChot(b);
-    const that = chot && !sapDa ? timTySo(chot, tySo) : null;
-    return { bai: b, duDoan, kickoffUtc, sapDa, chot, ketQua: chot && that ? { ...cham(chot, that), that } : null };
-  });
+  const muc = bai.map((b) => dungMuc(b, tySo, now));
 
   // Trận sắp đá lên đầu (gần giờ đá nhất trước), còn lại bài mới nhất trước.
   const sap = muc.filter((m) => m.sapDa).sort((a, b) => (a.kickoffUtc ?? "").localeCompare(b.kickoffUtc ?? ""));

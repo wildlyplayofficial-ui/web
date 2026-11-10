@@ -20,11 +20,13 @@ import { AuthorByline } from "@/components/author-byline";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
-import { duDoanChot, laBaiDuDoan } from "@/lib/du-doan-cham";
+import { laBaiDuDoan } from "@/lib/du-doan-cham";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import type { TranDaDa } from "@/lib/phong-do";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { dungHang } from "@/lib/du-doan-hang";
+import { getMucMotBai, type MucDuDoan } from "@/lib/du-doan";
+import { suKienTran } from "@/lib/du-doan-schema";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
 
 export const revalidate = 300;
@@ -212,25 +214,21 @@ function DeskArticleView({
   dict,
   giai,
   daDa = [],
+  muc = null,
 }: {
   article: AnalysisArticle;
   lang: Lang;
   daDa?: TranDaDa[];
+  /** Dự đoán của bài (đã chấm nếu trận xong); null = bài không có dự đoán. */
+  muc?: MucDuDoan | null;
   dict: ReturnType<typeof getDict>;
   /** Trang BXH của giải bài này thuộc về (nếu có) — link ngược về hub (9/11). */
   giai?: { slug: string; ten: string };
 }) {
   const quaHan = baiQuaHan(article.slug);
   // Ô dự đoán đầu bài (mock2 10/11) — chỉ bài có dự đoán (cột du_doan hoặc lib/data/du-doan.json).
-  const dd = duDoanCua(article);
-  const oDuDoan = dd
-    ? dungHang(
-        [{ bai: article, duDoan: dd, kickoffUtc: dd.kickoff_utc, sapDa: Date.parse(dd.kickoff_utc) > Date.now(), chot: duDoanChot(article), ketQua: null }],
-        [],
-        [],
-        daDa,
-      )[0] ?? null
-    : null;
+  // Trận đã đá thì `muc` mang tỷ số thật → ô dự đoán đặt cạnh ô kết quả (kiểu PredictZ).
+  const oDuDoan = muc ? dungHang([muc], [], [], daDa)[0] ?? null : null;
   const published = new Intl.DateTimeFormat(locales[lang], {
     day: "numeric",
     month: "long",
@@ -261,6 +259,7 @@ function DeskArticleView({
   return (
     <article className="mx-auto max-w-[720px] px-5 py-12">
       <JsonLd data={schemaData} />
+      {oDuDoan && <JsonLd data={{ "@context": "https://schema.org", ...suKienTran(oDuDoan, BASE) }} />}
 
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.analysis.title, url: "/analysis" }, { name: article.title, url: `/analysis/${article.slug}` }]} />
 
@@ -406,8 +405,10 @@ export default async function AnalysisArticlePage({ params }: Props) {
     const c = comps.find((x) => x.status === "active" && x.slug && cungGiai(deskArticle.league, x.name));
     const giai = c ? { slug: c.slug, ten: localizedCompetitionName(c.slug, c.name, lang) } : undefined;
     const dd = duDoanCua(deskArticle);
-    const daDa = dd ? await getTranDaDa([dd.home, dd.away]) : [];
-    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} giai={giai} daDa={daDa} />;
+    const [daDa, muc] = dd
+      ? await Promise.all([getTranDaDa([dd.home, dd.away]), getMucMotBai(deskArticle)])
+      : [[], null];
+    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} giai={giai} daDa={daDa} muc={muc} />;
   }
 
   // Fall back to posts table (existing behavior)

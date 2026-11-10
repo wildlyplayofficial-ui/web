@@ -6,6 +6,7 @@ import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-ar
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
 import { newsDuocIndex, analysisDuocIndex } from "@/lib/chi-muc";
+import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
 /** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8). */
@@ -37,6 +38,23 @@ function safeLastMod(value: string | number | Date | null | undefined): Date {
 function moiNhat(dates: (string | null | undefined)[]): Date | undefined {
   const ts = dates.map((d) => (d ? Date.parse(d) : NaN)).filter((t) => Number.isFinite(t));
   return ts.length ? safeLastMod(Math.max(...ts)) : undefined;
+}
+
+/** Bài có dự đoán: trận đá xong thì trang tự thêm ô kết quả cạnh ô dự đoán (v3,
+ *  10/11) dù hàng CSDL không đổi → lastmod = muộn hơn giữa ngày sửa và giờ đá + 2 giờ
+ *  (safeLastMod chặn tương lai, nên trận chưa đá giữ ngày sửa).
+ *
+ *  Chưa tách sitemap "sắp đá / đã đá" như predictz: repo chỉ có MỘT sitemap.ts (không
+ *  dùng generateSitemaps) và hiện mới có 1 bài dự đoán — tách file lúc này chỉ thêm
+ *  một tệp gần rỗng. Khi số bài dự đoán đủ lớn thì tách bằng generateSitemaps. */
+function lastmodBaiDuDoan(slug: string, modified: string): Date {
+  const ko = duDoanCua({ slug, du_doan: null })?.kickoff_utc;
+  const xong = ko ? Date.parse(ko) + 2 * 3_600_000 : NaN;
+  const sua = Date.parse(modified);
+  // Trận chưa xong (giờ xong ở tương lai) thì KHÔNG dùng — safeLastMod sẽ kẹp về
+  // "bây giờ", tức khai lastmod mới mỗi lần bò dù trang chưa đổi.
+  if (!Number.isFinite(xong) || xong > Date.now() || (Number.isFinite(sua) && sua >= xong)) return safeLastMod(modified);
+  return safeLastMod(xong);
 }
 
 /** Build alternates map for hreflang in sitemap — path-based URLs. */
@@ -230,7 +248,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dọn chỉ mục 9/11 (Peter chốt): chỉ nộp bài được mời index — khớp robots ở trang bài.
   const deskRoutes: MetadataRoute.Sitemap = deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated)).map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
-    lastModified: safeLastMod(a.modified),
+    lastModified: lastmodBaiDuDoan(a.slug, a.modified),
     changeFrequency: "weekly",
     priority: 0.7,
     alternates: alternates(`/analysis/${a.slug}`),

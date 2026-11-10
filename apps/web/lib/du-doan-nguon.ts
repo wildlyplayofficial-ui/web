@@ -21,6 +21,8 @@ export interface DuDoanDayDu extends DuDoan {
   anh_khach?: string;
   /** Dòng ghi nguồn ảnh cầu thủ — BẮT BUỘC khi ảnh theo giấy phép CC BY-SA. */
   credit_anh?: string;
+  /** Sân thi đấu, ghi như bài viết ("Sân Thiên Trường, Ninh Bình"). */
+  san?: string;
 }
 
 const TEP: Record<string, DuDoanDayDu> = tep;

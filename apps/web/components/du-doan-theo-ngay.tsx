@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { DoiLogo } from "@/components/doi-logo";
-import { OPhongDo, OTySoDuDoan } from "@/components/phong-do";
+import { OKetQua, OPhongDo, OTySoDuDoan } from "@/components/phong-do";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
 
@@ -54,7 +54,7 @@ function Dong({ h, lang, hienTyLe }: { h: HangDuDoan; lang: Lang; hienTyLe: bool
                 </span>
               </span>
             ))}
-            {hienTyLe && h.mot && (
+            {hienTyLe && h.sapDa && h.mot && (
               <span className="block text-[11px] tabular-nums text-muted">
                 1 {h.mot[0].toFixed(2)} · X {h.mot[1].toFixed(2)} · 2 {h.mot[2].toFixed(2)}
               </span>
@@ -65,11 +65,16 @@ function Dong({ h, lang, hienTyLe }: { h: HangDuDoan; lang: Lang; hienTyLe: bool
           )}
           <span className="flex shrink-0 flex-col items-center gap-1">
             <OTySoDuDoan du={h.du} chu={{ home: t.homeShort, draw: t.draw, away: t.awayShort }} className="min-w-[84px] text-sm" />
-            {h.dung !== null && (
-              <span className={`text-[11px] font-bold ${h.dung ? "text-brand" : "text-loss"}`}>
-                {h.dung ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
-                {h.that && <span className="font-normal text-muted"> {h.that[0]}-{h.that[1]}</span>}
-              </span>
+            {h.that && (
+              <>
+                <OKetQua that={h.that} dung={h.dung} nhan={t.result} className="min-w-[84px] text-sm" />
+                {h.dung !== null && (
+                  <span className={`text-[11px] font-bold ${h.dung ? "text-brand" : "text-loss"}`}>
+                    {h.dung ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
+                    {h.dungTySo && <span className="block text-center font-semibold">{t.exactScore}</span>}
+                  </span>
+                )}
+              </>
             )}
           </span>
         </span>

@@ -29,7 +29,12 @@ export interface HangDuDoan {
   du: [number, number] | null;
   /** Tỷ số thật, khi đã chấm được. */
   that: [number, number] | null;
+  /** Đúng kết quả thắng/hoà/thua (null = chưa chấm). */
   dung: boolean | null;
+  /** Trúng đúng tỷ số (null = chưa chấm). */
+  dungTySo: boolean | null;
+  /** Tên sân, nếu tệp dự đoán có ghi (cho JSON-LD location). */
+  san: string | null;
   sapDa: boolean;
   /** Chú Tám có pick cho trận này (khớp tên hai đội + giờ đá). */
   pick: boolean;
@@ -99,6 +104,8 @@ export function dungHang(
         du: m.chot ? [m.chot.home_goals, m.chot.away_goals] : null,
         that: m.ketQua ? [m.ketQua.that.home_score, m.ketQua.that.away_score] : null,
         dung: m.ketQua ? m.ketQua.dungKetQua : null,
+        dungTySo: m.ketQua ? m.ketQua.dungTySo : null,
+        san: d.san ?? null,
         sapDa: m.sapDa,
         pick: picks.some((p) => cungTran(tran, { home: p.home_team, away: p.away_team, kickoff: p.kickoff_utc })),
         mot,
