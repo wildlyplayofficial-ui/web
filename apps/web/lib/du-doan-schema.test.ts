@@ -73,6 +73,15 @@ describe("suKienTran — JSON-LD SportsEvent", () => {
   it("jsonLd thoát dấu < để không đóng thẻ script", () => {
     expect(jsonLd({ a: "</script>" })).not.toContain("</");
   });
+  it("đường dẫn có tên đội chứa </script> vẫn không thoát khỏi thẻ", () => {
+    // Cùng hình dạng buildBreadcrumb trả về (lib/jsonld.ts dùng alias @/ nên không import vào vitest được).
+    const duongDan = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [{ "@type": "ListItem", position: 1, name: "a</script><script>alert(1)</script>", item: "https://www.banhbong.net/du-doan" }],
+    };
+    expect(jsonLd(duongDan).toLowerCase()).not.toContain("</script");
+  });
   it("câu dự đoán hoà", () => {
     expect(cauDuDoan({ ...HANG, du: [1, 1] })).toBe("Hòa 1-1");
   });
