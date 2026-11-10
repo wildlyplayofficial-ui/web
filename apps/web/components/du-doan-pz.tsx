@@ -183,13 +183,17 @@ export function DuDoanPZ({
   homNay,
   lang,
   tieuDe,
+  trangChu = false,
 }: {
   rows: HangDuDoan[];
   homNay: string;
   lang: Lang;
   /** h1 dựng ở server (ngày giờ VN) để HTML server và client trùng nhau. */
   tieuDe: string;
+  /** Trang chủ đã có h1 riêng → tiêu đề thành h2, bỏ 2 đoạn giới thiệu. */
+  trangChu?: boolean;
 }) {
+  const TieuDe = trangChu ? "h2" : "h1";
   const t = getDict(lang).duDoan;
   const coDuLieu = new Set(rows.map((r) => r.ngay));
   // Hôm qua (xem chấm đúng/sai) + hôm nay + 4 ngày tới, như hàng nút ngày PredictZ.
@@ -235,10 +239,11 @@ export function DuDoanPZ({
           ))}
         </select>
       </div>
-      <h1 className="mb-2.5 ml-2.5 mt-5 text-left font-display text-[30px] leading-[47px]">
+      <TieuDe className="mb-2.5 ml-2.5 mt-5 text-left font-display text-[30px] leading-[47px]">
         {ngay === homNay ? tieuDe : `Dự đoán bóng đá ${thu(ngay)}, ngày ${Number(ngay.slice(8))} tháng ${Number(ngay.slice(5, 7))} năm ${ngay.slice(0, 4)}`}
-      </h1>
+      </TieuDe>
       <div className="mb-5 pl-2.5 text-left text-sm leading-[22px]">
+        {!trangChu && (<>
         <p className="p-2.5">
           Toàn bộ <strong>dự đoán bóng đá hôm nay</strong> và tối nay của banhbong.net, giờ Việt Nam.
         </p>
@@ -246,6 +251,7 @@ export function DuDoanPZ({
           Mỗi trận có <strong>tỷ số dự đoán</strong>, <strong>phong độ 5 trận gần nhất</strong> của hai đội và tỷ lệ
           1·X·2. Trận có bài <strong>nhận định</strong> thì bấm xem chi tiết; đá xong, ô kết quả cho biết dự đoán đúng hay sai.
         </p>
+        </>)}
         <p className="p-2.5">Ký hiệu phong độ 5 trận:</p>
         <div className="flex items-center">
           {(["T", "H", "B"] as KQ[]).map((k, i) => (

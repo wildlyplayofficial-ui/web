@@ -30,6 +30,7 @@ import { getMucDuDoan } from "@/lib/du-doan";
 import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
 import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { getTranDaDa } from "@/lib/phong-do-db";
+import { doiThieuPhongDo, hangTuan, tieuDeH1 } from "@/lib/du-doan-tuan";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
 export const revalidate = 300;
@@ -179,7 +180,10 @@ export default async function Home({ params }: Props) {
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
   const heroPick = picks[0] ?? null;
-  const hangDuDoan = dungHang(mucDuDoan, picks, oddsMatches, await getTranDaDa(doiCanPhongDo(mucDuDoan)));
+  const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(mucDuDoan)), getTranDaDa(doiThieuPhongDo())]);
+  const hangBai = dungHang(mucDuDoan, picks, oddsMatches, daDa);
+  // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
+  const hangDuDoan = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
   // Bản dịch nhận định nằm ở bảng pick_content; cột `thesis` trên pick luôn là
   // tiếng Anh. Không lấy bản dịch thì trang tiếng Việt hiện ruột tiếng Anh (Nick 23/8).
   const heroThesis = heroPick
@@ -293,7 +297,7 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
-      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} thanhTich={thanhTichDuDoan(mucDuDoan)} />
+      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} thanhTich={thanhTichDuDoan(mucDuDoan)} tieuDe={tieuDeH1(homNay)} />
       {/* 1. Hero: brand positioning + curator record + form
           Đệm dọc thu lại trên ĐIỆN THOẠI (Peter chụp màn hình 2/9/2026: khối này
           ăn trọn màn đầu, đẩy "Bảng Dự Đoán Hôm Nay" xuống dưới nếp gấp).

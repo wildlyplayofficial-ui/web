@@ -91,3 +91,11 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
     return [{ ...h, nhan: nhanTran(h), giai: tenGiaiViet(d.giai), nha: tenDoiViet(d.nha), khach: tenDoiViet(d.khach) }];
   });
 }
+
+/** "Dự đoán bóng đá hôm nay - Thứ Ba, ngày 10 tháng 11 năm 2026" (kiểu h1 PredictZ). */
+const THU_H1 = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+export function tieuDeH1(khoa: string): string {
+  const [y, m, d] = khoa.split("-").map(Number);
+  const thu = THU_H1[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  return `Dự đoán bóng đá hôm nay - ${thu}, ngày ${d} tháng ${m} năm ${y}`;
+}

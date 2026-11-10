@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DuDoanTheoNgay } from "@/components/du-doan-theo-ngay";
+import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
 import { OThanhTichDuDoan } from "@/components/o-thanh-tich-du-doan";
 import type { TongKet } from "@/lib/du-doan-cham";
@@ -49,6 +49,7 @@ export function KhoiDuDoanHomNay({
   pick,
   record,
   thanhTich,
+  tieuDe,
 }: {
   rows: HangDuDoan[];
   homNay: string;
@@ -57,6 +58,8 @@ export function KhoiDuDoanHomNay({
   record: TrackRecord;
   /** Thành tích đã chấm theo tác giả; rỗng = không hiện ô. */
   thanhTich: readonly TongKet[];
+  /** Tiêu đề bảng dự đoán ngày hôm nay, dựng ở server. */
+  tieuDe: string;
 }) {
   const t = getDict(lang).duDoan;
   // Trận nổi bật = trận chưa đá gần nhất (hôm nay trước); hết trận sắp đá thì trận
@@ -71,7 +74,7 @@ export function KhoiDuDoanHomNay({
       <OThanhTichDuDoan tong={thanhTich} lang={lang} />
       <OPick pick={pick} record={record} lang={lang} />
       {noiBat && <ODuDoanTran h={noiBat} lang={lang} lienKet />}
-      <DuDoanTheoNgay rows={rows} homNay={homNay} lang={lang} locGiai={false} />
+      <DuDoanPZ rows={rows} homNay={homNay} lang={lang} tieuDe={tieuDe} trangChu />
       <Link
         href={withLang("/du-doan", lang)}
         className="block rounded-card bg-brand px-5 py-3 text-center font-display text-sm font-bold text-bg transition-colors hover:bg-brand-hover"
