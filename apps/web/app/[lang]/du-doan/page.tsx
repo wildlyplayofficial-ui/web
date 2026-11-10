@@ -10,7 +10,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BangDungSai } from "@/components/bang-dung-sai";
 import { OThanhTichDuDoan } from "@/components/o-thanh-tich-du-doan";
 import { thanhTichDuDoan } from "@/lib/du-doan-cham";
-import { DuDoanTheoNgay } from "@/components/du-doan-theo-ngay";
+import { DuDoanPZ } from "@/components/du-doan-pz";
 import { doiCanPhongDo, dungHang, ngayVN } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { getTodaysPicks } from "@/lib/data";
@@ -97,6 +97,14 @@ function DongBai({ m, lang }: { m: MucDuDoan; lang: Lang }) {
   );
 }
 
+/** "Dự đoán bóng đá hôm nay - Thứ Ba, ngày 10 tháng 11 năm 2026" (kiểu h1 PredictZ). */
+const THU_H1 = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+function tieuDeH1(khoa: string): string {
+  const [y, m, d] = khoa.split("-").map(Number);
+  const thu = THU_H1[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  return `Dự đoán bóng đá hôm nay - ${thu}, ngày ${d} tháng ${m} năm ${y}`;
+}
+
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const [muc, picks, odds, baiChon] = await Promise.all([
@@ -114,7 +122,7 @@ export default async function DuDoanHub({ params }: Props) {
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL));
 
   return (
-    <div className="mx-auto max-w-[800px] px-5 py-12">
+    <div className="mx-auto max-w-[800px] px-0 py-4 sm:px-5 sm:py-8">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Dự đoán", url: "/du-doan" }]} />
       {suKien.length > 0 && (
         <script
@@ -130,26 +138,16 @@ export default async function DuDoanHub({ params }: Props) {
         />
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
-      <h1 className="gradient-text font-display text-4xl font-bold">Dự đoán bóng đá hôm nay</h1>
-      <p className="mt-2 text-sm text-muted">Tỷ số dự đoán từng trận, chấm đúng/sai sau trận.</p>
-      <div className="mt-4">
-        <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
-      </div>
-      <div className="mt-4">
+      <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} tieuDe={tieuDeH1(ngayVN(Date.now()))} />
+      <div className="mt-6 px-2.5">
         <OThanhTichDuDoan tong={thanhTichDuDoan(muc)} lang={lang} />
       </div>
-
-      <div className="mt-6">
-        <DuDoanTheoNgay rows={hang} homNay={ngayVN(Date.now())} lang={lang} hienTyLe />
+      <div className="mt-4 px-2.5">
+        <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
       </div>
 
-      {hang.length === 0 && nhom.length === 0 ? (
-        <p className="mt-10 rounded-card border border-line bg-card px-6 py-8 text-center text-sm text-muted">
-          Chưa có dự đoán.
-        </p>
-      ) : (
-        nhom.map(([giai, ds]) => (
-          <section key={giai} className="mt-10">
+      {nhom.map(([giai, ds]) => (
+          <section key={giai} className="mt-10 px-2.5">
             <h2 className="font-display text-xl font-bold">{giai}</h2>
             <ul className="mt-4 space-y-3">
               {ds.map((m) => (
@@ -157,14 +155,14 @@ export default async function DuDoanHub({ params }: Props) {
               ))}
             </ul>
           </section>
-        ))
-      )}
+      ))}
 
-      <BangDungSai muc={muc} lang={lang} />
+      <div className="px-2.5">
+        <BangDungSai muc={muc} lang={lang} />
+        {hoi.length > 0 && <HoiNhanh ds={hoi} />}
+      </div>
 
-      {hoi.length > 0 && <HoiNhanh ds={hoi} />}
-
-      <p className="mt-10 text-xs text-muted">
+      <p className="mt-10 px-2.5 text-xs text-muted">
         Xem thêm{" "}
         <Link href={withLang("/analysis", lang)} className="text-brand hover:underline">mọi bài phân tích</Link>.
       </p>

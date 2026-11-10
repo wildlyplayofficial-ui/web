@@ -48,6 +48,9 @@ const TEN_KHAC: Record<string, string> = {
 const LOGO_DOI_TUYEN: Record<string, string> = {
   "chinese taipei":
     "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Chinese_Taipei_Football_Association_logo.webp/250px-Chinese_Taipei_Football_Association_logo.webp.png",
+  // Đội U23 dùng cờ nước (tên nguồn có hậu tố "U23", bảng ISO không khớp).
+  "vietnam u23": "https://flagcdn.com/w160/vn.png",
+  "thailand u23": "https://flagcdn.com/w160/th.png",
 };
 
 export function teamBadge(name: string): string | null {
