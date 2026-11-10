@@ -22,6 +22,7 @@ const cong = (ngay, n) => new Date(Date.parse(`${ngay}T00:00:00Z`) + n * 864e5).
 const gioCu = new Map(cu.map((d) => [khoa(d.ngay, d.nha, d.khach), d.gioUtc]));
 
 const SO_LIEU = ["h2h", "bxn", "bxk", "gn", "gk"];
+const PHU = [["btts", "pBtts"], ["ou", "pOu"], ["cs", "pCs"]];
 // Tệp ghi [] hoặc {} cho trận không có số liệu (đội tuyển) → bỏ, đừng đếm là có.
 const coGiaTri = (v) => (Array.isArray(v) ? v.length > 0 : v != null && Object.keys(v).length > 0);
 const dong = (t) => ({
@@ -36,6 +37,8 @@ const dong = (t) => ({
   gioUtc: gioCu.get(khoa(t.ngay, t.nha, t.khach)) ?? null,
   btts: t.btts?.tip ? (/yes/i.test(t.btts.tip) ? "Có" : "Không") : undefined,
   tx: t.ou?.tip ? (/over/i.test(t.ou.tip) ? "Tài 2.5" : "Xỉu 2.5") : undefined,
+  // Khối phụ trang trận: tip + tỷ lệ + chuỗi 5 trận (h5/a5). cs chỉ ~1/10 trận có.
+  ...Object.fromEntries(PHU.filter(([k]) => t[k]?.tip).map(([k, ra]) => [ra, { tip: t[k].tip, keo: Array.isArray(t[k].keo) ? t[k].keo : [], h5: t[k].h5 ?? "", a5: t[k].a5 ?? "" }])),
   // Số liệu trang trận (đối đầu, bảng xếp hạng, 10 trận gần nhất): có thì giữ nguyên.
   ...Object.fromEntries(SO_LIEU.filter((k) => coGiaTri(t[k])).map((k) => [k, t[k]])),
 });

@@ -10,6 +10,7 @@ import { chieuDuDoan, phongDoCuTruoc, type KQ, type TranDaDa } from "./phong-do"
 import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
 import { bxConMoi, conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
+import type { ThiTruongPhu } from "./tran-keo-phu";
 
 export interface DongTuan extends SoLieuTran {
   ngay: string;
@@ -30,6 +31,10 @@ export interface DongTuan extends SoLieuTran {
   tx?: string;
   /** Cả hai đội ghi bàn: "Có" / "Không". */
   btts?: string;
+  /** Chi tiết hai đội ghi bàn / tài xỉu 2,5 / tỷ số chính xác: tip + tỷ lệ + chuỗi 5 trận. */
+  pBtts?: ThiTruongPhu;
+  pOu?: ThiTruongPhu;
+  pCs?: ThiTruongPhu;
 }
 
 const DONG = duLieu as DongTuan[];
@@ -123,4 +128,13 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
     // Nhãn tính trên tên gốc; hiển thị + JSON-LD dùng tên Việt (người Việt tìm bằng tên Việt).
     return [{ ...h, nhan: nhanTran(h), giai: tenGiaiViet(d.giai), nha: tenDoiViet(d.nha), khach: tenDoiViet(d.khach) }];
   });
+}
+
+export type KeoPhu = Pick<DongTuan, "nha" | "khach" | "pBtts" | "pOu" | "pCs">;
+
+/** Khối hai đội ghi bàn · tài xỉu · tỷ số chính xác của một trận tệp tuần; tệp không ghi gì → null. */
+export function keoPhuTuan(slug: string): KeoPhu | null {
+  const d = DONG.find((x) => slugTuan(x) === slug);
+  if (!d || !(d.pBtts || d.pOu || d.pCs)) return null;
+  return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }
