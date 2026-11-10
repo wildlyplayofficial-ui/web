@@ -159,6 +159,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
       accent: true,
       items: [
         { name: nav.todaysPick, href: "/daily-board" },
+        { name: nav.predictions, href: "/du-doan" },
         { name: nav.dailyLine, href: "/daily-line" },
       ],
     },

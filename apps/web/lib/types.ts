@@ -37,10 +37,24 @@ export interface AnalysisArticle {
   /** Mô tả cho Google, viết tay. Bỏ trống thì trang tự cắt 160 ký tự đầu body —
    *  cách đó hay đứt giữa từ ("…kéo dài tới rạng sá"), nên bài quan trọng thì viết tay. */
   meta_description?: string | null;
+  /** Trận + tỷ số dự đoán của bài xem trước (hub /du-doan). Cột jsonb, migration
+   *  add_analysis_du_doan.sql — chưa chạy trên CSDL thì luôn undefined. */
+  du_doan?: DuDoan | null;
   published_at: string;
   /** Row-update timestamp — used as the OG-card cache-bust token. */
   updated_at?: string;
   status: "draft" | "published";
+}
+
+/** Cột `analysis_articles.du_doan`. Tên đội ghi ĐỦ như nguồn tỷ số
+ *  ("Manchester United", không "Man Utd") để ghép được với bảng fixtures. */
+export interface DuDoan {
+  home: string;
+  away: string;
+  kickoff_utc: string;
+  /** Tỷ số dự đoán. Bỏ trống = bài có lên hub nhưng không vào bảng chấm. */
+  home_goals?: number | null;
+  away_goals?: number | null;
 }
 
 /** Tiered Picks firewall (§12): Curator (real human) vs Scout (fictional AI persona).

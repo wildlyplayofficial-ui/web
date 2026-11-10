@@ -72,6 +72,8 @@ export interface Dict {
     trackRecord: string;
     analysis: string;
     learn: string;
+    /** Hub /du-doan — mọi bài dự đoán từng trận + bảng đúng/sai. */
+    predictions: string;
   };
   tagline: string;
   /** Bản ngắn cho ĐIỆN THOẠI — xem ghi chú ở app/[lang]/page.tsx. */
@@ -407,6 +409,7 @@ const en: Dict = {
     trackRecord: "Track Record",
     analysis: "Analysis",
     learn: "Learn",
+    predictions: "Match Predictions",
   },
   tagline: "Free Football Picks, Analysis & Betting Guides",
   taglineShort: "Free Football Picks",
@@ -732,6 +735,7 @@ const vi: Dict = {
     trackRecord: "Thành Tích",
     analysis: "Phân Tích",
     learn: "Học Hỏi",
+    predictions: "Dự Đoán Từng Trận",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",
@@ -1057,6 +1061,7 @@ const th: Dict = {
     trackRecord: "สถิติผลงาน",
     analysis: "บทวิเคราะห์",
     learn: "เรียนรู้",
+    predictions: "ทำนายผลรายนัด",
   },
   tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
   taglineShort: "ทีเด็ดบอลฟรี",
@@ -1382,6 +1387,7 @@ const es: Dict = {
     trackRecord: "Historial",
     analysis: "Análisis",
     learn: "Aprender",
+    predictions: "Pronósticos por Partido",
   },
   tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
   taglineShort: "Picks de Fútbol Gratis",

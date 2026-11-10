@@ -20,6 +20,7 @@ import { AuthorByline } from "@/components/author-byline";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
+import { laBaiDuDoan } from "@/lib/du-doan-cham";
 
 export const revalidate = 300;
 
@@ -345,6 +346,11 @@ function DeskArticleView({
         {giai && (
           <Link href={withLang(`/competitions/${giai.slug}`, lang)} className="rounded-full border border-brand/40 px-3 py-1.5 font-semibold text-brand transition-colors hover:bg-brand/10">
             {`Bảng xếp hạng ${giai.ten}`} &rarr;
+          </Link>
+        )}
+        {laBaiDuDoan(article) && (
+          <Link href={withLang("/du-doan", lang)} className="rounded-full border border-brand/40 px-3 py-1.5 font-semibold text-brand transition-colors hover:bg-brand/10">
+            Xem tất cả dự đoán &rarr;
           </Link>
         )}
         <Link href={withLang("/analysis", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
