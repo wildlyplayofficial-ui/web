@@ -186,7 +186,7 @@ export function DuDoanPZ({
         nhom.map(([g, ds]) => (
           <section key={g} className="mx-auto mb-[30px] w-[96%] text-left">
             <div className="flex items-center border-b border-ink py-2">
-              <span className="mr-2.5 inline-block h-5 w-5 shrink-0 overflow-hidden rounded-full">
+              <span className="mr-2.5 inline-block h-5 w-5 shrink-0 overflow-hidden rounded-full [&_img]:object-cover">
                 <DoiLogo src={coGiai(g, ds[0])} ten={g} size={20} />
               </span>
               <h2 className="ml-2.5 font-display text-[22px] leading-[35px]">Dự đoán {g}</h2>
