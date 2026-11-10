@@ -8,6 +8,7 @@ import { tenSo } from "./du-doan-cham";
 import { cungTran, ngayVN, nhanTran, type HangDuDoan } from "./du-doan-hang";
 import { phongDo, type KQ, type TranDaDa } from "./phong-do";
 import { teamBadge } from "./team-badges";
+import { tenDoiViet, tenGiaiViet } from "./ten-viet";
 
 export interface DongTuan {
   ngay: string;
@@ -86,6 +87,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       doiDau: null,
       nhan: [],
     };
-    return [{ ...h, nhan: nhanTran(h) }];
+    // Nhãn tính trên tên gốc; hiển thị + JSON-LD dùng tên Việt (người Việt tìm bằng tên Việt).
+    return [{ ...h, nhan: nhanTran(h), giai: tenGiaiViet(d.giai), nha: tenDoiViet(d.nha), khach: tenDoiViet(d.khach) }];
   });
 }

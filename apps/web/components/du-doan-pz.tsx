@@ -6,6 +6,7 @@ import { DoiLogo } from "@/components/doi-logo";
 import type { HangDuDoan, NhanTran } from "@/lib/du-doan-hang";
 import { chieuDuDoan, type KQ } from "@/lib/phong-do";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
+import { coGiaiGoc } from "@/lib/ten-viet";
 
 /**
  * Danh sách dự đoán bố cục PredictZ bản điện thoại (đo từng ô bằng reanimate 10/11/2026,
@@ -22,19 +23,11 @@ const THU = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm",
 const thu = (khoa: string) => THU[new Date(`${khoa}T00:00:00Z`).getUTCDay()];
 const ddmm = (khoa: string) => `${khoa.slice(8, 10)}/${khoa.slice(5, 7)}`;
 
-/** Tên nước đứng đầu tên giải ("England League One") → cờ. Bắc Ireland xét trước Anh. */
-const NUOC_GIAI: [RegExp, string][] = [
-  [/^northern ireland/, "gb-nir"], [/^scotland/, "gb-sct"], [/^wales/, "gb-wls"], [/^england/, "gb-eng"],
-  [/^germany/, "de"], [/^italy/, "it"], [/^spain/, "es"], [/^france/, "fr"], [/^brazil/, "br"], [/^colombia/, "co"],
-  [/^algeria/, "dz"], [/^india/, "in"], [/^montenegro/, "me"], [/^serbia/, "rs"], [/^slovenia/, "si"],
-  [/^uganda/, "ug"], [/^ukraine/, "ua"], [/^uruguay/, "uy"], [/^uefa|nations league|euro/, "eu"],
-];
-
 /** Cờ tròn đầu khối giải: theo tên giải, không đoán được thì logo đội nhà trận đầu. */
 function coGiai(giai: string, dau: HangDuDoan): string | null {
   const g = giai.toLowerCase();
-  const nuoc = NUOC_GIAI.find(([re]) => re.test(g));
-  if (nuoc) return `https://flagcdn.com/w40/${nuoc[1]}.png`;
+  const co = coGiaiGoc(giai);
+  if (co) return co;
   if (/premier league|ngoại hạng anh|fa cup|championship/.test(g)) return "https://flagcdn.com/w40/gb-eng.png";
   if (/v-league|vtv cup|casper|việt nam|vietnam|aff/.test(g)) return "https://flagcdn.com/w40/vn.png";
   if (/la liga|laliga/.test(g)) return "https://flagcdn.com/w40/es.png";

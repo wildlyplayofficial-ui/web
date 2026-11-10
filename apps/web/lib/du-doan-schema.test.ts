@@ -140,6 +140,9 @@ describe("nhanTran", () => {
   it("giải lớn được gắn nhãn hot", () => {
     expect(nhanTran({ ...HANG, nha: "Belgium", khach: "Wales", giai: "UEFA Nations League" })).toEqual(["hot"]);
   });
+  it("Nations League không có đội lớn thì không gắn hot", () => {
+    expect(nhanTran({ ...HANG, nha: "Armenia", khach: "Cyprus", giai: "UEFA Nations League" })).toEqual([]);
+  });
   it("chọn đội có tỷ lệ cao hơn thì là ngược kèo", () => {
     expect(nhanTran({ ...HANG, nha: "A", khach: "B", giai: "x", du: [0, 1], mot: [1.8, 3.4, 4.5] })).toEqual(["nguocKeo"]);
   });
