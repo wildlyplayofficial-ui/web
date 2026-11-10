@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DoiLogo } from "@/components/doi-logo";
-import { OKetQua, OPhongDo, OTySoDuDoan } from "@/components/phong-do";
+import { ODoiDau, OKetQua, OPhongDo, OTySoDuDoan } from "@/components/phong-do";
 import { cauKetQua, type HangDuDoan } from "@/lib/du-doan-hang";
 import { chieuDuDoan, mauChieu } from "@/lib/phong-do";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
@@ -72,6 +72,7 @@ export function ODuDoanTran({ h, lang, lienKet = false }: { h: HangDuDoan; lang:
             <span>{h.formKhach && <OPhongDo kq={h.formKhach} nhan={`${t.form} · ${h.khach}`} />}</span>
           </div>
         )}
+        <ODoiDau ds={h.doiDau} nha={h.nha} khach={h.khach} nhan={t.h2h} />
         {h.du && (
           <p className={`mt-2 text-center text-sm font-semibold ${mauChieu(chieuDuDoan(h.du)).split(" ")[1]}`}>
             {cauKetQua(h, t.win, t.draw)}

@@ -103,6 +103,9 @@ export interface Dict {
     result: string;
     predicted: string;
     exactScore: string;
+    h2h: string;
+    hitRate: string;
+    matchesUnit: string;
   };
   tagline: string;
   /** Bản ngắn cho ĐIỆN THOẠI — xem ghi chú ở app/[lang]/page.tsx. */
@@ -466,6 +469,9 @@ const en: Dict = {
     result: "Result",
     predicted: "Tip",
     exactScore: "Exact score",
+    h2h: "Head-to-head",
+    hitRate: "correct",
+    matchesUnit: "matches",
   },
   tagline: "Free Football Picks, Analysis & Betting Guides",
   taglineShort: "Free Football Picks",
@@ -819,6 +825,9 @@ const vi: Dict = {
     result: "KQ",
     predicted: "Dự đoán",
     exactScore: "Trúng tỷ số",
+    h2h: "Đối đầu",
+    hitRate: "đoán đúng",
+    matchesUnit: "trận",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",
@@ -1172,6 +1181,9 @@ const th: Dict = {
     result: "ผล",
     predicted: "ทีเด็ด",
     exactScore: "สกอร์ตรง",
+    h2h: "เจอกัน",
+    hitRate: "ทายถูก",
+    matchesUnit: "นัด",
   },
   tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
   taglineShort: "ทีเด็ดบอลฟรี",
@@ -1525,6 +1537,9 @@ const es: Dict = {
     result: "Res.",
     predicted: "Pronóstico",
     exactScore: "Marcador exacto",
+    h2h: "Cara a cara",
+    hitRate: "aciertos",
+    matchesUnit: "partidos",
   },
   tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
   taglineShort: "Picks de Fútbol Gratis",

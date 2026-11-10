@@ -6,6 +6,8 @@ import { getMucDuDoan, type MucDuDoan } from "@/lib/du-doan";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BangDungSai } from "@/components/bang-dung-sai";
+import { OThanhTichDuDoan } from "@/components/o-thanh-tich-du-doan";
+import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { DuDoanTheoNgay } from "@/components/du-doan-theo-ngay";
 import { doiCanPhongDo, dungHang, ngayVN } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
@@ -127,6 +129,9 @@ export default async function DuDoanHub({ params }: Props) {
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <h1 className="gradient-text font-display text-4xl font-bold">Dự đoán bóng đá hôm nay</h1>
       <p className="mt-2 text-sm text-muted">Tỷ số dự đoán từng trận, chấm đúng/sai sau trận.</p>
+      <div className="mt-4">
+        <OThanhTichDuDoan tong={thanhTichDuDoan(muc)} lang={lang} />
+      </div>
 
       <div className="mt-6">
         <DuDoanTheoNgay rows={hang} homNay={ngayVN(Date.now())} lang={lang} hienTyLe />

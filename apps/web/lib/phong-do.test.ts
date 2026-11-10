@@ -1,6 +1,6 @@
 // Chạy như lib/du-doan.test.ts (mượn vitest của apps/worker).
 import { describe, expect, it } from "vitest";
-import { chieuDuDoan, mauChieu, mauKQ, phongDo, type TranDaDa } from "./phong-do";
+import { chieuDuDoan, doiDau, mauChieu, mauKQ, phongDo, type TranDaDa } from "./phong-do";
 
 const tran = (home: string, away: string, ngay: string, h: number, a: number): TranDaDa => ({
   home, away, kickoff_utc: `2026-${ngay}T12:00:00Z`, home_score: h, away_score: a,
@@ -41,5 +41,24 @@ describe("màu ô dự đoán", () => {
 
   it("0-2 khách thắng → hồng", () => {
     expect(mauChieu(chieuDuDoan([0, 2]))).toContain("pink");
+  });
+});
+
+describe("doiDau — đối đầu từ chính dữ liệu phong độ", () => {
+  const GAP = [
+    tran("Vietnam", "Thailand", "03-01", 2, 1),
+    tran("Thailand", "Vietnam", "06-01", 3, 0),
+    tran("Thailand", "Vietnam", "06-01", 3, 0), // dòng trùng
+    tran("Vietnam", "Laos", "07-01", 5, 0), // không phải cặp này
+    tran("Vietnam", "Thailand", "12-01", 1, 1), // SAU trận → bỏ
+  ];
+  it("mới nhất trước, kết quả nhìn từ đội nhà trận sắp tới, bỏ trùng", () => {
+    expect(doiDau(GAP, "Vietnam", "Thailand", "2026-11-11T12:00:00Z")).toEqual([
+      { ngay: "2026-06-01", cungChieu: false, ts: [3, 0], kq: "B" },
+      { ngay: "2026-03-01", cungChieu: true, ts: [2, 1], kq: "T" },
+    ]);
+  });
+  it("chưa gặp nhau trong dữ liệu → null (không hiện)", () => {
+    expect(doiDau(GAP, "Vietnam", "Chinese Taipei", "2026-11-11T12:00:00Z")).toBeNull();
   });
 });

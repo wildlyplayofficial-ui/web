@@ -174,7 +174,6 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
       ],
     },
     { label: nav.analysis, href: "/analysis" },
-    { label: nav.news, href: "/news" },
     { label: nav.odds, href: "/keo" },
     {
       label: nav.matches,
@@ -194,6 +193,8 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
       ],
     },
     { label: nav.about, href: "/about" },
+    // Site DỰ ĐOÁN, không phải trang tin (Peter 10/11): Tin tức xếp cuối.
+    { label: nav.news, href: "/news" },
   ];
 
   return (

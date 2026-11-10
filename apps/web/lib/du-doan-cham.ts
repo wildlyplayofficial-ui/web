@@ -114,3 +114,8 @@ export function dungMuc(b: AnalysisArticle, tySo: readonly TySoThat[], now: numb
   return { bai: b, duDoan, kickoffUtc, sapDa, chot, ketQua: chot && that ? { ...cham(chot, that), that } : null };
 }
 
+
+/** Thành tích từ các mục ĐÃ CHẤM, tách theo tác giả (byline). Chưa chấm → mảng rỗng. */
+export function thanhTichDuDoan(muc: readonly MucDuDoan[]): TongKet[] {
+  return tongKetTheoTacGia(muc.flatMap((m) => (m.ketQua ? [{ tacGia: m.bai.byline, ...m.ketQua }] : [])));
+}

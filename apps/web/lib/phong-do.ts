@@ -56,3 +56,43 @@ export const MAU = {
 
 export const mauChieu = (c: ChieuDuDoan) => (c === "nha" ? MAU.xanh : c === "hoa" ? MAU.vang : MAU.hong);
 export const mauKQ = (k: KQ) => (k === "T" ? MAU.xanh : k === "H" ? MAU.vang : MAU.hong);
+
+export interface TranDoiDau {
+  /** Ngày đá YYYY-MM-DD (UTC). */
+  ngay: string;
+  /** true = đội nhà của trận sắp tới cũng là đội nhà trận này. */
+  cungChieu: boolean;
+  /** Tỷ số theo đúng chiều sân trận đó [nhà, khách]. */
+  ts: [number, number];
+  /** Kết quả nhìn từ đội NHÀ của trận sắp tới. */
+  kq: KQ;
+}
+
+/** Tối đa 5 lần gặp nhau gần nhất TRƯỚC mốc `truoc` (lấy từ cùng các dòng phong độ,
+ *  không truy vấn thêm). Chưa gặp lần nào trong dữ liệu → null, không hiện. */
+export function doiDau(rows: readonly TranDaDa[], nha: string, khach: string, truoc: string): TranDoiDau[] | null {
+  const a = tenSo(nha);
+  const b = tenSo(khach);
+  const moc = Date.parse(truoc);
+  const daThay = new Set<string>();
+  const ds: TranDoiDau[] = [];
+  const gap = rows
+    .filter((r) => {
+      const h = tenSo(r.home);
+      const k = tenSo(r.away);
+      return ((h === a && k === b) || (h === b && k === a)) && Date.parse(r.kickoff_utc) < moc;
+    })
+    .sort((x, y) => y.kickoff_utc.localeCompare(x.kickoff_utc));
+  for (const r of gap) {
+    const ngay = r.kickoff_utc.slice(0, 10);
+    const khoa = `${tenSo(r.home)}|${ngay}`;
+    if (daThay.has(khoa)) continue;
+    daThay.add(khoa);
+    const cungChieu = tenSo(r.home) === a;
+    const ghi = cungChieu ? r.home_score : r.away_score;
+    const thung = cungChieu ? r.away_score : r.home_score;
+    ds.push({ ngay, cungChieu, ts: [r.home_score, r.away_score], kq: ghi > thung ? "T" : ghi < thung ? "B" : "H" });
+    if (ds.length === SO_TRAN) break;
+  }
+  return ds.length > 0 ? ds : null;
+}

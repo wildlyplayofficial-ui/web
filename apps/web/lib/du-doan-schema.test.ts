@@ -1,6 +1,6 @@
 // Chạy: vitest run (mượn vitest của apps/worker như du-doan.test.ts).
 import { describe, expect, it } from "vitest";
-import { dungMuc, type TySoThat } from "./du-doan-cham";
+import { dungMuc, thanhTichDuDoan, type TySoThat } from "./du-doan-cham";
 import { cauDuDoan, cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran } from "./du-doan-schema";
 import type { HangDuDoan } from "./du-doan-hang";
 import type { AnalysisArticle } from "./types";
@@ -44,7 +44,7 @@ const HANG: HangDuDoan = {
   slug: VN, giai: "Giao hữu", kickoffUtc: "2026-11-11T12:00:00Z", ngay: "2026-11-11", gio: "19:00",
   nha: "Việt Nam", khach: "Đài Bắc Trung Hoa", logoNha: null, logoKhach: null, anhNha: null, anhKhach: null,
   creditAnh: null, du: [2, 1], that: null, dung: null, dungTySo: null, san: "Sân Thiên Trường, Ninh Bình",
-  sapDa: true, pick: false, mot: null, formNha: null, formKhach: null,
+  sapDa: true, pick: false, mot: null, formNha: null, formKhach: null, doiDau: null,
 };
 
 describe("suKienTran — JSON-LD SportsEvent", () => {
@@ -107,5 +107,21 @@ describe("metaDuDoan — có ngày giờ VN, đúng độ dài", () => {
   it("title + ' | banhbong.net' ≤ 60, description ≤ 160", () => {
     expect(`${m.tieuDe} | banhbong.net`.length).toBeLessThanOrEqual(60);
     expect(m.moTa.length).toBeLessThanOrEqual(160);
+  });
+});
+
+describe("thanhTichDuDoan — ô 'đoán đúng X/Y trận'", () => {
+  it("chưa chấm trận nào → rỗng (không hiện ô)", () => {
+    expect(thanhTichDuDoan([dungMuc(BAI, [], Date.parse("2026-11-11T11:00:00Z"))])).toEqual([]);
+  });
+  it("tách theo tác giả, chỉ đếm trận đã chấm", () => {
+    const khac = {
+      ...BAI, slug: "khac", byline: "Scout",
+      du_doan: { home: "Vietnam", away: "Chinese Taipei", kickoff_utc: "2026-11-11T12:00:00Z", home_goals: 0, away_goals: 1 },
+    } as AnalysisArticle;
+    const ds = thanhTichDuDoan([dungMuc(BAI, that(3, 0), SAU_TRAN), dungMuc(khac, that(3, 0), SAU_TRAN)]);
+    expect(ds.map((x) => x.tacGia)).toEqual(["Chú Tám", "Scout"]);
+    expect(ds[0]).toMatchObject({ tran: 1, dungKetQua: 1, dungTySo: 0 });
+    expect(ds[1]).toMatchObject({ tran: 1, dungKetQua: 0, dungTySo: 0 });
   });
 });

@@ -28,6 +28,7 @@ import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 import { getOddsBoard } from "@/lib/odds-data";
 import { getMucDuDoan } from "@/lib/du-doan";
 import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
+import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
@@ -292,7 +293,7 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
-      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} />
+      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} thanhTich={thanhTichDuDoan(mucDuDoan)} />
       {/* 1. Hero: brand positioning + curator record + form
           Đệm dọc thu lại trên ĐIỆN THOẠI (Peter chụp màn hình 2/9/2026: khối này
           ăn trọn màn đầu, đẩy "Bảng Dự Đoán Hôm Nay" xuống dưới nếp gấp).
@@ -491,52 +492,6 @@ export default async function Home({ params }: Props) {
         }}
       />
 
-      {/* 3a. TIN MỚI NHẤT — news_items lên trang chủ (Nick 21/8: tin không lên
-          homepage vì trước chỉ query analysis_articles). Ngay dưới dải trận. */}
-      {newsItems.length > 0 && (
-        <section className="pb-10">
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-display text-xl font-bold">{dict.home.latestNews}</h2>
-            <Link
-              href={withLang("/news", lang)}
-              prefetch={false}
-              className="text-sm font-semibold text-brand hover:underline"
-            >
-              {dict.home.allNews} &rarr;
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {newsItems.map((n) => (
-              <Link
-                key={n.id}
-                href={withLang(`/news/${n.slug}`, lang)}
-                prefetch={false}
-                className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
-              >
-                {n.hero_card_url && (
-                  <img
-                    src={n.hero_card_url}
-                    alt=""
-                    width={1200}
-                    height={630}
-                    className="w-full"
-                    loading="lazy"
-                  />
-                )}
-                <div className="p-4">
-                  <time className="text-xs text-muted" dateTime={n.published_at ?? undefined}>
-                    {formatPostDate(n.published_at, lang)}
-                  </time>
-                  <p className="mt-1.5 line-clamp-2 font-display text-sm font-bold leading-snug transition-colors group-hover:text-brand">
-                    {getHeadline(n, lang)}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* 3a-bis. Banner Kèo — Nick 2/9: chuyển XUỐNG đây, ngay dưới bài nổi bật và
           tin mới nhất. Trước nó nằm sát dưới băng Dự đoán và đẩy bài viết xuống dưới
           nếp gấp trên điện thoại — banner tra cứu chiếm chỗ của nội dung thật.
@@ -640,6 +595,52 @@ export default async function Home({ params }: Props) {
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {/* 3a. TIN MỚI NHẤT — news_items lên trang chủ (Nick 21/8). Peter 10/11: site
+          dự đoán, không phải trang tin → khối tin chuyển XUỐNG dưới phân tích. */}
+      {newsItems.length > 0 && (
+        <section className="pb-10">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">{dict.home.latestNews}</h2>
+            <Link
+              href={withLang("/news", lang)}
+              prefetch={false}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              {dict.home.allNews} &rarr;
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {newsItems.map((n) => (
+              <Link
+                key={n.id}
+                href={withLang(`/news/${n.slug}`, lang)}
+                prefetch={false}
+                className="group overflow-hidden rounded-card border border-line bg-card transition-colors hover:border-brand/30"
+              >
+                {n.hero_card_url && (
+                  <img
+                    src={n.hero_card_url}
+                    alt=""
+                    width={1200}
+                    height={630}
+                    className="w-full"
+                    loading="lazy"
+                  />
+                )}
+                <div className="p-4">
+                  <time className="text-xs text-muted" dateTime={n.published_at ?? undefined}>
+                    {formatPostDate(n.published_at, lang)}
+                  </time>
+                  <p className="mt-1.5 line-clamp-2 font-display text-sm font-bold leading-snug transition-colors group-hover:text-brand">
+                    {getHeadline(n, lang)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 

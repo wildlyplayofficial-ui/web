@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { DuDoanTheoNgay } from "@/components/du-doan-theo-ngay";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
+import { OThanhTichDuDoan } from "@/components/o-thanh-tich-du-doan";
+import type { TongKet } from "@/lib/du-doan-cham";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { formatOdds, formatUnits } from "@/lib/format";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
@@ -46,12 +48,15 @@ export function KhoiDuDoanHomNay({
   lang,
   pick,
   record,
+  thanhTich,
 }: {
   rows: HangDuDoan[];
   homNay: string;
   lang: Lang;
   pick: PickRow | null;
   record: TrackRecord;
+  /** Thành tích đã chấm theo tác giả; rỗng = không hiện ô. */
+  thanhTich: readonly TongKet[];
 }) {
   const t = getDict(lang).duDoan;
   // Trận nổi bật = trận chưa đá gần nhất (hôm nay trước); hết trận sắp đá thì trận
@@ -63,6 +68,7 @@ export function KhoiDuDoanHomNay({
   return (
     <section aria-labelledby="du-doan-hom-nay" className="mt-5 space-y-4">
       <h2 id="du-doan-hom-nay" className="font-display text-2xl font-bold sm:text-3xl">{t.title}</h2>
+      <OThanhTichDuDoan tong={thanhTich} lang={lang} />
       <OPick pick={pick} record={record} lang={lang} />
       {noiBat && <ODuDoanTran h={noiBat} lang={lang} lienKet />}
       <DuDoanTheoNgay rows={rows} homNay={homNay} lang={lang} locGiai={false} />

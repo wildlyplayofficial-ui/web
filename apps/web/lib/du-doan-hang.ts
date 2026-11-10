@@ -5,7 +5,7 @@
  */
 import { tenSo } from "./du-doan-cham";
 import { tenKhach, tenNha } from "./du-doan-nguon";
-import { phongDo, type KQ, type TranDaDa } from "./phong-do";
+import { doiDau, phongDo, type KQ, type TranDaDa, type TranDoiDau } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import type { MucDuDoan } from "./du-doan";
 import type { OddsBoardMatch } from "./odds-data";
@@ -43,6 +43,8 @@ export interface HangDuDoan {
   /** 5 trận gần nhất trước trận này, mới nhất trước; null = không đủ dữ liệu. */
   formNha: KQ[] | null;
   formKhach: KQ[] | null;
+  /** Tối đa 5 lần gặp nhau gần nhất (từ cùng dữ liệu phong độ); null = chưa có. */
+  doiDau: TranDoiDau[] | null;
 }
 
 const LECH_TOI_DA = 36 * 3_600_000;
@@ -111,6 +113,7 @@ export function dungHang(
         mot,
         formNha: phongDo(daDa, d.home, m.kickoffUtc),
         formKhach: phongDo(daDa, d.away, m.kickoffUtc),
+        doiDau: doiDau(daDa, d.home, d.away, m.kickoffUtc),
       },
     ];
   });

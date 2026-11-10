@@ -1,4 +1,4 @@
-import { chieuDuDoan, mauChieu, mauKQ, type KQ } from "@/lib/phong-do";
+import { chieuDuDoan, mauChieu, mauKQ, type KQ, type TranDoiDau } from "@/lib/phong-do";
 
 /** 5 ô vuông T/H/B viền màu (kiểu PredictZ). Không có dữ liệu thì không vẽ gì. */
 export function OPhongDo({ kq, nhan, to = false }: { kq: KQ[] | null; nhan: string; to?: boolean }) {
@@ -53,5 +53,27 @@ export function OKetQua({
     <span className={`rounded-md border-2 bg-card px-2 py-1 text-center font-display font-bold tabular-nums ${mau} ${className}`}>
       {nhan} {that[0]}-{that[1]}
     </span>
+  );
+}
+
+/** Đối đầu gần nhất: mỗi lần gặp một ô tỷ số, màu theo kết quả của đội nhà trận sắp tới. */
+export function ODoiDau({ ds, nha, khach, nhan }: { ds: TranDoiDau[] | null; nha: string; khach: string; nhan: string }) {
+  if (!ds) return null;
+  return (
+    <div className="mt-2 text-center">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{nhan}</p>
+      <ul className="mt-1 flex flex-wrap justify-center gap-1">
+        {ds.map((d) => (
+          <li
+            key={`${d.ngay}${d.cungChieu}`}
+            title={`${d.cungChieu ? nha : khach} ${d.ts[0]}-${d.ts[1]} ${d.cungChieu ? khach : nha} · ${d.ngay.split("-").reverse().join("/")}`}
+            className={`rounded-[3px] border px-1.5 py-0.5 font-display text-[11px] font-bold tabular-nums leading-none ${mauKQ(d.kq)}`}
+          >
+            {d.cungChieu ? `${d.ts[0]}-${d.ts[1]}` : `${d.ts[1]}-${d.ts[0]}`}
+            <span className="ml-1 font-normal text-muted">’{d.ngay.slice(2, 4)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
