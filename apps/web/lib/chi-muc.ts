@@ -72,3 +72,19 @@ export function analysisDuocIndex(slug: string, ngayDang?: string | null): boole
   // chỉ giữ index bài lịch cả mùa. Trang vẫn mở cho người vào thẳng.
   return conMoi(ngayDang) || laTrangLichCaMua(slug) || ANALYSIS_GIU_INDEX.has(slug);
 }
+
+/**
+ * Trang trận /du-doan/{slug} (Peter chốt 10/11/2026): trận nào cũng có trang riêng,
+ * nhưng chỉ mời Google vào GIẢI LỚN + TRẬN ĐỘI TUYỂN + mọi trận có VIỆT NAM. Trận còn
+ * lại noindex,follow và không vào sitemap. Thêm/bớt giải: SỬA BA DÒNG DƯỚI ĐÂY.
+ * Tên giải so trên tên đang hiển thị (tên Việt nếu có, không thì tên gốc).
+ */
+const GIAI_LON_INDEX = /^(ngoại hạng anh|premier league|la ?liga|serie a|bundesliga|ligue 1|v-?league( 1)?|(uefa )?(champions|europa|conference) league)$/i;
+const GIAI_DOI_TUYEN_INDEX = /nations league|world cup|\beuro\b|asian cup|asean cup|aff cup|copa am[eé]rica|giao hữu|friendl|vòng loại|qualif/i;
+const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
+
+export function tranDuocIndex(h: { giai: string; nha: string; khach: string }): boolean {
+  return (
+    GIAI_LON_INDEX.test(h.giai) || GIAI_DOI_TUYEN_INDEX.test(h.giai) || DOI_VIET_NAM.test(h.nha) || DOI_VIET_NAM.test(h.khach)
+  );
+}

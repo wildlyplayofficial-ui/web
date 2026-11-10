@@ -14,7 +14,8 @@ import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { doiCanPhongDo, dungHang, ngayVN } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
-import { doiThieuPhongDo, hangTuan, tieuDeH1 } from "@/lib/du-doan-tuan";
+import { doiThieuPhongDo, hangTuan } from "@/lib/du-doan-tuan";
+import { tieuDeH1 } from "@/lib/du-doan-tran";
 import { getTodaysPicks } from "@/lib/data";
 import { getOddsBoard } from "@/lib/odds-data";
 

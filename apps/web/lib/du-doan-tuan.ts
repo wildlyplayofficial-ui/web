@@ -25,6 +25,10 @@ export interface DongTuan {
   gioUtc: string | null;
   /** Kết quả thật [nhà, khách] khi tệp hôm sau báo về. */
   kq?: number[];
+  /** "Tài 2.5" / "Xỉu 2.5". */
+  tx?: string;
+  /** Cả hai đội ghi bàn: "Có" / "Không". */
+  btts?: string;
 }
 
 const DONG = duLieu as DongTuan[];
@@ -88,17 +92,11 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       formNha: docForm(d.fn) ?? phongDo(daDa, d.nha, kickoffUtc),
       formKhach: docForm(d.fk) ?? phongDo(daDa, d.khach, kickoffUtc),
       doiDau: null,
+      taiXiu: d.tx ?? null,
+      haiDoiGhi: d.btts ? d.btts === "Có" : null,
       nhan: [],
     };
     // Nhãn tính trên tên gốc; hiển thị + JSON-LD dùng tên Việt (người Việt tìm bằng tên Việt).
     return [{ ...h, nhan: nhanTran(h), giai: tenGiaiViet(d.giai), nha: tenDoiViet(d.nha), khach: tenDoiViet(d.khach) }];
   });
-}
-
-/** "Dự đoán bóng đá hôm nay - Thứ Ba, ngày 10 tháng 11 năm 2026" (kiểu h1 PredictZ). */
-const THU_H1 = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
-export function tieuDeH1(khoa: string): string {
-  const [y, m, d] = khoa.split("-").map(Number);
-  const thu = THU_H1[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
-  return `Dự đoán bóng đá hôm nay - ${thu}, ngày ${d} tháng ${m} năm ${y}`;
 }

@@ -40,6 +40,7 @@ const GIAI: Record<string, string> = {
   "Uganda Premier League": "VĐQG Uganda",
   "Ukraine Persha Liga": "Hạng 2 Ukraine",
   "Uruguay Primera Division Finals": "Chung kết VĐQG Uruguay",
+  "UEFA Nations League": "Nations League",
 };
 
 export const tenDoiViet = (ten: string) => DOI_TUYEN[ten] ?? ten;

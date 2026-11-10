@@ -51,6 +51,10 @@ export interface HangDuDoan {
   formKhach: KQ[] | null;
   /** Tối đa 5 lần gặp nhau gần nhất (từ cùng dữ liệu phong độ); null = chưa có. */
   doiDau: TranDoiDau[] | null;
+  /** Dự đoán tài/xỉu kèm mốc bàn ("Tài 2.5"); null = nguồn không ghi. */
+  taiXiu: string | null;
+  /** Dự đoán cả hai đội ghi bàn; null = nguồn không ghi. */
+  haiDoiGhi: boolean | null;
   nhan: NhanTran[];
 }
 
@@ -121,6 +125,8 @@ export function dungHang(
         formNha: phongDo(daDa, d.home, m.kickoffUtc),
         formKhach: phongDo(daDa, d.away, m.kickoffUtc),
         doiDau: doiDau(daDa, d.home, d.away, m.kickoffUtc),
+        taiXiu: null,
+        haiDoiGhi: null,
         nhan: [],
     };
     return [{ ...hang, nhan: nhanTran(hang) }];

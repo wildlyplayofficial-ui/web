@@ -45,7 +45,7 @@ const HANG: HangDuDoan = {
   slug: VN, coBai: true, nhan: [], giai: "Giao hữu", kickoffUtc: "2026-11-11T12:00:00Z", ngay: "2026-11-11", gio: "19:00",
   nha: "Việt Nam", khach: "Đài Bắc Trung Hoa", logoNha: null, logoKhach: null, anhNha: null, anhKhach: null,
   creditAnh: null, du: [2, 1], that: null, dung: null, dungTySo: null, san: "Sân Thiên Trường, Ninh Bình",
-  sapDa: true, pick: false, mot: null, formNha: null, formKhach: null, doiDau: null,
+  sapDa: true, pick: false, mot: null, formNha: null, formKhach: null, doiDau: null, taiXiu: null, haiDoiGhi: null,
 };
 
 describe("suKienTran — JSON-LD SportsEvent", () => {
@@ -128,8 +128,11 @@ describe("thanhTichDuDoan — ô 'đoán đúng X/Y trận'", () => {
 });
 
 describe("dòng nạp từ tệp tuần", () => {
-  it("không có bài thì JSON-LD trỏ về /du-doan", () => {
-    expect(suKienTran({ ...HANG, coBai: false }, "https://www.banhbong.net").url).toBe("https://www.banhbong.net/du-doan");
+  it("không có bài thì JSON-LD trỏ về trang riêng của trận", () => {
+    expect(suKienTran({ ...HANG, coBai: false }, "https://www.banhbong.net").url).toBe(`https://www.banhbong.net/du-doan/${VN}`);
+  });
+  it("trang trận của bài có nhận định vẫn trỏ về chính nó khi được yêu cầu", () => {
+    expect(suKienTran(HANG, "https://www.banhbong.net", true).url).toBe(`https://www.banhbong.net/du-doan/${VN}`);
   });
 });
 

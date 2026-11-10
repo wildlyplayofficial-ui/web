@@ -17,8 +17,9 @@ export function cauDuDoan(h: Pick<HangDuDoan, "nha" | "khach" | "du">): string |
 }
 
 /** Một trận → SportsEvent. Trận đã đá vẫn để EventScheduled (schema.org không có
- *  trạng thái "đã xong"); kết quả ghi vào description. */
-export function suKienTran(h: HangDuDoan, base: string) {
+ *  trạng thái "đã xong"); kết quả ghi vào description. `trangTran` = url trỏ trang
+ *  riêng /du-doan/{slug} (mặc định cho trận không có bài; bài nhận định trỏ /analysis). */
+export function suKienTran(h: HangDuDoan, base: string, trangTran = !h.coBai) {
   const du = cauDuDoan(h);
   const moTa = [
     du ? `Dự đoán: ${du}` : null,
@@ -31,7 +32,7 @@ export function suKienTran(h: HangDuDoan, base: string) {
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     sport: "Football",
-    url: h.coBai ? `${base}/analysis/${h.slug}` : `${base}/du-doan`,
+    url: trangTran ? `${base}/du-doan/${h.slug}` : `${base}/analysis/${h.slug}`,
     homeTeam: doi(h.nha),
     awayTeam: doi(h.khach),
     competitor: [doi(h.nha), doi(h.khach)],

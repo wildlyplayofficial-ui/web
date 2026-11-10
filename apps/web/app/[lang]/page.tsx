@@ -3,23 +3,19 @@ import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import {
   getActiveWatching,
-  getSettledPicks,
   getTodaysNoPlays,
   getAllBlogSlugs,
   getRecentRecapPosts,
-  getThesisTranslations,
   getTodaysPicks,
   getTrackRecordForAuthor,
 } from "@/lib/data";
 import { buildPlaySlug } from "@/lib/play-slug";
-import { formatBoardDate, formatBoardDateShort, formatUnits, locales } from "@/lib/format";
+import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
 import { ScoreboardRail } from "@/components/scoreboard-rail";
-import { HotPickCard } from "@/components/hot-pick-card";
-import { TranDangXemCard } from "@/components/tran-dang-xem-card";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laTrangLichCaMua } from "@/lib/chi-muc";
 import { KhoiTrangTru } from "@/components/khoi-trang-tru";
@@ -28,9 +24,8 @@ import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 import { getOddsBoard } from "@/lib/odds-data";
 import { getMucDuDoan } from "@/lib/du-doan";
 import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
-import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { getTranDaDa } from "@/lib/phong-do-db";
-import { doiThieuPhongDo, hangTuan, tieuDeH1 } from "@/lib/du-doan-tuan";
+import { doiThieuPhongDo, hangTuan } from "@/lib/du-doan-tuan";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
 export const revalidate = 300;
@@ -74,20 +69,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const HERO_TODAY: Record<string, string> = { vi: "Hôm nay", en: "Today", th: "วันนี้", es: "Hoy" };
-const REC_WIN: Record<string, string> = { vi: "đúng", en: "won", th: "ชนะ", es: "acierto" };
-const REC_LOSS: Record<string, string> = { vi: "sai", en: "lost", th: "แพ้", es: "fallo" };
-const REC_PUSH: Record<string, string> = { vi: "hoà", en: "push", th: "เสมอ", es: "nulo" };
-const REC_30D: Record<string, string> = { vi: "30 ngày", en: "30 days", th: "30 วัน", es: "30 días" };
-
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan] =
+  const [allPicks, record, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
-      getSettledPicks(),
       getTodaysNoPlays(),
       getActiveWatching(),
       // Hai lượt này gọi nhà cung cấp NGOÀI. Từ 27/8 lsFetch có hạn chờ 6 giây,
@@ -163,40 +151,12 @@ export default async function Home({ params }: Props) {
       : null;
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
-  // Băng Trợ lý AI đã gỡ (Peter duyệt 15/9/2026) — chỉ còn băng của Chú Tám Banh.
-  const bangBac = {
-    href: withLang("/daily-board", lang),
-    ten: dict.pick.curator,
-    cham: "bg-brand",
-    // nhanNgan = bản dùng trên ĐIỆN THOẠI; nhãn dài đẩy dòng số xuống 3 dòng.
-    so: [
-      { nhan: dict.board.picksLabel, nhanNgan: dict.board.picksLabelShort, gia: picks.length },
-      { nhan: dict.board.noPlaysLabel, nhanNgan: dict.board.noPlaysLabel, gia: noPlays.length },
-      { nhan: dict.board.watchingLabel, nhanNgan: dict.board.watchingLabelShort, gia: watching.length },
-    ],
-    ghiChu: null as string | null,
-  };
-
-  // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
-  // no real pick = the card is omitted below (the old test-seed rendered a fake match).
+  // Dòng "Chú Tám chọn": pick thật đầu tiên hôm nay, không có thì ghi rõ là không chọn.
   const heroPick = picks[0] ?? null;
   const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(mucDuDoan)), getTranDaDa(doiThieuPhongDo())]);
   const hangBai = dungHang(mucDuDoan, picks, oddsMatches, daDa);
   // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
   const hangDuDoan = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
-  // Bản dịch nhận định nằm ở bảng pick_content; cột `thesis` trên pick luôn là
-  // tiếng Anh. Không lấy bản dịch thì trang tiếng Việt hiện ruột tiếng Anh (Nick 23/8).
-  const heroThesis = heroPick
-    ? (await getThesisTranslations([heroPick.id]))[heroPick.id]?.[lang] ?? heroPick.thesis
-    : null;
-
-  // Thành tích 30 ngày của curator (dùng cho viên record ở hero).
-  const curatorSettled = settledPicks.filter((p) => (p.author ?? "curator") === "curator");
-  const cutoff30 = Date.now() - 30 * 86_400_000;
-  const settled30 = curatorSettled.filter((p) => new Date(p.settled_at ?? p.kickoff_utc).getTime() >= cutoff30);
-  const win30 = settled30.filter((p) => p.status === "won").length;
-  const loss30 = settled30.filter((p) => p.status === "lost").length;
-
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
   // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
   const preseason =
@@ -281,13 +241,6 @@ export default async function Home({ params }: Props) {
       timeZone: "Asia/Ho_Chi_Minh",
     }).format(new Date(iso));
 
-  // Thẻ "Trận đáng xem hôm nay" (hero cột phải, mockup Nick 10/9): ưu tiên
-  // pick hôm nay → trận đang theo dõi gần giờ đá nhất → trận sắp đá gần nhất.
-  const curatorWatching = watching.filter((w) => (w.author ?? "curator") === "curator" && !w.presence);
-  // Trận đang theo dõi có giờ đá SỚM NHẤT (getActiveWatching chỉ trả trận còn hiệu lực).
-  const heroWatching = curatorWatching.slice().sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc))[0] ?? null;
-  const heroNextMatch = sapDa[0] ?? null;
-
   return (
     <>
       {/* Top scoreboard rail (ESPN strip) — reuses the same match data as HomeNextMatches. */}
@@ -297,58 +250,13 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
-      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} thanhTich={thanhTichDuDoan(mucDuDoan)} tieuDe={tieuDeH1(homNay)} />
-      {/* 1. Hero: brand positioning + curator record + form
-          Đệm dọc thu lại trên ĐIỆN THOẠI (Peter chụp màn hình 2/9/2026: khối này
-          ăn trọn màn đầu, đẩy "Bảng Dự Đoán Hôm Nay" xuống dưới nếp gấp).
-          Đo trên màn 390x640 — chiều cao dùng được thật của điện thoại sau khi
-          trừ thanh trình duyệt:
-            trước  khối đầu 458px · nội dung thật ở 652px → phải cuộn mới thấy
-            sau    khối đầu 332px · nội dung thật ở 526px → lọt màn đầu
-          Máy tính bàn GIỮ NGUYÊN md:py-20, không đụng. */}
-      <section className="relative overflow-hidden py-7 text-center sm:py-12 md:py-20">
-        <div className="hero-glow" aria-hidden />
-        <div className="relative grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-start">
-        <div className="text-center md:text-left">
-          {/* Eyebrow ngày + tiêu đề (mockup Nick 11/9): HÔM NAY · thứ, ngày tháng */}
-          <p className="mb-1.5 font-display text-xs font-bold uppercase tracking-wider text-brand sm:mb-2 sm:text-sm">
-            {HERO_TODAY[lang] ?? HERO_TODAY.en} · {new Intl.DateTimeFormat(locales[lang], { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date())}
-          </p>
-          <h1 className="hero-gradient-text mx-auto max-w-[700px] font-display text-2xl font-bold sm:text-4xl md:text-5xl">
-            {dict.taglineShort}
-          </h1>
-          <p className="hidden text-muted sm:mt-4 sm:block sm:text-base md:text-lg">{dict.board.subtitle}</p>
-          {record.settled > 0 && (
-            <p className="mt-3 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-line bg-card px-5 py-2 font-display text-sm sm:mt-6 md:justify-start">
-              <span className="text-muted">{dict.pick.curator}</span>
-              <span className="font-semibold text-ink">
-                {record.wins} {REC_WIN[lang] ?? REC_WIN.en} · {record.losses} {REC_LOSS[lang] ?? REC_LOSS.en} · {record.pushes} {REC_PUSH[lang] ?? REC_PUSH.en}
-              </span>
-              {(win30 > 0 || loss30 > 0) && (
-                <span className="font-semibold text-brand">
-                  {"\u25B2"} {REC_30D[lang] ?? REC_30D.en}: {win30} {REC_WIN[lang] ?? REC_WIN.en} / {loss30} {REC_LOSS[lang] ?? REC_LOSS.en}
-                </span>
-              )}
-            </p>
-          )}
-        </div>
-        {(heroPick || heroWatching || heroNextMatch) && (
-          <div className="mx-auto w-full max-w-md md:mx-0">
-            <TranDangXemCard pick={heroPick} pickThesis={heroThesis} watching={heroWatching} nextMatch={heroNextMatch} lang={lang} />
-          </div>
-        )}
-        </div>
-      </section>
-
-      {/* Daily Board teaser — below the hero (Nick 17/8 order): the day's picks
-          are the first thing after the fixtures strip (Nick 16/8). Preseason
-          countdown when the board is empty, so the homepage doesn't read as
-          broken with "0 · 0 · 0" between seasons. */}
-      {/* Nick 2/9: trên ĐIỆN THOẠI kéo khối "Nhận định nổi bật" sát băng Bảng Dự
-          Đoán hơn — khe 40px làm hai khối nhìn như hai phần rời nhau. Còn 16px
-          trên điện thoại, máy tính bàn giữ nguyên 40px vì màn rộng cần khe thở. */}
-      <section className="pb-4 pt-6 sm:pb-10">
-        {preseason ? (
+      {/* Thiết kế lại 10/11 (Peter duyệt mẫu): h1 + Chú Tám chọn + 8 trận sắp đá + MỘT nút
+          sang /du-doan. Đã gỡ khối hero cũ, băng "Bảng Dự Đoán Hôm Nay" và thẻ pick nổi bật
+          — ba lối vào dự đoán chồng nhau; pick Chú Tám nay nằm ở dòng vàng trong khối này. */}
+      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} />
+      {/* Mùa nghỉ: đếm ngược tới ngày khai mạc (bảng rỗng hẳn và đã biết ngày mở màn). */}
+      {preseason && (
+        <section className="pb-4 pt-6 sm:pb-10">
           <Link
             href={withLang("/competitions/premier-league/fixtures", lang)}
             className="group flex flex-wrap items-center justify-between gap-5 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 transition-colors hover:border-brand/60"
@@ -369,71 +277,7 @@ export default async function Home({ params }: Props) {
               {dict.home.viewFixtures} &rarr;
             </span>
           </Link>
-        ) : (
-          /* Nick 2/9: gộp HAI băng thành MỘT — trước đây ngày tháng và nút
-             "Xem Bảng Dự Đoán Hôm Nay" bị in hai lần liền nhau, đọc như lỗi.
-             Gộp phần KHUNG (tiêu đề + ngày + nút), KHÔNG gộp SỐ: mỗi bên vẫn
-             một dòng riêng, có tên và chấm màu riêng. Dòng Trợ lý AI đã gỡ
-             (Peter duyệt 15/9/2026), còn lại dòng của Chú Tám Banh. */
-          /* Nick 2/9 (đợt 2): thu chiều cao băng này trên ĐIỆN THOẠI — nó cao 262px,
-             là khối to nhất đứng giữa người đọc và bài viết. Cắt bằng cách bóp lề,
-             gộp ngày vào dòng tiêu đề (dạng ngắn "2/9") và làm nút gọn lại. KHÔNG bỏ
-             thông tin nào: máy tính bàn vẫn nguyên vẹn, điện thoại vẫn đủ tên, đủ số,
-             đủ ngày. */
-          <div className="rounded-card border border-brand/25 bg-brand-dim/20 p-5 shadow-card sm:p-6">
-            <p className="font-display text-base font-bold sm:text-lg">
-              {dict.board.title}
-              <span className="ml-2 text-sm font-normal text-muted sm:hidden">
-                · {formatBoardDateShort(new Date(), lang)}
-              </span>
-            </p>
-            <p className="mt-1 hidden text-sm text-muted sm:block">{formatBoardDate(new Date(), lang)}</p>
-            <div className="mt-3 flex flex-col gap-2 sm:mt-4">
-              {[bangBac].map((b) => (
-                <Link
-                  key={b.href}
-                  href={b.href}
-                  className="group/hang flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm"
-                >
-                  <span className={`mt-1.5 h-2 w-2 shrink-0 self-start rounded-full ${b.cham}`} aria-hidden />
-                  <span className="font-semibold text-ink group-hover/hang:underline">{b.ten}</span>
-                  <span className="text-muted">
-                    {b.so.map((o, i) => (
-                      <span key={o.nhan}>
-                        {i > 0 && <span className="mx-2">·</span>}
-                        <span className="sm:hidden">{o.nhanNgan}</span>
-                        <span className="hidden sm:inline">{o.nhan}</span>
-                        : <strong className="text-ink">{o.gia}</strong>
-                      </span>
-                    ))}
-                    {b.ghiChu}
-                  </span>
-                </Link>
-              ))}
-            </div>
-            <Link
-              href={withLang("/daily-board", lang)}
-              className="group mt-3 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2 font-display text-sm font-semibold text-bg transition-transform hover:-translate-y-0.5 sm:mt-5 sm:px-6 sm:py-2.5"
-            >
-              {dict.home.viewBoard} &rarr;
-            </Link>
-          </div>
-        )}
       </section>
-
-      {/* 1c. Hot pick prediction — the top curator pick. Omitted when there is none
-          (never a fabricated seed). */}
-      {heroPick && (
-        <section className="pb-10">
-          <HotPickCard
-            pick={heroPick}
-            predicted={null}
-            lang={lang}
-            href={withLang("/daily-board", lang)}
-            ctaLabel={dict.home.viewBoard}
-            thesisText={heroThesis ?? undefined}
-          />
-        </section>
       )}
 
       {/* 2b. Hai bài NHÌN LẠI gần nhất — BELOW the pick/watching/noplay content.

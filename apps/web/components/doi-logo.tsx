@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** Logo đội; thiếu logo HOẶC ảnh tải lỗi thì vòng tròn chữ cái đầu — không bao giờ để ảnh vỡ. */
-export function DoiLogo({ src, ten, size = 28 }: { src: string | null; ten: string; size?: number }) {
+/**
+ * Logo đội; thiếu logo HOẶC ảnh tải lỗi thì vòng tròn chữ cái đầu — không bao giờ để ảnh vỡ.
+ * `lop` = lớp cỡ theo màn (vd "h-6 w-6 lg:h-[26px] lg:w-[26px]"); có `lop` thì bỏ cỡ cứng.
+ */
+export function DoiLogo({ src, ten, size = 28, lop }: { src: string | null; ten: string; size?: number; lop?: string }) {
+  const co = lop ? undefined : { width: size, height: size };
   const [loi, setLoi] = useState(false);
   const anh = useRef<HTMLImageElement>(null);
   // Ảnh lỗi TRƯỚC khi React gắn sự kiện (HTML server tải xong sớm) thì onError không
@@ -23,8 +27,8 @@ export function DoiLogo({ src, ten, size = 28 }: { src: string | null; ten: stri
         height={size}
         loading="lazy"
         onError={() => setLoi(true)}
-        className="shrink-0 object-contain"
-        style={{ width: size, height: size }}
+        className={`shrink-0 object-contain ${lop ?? ""}`}
+        style={co}
       />
     );
   }
@@ -38,8 +42,8 @@ export function DoiLogo({ src, ten, size = 28 }: { src: string | null; ten: stri
     <span
       role="img"
       aria-label={ten}
-      className="inline-flex shrink-0 items-center justify-center rounded-full border border-line bg-card-hover font-display text-[10px] font-bold text-muted"
-      style={{ width: size, height: size }}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-card-hover font-display text-xs font-bold leading-none tracking-tighter text-muted ${lop ?? ""}`}
+      style={co}
     >
       {chu}
     </span>

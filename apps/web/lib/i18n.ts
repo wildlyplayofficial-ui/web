@@ -108,6 +108,15 @@ export interface Dict {
     h2h: string;
     hitRate: string;
     matchesUnit: string;
+    /** Trang chủ thiết kế lại 10/11: h1, dòng phụ, tiêu đề danh sách, nút ngắn (điện thoại). */
+    homeTitle: string;
+    homeSub: string;
+    upcoming: string;
+    seeAllShort: string;
+    /** Nhãn trận có bài nhận định. */
+    hasArticle: string;
+    homeSide: string;
+    overUnder: string;
   };
   tagline: string;
   /** Bản ngắn cho ĐIỆN THOẠI — xem ghi chú ở app/[lang]/page.tsx. */
@@ -475,6 +484,13 @@ const en: Dict = {
     h2h: "Head-to-head",
     hitRate: "correct",
     matchesUnit: "matches",
+    homeTitle: "Football previews and score predictions",
+    homeSub: "Scores locked before kick-off, marked right or wrong after full time · Vietnam time",
+    upcoming: "Upcoming matches",
+    seeAllShort: "See all predictions",
+    hasArticle: "Preview",
+    homeSide: "Home",
+    overUnder: "O/U",
   },
   tagline: "Free Football Picks, Analysis & Betting Guides",
   taglineShort: "Free Football Picks",
@@ -796,7 +812,7 @@ const vi: Dict = {
     blog: "Blog",
     transparency: "Minh Bạch",
     calculators: "Công Cụ",
-    todaysPick: "Dự Đoán Hôm Nay",
+    todaysPick: "Chú Tám chọn",
     trackRecord: "Thành Tích",
     analysis: "Phân Tích",
     learn: "Học Hỏi",
@@ -805,11 +821,11 @@ const vi: Dict = {
   },
   duDoan: {
     title: "Dự đoán bóng đá hôm nay",
-    seeAll: "Xem tất cả dự đoán",
-    pickTitle: "Pick Chú Tám hôm nay",
-    noPick: "Hôm nay Chú Tám không chọn trận nào",
+    seeAll: "Xem tất cả dự đoán theo ngày và theo giải",
+    pickTitle: "Chú Tám chọn",
+    noPick: "Hôm nay không chọn trận nào",
     pickNote: "Chỉ chọn khi thấy lợi thế",
-    seeRecord: "xem thành tích",
+    seeRecord: "Xem thành tích",
     yesterday: "Hôm qua",
     today: "Hôm nay",
     tomorrow: "Ngày mai",
@@ -832,6 +848,13 @@ const vi: Dict = {
     h2h: "Đối đầu",
     hitRate: "đoán đúng",
     matchesUnit: "trận",
+    homeTitle: "Nhận định và dự đoán tỷ số bóng đá",
+    homeSub: "Tỷ số chốt trước giờ bóng lăn, đá xong ghi đúng hay sai · giờ Việt Nam",
+    upcoming: "Trận sắp đá",
+    seeAllShort: "Xem tất cả dự đoán",
+    hasArticle: "Có nhận định",
+    homeSide: "Chủ nhà",
+    overUnder: "Tài/Xỉu",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",
@@ -1189,6 +1212,13 @@ const th: Dict = {
     h2h: "เจอกัน",
     hitRate: "ทายถูก",
     matchesUnit: "นัด",
+    homeTitle: "วิเคราะห์และทำนายสกอร์ฟุตบอล",
+    homeSub: "ล็อกสกอร์ก่อนเริ่มเกม จบเกมบันทึกถูกหรือผิด · เวลาเวียดนาม",
+    upcoming: "นัดที่กำลังจะแข่ง",
+    seeAllShort: "ดูการทำนายทั้งหมด",
+    hasArticle: "มีบทวิเคราะห์",
+    homeSide: "เหย้า",
+    overUnder: "สูง/ต่ำ",
   },
   tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
   taglineShort: "ทีเด็ดบอลฟรี",
@@ -1546,6 +1576,13 @@ const es: Dict = {
     h2h: "Cara a cara",
     hitRate: "aciertos",
     matchesUnit: "partidos",
+    homeTitle: "Previas y pronósticos de marcador de fútbol",
+    homeSub: "Marcadores fijados antes del inicio, aciertos y fallos anotados al final · hora de Vietnam",
+    upcoming: "Próximos partidos",
+    seeAllShort: "Ver todos los pronósticos",
+    hasArticle: "Con previa",
+    homeSide: "Local",
+    overUnder: "Más/Menos",
   },
   tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
   taglineShort: "Picks de Fútbol Gratis",
