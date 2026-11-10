@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { DoiLogo } from "@/components/doi-logo";
+import { OPhongDo } from "@/components/phong-do";
 import { cauKetQua, type HangDuDoan } from "@/lib/du-doan-hang";
+import { chieuDuDoan, mauChieu, type KQ } from "@/lib/phong-do";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
 
 /** "T4 11/11" theo giờ VN. */
@@ -15,11 +17,12 @@ function thuNgay(iso: string): string {
   return `${lay("weekday")} ${lay("day")}/${lay("month")}`;
 }
 
-function Doi({ ten, logo }: { ten: string; logo: string | null }) {
+function Doi({ ten, logo, form, nhan }: { ten: string; logo: string | null; form: KQ[] | null; nhan: string }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
       <DoiLogo src={logo} ten={ten} size={40} />
       <span className="font-display text-xs font-bold leading-tight sm:text-sm">{ten}</span>
+      <OPhongDo kq={form} nhan={nhan} />
     </div>
   );
 }
@@ -56,13 +59,19 @@ export function ODuDoanTran({ h, lang, lienKet = false }: { h: HangDuDoan; lang:
       <CauThu src={h.anhKhach} ten={h.khach} ben="phai" />
       <div className={`relative pb-5 pt-3 ${coAnh ? "px-[22%]" : "px-5"}`}>
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <Doi ten={h.nha} logo={h.logoNha} />
-          <p className="font-display text-4xl font-bold tabular-nums sm:text-5xl">
+          <Doi ten={h.nha} logo={h.logoNha} form={h.formNha} nhan={t.form} />
+          <p
+            className={`rounded-lg border-2 bg-card/60 px-3 py-1 font-display text-4xl font-bold tabular-nums sm:text-5xl ${h.du ? mauChieu(chieuDuDoan(h.du)) : "border-line"}`}
+          >
             {h.du ? `${h.du[0]}-${h.du[1]}` : "?"}
           </p>
-          <Doi ten={h.khach} logo={h.logoKhach} />
+          <Doi ten={h.khach} logo={h.logoKhach} form={h.formKhach} nhan={t.form} />
         </div>
-        {h.du && <p className="mt-2 text-center text-sm font-semibold text-brand">{cauKetQua(h, t.win, t.draw)}</p>}
+        {h.du && (
+          <p className={`mt-2 text-center text-sm font-semibold ${mauChieu(chieuDuDoan(h.du)).split(" ")[1]}`}>
+            {cauKetQua(h, t.win, t.draw)}
+          </p>
+        )}
         <p className="mt-1 text-center text-xs text-muted">
           {h.gio} · {thuNgay(h.kickoffUtc)}
         </p>

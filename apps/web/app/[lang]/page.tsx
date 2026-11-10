@@ -27,7 +27,8 @@ import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 import { getOddsBoard } from "@/lib/odds-data";
 import { getMucDuDoan } from "@/lib/du-doan";
-import { dungHang } from "@/lib/du-doan-hang";
+import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
+import { getTranDaDa } from "@/lib/phong-do-db";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
 export const revalidate = 300;
@@ -177,7 +178,7 @@ export default async function Home({ params }: Props) {
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
   const heroPick = picks[0] ?? null;
-  const hangDuDoan = dungHang(mucDuDoan, picks, oddsMatches);
+  const hangDuDoan = dungHang(mucDuDoan, picks, oddsMatches, await getTranDaDa(doiCanPhongDo(mucDuDoan)));
   // Bản dịch nhận định nằm ở bảng pick_content; cột `thesis` trên pick luôn là
   // tiếng Anh. Không lấy bản dịch thì trang tiếng Việt hiện ruột tiếng Anh (Nick 23/8).
   const heroThesis = heroPick

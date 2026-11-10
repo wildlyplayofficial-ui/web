@@ -31,10 +31,7 @@ function OPick({ pick, record, lang }: { pick: PickRow | null; record: TrackReco
       ) : (
         <p className="mt-1.5 font-display text-sm font-semibold">{t.noPick}</p>
       )}
-      <p className="mt-1 text-[11px] text-muted">
-        {t.pickNote} ·{" "}
-        <Link href={withLang("/track-record", lang)} className="text-brand hover:underline">{t.seeRecord}</Link>
-      </p>
+      <Link href={withLang("/track-record", lang)} className="mt-1 inline-block text-[11px] text-brand hover:underline">{t.seeRecord}</Link>
     </div>
   );
 }

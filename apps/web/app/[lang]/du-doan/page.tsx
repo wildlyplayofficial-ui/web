@@ -6,7 +6,8 @@ import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BangDungSai } from "@/components/bang-dung-sai";
 import { DuDoanTheoNgay } from "@/components/du-doan-theo-ngay";
-import { dungHang, ngayVN } from "@/lib/du-doan-hang";
+import { doiCanPhongDo, dungHang, ngayVN } from "@/lib/du-doan-hang";
+import { getTranDaDa } from "@/lib/phong-do-db";
 import { getTodaysPicks } from "@/lib/data";
 import { getOddsBoard } from "@/lib/odds-data";
 
@@ -85,7 +86,7 @@ export default async function DuDoanHub({ params }: Props) {
     getOddsBoard().catch(() => []),
   ]);
   const curator = picks.filter((p) => (p.author ?? "curator") === "curator");
-  const hang = dungHang(muc, curator, odds);
+  const hang = dungHang(muc, curator, odds, await getTranDaDa(doiCanPhongDo(muc)));
   // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
   const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
 
@@ -93,19 +94,15 @@ export default async function DuDoanHub({ params }: Props) {
     <div className="mx-auto max-w-[800px] px-5 py-12">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Dự đoán", url: "/du-doan" }]} />
       <h1 className="gradient-text font-display text-4xl font-bold">Dự đoán bóng đá hôm nay</h1>
-      <p className="mt-3 text-muted">
-        Tất cả bài nhận định từng trận của banhbong ở một chỗ: trận sắp đá nằm trên cùng, xếp theo giải.
-        Đây là phân tích chuyên môn về lối chơi, phong độ và đội hình — chỉ để tham khảo khi xem bóng,
-        không phải lời khuyên tài chính. Mỗi tỷ số dự đoán được chấm công khai sau trận, đúng hay sai đều giữ lại.
-      </p>
+      <p className="mt-2 text-sm text-muted">Tỷ số dự đoán từng trận, chấm đúng/sai sau trận.</p>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <DuDoanTheoNgay rows={hang} homNay={ngayVN(Date.now())} lang={lang} hienTyLe />
       </div>
 
       {hang.length === 0 && nhom.length === 0 ? (
         <p className="mt-10 rounded-card border border-line bg-card px-6 py-8 text-center text-sm text-muted">
-          Chưa có bài dự đoán nào. Bài nhận định trận mới sẽ xuất hiện ở đây.
+          Chưa có dự đoán.
         </p>
       ) : (
         nhom.map(([giai, ds]) => (

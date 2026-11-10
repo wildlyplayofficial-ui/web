@@ -5,6 +5,7 @@
  */
 import { tenSo } from "./du-doan-cham";
 import { tenKhach, tenNha } from "./du-doan-nguon";
+import { phongDo, type KQ, type TranDaDa } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import type { MucDuDoan } from "./du-doan";
 import type { OddsBoardMatch } from "./odds-data";
@@ -34,6 +35,9 @@ export interface HangDuDoan {
   pick: boolean;
   /** Tỷ lệ 1 · X · 2 hiện tại, nếu bảng tỷ lệ có trận này. */
   mot: [number, number, number] | null;
+  /** 5 trận gần nhất trước trận này, mới nhất trước; null = không đủ dữ liệu. */
+  formNha: KQ[] | null;
+  formKhach: KQ[] | null;
 }
 
 const LECH_TOI_DA = 36 * 3_600_000;
@@ -67,6 +71,7 @@ export function dungHang(
   muc: readonly MucDuDoan[],
   picks: readonly { home_team: string; away_team: string; kickoff_utc: string }[],
   odds: readonly OddsBoardMatch[],
+  daDa: readonly TranDaDa[] = [],
 ): HangDuDoan[] {
   return muc.flatMap((m): HangDuDoan[] => {
     const d = m.duDoan;
@@ -97,9 +102,16 @@ export function dungHang(
         sapDa: m.sapDa,
         pick: picks.some((p) => cungTran(tran, { home: p.home_team, away: p.away_team, kickoff: p.kickoff_utc })),
         mot,
+        formNha: phongDo(daDa, d.home, m.kickoffUtc),
+        formKhach: phongDo(daDa, d.away, m.kickoffUtc),
       },
     ];
   });
+}
+
+/** Tên gốc (như bảng fixtures) của mọi đội có dự đoán — để kéo phong độ một lần. */
+export function doiCanPhongDo(muc: readonly MucDuDoan[]): string[] {
+  return muc.flatMap((m) => (m.duDoan ? [m.duDoan.home, m.duDoan.away] : []));
 }
 
 /** Câu ngắn cho ô dự đoán: "Việt Nam thắng" / "Hòa". */

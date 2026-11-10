@@ -96,6 +96,10 @@ export interface Dict {
     empty: string;
     win: string;
     draw: string;
+    homeShort: string;
+    awayShort: string;
+    preview: string;
+    form: string;
   };
   tagline: string;
   /** Bản ngắn cho ĐIỆN THOẠI — xem ghi chú ở app/[lang]/page.tsx. */
@@ -452,6 +456,10 @@ const en: Dict = {
     empty: "No predictions for this day",
     win: "win",
     draw: "Draw",
+    homeShort: "Home",
+    awayShort: "Away",
+    preview: "Match preview",
+    form: "Last 5",
   },
   tagline: "Free Football Picks, Analysis & Betting Guides",
   taglineShort: "Free Football Picks",
@@ -798,6 +806,10 @@ const vi: Dict = {
     empty: "Chưa có dự đoán cho ngày này",
     win: "thắng",
     draw: "Hòa",
+    homeShort: "Nhà",
+    awayShort: "Khách",
+    preview: "Xem nhận định",
+    form: "Phong độ 5 trận",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",
@@ -1144,6 +1156,10 @@ const th: Dict = {
     empty: "ยังไม่มีการทำนายวันนี้",
     win: "ชนะ",
     draw: "เสมอ",
+    homeShort: "เหย้า",
+    awayShort: "เยือน",
+    preview: "ดูบทวิเคราะห์",
+    form: "ฟอร์ม 5 นัด",
   },
   tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
   taglineShort: "ทีเด็ดบอลฟรี",
@@ -1490,6 +1506,10 @@ const es: Dict = {
     empty: "Sin pronósticos para este día",
     win: "gana",
     draw: "Empate",
+    homeShort: "Local",
+    awayShort: "Visita",
+    preview: "Ver previa",
+    form: "Últimos 5",
   },
   tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
   taglineShort: "Picks de Fútbol Gratis",

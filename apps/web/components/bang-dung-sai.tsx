@@ -17,10 +17,7 @@ export function BangDungSai({ muc, lang }: { muc: MucDuDoan[]; lang: Lang }) {
   return (
     <section aria-labelledby="bang-dung-sai" className="mt-12">
       <h2 id="bang-dung-sai" className="font-display text-2xl font-bold">Bảng đúng/sai</h2>
-      <p className="mt-2 text-sm text-muted">
-        Mỗi trận đã đá: tỷ số dự đoán (chốt trước giờ bóng lăn) đặt cạnh tỷ số thật. Đúng kết quả là đoán
-        đúng đội thắng hoặc hoà; đúng tỷ số là trúng cả hai con số. Đoán trượt vẫn giữ nguyên trên bảng.
-      </p>
+      <p className="mt-1 text-sm text-muted">Tỷ số chốt trước giờ đá, đặt cạnh tỷ số thật.</p>
 
       {tong.length > 0 && (
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -42,7 +39,7 @@ export function BangDungSai({ muc, lang }: { muc: MucDuDoan[]; lang: Lang }) {
 
       {daCham.length === 0 ? (
         <p className="mt-5 rounded-card border border-line bg-card px-6 py-8 text-center text-sm text-muted">
-          Chưa có trận nào đủ điều kiện chấm. Bảng bắt đầu đếm từ bài dự đoán đầu tiên có tỷ số chốt trước giờ đá.
+          Chưa có trận nào được chấm.
         </p>
       ) : (
         <div className="mt-5 overflow-x-auto rounded-card border border-line">
@@ -80,7 +77,7 @@ export function BangDungSai({ muc, lang }: { muc: MucDuDoan[]; lang: Lang }) {
         </div>
       )}
       {choTySo > 0 && (
-        <p className="mt-3 text-xs text-muted">{choTySo} trận đã đá đang chờ cập nhật tỷ số chính thức.</p>
+        <p className="mt-3 text-xs text-muted">{choTySo} trận chờ tỷ số.</p>
       )}
     </section>
   );

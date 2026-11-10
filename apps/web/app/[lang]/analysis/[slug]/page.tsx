@@ -22,6 +22,8 @@ import { localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
 import { duDoanChot, laBaiDuDoan } from "@/lib/du-doan-cham";
 import { duDoanCua } from "@/lib/du-doan-nguon";
+import type { TranDaDa } from "@/lib/phong-do";
+import { getTranDaDa } from "@/lib/phong-do-db";
 import { dungHang } from "@/lib/du-doan-hang";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
 
@@ -209,9 +211,11 @@ function DeskArticleView({
   lang,
   dict,
   giai,
+  daDa = [],
 }: {
   article: AnalysisArticle;
   lang: Lang;
+  daDa?: TranDaDa[];
   dict: ReturnType<typeof getDict>;
   /** Trang BXH của giải bài này thuộc về (nếu có) — link ngược về hub (9/11). */
   giai?: { slug: string; ten: string };
@@ -224,6 +228,7 @@ function DeskArticleView({
         [{ bai: article, duDoan: dd, kickoffUtc: dd.kickoff_utc, sapDa: Date.parse(dd.kickoff_utc) > Date.now(), chot: duDoanChot(article), ketQua: null }],
         [],
         [],
+        daDa,
       )[0] ?? null
     : null;
   const published = new Intl.DateTimeFormat(locales[lang], {
@@ -400,7 +405,9 @@ export default async function AnalysisArticlePage({ params }: Props) {
     const comps = await getStandingsCompetitions().catch(() => []);
     const c = comps.find((x) => x.status === "active" && x.slug && cungGiai(deskArticle.league, x.name));
     const giai = c ? { slug: c.slug, ten: localizedCompetitionName(c.slug, c.name, lang) } : undefined;
-    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} giai={giai} />;
+    const dd = duDoanCua(deskArticle);
+    const daDa = dd ? await getTranDaDa([dd.home, dd.away]) : [];
+    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} giai={giai} daDa={daDa} />;
   }
 
   // Fall back to posts table (existing behavior)
