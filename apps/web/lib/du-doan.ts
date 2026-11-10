@@ -76,6 +76,13 @@ export async function getMucMotBai(b: AnalysisArticle): Promise<MucDuDoan> {
   return dungMuc(b, tySo, now);
 }
 
+/** Mọi bài dự đoán (cho ô "Chọn trận khác"); lỗi nguồn → rỗng, ô tự ẩn. */
+export function getBaiDuDoan(): Promise<AnalysisArticle[]> {
+  return getAnalysisArticles(undefined, TRAN_BAI)
+    .then((ds) => ds.filter(laBaiDuDoan))
+    .catch(() => []);
+}
+
 export async function getMucDuDoan(): Promise<MucDuDoan[]> {
   const bai = (await getAnalysisArticles(undefined, TRAN_BAI)).filter(laBaiDuDoan);
   const now = Date.now();

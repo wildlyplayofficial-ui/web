@@ -25,7 +25,9 @@ import { duDoanCua } from "@/lib/du-doan-nguon";
 import type { TranDaDa } from "@/lib/phong-do";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { dungHang } from "@/lib/du-doan-hang";
-import { getMucMotBai, type MucDuDoan } from "@/lib/du-doan";
+import { getBaiDuDoan, getMucMotBai, type MucDuDoan } from "@/lib/du-doan";
+import { cacTranChon, type NhomNgay } from "@/lib/chon-tran";
+import { ChonTran } from "@/components/chon-tran";
 import { suKienTran } from "@/lib/du-doan-schema";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
 
@@ -215,12 +217,15 @@ function DeskArticleView({
   giai,
   daDa = [],
   muc = null,
+  chonTran = [],
 }: {
   article: AnalysisArticle;
   lang: Lang;
   daDa?: TranDaDa[];
   /** Dự đoán của bài (đã chấm nếu trận xong); null = bài không có dự đoán. */
   muc?: MucDuDoan | null;
+  /** Danh sách "Chọn trận khác" (chỉ bài có dự đoán). */
+  chonTran?: NhomNgay[];
   dict: ReturnType<typeof getDict>;
   /** Trang BXH của giải bài này thuộc về (nếu có) — link ngược về hub (9/11). */
   giai?: { slug: string; ten: string };
@@ -296,7 +301,8 @@ function DeskArticleView({
       </header>
 
       {oDuDoan && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
+          <ChonTran nhom={chonTran} hienTai={article.slug} lang={lang} />
           <ODuDoanTran h={oDuDoan} lang={lang} />
         </div>
       )}
@@ -405,10 +411,20 @@ export default async function AnalysisArticlePage({ params }: Props) {
     const c = comps.find((x) => x.status === "active" && x.slug && cungGiai(deskArticle.league, x.name));
     const giai = c ? { slug: c.slug, ten: localizedCompetitionName(c.slug, c.name, lang) } : undefined;
     const dd = duDoanCua(deskArticle);
-    const [daDa, muc] = dd
-      ? await Promise.all([getTranDaDa([dd.home, dd.away]), getMucMotBai(deskArticle)])
-      : [[], null];
-    return <DeskArticleView article={deskArticle} lang={lang} dict={dict} giai={giai} daDa={daDa} muc={muc} />;
+    const [daDa, muc, baiChon] = dd
+      ? await Promise.all([getTranDaDa([dd.home, dd.away]), getMucMotBai(deskArticle), getBaiDuDoan()])
+      : [[], null, []];
+    return (
+      <DeskArticleView
+        article={deskArticle}
+        lang={lang}
+        dict={dict}
+        giai={giai}
+        daDa={daDa}
+        muc={muc}
+        chonTran={cacTranChon(baiChon, Date.now())}
+      />
+    );
   }
 
   // Fall back to posts table (existing behavior)

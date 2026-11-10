@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran, type CauHoi } from "@/lib/du-doan-schema";
-import { getMucDuDoan, type MucDuDoan } from "@/lib/du-doan";
+import { getBaiDuDoan, getMucDuDoan, type MucDuDoan } from "@/lib/du-doan";
+import { cacTranChon } from "@/lib/chon-tran";
+import { ChonTran } from "@/components/chon-tran";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BangDungSai } from "@/components/bang-dung-sai";
@@ -97,10 +99,11 @@ function DongBai({ m, lang }: { m: MucDuDoan; lang: Lang }) {
 
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
-  const [muc, picks, odds] = await Promise.all([
+  const [muc, picks, odds, baiChon] = await Promise.all([
     getMucDuDoan(),
     getTodaysPicks().catch(() => []),
     getOddsBoard().catch(() => []),
+    getBaiDuDoan(),
   ]);
   const curator = picks.filter((p) => (p.author ?? "curator") === "curator");
   const hang = dungHang(muc, curator, odds, await getTranDaDa(doiCanPhongDo(muc)));
@@ -129,6 +132,9 @@ export default async function DuDoanHub({ params }: Props) {
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <h1 className="gradient-text font-display text-4xl font-bold">Dự đoán bóng đá hôm nay</h1>
       <p className="mt-2 text-sm text-muted">Tỷ số dự đoán từng trận, chấm đúng/sai sau trận.</p>
+      <div className="mt-4">
+        <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
+      </div>
       <div className="mt-4">
         <OThanhTichDuDoan tong={thanhTichDuDoan(muc)} lang={lang} />
       </div>
