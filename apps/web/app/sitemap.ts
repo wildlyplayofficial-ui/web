@@ -5,7 +5,8 @@ import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks,
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
-import { newsDuocIndex, analysisDuocIndex } from "@/lib/chi-muc";
+import { newsDuocIndex, analysisDuocIndex, tranDuocIndex } from "@/lib/chi-muc";
+import { taiDuDoan } from "@/lib/du-doan-tai";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
@@ -307,5 +308,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
+  // Trang riêng từng trận /du-doan/{slug} (10/11): CHỈ nộp trận được mời index — khớp
+  // robots ở trang trận (tranDuocIndex). Trận đá xong trang thêm tỷ số thật → lastmod =
+  // giờ đá + 2 giờ; trận chưa đá không có ngày sửa thật nên không khai lastmod.
+  const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
+  const tranRoutes: MetadataRoute.Sitemap = hang.filter(tranDuocIndex).map((h) => ({
+    url: `${BASE}/du-doan/${h.slug}`,
+    ...(h.sapDa ? {} : { lastModified: safeLastMod(Date.parse(h.kickoffUtc) + 2 * 3_600_000) }),
+    changeFrequency: "daily" as const,
+    priority: 0.6,
+    alternates: alternates(`/du-doan/${h.slug}`),
+  }));
+
+  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...tranRoutes, ...standingsRoutes];
 }
