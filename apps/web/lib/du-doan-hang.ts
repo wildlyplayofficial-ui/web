@@ -7,11 +7,16 @@ import { tenSo } from "./du-doan-cham";
 import { tenKhach, tenNha } from "./du-doan-nguon";
 import { doiDau, phongDo, type KQ, type TranDaDa, type TranDoiDau } from "./phong-do";
 import { teamBadge } from "./team-badges";
+import { nhanTran, type NhanTran } from "./du-doan-nhan";
+
+export { nhanTran, type NhanTran };
 import type { MucDuDoan } from "./du-doan";
 import type { OddsBoardMatch } from "./odds-data";
 
 export interface HangDuDoan {
   slug: string;
+  /** Có bài nhận định /analysis/{slug} (dòng nạp từ tệp tuần thì không). */
+  coBai: boolean;
   giai: string;
   kickoffUtc: string;
   /** Ngày đá theo giờ VN, YYYY-MM-DD — khoá của tab ngày. */
@@ -45,6 +50,7 @@ export interface HangDuDoan {
   formKhach: KQ[] | null;
   /** Tối đa 5 lần gặp nhau gần nhất (từ cùng dữ liệu phong độ); null = chưa có. */
   doiDau: TranDoiDau[] | null;
+  nhan: NhanTran[];
 }
 
 const LECH_TOI_DA = 36 * 3_600_000;
@@ -89,9 +95,9 @@ export function dungHang(
     const mot: HangDuDoan["mot"] =
       ml?.home_odds && ml.draw_odds && ml.away_odds ? [ml.home_odds, ml.draw_odds, ml.away_odds] : null;
     const logoNguon = (id: number | null | undefined) => (id ? `/api/team-logo/${id}` : null);
-    return [
-      {
+    const hang: HangDuDoan = {
         slug: m.bai.slug,
+        coBai: true,
         giai: m.bai.league || "Giải khác",
         kickoffUtc: m.kickoffUtc,
         ngay: ngayVN(m.kickoffUtc),
@@ -114,8 +120,9 @@ export function dungHang(
         formNha: phongDo(daDa, d.home, m.kickoffUtc),
         formKhach: phongDo(daDa, d.away, m.kickoffUtc),
         doiDau: doiDau(daDa, d.home, d.away, m.kickoffUtc),
-      },
-    ];
+        nhan: [],
+    };
+    return [{ ...hang, nhan: nhanTran(hang) }];
   });
 }
 

@@ -31,7 +31,7 @@ export function suKienTran(h: HangDuDoan, base: string) {
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     sport: "Football",
-    url: `${base}/analysis/${h.slug}`,
+    url: h.coBai ? `${base}/analysis/${h.slug}` : `${base}/du-doan`,
     homeTeam: doi(h.nha),
     awayTeam: doi(h.khach),
     competitor: [doi(h.nha), doi(h.khach)],

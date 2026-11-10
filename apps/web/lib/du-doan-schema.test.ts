@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { dungMuc, thanhTichDuDoan, type TySoThat } from "./du-doan-cham";
 import { cauDuDoan, cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran } from "./du-doan-schema";
 import type { HangDuDoan } from "./du-doan-hang";
+import { nhanTran } from "./du-doan-nhan";
 import type { AnalysisArticle } from "./types";
 
 const VN = "nhan-dinh-viet-nam-vs-dai-bac-trung-hoa-11-11-2026";
@@ -41,7 +42,7 @@ describe("dungMuc — chấm trận đã đá (tệp thật: đoán 2-1)", () =>
 });
 
 const HANG: HangDuDoan = {
-  slug: VN, giai: "Giao hữu", kickoffUtc: "2026-11-11T12:00:00Z", ngay: "2026-11-11", gio: "19:00",
+  slug: VN, coBai: true, nhan: [], giai: "Giao hữu", kickoffUtc: "2026-11-11T12:00:00Z", ngay: "2026-11-11", gio: "19:00",
   nha: "Việt Nam", khach: "Đài Bắc Trung Hoa", logoNha: null, logoKhach: null, anhNha: null, anhKhach: null,
   creditAnh: null, du: [2, 1], that: null, dung: null, dungTySo: null, san: "Sân Thiên Trường, Ninh Bình",
   sapDa: true, pick: false, mot: null, formNha: null, formKhach: null, doiDau: null,
@@ -123,5 +124,26 @@ describe("thanhTichDuDoan — ô 'đoán đúng X/Y trận'", () => {
     expect(ds.map((x) => x.tacGia)).toEqual(["Chú Tám", "Scout"]);
     expect(ds[0]).toMatchObject({ tran: 1, dungKetQua: 1, dungTySo: 0 });
     expect(ds[1]).toMatchObject({ tran: 1, dungKetQua: 0, dungTySo: 0 });
+  });
+});
+
+describe("dòng nạp từ tệp tuần", () => {
+  it("không có bài thì JSON-LD trỏ về /du-doan", () => {
+    expect(suKienTran({ ...HANG, coBai: false }, "https://www.banhbong.net").url).toBe("https://www.banhbong.net/du-doan");
+  });
+});
+
+describe("nhanTran", () => {
+  it("tuyển Việt Nam được gắn nhãn vn", () => {
+    expect(nhanTran({ ...HANG, mot: null })).toEqual(["vn"]);
+  });
+  it("giải lớn được gắn nhãn hot", () => {
+    expect(nhanTran({ ...HANG, nha: "Belgium", khach: "Wales", giai: "UEFA Nations League" })).toEqual(["hot"]);
+  });
+  it("chọn đội có tỷ lệ cao hơn thì là ngược kèo", () => {
+    expect(nhanTran({ ...HANG, nha: "A", khach: "B", giai: "x", du: [0, 1], mot: [1.8, 3.4, 4.5] })).toEqual(["nguocKeo"]);
+  });
+  it("chọn đội cửa trên thì không gắn ngược kèo", () => {
+    expect(nhanTran({ ...HANG, nha: "A", khach: "B", giai: "x", du: [2, 0], mot: [1.8, 3.4, 4.5] })).toEqual([]);
   });
 });

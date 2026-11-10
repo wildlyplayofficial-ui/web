@@ -13,6 +13,7 @@ import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { doiCanPhongDo, dungHang, ngayVN } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
+import { doiThieuPhongDo, hangTuan } from "@/lib/du-doan-tuan";
 import { getTodaysPicks } from "@/lib/data";
 import { getOddsBoard } from "@/lib/odds-data";
 
@@ -114,7 +115,10 @@ export default async function DuDoanHub({ params }: Props) {
     getBaiDuDoan(),
   ]);
   const curator = picks.filter((p) => (p.author ?? "curator") === "curator");
-  const hang = dungHang(muc, curator, odds, await getTranDaDa(doiCanPhongDo(muc)));
+  const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(muc)), getTranDaDa(doiThieuPhongDo())]);
+  const hangBai = dungHang(muc, curator, odds, daDa);
+  // Bài có nhận định trước, rồi dự đoán nạp từ tệp tuần (trùng trận thì giữ bài).
+  const hang = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
   // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
   const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
   const hoi = cauHoiDuDoan(muc, hang);
