@@ -11,11 +11,11 @@ import { getDict, withLang, type Lang } from "@/lib/i18n";
 const lechNgay = (khoa: string, n: number) =>
   new Date(Date.parse(`${khoa}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
+/** Thứ viết tay, không dùng Intl: ICU của Node và trình duyệt ra chữ khác nhau ("Thứ 6" vs "Th 6") → lỗi hydrate. */
+const THU = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 const thuNgay = (khoa: string) => {
-  const p = new Intl.DateTimeFormat("vi-VN", { timeZone: "UTC", weekday: "short", day: "2-digit", month: "2-digit" })
-    .formatToParts(new Date(`${khoa}T00:00:00Z`));
-  const lay = (t: string) => p.find((x) => x.type === t)?.value ?? "";
-  return `${lay("weekday")} ${lay("day")}/${lay("month")}`;
+  const [, m, d] = khoa.split("-");
+  return `${THU[new Date(`${khoa}T00:00:00Z`).getUTCDay()]} ${d}/${m}`;
 };
 
 function Chip({ chon, onClick, children }: { chon: boolean; onClick: () => void; children: React.ReactNode }) {
