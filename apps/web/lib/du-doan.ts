@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { getAnalysisArticles } from "./analysis-articles";
 import { getSupabase } from "./supabase";
 import { cham, duDoanChot, laBaiDuDoan, timTySo, type DuDoanChot, type KetQuaCham, type TySoThat } from "./du-doan-cham";
+import { duDoanCua, type DuDoanDayDu } from "./du-doan-nguon";
 import type { AnalysisArticle } from "./types";
 
 /**
@@ -18,7 +19,9 @@ const TRAN_BAI = 300;
 
 export interface MucDuDoan {
   bai: AnalysisArticle;
-  /** Giờ đá (từ cột du_doan). null = bài chưa khai trận → không xếp được sắp/đã đá. */
+  /** Trận + tỷ số dự đoán (cột du_doan, hoặc lib/data/du-doan.json). */
+  duDoan: DuDoanDayDu | null;
+  /** Giờ đá. null = bài chưa khai trận → không xếp được sắp/đã đá. */
   kickoffUtc: string | null;
   sapDa: boolean;
   /** Tỷ số dự đoán đã chốt trước giờ đá, nếu có. */
@@ -70,7 +73,7 @@ export async function getMucDuDoan(): Promise<MucDuDoan[]> {
   const now = Date.now();
 
   const daDa = bai
-    .map((b) => b.du_doan?.kickoff_utc)
+    .map((b) => duDoanCua(b)?.kickoff_utc)
     .filter((k): k is string => Boolean(k) && Date.parse(k as string) < now)
     .sort();
   const tySo = daDa.length > 0
@@ -78,12 +81,13 @@ export async function getMucDuDoan(): Promise<MucDuDoan[]> {
     : [];
 
   const muc = bai.map((b): MucDuDoan => {
-    const kickoffUtc = b.du_doan?.kickoff_utc ?? null;
+    const duDoan = duDoanCua(b);
+    const kickoffUtc = duDoan?.kickoff_utc ?? null;
     const ko = kickoffUtc ? Date.parse(kickoffUtc) : NaN;
     const sapDa = Number.isFinite(ko) && ko > now;
     const chot = duDoanChot(b);
     const that = chot && !sapDa ? timTySo(chot, tySo) : null;
-    return { bai: b, kickoffUtc, sapDa, chot, ketQua: chot && that ? { ...cham(chot, that), that } : null };
+    return { bai: b, duDoan, kickoffUtc, sapDa, chot, ketQua: chot && that ? { ...cham(chot, that), that } : null };
   });
 
   // Trận sắp đá lên đầu (gần giờ đá nhất trước), còn lại bài mới nhất trước.

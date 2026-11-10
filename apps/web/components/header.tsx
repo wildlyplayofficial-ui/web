@@ -19,7 +19,7 @@ type NavLink = { name: string; href: string; logo_url?: string };
 type NavItem = NavLink | { divider: true };
 /** A top-level nav cluster: either a single link or a dropdown of items. */
 type NavCluster =
-  | { label: string; href: string }
+  | { label: string; href: string; moi?: boolean }
   | { label: string; items: NavItem[]; accent?: boolean };
 
 const LANG_PREFIX_RE = /^\/(vi|th|es)(\/|$)/;
@@ -154,12 +154,13 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
 
   const nav = dict.nav;
   const clusters: NavCluster[] = [
+    // Hub dự đoán đứng đầu (Peter duyệt mock 10/11); pick Chú Tám giữ ngay sau.
+    { label: nav.predictions, href: "/du-doan", moi: true },
     {
       label: nav.todaysPick,
       accent: true,
       items: [
         { name: nav.todaysPick, href: "/daily-board" },
-        { name: nav.predictions, href: "/du-doan" },
         { name: nav.dailyLine, href: "/daily-line" },
       ],
     },
@@ -232,6 +233,11 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
                       className={`text-sm font-medium transition-colors hover:text-ink ${isActive(cluster.href) ? "text-ink" : "text-muted"}`}
                     >
                       {cluster.label}
+                      {cluster.moi && (
+                        <span className="ml-1.5 rounded bg-brand px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-bg">
+                          {nav.newTag}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

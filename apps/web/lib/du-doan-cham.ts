@@ -6,6 +6,7 @@
  * kind 'preview' nên kind một mình KHÔNG đủ (đo /analysis 10/11: 13 bài preview,
  * chỉ 3 bài là xem trước một trận).
  */
+import { duDoanCua, type DuDoanDayDu } from "./du-doan-nguon";
 import type { AnalysisArticle, DuDoan } from "./types";
 
 /** Chữ cá cược: bài dính chữ này không được lên hub (luật pháp lý VN). Slug mất dấu
@@ -20,12 +21,12 @@ export function laBaiDuDoan(a: Pick<AnalysisArticle, "kind" | "slug" | "title">)
 }
 
 /** Dự đoán đã chốt số: đủ hai con số nguyên. */
-export type DuDoanChot = DuDoan & { home_goals: number; away_goals: number };
+export type DuDoanChot = DuDoanDayDu & { home_goals: number; away_goals: number };
 
 /** Có tỷ số dự đoán chốt TRƯỚC giờ bóng lăn thì mới được chấm. Bài đăng sau giờ
  *  đá (hoặc thiếu số) thì không tính — chấm bài viết sau khi biết kết quả là gian. */
-export function duDoanChot(a: Pick<AnalysisArticle, "du_doan" | "published_at">): DuDoanChot | null {
-  const d = a.du_doan;
+export function duDoanChot(a: Pick<AnalysisArticle, "slug" | "du_doan" | "published_at">): DuDoanChot | null {
+  const d = duDoanCua(a);
   if (!d || !Number.isInteger(d.home_goals) || !Number.isInteger(d.away_goals)) return null;
   const ko = Date.parse(d.kickoff_utc);
   if (!Number.isFinite(ko) || Date.parse(a.published_at) >= ko) return null;

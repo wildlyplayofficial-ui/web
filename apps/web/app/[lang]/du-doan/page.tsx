@@ -5,6 +5,10 @@ import { getMucDuDoan, type MucDuDoan } from "@/lib/du-doan";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BangDungSai } from "@/components/bang-dung-sai";
+import { DuDoanTheoNgay } from "@/components/du-doan-theo-ngay";
+import { dungHang, ngayVN } from "@/lib/du-doan-hang";
+import { getTodaysPicks } from "@/lib/data";
+import { getOddsBoard } from "@/lib/odds-data";
 
 export const revalidate = 300;
 
@@ -75,8 +79,15 @@ function DongBai({ m, lang }: { m: MucDuDoan; lang: Lang }) {
 
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
-  const muc = await getMucDuDoan();
-  const nhom = theoGiai(muc);
+  const [muc, picks, odds] = await Promise.all([
+    getMucDuDoan(),
+    getTodaysPicks().catch(() => []),
+    getOddsBoard().catch(() => []),
+  ]);
+  const curator = picks.filter((p) => (p.author ?? "curator") === "curator");
+  const hang = dungHang(muc, curator, odds);
+  // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
+  const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
 
   return (
     <div className="mx-auto max-w-[800px] px-5 py-12">
@@ -88,7 +99,11 @@ export default async function DuDoanHub({ params }: Props) {
         không phải lời khuyên tài chính. Mỗi tỷ số dự đoán được chấm công khai sau trận, đúng hay sai đều giữ lại.
       </p>
 
-      {nhom.length === 0 ? (
+      <div className="mt-8">
+        <DuDoanTheoNgay rows={hang} homNay={ngayVN(Date.now())} lang={lang} hienTyLe />
+      </div>
+
+      {hang.length === 0 && nhom.length === 0 ? (
         <p className="mt-10 rounded-card border border-line bg-card px-6 py-8 text-center text-sm text-muted">
           Chưa có bài dự đoán nào. Bài nhận định trận mới sẽ xuất hiện ở đây.
         </p>

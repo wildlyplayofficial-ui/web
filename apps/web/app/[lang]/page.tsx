@@ -26,6 +26,9 @@ import { KhoiTrangTru } from "@/components/khoi-trang-tru";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 import { getOddsBoard } from "@/lib/odds-data";
+import { getMucDuDoan } from "@/lib/du-doan";
+import { dungHang } from "@/lib/du-doan-hang";
+import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
 export const revalidate = 300;
 
@@ -77,7 +80,7 @@ const REC_30D: Record<string, string> = { vi: "30 ngày", en: "30 days", th: "30
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich, blogs] =
+  const [allPicks, record, settledPicks, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -101,6 +104,8 @@ export default async function Home({ params }: Props) {
         .catch(() => []),
       // 9/11: trang chủ 0 link sang /blog → 37/37 bài blog Google chưa biết.
       getAllBlogSlugs().catch(() => []),
+      // Khối "Dự đoán hôm nay" (10/11). Hỏng thì khối chỉ rỗng, trang vẫn lên.
+      getMucDuDoan().catch(() => []),
     ]);
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -172,6 +177,7 @@ export default async function Home({ params }: Props) {
   // Predictions slot — the top curator pick, or nothing. NEVER a fabricated seed:
   // no real pick = the card is omitted below (the old test-seed rendered a fake match).
   const heroPick = picks[0] ?? null;
+  const hangDuDoan = dungHang(mucDuDoan, picks, oddsMatches);
   // Bản dịch nhận định nằm ở bảng pick_content; cột `thesis` trên pick luôn là
   // tiếng Anh. Không lấy bản dịch thì trang tiếng Việt hiện ruột tiếng Anh (Nick 23/8).
   const heroThesis = heroPick
@@ -285,6 +291,7 @@ export default async function Home({ params }: Props) {
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
+      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} />
       {/* 1. Hero: brand positioning + curator record + form
           Đệm dọc thu lại trên ĐIỆN THOẠI (Peter chụp màn hình 2/9/2026: khối này
           ăn trọn màn đầu, đẩy "Bảng Dự Đoán Hôm Nay" xuống dưới nếp gấp).

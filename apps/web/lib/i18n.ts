@@ -74,6 +74,28 @@ export interface Dict {
     learn: string;
     /** Hub /du-doan — mọi bài dự đoán từng trận + bảng đúng/sai. */
     predictions: string;
+    /** Nhãn nhỏ cạnh mục nav mới. */
+    newTag: string;
+  };
+  /** Hub dự đoán + khối "Dự đoán hôm nay" trang chủ (10/11/2026). */
+  duDoan: {
+    title: string;
+    seeAll: string;
+    pickTitle: string;
+    noPick: string;
+    pickNote: string;
+    seeRecord: string;
+    yesterday: string;
+    today: string;
+    tomorrow: string;
+    all: string;
+    correct: string;
+    wrong: string;
+    label: string;
+    readArticle: string;
+    empty: string;
+    win: string;
+    draw: string;
   };
   tagline: string;
   /** Bản ngắn cho ĐIỆN THOẠI — xem ghi chú ở app/[lang]/page.tsx. */
@@ -409,7 +431,27 @@ const en: Dict = {
     trackRecord: "Track Record",
     analysis: "Analysis",
     learn: "Learn",
-    predictions: "Match Predictions",
+    predictions: "Predictions",
+    newTag: "New",
+  },
+  duDoan: {
+    title: "Today's football predictions",
+    seeAll: "See all predictions",
+    pickTitle: "Today's curator pick",
+    noPick: "No pick from the curator today",
+    pickNote: "Only when there's an edge",
+    seeRecord: "see record",
+    yesterday: "Yesterday",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    all: "All",
+    correct: "Correct",
+    wrong: "Wrong",
+    label: "Prediction",
+    readArticle: "Read article",
+    empty: "No predictions for this day",
+    win: "win",
+    draw: "Draw",
   },
   tagline: "Free Football Picks, Analysis & Betting Guides",
   taglineShort: "Free Football Picks",
@@ -735,7 +777,27 @@ const vi: Dict = {
     trackRecord: "Thành Tích",
     analysis: "Phân Tích",
     learn: "Học Hỏi",
-    predictions: "Dự Đoán Từng Trận",
+    predictions: "Dự Đoán",
+    newTag: "Mới",
+  },
+  duDoan: {
+    title: "Dự đoán bóng đá hôm nay",
+    seeAll: "Xem tất cả dự đoán",
+    pickTitle: "Pick Chú Tám hôm nay",
+    noPick: "Hôm nay Chú Tám không chọn trận nào",
+    pickNote: "Chỉ chọn khi thấy lợi thế",
+    seeRecord: "xem thành tích",
+    yesterday: "Hôm qua",
+    today: "Hôm nay",
+    tomorrow: "Ngày mai",
+    all: "Tất cả",
+    correct: "Đúng",
+    wrong: "Sai",
+    label: "Dự đoán",
+    readArticle: "Xem bài",
+    empty: "Chưa có dự đoán cho ngày này",
+    win: "thắng",
+    draw: "Hòa",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",
@@ -1061,7 +1123,27 @@ const th: Dict = {
     trackRecord: "สถิติผลงาน",
     analysis: "บทวิเคราะห์",
     learn: "เรียนรู้",
-    predictions: "ทำนายผลรายนัด",
+    predictions: "ทำนายผล",
+    newTag: "ใหม่",
+  },
+  duDoan: {
+    title: "ทำนายผลบอลวันนี้",
+    seeAll: "ดูการทำนายทั้งหมด",
+    pickTitle: "ทีเด็ดวันนี้",
+    noPick: "วันนี้ไม่มีทีเด็ด",
+    pickNote: "เลือกเฉพาะเมื่อได้เปรียบ",
+    seeRecord: "ดูสถิติ",
+    yesterday: "เมื่อวาน",
+    today: "วันนี้",
+    tomorrow: "พรุ่งนี้",
+    all: "ทั้งหมด",
+    correct: "ถูก",
+    wrong: "ผิด",
+    label: "ทำนาย",
+    readArticle: "อ่านบทความ",
+    empty: "ยังไม่มีการทำนายวันนี้",
+    win: "ชนะ",
+    draw: "เสมอ",
   },
   tagline: "ทีเด็ดบอลฟรี บทวิเคราะห์ & คู่มือเดิมพัน",
   taglineShort: "ทีเด็ดบอลฟรี",
@@ -1387,7 +1469,27 @@ const es: Dict = {
     trackRecord: "Historial",
     analysis: "Análisis",
     learn: "Aprender",
-    predictions: "Pronósticos por Partido",
+    predictions: "Pronósticos",
+    newTag: "Nuevo",
+  },
+  duDoan: {
+    title: "Pronósticos de fútbol de hoy",
+    seeAll: "Ver todos los pronósticos",
+    pickTitle: "Pick del día",
+    noPick: "Hoy no hay pick",
+    pickNote: "Solo cuando hay ventaja",
+    seeRecord: "ver historial",
+    yesterday: "Ayer",
+    today: "Hoy",
+    tomorrow: "Mañana",
+    all: "Todos",
+    correct: "Acierto",
+    wrong: "Fallo",
+    label: "Pronóstico",
+    readArticle: "Leer artículo",
+    empty: "Sin pronósticos para este día",
+    win: "gana",
+    draw: "Empate",
   },
   tagline: "Picks de Fútbol Gratis, Análisis & Guías de Apuestas",
   taglineShort: "Picks de Fútbol Gratis",

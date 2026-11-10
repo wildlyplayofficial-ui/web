@@ -20,7 +20,10 @@ import { AuthorByline } from "@/components/author-byline";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
-import { laBaiDuDoan } from "@/lib/du-doan-cham";
+import { duDoanChot, laBaiDuDoan } from "@/lib/du-doan-cham";
+import { duDoanCua } from "@/lib/du-doan-nguon";
+import { dungHang } from "@/lib/du-doan-hang";
+import { ODuDoanTran } from "@/components/o-du-doan-tran";
 
 export const revalidate = 300;
 
@@ -214,6 +217,15 @@ function DeskArticleView({
   giai?: { slug: string; ten: string };
 }) {
   const quaHan = baiQuaHan(article.slug);
+  // Ô dự đoán đầu bài (mock2 10/11) — chỉ bài có dự đoán (cột du_doan hoặc lib/data/du-doan.json).
+  const dd = duDoanCua(article);
+  const oDuDoan = dd
+    ? dungHang(
+        [{ bai: article, duDoan: dd, kickoffUtc: dd.kickoff_utc, sapDa: Date.parse(dd.kickoff_utc) > Date.now(), chot: duDoanChot(article), ketQua: null }],
+        [],
+        [],
+      )[0] ?? null
+    : null;
   const published = new Intl.DateTimeFormat(locales[lang], {
     day: "numeric",
     month: "long",
@@ -278,6 +290,12 @@ function DeskArticleView({
           {authorByName(article.byline)?.disclosure ?? "banhbong.net biên tập"}
         </p>
       </header>
+
+      {oDuDoan && (
+        <div className="mt-6">
+          <ODuDoanTran h={oDuDoan} lang={lang} />
+        </div>
+      )}
 
       {quaHan && <KhoiDaKetThuc tin={quaHan} lang={lang} />}
 

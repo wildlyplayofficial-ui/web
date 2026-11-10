@@ -43,7 +43,16 @@ const TEN_KHAC: Record<string, string> = {
   "malaga": "Málaga",
 };
 
+/** Đội tuyển không dùng cờ nước: Chinese Taipei đá dưới logo liên đoàn (CTFA),
+ *  KHÔNG phải cờ Đài Loan. Ảnh Wikimedia Commons, bản PNG để OG (satori) đọc được. */
+const LOGO_DOI_TUYEN: Record<string, string> = {
+  "chinese taipei":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Chinese_Taipei_Football_Association_logo.webp/250px-Chinese_Taipei_Football_Association_logo.webp.png",
+};
+
 export function teamBadge(name: string): string | null {
+  const doiTuyen = LOGO_DOI_TUYEN[name.trim().toLowerCase()];
+  if (doiTuyen) return doiTuyen;
   const crest = CLUB[name];
   if (crest) return crest;
 
