@@ -65,7 +65,7 @@ function TomTat({ ds, ngay }: { ds: HangDuDoan[]; ngay: string }) {
   const noiBat = co.filter((h) => diem(h) > 0).sort((a, b) => diem(b) - diem(a)).slice(0, 3);
   const [y, m, d] = ngay.split("-");
   return (
-    <div className="mx-auto mb-5 w-[96%] rounded-md border border-line bg-card px-4 py-3 text-left text-sm leading-[22px]">
+    <div className="mb-5 rounded-md border border-line bg-card px-4 py-3 text-left text-sm leading-[22px]">
       <p>
         <strong>Dự đoán bóng đá {thu(ngay)} {d}/{m}/{y}</strong>: banhbong.net có <strong>{ds.length} trận</strong> ở{" "}
         <strong>{giai} giải</strong>. Trong đó {nha} trận chọn chủ nhà thắng, {hoa} trận hòa, {co.length - nha - hoa} trận
@@ -130,7 +130,7 @@ function Tran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
   const nhanDu = c === "hoa" ? t.draw : c ? t.teamWins.replace("{team}", c === "nha" ? h.nha : h.khach) : "";
   return (
     <article className="relative border-b border-[#2c3a46] py-2 text-center">
-      <div className="absolute left-0 top-2 text-xs leading-7 tracking-wide text-muted">
+      <div className="text-xs leading-6 tracking-wide text-muted sm:absolute sm:left-0 sm:top-2 sm:leading-7">
         {h.gio} · {ddmm(h.ngay)}
       </div>
       <Doi ten={h.nha} logo={h.logoNha} />
@@ -226,12 +226,12 @@ export function DuDoanPZ({
           </button>
         ))}
       </div>
-      <div className="mb-2.5 mt-5">
+      <div className="mb-2.5 mt-4 text-left">
         <select
           aria-label="Chọn giải đấu"
           value={giai}
           onChange={(e) => setGiai(e.target.value)}
-          className="h-[39px] w-[337px] max-w-full border border-line bg-card px-2.5 text-[13px] text-ink"
+          className="h-[39px] w-full rounded-md border sm:w-[337px] border-line bg-card px-2.5 text-[13px] text-ink"
         >
           <option value="">Chọn giải đấu để xem dự đoán</option>
           {cacGiai.map((g) => (
@@ -239,24 +239,24 @@ export function DuDoanPZ({
           ))}
         </select>
       </div>
-      <TieuDe className="mb-2.5 ml-2.5 mt-5 text-left font-display text-[30px] leading-[47px]">
+      <TieuDe className="mb-2 mt-5 text-left font-display text-2xl leading-tight sm:text-[30px]">
         {ngay === homNay ? tieuDe : `Dự đoán bóng đá ${thu(ngay)}, ngày ${Number(ngay.slice(8))} tháng ${Number(ngay.slice(5, 7))} năm ${ngay.slice(0, 4)}`}
       </TieuDe>
-      <div className="mb-5 pl-2.5 text-left text-sm leading-[22px]">
+      <div className="mb-5 text-left text-sm leading-[22px]">
         {!trangChu && (<>
-        <p className="p-2.5">
+        <p className="py-1.5">
           Toàn bộ <strong>dự đoán bóng đá hôm nay</strong> và tối nay của banhbong.net, giờ Việt Nam.
         </p>
-        <p className="p-2.5">
+        <p className="py-1.5">
           Mỗi trận có <strong>tỷ số dự đoán</strong>, <strong>phong độ 5 trận gần nhất</strong> của hai đội và tỷ lệ
           1·X·2. Trận có bài <strong>nhận định</strong> thì bấm xem chi tiết; đá xong, ô kết quả cho biết dự đoán đúng hay sai.
         </p>
         </>)}
-        <p className="p-2.5">Ký hiệu phong độ 5 trận:</p>
-        <div className="flex items-center">
+        <p className="py-1.5">Ký hiệu phong độ 5 trận:</p>
+        <div className="flex items-center gap-3">
           {(["T", "H", "B"] as KQ[]).map((k, i) => (
             <span key={k} className="flex items-center">
-              <span className={`ml-2.5 mr-[5px] box-content h-[22px] w-[22px] rounded-[5px] border-2 text-center text-base leading-[22px] ${MAU_KQ[k]}`}>{k}</span>
+              <span className={`mr-[5px] box-content h-[22px] w-[22px] rounded-[5px] border-2 text-center text-base leading-[22px] ${MAU_KQ[k]}`}>{k}</span>
               {["Thắng", "Hòa", "Thua"][i]}
             </span>
           ))}
@@ -265,15 +265,15 @@ export function DuDoanPZ({
 
       <TomTat ds={trongNgay} ngay={ngay} />
       {nhom.length === 0 ? (
-        <p className="mx-auto w-[96%] border-y border-line py-6 text-sm text-muted">{t.empty}</p>
+        <p className="w-full border-y border-line py-6 text-sm text-muted">{t.empty}</p>
       ) : (
         nhom.map(([g, ds]) => (
-          <section key={g} className="mx-auto mb-[30px] w-[96%] text-left">
+          <section key={g} className="mb-[30px] text-left">
             <div className="flex items-center border-b border-ink py-2">
               <span className="mr-2.5 inline-block h-5 w-5 shrink-0 overflow-hidden rounded-full [&_img]:object-cover">
                 <DoiLogo src={coGiai(g, ds[0])} ten={g} size={20} />
               </span>
-              <h2 className="ml-2.5 font-display text-[22px] leading-[35px]">Dự đoán {g} ngày {ddmm(ngay)}</h2>
+              <h2 className="font-display text-lg leading-snug sm:text-[22px] sm:leading-[35px]">Dự đoán {g} ngày {ddmm(ngay)}</h2>
             </div>
             {ds.map((h) => (
               <Tran key={h.slug} h={h} lang={lang} />

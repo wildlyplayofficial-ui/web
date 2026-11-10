@@ -80,8 +80,8 @@ function NavDropdown({
         aria-expanded={open}
         className={
           accent
-            ? "flex items-center gap-1 rounded-full border border-brand/40 bg-brand-dim px-3 py-1 text-sm font-semibold text-brand transition-colors hover:border-brand"
-            : `flex items-center gap-1 text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`
+            ? "flex items-center gap-1 whitespace-nowrap rounded-full border border-brand/40 bg-brand-dim px-3 py-1 text-sm font-semibold text-brand transition-colors hover:border-brand"
+            : `flex items-center gap-1 whitespace-nowrap text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`
         }
       >
         {label}
@@ -101,7 +101,7 @@ function NavDropdown({
       {open && (
         <ul
           role="menu"
-          className="mt-2 flex flex-col gap-3 pl-3 md:absolute md:left-0 md:z-20 md:w-56 md:gap-0 md:rounded-card md:border md:border-line md:bg-card md:py-1 md:pl-0 md:shadow-card"
+          className="mt-2 flex flex-col gap-3 pl-3 xl:absolute xl:left-0 xl:z-20 xl:w-56 xl:gap-0 xl:rounded-card xl:border xl:border-line xl:bg-card xl:py-1 xl:pl-0 xl:shadow-card"
         >
           {items.map((it, i) =>
             "divider" in it ? (
@@ -109,7 +109,7 @@ function NavDropdown({
                 key={`divider-${i}`}
                 role="separator"
                 aria-hidden="true"
-                className="border-t border-line md:my-1"
+                className="border-t border-line xl:my-1"
               />
             ) : (
               <li key={it.href} role="none">
@@ -120,7 +120,7 @@ function NavDropdown({
                     setOpen(false);
                     onNavigate();
                   }}
-                  className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-ink md:px-4 md:py-2 md:hover:bg-card-hover"
+                  className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-ink xl:px-4 xl:py-2 xl:hover:bg-card-hover"
                 >
                   {it.logo_url && (
                     <img
@@ -199,7 +199,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1100px] items-center justify-between px-5">
+      <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-8 px-5">
         <Link href={withLang("/", lang)} className="flex items-center gap-2 font-display text-2xl font-bold">
           <BrandMark size={28} />
           <span>
@@ -212,7 +212,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
           type="button"
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
+          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] xl:hidden"
           onClick={() => setOpen((v) => !v)}
         >
           <span className="h-0.5 w-6 rounded bg-ink" />
@@ -221,9 +221,9 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
         </button>
 
         <nav
-          className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 md:static md:flex md:flex-row md:items-center md:gap-6 md:border-0 md:p-0`}
+          className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 xl:static xl:flex xl:flex-row xl:items-center xl:gap-6 xl:border-0 xl:p-0`}
         >
-          <ul className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
+          <ul className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-[18px]">
             {clusters.map((cluster) => {
               if ("href" in cluster) {
                 return (
@@ -231,7 +231,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
                     <Link
                       href={withLang(cluster.href, lang)}
                       onClick={() => setOpen(false)}
-                      className={`text-sm font-medium transition-colors hover:text-ink ${isActive(cluster.href) ? "text-ink" : "text-muted"}`}
+                      className={`whitespace-nowrap text-sm font-medium transition-colors hover:text-ink ${isActive(cluster.href) ? "text-ink" : "text-muted"}`}
                     >
                       {cluster.label}
                       {cluster.moi && (
