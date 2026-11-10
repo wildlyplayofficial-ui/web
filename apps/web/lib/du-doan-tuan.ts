@@ -35,7 +35,11 @@ export interface DongTuan extends SoLieuTran {
 const DONG = duLieu as DongTuan[];
 
 /** Tên trong tệp khác tên bảng cờ → đổi trước khi tra logo. */
-const TEN_LOGO: Record<string, string> = { "Czech Republic": "Czechia" };
+const TEN_LOGO: Record<string, string> = {
+  "Czech Republic": "Czechia",
+  "Rep of Ireland": "Ireland",
+  "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+};
 const logo = (ten: string) => teamBadge(TEN_LOGO[ten] ?? ten);
 
 const KQ_ANH: Record<string, KQ> = { W: "T", D: "H", L: "B" };

@@ -1,6 +1,6 @@
 import { tenTra } from "./ten-doi";
-import clubBadges from "@/lib/data/club-badges.json";
-import countryIso from "@/lib/data/country-iso.json";
+import clubBadges from "./data/club-badges.json";
+import countryIso from "./data/country-iso.json";
 
 /** Club crest URLs keyed by the exact team name Livescore renders (Liga MX + MLS). */
 const CLUB: Record<string, string> = clubBadges;
@@ -41,6 +41,15 @@ const TEN_KHAC: Record<string, string> = {
   "stade rennais": "Rennes",
   "stade brest 29": "Stade Brestois 29",
   "malaga": "Málaga",
+  // Tệp dự đoán tuần ghi tên ngắn của CLB Anh/Đức hạng dưới.
+  "aldershot": "Aldershot Town",
+  "boston utd": "Boston United",
+  "carlisle": "Carlisle United",
+  "cheltenham": "Cheltenham Town",
+  "colchester": "Colchester United",
+  "crewe": "Crewe Alexandra",
+  "djk vilzing": "Vilzing",
+  "exeter": "Exeter City",
 };
 
 /** Đội tuyển không dùng cờ nước: Chinese Taipei đá dưới logo liên đoàn (CTFA),
