@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
+import { TranSoLieu } from "@/components/tran-so-lieu";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
+import { soLieuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 /**
@@ -50,6 +52,7 @@ export default async function TrangTran({ params }: Props) {
   if (!h) notFound();
   const tacGia = muc.find((m) => m.bai.slug === slug)?.bai.byline ?? null;
   const lienQuan = tranLienQuan(hang, h);
+  const soLieu = soLieuTuan(slug);
   const cap = `${h.nha} vs ${h.khach}`;
 
   return (
@@ -76,6 +79,7 @@ export default async function TrangTran({ params }: Props) {
       <TranBaO h={h} lang={lang} />
       <p className="mt-4 text-[15px] leading-relaxed sm:text-base">{cauTomTat(h)}</p>
       <TranPhongDo h={h} lang={lang} />
+      {soLieu && <TranSoLieu so={soLieu} />}
 
       {lienQuan.ds.length > 0 && (
         <section className="mt-8">

@@ -6,18 +6,19 @@
 import duLieu from "@/data/du-doan-tuan.json";
 import { tenSo } from "./du-doan-cham";
 import { cungTran, ngayVN, nhanTran, type HangDuDoan } from "./du-doan-hang";
-import { chieuDuDoan, phongDo, type KQ, type TranDaDa } from "./phong-do";
+import { chieuDuDoan, phongDoCuTruoc, type KQ, type TranDaDa } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
+import { phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
 
-export interface DongTuan {
+export interface DongTuan extends SoLieuTran {
   ngay: string;
   giai: string;
   nha: string;
   khach: string;
   /** "Home 2-1" / "Draw 1-1" / "Away 0-2". */
   du: string;
-  /** Phong độ kiểu "WDLWW" (mới nhất trước); rỗng = tệp không có. */
+  /** Phong độ kiểu "WDLWW": CŨ NHẤT TRƯỚC, chữ cuối là trận mới nhất; rỗng = tệp không có. */
   fn: string;
   fk: string;
   /** Tỷ lệ 1·X·2; 0 = không có. */
@@ -43,6 +44,15 @@ const docForm = (s: string): KQ[] | null => {
   return kq.length > 0 ? kq : null;
 };
 
+const slugTuan = (d: DongTuan) => `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khach)}`;
+
+/** Đối đầu, bảng xếp hạng, các trận gần nhất của một trận tệp tuần; tệp không ghi gì → null. */
+export function soLieuTuan(slug: string): (SoLieuTran & { nha: string; khach: string }) | null {
+  const d = DONG.find((x) => slugTuan(x) === slug);
+  if (!d || !(d.h2h?.length || d.bxn || d.bxk || d.gn?.length || d.gk?.length)) return null;
+  return { nha: d.nha, khach: d.khach, h2h: d.h2h, bxn: d.bxn, bxk: d.bxk, gn: d.gn, gk: d.gk };
+}
+
 const gioVN = (iso: string) =>
   new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hour12: false }).format(
     new Date(iso),
@@ -67,7 +77,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
     const that: [number, number] | null = d.kq?.length === 2 ? [d.kq[0], d.kq[1]] : null;
     const mot: [number, number, number] | null = d.o.length === 3 && d.o.every((x) => x > 0) ? [d.o[0], d.o[1], d.o[2]] : null;
     const h: HangDuDoan = {
-      slug: `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khach)}`,
+      slug: slugTuan(d),
       coBai: false,
       giai: d.giai,
       kickoffUtc,
@@ -89,8 +99,9 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       sapDa: Date.parse(kickoffUtc) > bayGio,
       pick: false,
       mot,
-      formNha: docForm(d.fn) ?? phongDo(daDa, d.nha, kickoffUtc),
-      formKhach: docForm(d.fk) ?? phongDo(daDa, d.khach, kickoffUtc),
+      // Ưu tiên tính từ các trận gần nhất, rồi chuỗi trong tệp, cuối cùng bù từ CSDL — cả ba cùng chiều cũ → mới.
+      formNha: phongDoTuTran(d.gn, d.nha) ?? docForm(d.fn) ?? phongDoCuTruoc(daDa, d.nha, kickoffUtc),
+      formKhach: phongDoTuTran(d.gk, d.khach) ?? docForm(d.fk) ?? phongDoCuTruoc(daDa, d.khach, kickoffUtc),
       doiDau: null,
       taiXiu: d.tx ?? null,
       haiDoiGhi: d.btts ? d.btts === "Có" : null,

@@ -5,7 +5,7 @@
  */
 import { tenSo } from "./du-doan-cham";
 import { tenKhach, tenNha } from "./du-doan-nguon";
-import { doiDau, phongDo, type KQ, type TranDaDa, type TranDoiDau } from "./phong-do";
+import { doiDau, phongDoCuTruoc, type KQ, type TranDaDa, type TranDoiDau } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import { tenGiaiViet } from "./ten-viet";
 import { nhanTran, type NhanTran } from "./du-doan-nhan";
@@ -46,7 +46,7 @@ export interface HangDuDoan {
   pick: boolean;
   /** Tỷ lệ 1 · X · 2 hiện tại, nếu bảng tỷ lệ có trận này. */
   mot: [number, number, number] | null;
-  /** 5 trận gần nhất trước trận này, mới nhất trước; null = không đủ dữ liệu. */
+  /** 5 trận gần nhất trước trận này, CŨ NHẤT TRƯỚC (màn hình: trái = cũ, phải = mới); null = không đủ dữ liệu. */
   formNha: KQ[] | null;
   formKhach: KQ[] | null;
   /** Tối đa 5 lần gặp nhau gần nhất (từ cùng dữ liệu phong độ); null = chưa có. */
@@ -122,8 +122,8 @@ export function dungHang(
         sapDa: m.sapDa,
         pick: picks.some((p) => cungTran(tran, { home: p.home_team, away: p.away_team, kickoff: p.kickoff_utc })),
         mot,
-        formNha: phongDo(daDa, d.home, m.kickoffUtc),
-        formKhach: phongDo(daDa, d.away, m.kickoffUtc),
+        formNha: phongDoCuTruoc(daDa, d.home, m.kickoffUtc),
+        formKhach: phongDoCuTruoc(daDa, d.away, m.kickoffUtc),
         doiDau: doiDau(daDa, d.home, d.away, m.kickoffUtc),
         taiXiu: null,
         haiDoiGhi: null,

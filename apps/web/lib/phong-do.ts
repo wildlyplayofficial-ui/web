@@ -40,6 +40,10 @@ export function phongDo(rows: readonly TranDaDa[], doi: string, truoc: string): 
   return null;
 }
 
+/** Như `phongDo` nhưng theo quy ước MÀN HÌNH của cả site: trái = trận cũ nhất, phải = trận mới nhất. */
+export const phongDoCuTruoc = (rows: readonly TranDaDa[], doi: string, truoc: string): KQ[] | null =>
+  phongDo(rows, doi, truoc)?.reverse() ?? null;
+
 export type ChieuDuDoan = "nha" | "hoa" | "khach";
 
 /** Tỷ số dự đoán → đội nhà thắng / hoà / đội khách thắng (quyết định màu ô). */
