@@ -39,6 +39,9 @@ const TEN_LOGO: Record<string, string> = {
   "Czech Republic": "Czechia",
   "Rep of Ireland": "Ireland",
   "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+  "Cape Verde Islands": "Cape Verde",
+  // PredictZ ghi CHDC Congo là "DR Congo"; "Congo" trơn là Cộng hoà Congo.
+  Congo: "Republic of the Congo",
 };
 const logo = (ten: string) => teamBadge(TEN_LOGO[ten] ?? ten);
 
