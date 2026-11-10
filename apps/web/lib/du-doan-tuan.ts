@@ -6,7 +6,7 @@
 import duLieu from "@/data/du-doan-tuan.json";
 import { tenSo } from "./du-doan-cham";
 import { cungTran, ngayVN, nhanTran, type HangDuDoan } from "./du-doan-hang";
-import { phongDo, type KQ, type TranDaDa } from "./phong-do";
+import { chieuDuDoan, phongDo, type KQ, type TranDaDa } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
 
@@ -23,6 +23,8 @@ export interface DongTuan {
   /** Tỷ lệ 1·X·2; 0 = không có. */
   o: number[];
   gioUtc: string | null;
+  /** Kết quả thật [nhà, khách] khi tệp hôm sau báo về. */
+  kq?: number[];
 }
 
 const DONG = duLieu as DongTuan[];
@@ -58,6 +60,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
     if (daCo.some((h) => cungTran(tran, { home: h.nha, away: h.khach, kickoff: h.kickoffUtc }))) return [];
     const so = d.du.match(/(\d+)\s*-\s*(\d+)/);
     const du: [number, number] | null = so ? [Number(so[1]), Number(so[2])] : null;
+    const that: [number, number] | null = d.kq?.length === 2 ? [d.kq[0], d.kq[1]] : null;
     const mot: [number, number, number] | null = d.o.length === 3 && d.o.every((x) => x > 0) ? [d.o[0], d.o[1], d.o[2]] : null;
     const h: HangDuDoan = {
       slug: `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khach)}`,
@@ -75,9 +78,9 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       anhKhach: null,
       creditAnh: null,
       du,
-      that: null,
-      dung: null,
-      dungTySo: null,
+      that,
+      dung: that && du ? chieuDuDoan(that) === chieuDuDoan(du) : null,
+      dungTySo: that && du ? that[0] === du[0] && that[1] === du[1] : null,
       san: null,
       sapDa: Date.parse(kickoffUtc) > bayGio,
       pick: false,
