@@ -69,8 +69,8 @@ export function KhoiDuDoanHomNay({
     rows.filter((r) => r.that).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc))[0] ??
     null;
   return (
-    <section aria-labelledby="du-doan-hom-nay" className="mt-5 space-y-4">
-      <h2 id="du-doan-hom-nay" className="font-display text-2xl font-bold sm:text-3xl">{t.title}</h2>
+    // Bỏ h2 "Dự đoán bóng đá hôm nay" đầu khối: trùng h2 có ngày của bảng bên dưới (Jane 10/11).
+    <section aria-label={t.title} className="mt-5 space-y-4">
       <OThanhTichDuDoan tong={thanhTich} lang={lang} />
       <OPick pick={pick} record={record} lang={lang} />
       {noiBat && <ODuDoanTran h={noiBat} lang={lang} lienKet />}

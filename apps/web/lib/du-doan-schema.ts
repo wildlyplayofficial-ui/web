@@ -65,14 +65,14 @@ const gioNgayVN = (iso: string) =>
  * Curator/Scout — không gộp một tổng).
  */
 export function cauHoiDuDoan(muc: readonly MucDuDoan[], hang: readonly HangDuDoan[]): CauHoi[] {
-  const chot = muc.filter((m) => m.chot);
-  if (chot.length === 0) return [];
-  const daCham = chot.filter((m) => m.ketQua);
-  const sapDa = chot.filter((m) => m.sapDa).length;
+  // Đếm theo bảng đang hiện (bài + tệp tuần) để FAQ khớp số trận người đọc thấy.
+  const coDu = hang.filter((h) => h.du);
+  if (coDu.length === 0) return [];
+  const daCham = muc.filter((m) => m.chot && m.ketQua);
   const ds: CauHoi[] = [
     {
       hoi: "banhbong.net đã dự đoán bao nhiêu trận?",
-      dap: `${chot.length} trận có tỷ số chốt trước giờ bóng lăn: ${daCham.length} trận đã chấm, ${sapDa} trận sắp đá.`,
+      dap: `${coDu.length} trận có tỷ số chốt trước giờ bóng lăn: ${coDu.filter((h) => h.that).length} trận đã chấm, ${coDu.filter((h) => h.sapDa).length} trận sắp đá.`,
     },
   ];
   if (daCham.length > 0) {
@@ -123,6 +123,6 @@ export function metaDuDoan(now: number | Date): { tieuDe: string; moTa: string }
   const ngay = ngayVNChu(now);
   return {
     tieuDe: `Dự đoán bóng đá hôm nay ${ngay}`,
-    moTa: `Dự đoán tỷ số từng trận ngày ${ngay} (giờ Việt Nam): Ngoại hạng Anh và các giải lớn, kèm bảng đúng/sai công khai sau mỗi trận.`,
+    moTa: `Dự đoán tỷ số từng trận ngày ${ngay} (giờ Việt Nam): các giải đấu trong ngày, kèm bảng đúng/sai công khai sau mỗi trận.`,
   };
 }

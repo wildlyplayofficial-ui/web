@@ -13,6 +13,9 @@ const DOI_TUYEN: Record<string, string> = {
 };
 
 const GIAI: Record<string, string> = {
+  "Premier League": "Ngoại hạng Anh",
+  "English Premier League": "Ngoại hạng Anh",
+  "England Premier League": "Ngoại hạng Anh",
   "Algeria Ligue 1": "VĐQG Algeria",
   "Brazil Serie A": "VĐQG Brazil",
   "Brazil Serie B": "Hạng 2 Brazil",

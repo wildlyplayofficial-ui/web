@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { tenGiaiViet } from "@/lib/ten-viet";
 import Link from "next/link";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran, type CauHoi } from "@/lib/du-doan-schema";
@@ -144,7 +145,7 @@ export default async function DuDoanHub({ params }: Props) {
 
       {nhom.map(([giai, ds]) => (
           <section key={giai} className="mt-10 px-2.5">
-            <h2 className="font-display text-xl font-bold">{giai}</h2>
+            <h2 className="font-display text-xl font-bold">{tenGiaiViet(giai)}</h2>
             <ul className="mt-4 space-y-3">
               {ds.map((m) => (
                 <DongBai key={m.bai.slug} m={m} lang={lang} />

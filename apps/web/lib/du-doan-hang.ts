@@ -7,6 +7,7 @@ import { tenSo } from "./du-doan-cham";
 import { tenKhach, tenNha } from "./du-doan-nguon";
 import { doiDau, phongDo, type KQ, type TranDaDa, type TranDoiDau } from "./phong-do";
 import { teamBadge } from "./team-badges";
+import { tenGiaiViet } from "./ten-viet";
 import { nhanTran, type NhanTran } from "./du-doan-nhan";
 
 export { nhanTran, type NhanTran };
@@ -98,7 +99,7 @@ export function dungHang(
     const hang: HangDuDoan = {
         slug: m.bai.slug,
         coBai: true,
-        giai: m.bai.league || "Giải khác",
+        giai: tenGiaiViet(m.bai.league || "Giải khác"),
         kickoffUtc: m.kickoffUtc,
         ngay: ngayVN(m.kickoffUtc),
         gio: gioVN(m.kickoffUtc),
