@@ -881,7 +881,7 @@ const vi: Dict = {
     kellyCta: "Tìm hiểu lý thuyết đằng sau phương pháp Kelly",
   },
   pick: {
-    disclosure: "Người chọn trận, AI vận hành. Con người chọn trận này; AI viết, đăng và kết sổ.",
+    disclosure: "Chú Tám Banh chọn trận và viết nhận định này; kết quả được tổng kết công khai sau trận.",
     disclosureScout: "AI chọn trận, AI viết bài — Trợ lý AI là nhân vật AI thử nghiệm, không phải người thật.",
     odds: "Odds lúc đăng",
     stake: "Mức tham gia",

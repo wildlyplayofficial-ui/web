@@ -124,9 +124,9 @@ export const copy: Record<Lang, AboutCopy> = {
     title: "Về banhbong.net",
     metaTitle: "Về banhbong.net — Nhận định bóng đá do người tuyển chọn, thành tích công khai",
     metaDescription:
-      "banhbong.net là trang phân tích bóng đá do con người tuyển chọn. Mỗi trận được nghiên cứu và lập luận; AI viết nhận định, lưu trữ công khai mọi dự đoán, minh bạch từ ngày đầu.",
+      "banhbong.net là trang nhận định bóng đá do Chú Tám Banh viết. Mỗi trận có nghiên cứu, lập luận; mọi dự đoán lưu công khai, minh bạch từ ngày đầu.",
     intro:
-      "banhbong.net là trang nhận định bóng đá do con người thực hiện. Chú Tám Banh là người chọn trận và góc nhìn. AI vận hành mọi thứ còn lại: viết phân tích, xuất bản, tổng kết kết quả và lưu trữ công khai mọi nhận định, vĩnh viễn.",
+      "banhbong.net là trang nhận định bóng đá do con người thực hiện. Chú Tám Banh chọn trận, đọc số liệu và viết nhận định. Mọi nhận định được tổng kết sau trận và lưu trữ công khai, vĩnh viễn.",
     cards: [
       {
         heading: "Nhận định có lập luận, không đoán mò",
@@ -161,7 +161,7 @@ export const copy: Record<Lang, AboutCopy> = {
       { title: "Đối chiếu tỷ lệ", body: "Chúng tôi so sánh tỷ lệ từ nhiều nguồn dữ liệu thị trường. Chỉ quan tâm những chỉ số mà giá lệch so với xác suất thực tế." },
       { title: "Kiểm tra lợi thế", body: "Nhận định chỉ được đăng khi chúng tôi kỳ vọng giá đóng cửa sẽ dịch chuyển theo hướng của mình — nghĩa là thị trường đồng ý với góc nhìn của chúng tôi." },
       { title: "Chuẩn hoá cách đo", body: "Mỗi nhận định tính một đơn vị quy ước để đo hiệu quả thống kê. Không nhân đôi, không gỡ, ghi chép mọi lần." },
-      { title: "Phân tích bằng AI", body: "Bài phân tích trước trận và tổng kết sau trận được AI viết và xuất bản cùng mỗi nhận định — công khai nguồn AI." },
+      { title: "Chú Tám Banh viết nhận định", body: "Bài phân tích trước trận và tổng kết sau trận do Chú Tám Banh viết, xuất bản cùng mỗi nhận định." },
     ],
     trackTitle: "Thành tích",
     trackBody: "Mọi nhận định từ ngày đầu được lưu trữ công khai. Không chụp màn hình, không chọn lọc — toàn bộ sổ sách, cập nhật sau mỗi trận.",
