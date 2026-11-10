@@ -3,7 +3,7 @@ import { tenGiaiViet } from "@/lib/ten-viet";
 import Link from "next/link";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran, type CauHoi } from "@/lib/du-doan-schema";
-import { getBaiDuDoan, getMucDuDoan, type MucDuDoan } from "@/lib/du-doan";
+import { getBaiDuDoan, type MucDuDoan } from "@/lib/du-doan";
 import { cacTranChon } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
@@ -12,12 +12,8 @@ import { BangDungSai } from "@/components/bang-dung-sai";
 import { OThanhTichDuDoan } from "@/components/o-thanh-tich-du-doan";
 import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { DuDoanPZ } from "@/components/du-doan-pz";
-import { doiCanPhongDo, dungHang, ngayVN } from "@/lib/du-doan-hang";
-import { getTranDaDa } from "@/lib/phong-do-db";
-import { doiThieuPhongDo, hangTuan } from "@/lib/du-doan-tuan";
-import { tieuDeH1 } from "@/lib/du-doan-tran";
-import { getTodaysPicks } from "@/lib/data";
-import { getOddsBoard } from "@/lib/odds-data";
+import { ngayVN } from "@/lib/du-doan-hang";
+import { taiDuDoan } from "@/lib/du-doan-tai";
 
 export const revalidate = 300;
 
@@ -102,25 +98,15 @@ function DongBai({ m, lang }: { m: MucDuDoan; lang: Lang }) {
 
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
-  const [muc, picks, odds, baiChon] = await Promise.all([
-    getMucDuDoan(),
-    getTodaysPicks().catch(() => []),
-    getOddsBoard().catch(() => []),
-    getBaiDuDoan(),
-  ]);
-  const curator = picks.filter((p) => (p.author ?? "curator") === "curator");
-  const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(muc)), getTranDaDa(doiThieuPhongDo())]);
-  const hangBai = dungHang(muc, curator, odds, daDa);
-  // Bài có nhận định trước, rồi dự đoán nạp từ tệp tuần (trùng trận thì giữ bài).
-  const hang = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
+  const [{ muc, hang }, baiChon] = await Promise.all([taiDuDoan(), getBaiDuDoan()]);
   // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
   const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
   const hoi = cauHoiDuDoan(muc, hang);
-  // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd).
-  const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL));
+  // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
+  const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
 
   return (
-    <div className="mx-auto max-w-[800px] px-0 py-4 sm:px-5 sm:py-8">
+    <div className="mx-auto max-w-[1100px] px-0 py-4 sm:px-5 sm:py-8">
       <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Dự đoán", url: "/du-doan" }]} />
       {suKien.length > 0 && (
         <script
@@ -136,7 +122,7 @@ export default async function DuDoanHub({ params }: Props) {
         />
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
-      <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} tieuDe={tieuDeH1(ngayVN(Date.now()))} />
+      <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} />
       <div className="mt-6 px-2.5">
         <OThanhTichDuDoan tong={thanhTichDuDoan(muc)} lang={lang} />
       </div>
