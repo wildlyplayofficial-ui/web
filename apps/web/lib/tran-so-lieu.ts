@@ -27,6 +27,19 @@ const SO_PHONG_DO = 5;
 /** Bản sao xếp mới nhất trước (ngày YYYY-MM-DD so chuỗi là đủ). */
 export const moiTruoc = (ds: readonly TranGanDay[]) => [...ds].sort((a, b) => b.ngay.localeCompare(a.ngay));
 
+const HAN_MOI_NGAY = 30;
+/**
+ * Danh sách "10 trận gần nhất" chỉ dùng được khi trận mới nhất cách ngày đá ≤30 ngày.
+ * Tệp 10/11: 10/136 danh sách dừng từ tháng 8–10 (Serie C, Uganda, Colombia) trong khi đội vẫn
+ * đá đều — hiện ra sẽ thành "gần nhất" sai và dải phong độ lệch chuỗi trên trang danh sách.
+ */
+export function conMoi(ds: TranGanDay[] | undefined, ngayDa: string): TranGanDay[] | undefined {
+  const moiNhat = ds?.length ? moiTruoc(ds)[0].ngay : null;
+  if (!moiNhat) return undefined;
+  const cach = (Date.parse(`${ngayDa}T00:00:00Z`) - Date.parse(`${moiNhat}T00:00:00Z`)) / 864e5;
+  return cach <= HAN_MOI_NGAY ? ds : undefined;
+}
+
 /** Kết quả trận nhìn từ `doi`; đội không đá trận này → null. */
 export function kqCuaDoi(t: TranGanDay, doi: string): KQ | null {
   const ten = tenSo(doi);

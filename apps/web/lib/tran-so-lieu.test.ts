@@ -2,7 +2,7 @@
 // Số mẫu: 10 trận gần nhất của Darlington và Oxford City trước trận 10/11/2026 (chỉ dùng trong test).
 import { describe, expect, it } from "vitest";
 import { phongDo, phongDoCuTruoc, type TranDaDa } from "./phong-do";
-import { cauBanThang, cauSan, kqCuaDoi, ngayNgan, phongDoTuTran, thanhTich, type TranGanDay } from "./tran-so-lieu";
+import { cauBanThang, cauSan, conMoi, kqCuaDoi, ngayNgan, phongDoTuTran, thanhTich, type TranGanDay } from "./tran-so-lieu";
 
 const GN: TranGanDay[] = [
   {"ngay": "2026-10-31", "nha": "Spalding United", "khach": "Darlington", "tsn": 3, "tsk": 2},
@@ -90,5 +90,20 @@ describe("thành tích tính từ các trận gần nhất", () => {
 
   it("ngày ngắn", () => {
     expect(ngayNgan("2026-10-31")).toBe("31/10");
+  });
+});
+
+describe("danh sách trận gần nhất bị cũ thì bỏ", () => {
+  it("trận mới nhất cách ngày đá ≤30 ngày → giữ", () => {
+    expect(conMoi(GN, "2026-11-10")).toBe(GN);
+  });
+
+  it("trận mới nhất cách ngày đá >30 ngày → bỏ (Serie C 12/9 cho trận 13/11)", () => {
+    expect(conMoi([{ ngay: "2026-09-12", nha: "Gubbio", khach: "Latina", tsn: 3, tsk: 1 }], "2026-11-13")).toBeUndefined();
+  });
+
+  it("danh sách rỗng hoặc không có → bỏ", () => {
+    expect(conMoi([], "2026-11-10")).toBeUndefined();
+    expect(conMoi(undefined, "2026-11-10")).toBeUndefined();
   });
 });

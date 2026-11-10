@@ -9,7 +9,7 @@ import { cungTran, ngayVN, nhanTran, type HangDuDoan } from "./du-doan-hang";
 import { chieuDuDoan, phongDoCuTruoc, type KQ, type TranDaDa } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
-import { phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
+import { conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
 
 export interface DongTuan extends SoLieuTran {
   ngay: string;
@@ -53,8 +53,11 @@ const slugTuan = (d: DongTuan) => `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khac
 /** Đối đầu, bảng xếp hạng, các trận gần nhất của một trận tệp tuần; tệp không ghi gì → null. */
 export function soLieuTuan(slug: string): (SoLieuTran & { nha: string; khach: string }) | null {
   const d = DONG.find((x) => slugTuan(x) === slug);
-  if (!d || !(d.h2h?.length || d.bxn || d.bxk || d.gn?.length || d.gk?.length)) return null;
-  return { nha: d.nha, khach: d.khach, h2h: d.h2h, bxn: d.bxn, bxk: d.bxk, gn: d.gn, gk: d.gk };
+  if (!d) return null;
+  const gn = conMoi(d.gn, d.ngay);
+  const gk = conMoi(d.gk, d.ngay);
+  if (!(d.h2h?.length || d.bxn || d.bxk || gn || gk)) return null;
+  return { nha: d.nha, khach: d.khach, h2h: d.h2h, bxn: d.bxn, bxk: d.bxk, gn, gk };
 }
 
 const gioVN = (iso: string) =>
@@ -103,9 +106,10 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       sapDa: Date.parse(kickoffUtc) > bayGio,
       pick: false,
       mot,
-      // Ưu tiên tính từ các trận gần nhất, rồi chuỗi trong tệp, cuối cùng bù từ CSDL — cả ba cùng chiều cũ → mới.
-      formNha: phongDoTuTran(d.gn, d.nha) ?? docForm(d.fn) ?? phongDoCuTruoc(daDa, d.nha, kickoffUtc),
-      formKhach: phongDoTuTran(d.gk, d.khach) ?? docForm(d.fk) ?? phongDoCuTruoc(daDa, d.khach, kickoffUtc),
+      // Ưu tiên chuỗi trong tệp (khớp trang danh sách nguồn), rồi các trận gần nhất còn mới, cuối cùng
+      // bù từ CSDL — cả ba cùng chiều cũ → mới. Tệp 10/11: chuỗi và danh sách lệch nhau 11/136 đội.
+      formNha: docForm(d.fn) ?? phongDoTuTran(conMoi(d.gn, d.ngay), d.nha) ?? phongDoCuTruoc(daDa, d.nha, kickoffUtc),
+      formKhach: docForm(d.fk) ?? phongDoTuTran(conMoi(d.gk, d.ngay), d.khach) ?? phongDoCuTruoc(daDa, d.khach, kickoffUtc),
       doiDau: null,
       taiXiu: d.tx ?? null,
       haiDoiGhi: d.btts ? d.btts === "Có" : null,
