@@ -69,7 +69,9 @@ function Doi({ ten, logo }: { ten: string; logo: string | null }) {
 function Tran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
   const t = getDict(lang).duDoan;
   const c = h.du ? chieuDuDoan(h.du) : null;
-  const mau = c === "nha" ? "border-[#00e676] text-[#00e676] bg-[#00e676]/[.06]" : c === "hoa" ? MAU_KQ.H : c ? MAU_KQ.B : "border-line text-muted";
+  // Ô dự đoán một màu riêng (xanh thương hiệu), không mượn màu T/H/B của phong độ —
+  // trước đây đội khách thắng ra viền hồng = "Thua" trong chú thích (Jane 10/11).
+  const mau = c ? "border-[#00e676] text-[#00e676] bg-[#00e676]/[.06]" : "border-line text-muted";
   // Ghi rõ đội thắng ("U23 Việt Nam thắng 2-1") thay vì "Nhà/Khách" — góp ý Jane 10/11.
   const nhanDu = c === "hoa" ? t.draw : c ? t.teamWins.replace("{team}", c === "nha" ? h.nha : h.khach) : "";
   return (
