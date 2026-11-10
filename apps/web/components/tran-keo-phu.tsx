@@ -30,7 +30,7 @@ function Chuoi({ ten, s, loai }: { ten: string; s?: string; loai: "btts" | "ou" 
           aria-label={x ? co : khong}
           className={`inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded border px-1 font-display text-xs font-bold leading-none ${x ? "border-brand bg-brand/10 text-brand" : "border-line text-muted"}`}
         >
-          {loai === "btts" ? (x ? "C" : "K") : x ? "T" : "X"}
+          {loai === "btts" ? (x ? "✓" : "✗") : x ? "T" : "X"}
         </span>
       ))}
     </div>
@@ -52,11 +52,11 @@ function ThiTruong({ ten, loai, p, nha, khach }: { ten: string; loai: "btts" | "
           </span>
         )}
       </p>
-      <div className="mt-2 border-t border-line pt-1">
+      <div className="mt-2 max-w-[560px] border-t border-line pt-1">
         <Chuoi ten={nha} s={p.h5} loai={loai} />
         <Chuoi ten={khach} s={p.a5} loai={loai} />
       </div>
-      {cau && <p className="border-t border-line pt-2 text-[13px] leading-relaxed text-muted">{cau} Trái là trận cũ nhất, phải là trận mới nhất.</p>}
+      {cau && <p className="max-w-[560px] border-t border-line pt-2 text-[13px] leading-relaxed text-muted">{cau} Trái là trận cũ nhất, phải là trận mới nhất.</p>}
     </section>
   );
 }

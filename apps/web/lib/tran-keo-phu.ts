@@ -32,10 +32,10 @@ export function cauChuoi(loai: "btts" | "ou", nha: string, h5: string | undefine
   return ds.length === 2 ? `${ds[0]} trận gần nhất ${noi}, ${ds[1]}.` : `${ds[0]} trận gần nhất ${noi}.`;
 }
 
-/** "Tỷ số được chọn: 2-2, tỷ lệ 12.00."; tip không có tỷ số → null. */
+/** "Tỷ số dự đoán: 2-2 · tỷ lệ 12.00"; tip không có tỷ số → null. */
 export function cauTySo(tip: string, keo: readonly number[]): string | null {
   const so = tip.match(/(\d+)\s*-\s*(\d+)/);
   if (!so) return null;
-  const tl = keo[0] > 0 ? `, tỷ lệ ${keo[0].toFixed(2)}` : "";
-  return `Tỷ số được chọn: ${so[1]}-${so[2]}${tl}.`;
+  const tl = keo[0] > 0 ? ` · tỷ lệ ${keo[0].toFixed(2)}` : "";
+  return `Tỷ số dự đoán: ${so[1]}-${so[2]}${tl}`;
 }
