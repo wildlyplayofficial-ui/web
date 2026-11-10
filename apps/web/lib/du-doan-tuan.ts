@@ -9,7 +9,7 @@ import { cungTran, ngayVN, nhanTran, type HangDuDoan } from "./du-doan-hang";
 import { chieuDuDoan, phongDoCuTruoc, type KQ, type TranDaDa } from "./phong-do";
 import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
-import { conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
+import { bxConMoi, conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
 
 export interface DongTuan extends SoLieuTran {
   ngay: string;
@@ -56,8 +56,10 @@ export function soLieuTuan(slug: string): (SoLieuTran & { nha: string; khach: st
   if (!d) return null;
   const gn = conMoi(d.gn, d.ngay);
   const gk = conMoi(d.gk, d.ngay);
-  if (!(d.h2h?.length || d.bxn || d.bxk || gn || gk)) return null;
-  return { nha: d.nha, khach: d.khach, h2h: d.h2h, bxn: d.bxn, bxk: d.bxk, gn, gk };
+  const bxn = bxConMoi(d.bxn, d.gn, d.ngay);
+  const bxk = bxConMoi(d.bxk, d.gk, d.ngay);
+  if (!(d.h2h?.length || bxn || bxk || gn || gk)) return null;
+  return { nha: d.nha, khach: d.khach, h2h: d.h2h, bxn, bxk, gn, gk };
 }
 
 const gioVN = (iso: string) =>

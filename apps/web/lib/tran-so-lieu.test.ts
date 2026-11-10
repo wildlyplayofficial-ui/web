@@ -2,7 +2,7 @@
 // Số mẫu: 10 trận gần nhất của Darlington và Oxford City trước trận 10/11/2026 (chỉ dùng trong test).
 import { describe, expect, it } from "vitest";
 import { phongDo, phongDoCuTruoc, type TranDaDa } from "./phong-do";
-import { cauBanThang, cauSan, conMoi, kqCuaDoi, ngayNgan, phongDoTuTran, thanhTich, type TranGanDay } from "./tran-so-lieu";
+import { bxConMoi, cauBanThang, cauSan, conMoi, kqCuaDoi, ngayNgan, phongDoTuTran, thanhTich, type TranGanDay } from "./tran-so-lieu";
 
 const GN: TranGanDay[] = [
   {"ngay": "2026-10-31", "nha": "Spalding United", "khach": "Darlington", "tsn": 3, "tsk": 2},
@@ -105,5 +105,18 @@ describe("danh sách trận gần nhất bị cũ thì bỏ", () => {
   it("danh sách rỗng hoặc không có → bỏ", () => {
     expect(conMoi([], "2026-11-10")).toBeUndefined();
     expect(conMoi(undefined, "2026-11-10")).toBeUndefined();
+  });
+});
+
+describe("dòng bảng xếp hạng đi cùng danh sách trận cũ thì cũng bỏ", () => {
+  const BX = { hang: 15, tran: 4, t: 1, h: 1, b: 2, bt: 4, bb: 6, diem: 4 };
+  it("danh sách còn mới → giữ dòng BXH", () => {
+    expect(bxConMoi(BX, GN, "2026-11-10")).toBe(BX);
+  });
+  it("danh sách cũ >30 ngày → bỏ dòng BXH (Latina 4 trận giữa tháng 11)", () => {
+    expect(bxConMoi(BX, [{ ngay: "2026-09-12", nha: "Gubbio", khach: "Latina", tsn: 3, tsk: 1 }], "2026-11-13")).toBeUndefined();
+  });
+  it("không có danh sách để đối chiếu → giữ dòng BXH", () => {
+    expect(bxConMoi(BX, undefined, "2026-11-13")).toBe(BX);
   });
 });

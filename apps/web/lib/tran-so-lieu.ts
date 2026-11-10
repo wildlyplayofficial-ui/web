@@ -40,6 +40,18 @@ export function conMoi(ds: TranGanDay[] | undefined, ngayDa: string): TranGanDay
   return cach <= HAN_MOI_NGAY ? ds : undefined;
 }
 
+/**
+ * Dòng BXH lấy cùng lượt với danh sách trận của đội đó: danh sách cũ >30 ngày thì dòng BXH cũng
+ * cũ (Latina tệp 10/11 ghi 4 trận giữa tháng 11) → bỏ. Không có danh sách để đối chiếu → giữ.
+ */
+export function bxConMoi(
+  bx: DongBangXep | undefined,
+  ds: TranGanDay[] | undefined,
+  ngayDa: string,
+): DongBangXep | undefined {
+  return ds?.length && !conMoi(ds, ngayDa) ? undefined : bx;
+}
+
 /** Kết quả trận nhìn từ `doi`; đội không đá trận này → null. */
 export function kqCuaDoi(t: TranGanDay, doi: string): KQ | null {
   const ten = tenSo(doi);
