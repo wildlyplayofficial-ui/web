@@ -26,11 +26,11 @@ describe("cauChuoi — câu tiếng Việt cho khối hai đội ghi bàn / tài
   });
   it("tài xỉu", () => {
     expect(cauChuoi("ou", "Arsenal", "OOOOU", "Chelsea", "UUUUU")).toBe(
-      "Arsenal có 4/5 trận gần nhất trên 2,5 bàn, Chelsea có 0/5.",
+      "Arsenal có 4/5 trận gần nhất trên 2.5 bàn, Chelsea có 0/5.",
     );
   });
   it("thiếu chuỗi một đội thì chỉ nói đội còn lại", () => {
-    expect(cauChuoi("ou", "Arsenal", "OOOOU", "Chelsea", "")).toBe("Arsenal có 4/5 trận gần nhất trên 2,5 bàn.");
+    expect(cauChuoi("ou", "Arsenal", "OOOOU", "Chelsea", "")).toBe("Arsenal có 4/5 trận gần nhất trên 2.5 bàn.");
   });
   it("thiếu cả hai → null", () => {
     expect(cauChuoi("btts", "A", "", "B", "")).toBeNull();

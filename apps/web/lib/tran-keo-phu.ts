@@ -1,5 +1,5 @@
 /**
- * Khối "hai đội ghi bàn" · "tài xỉu 2,5" · "tỷ số chính xác" trên trang trận (Peter gật qua Jane 10/11).
+ * Khối "hai đội ghi bàn" · "tài xỉu 2.5" · "tỷ số chính xác" trên trang trận (Peter gật qua Jane 10/11).
  * Dữ liệu từ tệp tuần: tip + tỷ lệ + chuỗi 5 trận mỗi đội (h5/a5, CŨ TRƯỚC, mới nhất cuối).
  * Hàm THUẦN, câu chữ tự viết từ số. Import TƯƠNG ĐỐI để vitest chạy không cần alias.
  */
@@ -18,7 +18,7 @@ export const demChuoi = (s: string | undefined, dat: "Y" | "O") => docChuoi(s, d
 
 const VE: Record<"btts" | "ou", { dat: "Y" | "O"; noi: string }> = {
   btts: { dat: "Y", noi: "cả hai đội cùng ghi bàn" },
-  ou: { dat: "O", noi: "trên 2,5 bàn" },
+  ou: { dat: "O", noi: "trên 2.5 bàn" },
 };
 
 /** "Arsenal có 3/5 trận gần nhất cả hai đội cùng ghi bàn, Chelsea có 3/5."; thiếu cả hai chuỗi → null. */

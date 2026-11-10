@@ -12,7 +12,7 @@ const NHAN = "text-xs font-semibold uppercase tracking-wide text-muted";
 
 const TIP: Record<"btts" | "ou", (tip: string) => string> = {
   btts: (t) => (/yes/i.test(t) ? "Có" : "Không"),
-  ou: (t) => (/over/i.test(t) ? "Tài 2,5" : "Xỉu 2,5"),
+  ou: (t) => (/over/i.test(t) ? "Tài 2.5" : "Xỉu 2.5"),
 };
 const CHON: Record<"btts" | "ou", [string, string]> = { btts: ["Có", "Không"], ou: ["Tài", "Xỉu"] };
 const DAT: Record<"btts" | "ou", "Y" | "O"> = { btts: "Y", ou: "O" };
@@ -30,7 +30,7 @@ function Chuoi({ ten, s, loai }: { ten: string; s?: string; loai: "btts" | "ou" 
           aria-label={x ? co : khong}
           className={`inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded border px-1 font-display text-xs font-bold leading-none ${x ? "border-brand bg-brand/10 text-brand" : "border-line text-muted"}`}
         >
-          {loai === "btts" ? (x ? "✓" : "✗") : x ? "T" : "X"}
+          {loai === "btts" ? (x ? "✓" : "✗") : x ? "↑" : "↓"}
         </span>
       ))}
     </div>
@@ -66,7 +66,7 @@ export function TranKeoPhu({ k }: { k: KeoPhu }) {
   return (
     <>
       {k.pBtts && <ThiTruong ten="Hai đội cùng ghi bàn" loai="btts" p={k.pBtts} nha={k.nha} khach={k.khach} />}
-      {k.pOu && <ThiTruong ten="Tài xỉu 2,5 bàn" loai="ou" p={k.pOu} nha={k.nha} khach={k.khach} />}
+      {k.pOu && <ThiTruong ten="Tài xỉu 2.5 bàn" loai="ou" p={k.pOu} nha={k.nha} khach={k.khach} />}
       {cs && (
         <section className={O}>
           <h2 className={NHAN}>Tỷ số chính xác</h2>
