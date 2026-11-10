@@ -13,18 +13,17 @@ const REC_PUSH: Record<string, string> = { vi: "hoà", en: "push", th: "เส�
 /** Số trận sắp đá hiện ở trang chủ; muốn xem hết thì sang /du-doan. */
 const SO_TRAN = 8;
 
-/** Dòng vàng mỏng: pick thật của Chú Tám hôm nay (hoặc "không chọn") + thành tích thật từ sổ pick. */
+/** Dòng vàng mỏng: pick thật của Chú Tám hôm nay (không có thì bỏ trống) + thành tích thật từ sổ pick. */
 function DongChuTam({ pick, record, lang }: { pick: PickRow | null; record: TrackRecord; lang: Lang }) {
   const t = getDict(lang).duDoan;
   return (
     <p className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[13px] sm:mt-3.5 sm:px-3.5 sm:text-sm">
       <b className="whitespace-nowrap text-xs uppercase tracking-wide text-amber-500">★ {t.pickTitle}</b>
-      {pick ? (
+      {/* Không có pick thì im, chỉ để thành tích (Peter 11/11: "hôm nay k chọn trận nào" hiện hoài). */}
+      {pick && (
         <Link href={withLang("/daily-board", lang)} className="inline-flex min-h-11 items-center font-semibold hover:underline sm:min-h-0">
           {pick.home_team} vs {pick.away_team}: {pick.selection} @{formatOdds(pick.odds_publish)}
         </Link>
-      ) : (
-        <span>{t.noPick}</span>
       )}
       {record.settled > 0 && (
         <span className="whitespace-nowrap font-semibold text-brand sm:ml-auto">
