@@ -21,6 +21,7 @@ const khoa = (ngay, nha, khach) => `${ngay}|${nha}|${khach}`;
 const cong = (ngay, n) => new Date(Date.parse(`${ngay}T00:00:00Z`) + n * 864e5).toISOString().slice(0, 10);
 const gioCu = new Map(cu.map((d) => [khoa(d.ngay, d.nha, d.khach), d.gioUtc]));
 
+const SO_LIEU = ["h2h", "bxn", "bxk", "gn", "gk"];
 const dong = (t) => ({
   ngay: t.ngay,
   giai: t.giai,
@@ -33,6 +34,8 @@ const dong = (t) => ({
   gioUtc: gioCu.get(khoa(t.ngay, t.nha, t.khach)) ?? null,
   btts: t.btts?.tip ? (/yes/i.test(t.btts.tip) ? "Có" : "Không") : undefined,
   tx: t.ou?.tip ? (/over/i.test(t.ou.tip) ? "Tài 2.5" : "Xỉu 2.5") : undefined,
+  // Số liệu trang trận (đối đầu, bảng xếp hạng, 10 trận gần nhất): có thì giữ nguyên.
+  ...Object.fromEntries(SO_LIEU.filter((k) => t[k] != null).map((k) => [k, t[k]])),
 });
 
 const tuNgay = moi.ngay_lay;
@@ -94,4 +97,5 @@ if (thieu.length > 0 && LK && LS) {
 hang.sort((a, b) => (a.gioUtc ?? `${a.ngay}T99`).localeCompare(b.gioUtc ?? `${b.ngay}T99`));
 fs.writeFileSync(RA, `[\n${hang.map((d) => JSON.stringify(d)).join(",\n")}\n]\n`);
 in1(`giu ngay cu: ${giu.length} | tep moi: ${moi.tran.length} | tong: ${hang.length}`);
+in1(`co so lieu tran: ${hang.filter((d) => SO_LIEU.some((k) => d[k] != null)).length}`);
 in1(`ket qua gan: ${soKq} | gio ghep moi: ${ghep} | con thieu gio: ${hang.filter((d) => !d.gioUtc).length}`);
