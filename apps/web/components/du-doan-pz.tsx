@@ -9,7 +9,7 @@ import { getDict, withLang, type Lang } from "@/lib/i18n";
 
 /**
  * Danh sách dự đoán bố cục PredictZ bản điện thoại (đo từng ô bằng reanimate 10/11/2026,
- * /tmp/reanim/predictz): nút ngày 312px xếp dọc → ô chọn giải → h1 → khối giải
+ * /tmp/reanim/predictz): hàng nút ngày cuộn ngang → ô chọn giải → h1 → khối giải
  * (cờ + "Dự đoán {giải}") → mỗi trận: đội nhà, 5 ô phong độ, ô dự đoán 200×40,
  * nút XEM NHẬN ĐỊNH, đội khách, 5 ô phong độ. Không hàng kèo, không quảng cáo.
  */
@@ -70,7 +70,8 @@ function Tran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
   const t = getDict(lang).duDoan;
   const c = h.du ? chieuDuDoan(h.du) : null;
   const mau = c === "nha" ? "border-[#00e676] text-[#00e676] bg-[#00e676]/[.06]" : c === "hoa" ? MAU_KQ.H : c ? MAU_KQ.B : "border-line text-muted";
-  const nhanDu = c === "nha" ? t.homeShort : c === "hoa" ? t.draw : c ? t.awayShort : "";
+  // Ghi rõ đội thắng ("U23 Việt Nam thắng 2-1") thay vì "Nhà/Khách" — góp ý Jane 10/11.
+  const nhanDu = c === "hoa" ? t.draw : c ? t.teamWins.replace("{team}", c === "nha" ? h.nha : h.khach) : "";
   return (
     <article className="relative border-b border-[#2c3a46] py-2 text-center">
       <div className="absolute left-0 top-2 text-xs leading-7 tracking-wide text-muted">
@@ -79,7 +80,7 @@ function Tran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
       <Doi ten={h.nha} logo={h.logoNha} />
       <PhongDo kq={h.formNha} nhan={t.form} />
       <div className="py-2.5">
-        <div className={`inline-block h-10 w-[200px] rounded-[5px] border-2 text-base leading-[34px] tabular-nums ${mau}`}>
+        <div className={`inline-block min-h-10 min-w-[200px] max-w-full rounded-[5px] border-2 px-3 py-[5px] text-base leading-[26px] tabular-nums ${mau}`}>
           {h.du ? `${nhanDu} ${h.du[0]}-${h.du[1]}` : "–"}
         </div>
         {h.that && (
@@ -104,7 +105,7 @@ function Tran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
   );
 }
 
-const NUT = "mx-auto my-[5px] block h-[22px] w-[312px] max-w-full rounded-md border py-[3px] text-center text-sm leading-[22px]";
+const NUT = "shrink-0 whitespace-nowrap rounded-md border px-3 py-[3px] text-center text-sm leading-[22px]";
 
 export function DuDoanPZ({
   rows,
@@ -135,7 +136,8 @@ export function DuDoanPZ({
 
   return (
     <div className="text-center">
-      <div className="my-2.5 flex flex-col">
+      {/* 1 hàng cuộn ngang thay 6 nút xếp dọc (ăn nửa màn điện thoại) — góp ý Jane 10/11. */}
+      <div className="-mx-1 my-2.5 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
         {ngays.map((n) => (
           <button
             key={n}

@@ -98,6 +98,8 @@ export interface Dict {
     draw: string;
     homeShort: string;
     awayShort: string;
+    /** Ô dự đoán: "{team}" thay bằng tên đội thắng. */
+    teamWins: string;
     preview: string;
     form: string;
     result: string;
@@ -464,6 +466,7 @@ const en: Dict = {
     draw: "Draw",
     homeShort: "Home",
     awayShort: "Away",
+    teamWins: "{team} win",
     preview: "Match preview",
     form: "Last 5",
     result: "Result",
@@ -820,6 +823,7 @@ const vi: Dict = {
     draw: "Hòa",
     homeShort: "Nhà",
     awayShort: "Khách",
+    teamWins: "{team} thắng",
     preview: "Xem nhận định",
     form: "Phong độ 5 trận",
     result: "KQ",
@@ -1176,6 +1180,7 @@ const th: Dict = {
     draw: "เสมอ",
     homeShort: "เหย้า",
     awayShort: "เยือน",
+    teamWins: "{team} ชนะ",
     preview: "ดูบทวิเคราะห์",
     form: "ฟอร์ม 5 นัด",
     result: "ผล",
@@ -1532,6 +1537,7 @@ const es: Dict = {
     draw: "Empate",
     homeShort: "Local",
     awayShort: "Visita",
+    teamWins: "Gana {team}",
     preview: "Ver previa",
     form: "Últimos 5",
     result: "Res.",
