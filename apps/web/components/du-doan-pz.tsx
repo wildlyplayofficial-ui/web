@@ -81,7 +81,8 @@ function Tran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
       <PhongDo kq={h.formNha} nhan={t.form} />
       <div className="py-2.5">
         <div className={`inline-block min-h-10 min-w-[200px] max-w-full rounded-[5px] border-2 px-3 py-[5px] text-base leading-[26px] tabular-nums ${mau}`}>
-          {h.du ? `${nhanDu} ${h.du[0]}-${h.du[1]}` : "–"}
+          {/* Đội khách thắng thì ghi số bàn đội thắng trước: "U23 Việt Nam thắng 2-0". */}
+          {h.du ? `${nhanDu} ${c === "khach" ? `${h.du[1]}-${h.du[0]}` : `${h.du[0]}-${h.du[1]}`}` : "–"}
         </div>
         {h.that && (
           <p className={`mt-1 text-xs ${h.dung === null ? "text-muted" : h.dung ? "text-[#00e676]" : "text-[#ff669b]"}`}>
