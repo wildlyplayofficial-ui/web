@@ -36,7 +36,7 @@ export const AUTHORS: readonly AuthorProfile[] = [
     slug: "pete-nguyen",
     path: "/tac-gia/pete-nguyen",
     role: "Biên tập tin tức · Blog",
-    bio: "Pete Nguyễn biên tập mảng tin tức và blog của banhbong.net: tin chuyển nhượng, kết quả, bảng xếp hạng và các bài blog bóng đá. Nguồn tin ghi rõ trong từng bài.",
+    bio: "Pete Nguyễn biên tập mảng tin tức và blog của banhbong.net: tin chuyển nhượng, kết quả, bảng xếp hạng và các bài blog bóng đá.",
     disclosure: "Pete Nguyễn biên tập · nguồn tin ghi rõ trong bài",
     // Peter tạo 15/9/2026.
     sameAs: ["https://www.linkedin.com/in/pete-nguy%E1%BB%85n-518324437"],
