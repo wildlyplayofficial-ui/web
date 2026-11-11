@@ -2,7 +2,7 @@
 // Số mẫu: 10 trận gần nhất của Darlington và Oxford City trước trận 10/11/2026 (chỉ dùng trong test).
 import { describe, expect, it } from "vitest";
 import { phongDo, phongDoCuTruoc, type TranDaDa } from "./phong-do";
-import { bxConMoi, cauBanThang, cauSan, conMoi, kqCuaDoi, ngayNgan, phongDoTuTran, thanhTich, type TranGanDay } from "./tran-so-lieu";
+import { bxConMoi, cauBanThang, cauSan, chuoiHienTai, conMoi, giuSach, kqCuaDoi, ngayNgan, phongDoTuTran, thanhTich, type TranGanDay } from "./tran-so-lieu";
 
 const GN: TranGanDay[] = [
   {"ngay": "2026-10-31", "nha": "Spalding United", "khach": "Darlington", "tsn": 3, "tsk": 2},
@@ -118,5 +118,23 @@ describe("dòng bảng xếp hạng đi cùng danh sách trận cũ thì cũng b
   });
   it("không có danh sách để đối chiếu → giữ dòng BXH", () => {
     expect(bxConMoi(BX, undefined, "2026-11-13")).toBe(BX);
+  });
+});
+
+describe("chuoiHienTai — chuỗi tính từ trận mới nhất (thẻ đội, Peter duyệt 11/11)", () => {
+  it("trận mới nhất thua → đếm số trận liền chưa thắng", () => {
+    expect(chuoiHienTai(GN, "Darlington")).toEqual({ loai: "chuaThang", so: 2 });
+  });
+  it("trận mới nhất không thua → đếm số trận liền chưa thua", () => {
+    expect(chuoiHienTai(GK.slice(1), "Oxford City")).toEqual({ loai: "chuaThua", so: 5 });
+  });
+  it("không có trận → null", () => {
+    expect(chuoiHienTai([], "Darlington")).toBeNull();
+  });
+});
+
+describe("giuSach — số trận giữ sạch lưới", () => {
+  it("đếm trận đội không thủng lưới", () => {
+    expect([giuSach(GN, "Darlington"), giuSach(GK, "Oxford City")]).toEqual([2, 5]);
   });
 });

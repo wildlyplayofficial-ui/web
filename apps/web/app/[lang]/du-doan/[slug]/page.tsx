@@ -82,7 +82,7 @@ export default async function TrangTran({ params }: Props) {
       <p className="mt-4 text-[15px] leading-relaxed sm:text-base">{cauTomTat(h)}</p>
       <TranPhongDo h={h} lang={lang} />
       {keoPhu && <TranKeoPhu k={keoPhu} />}
-      {soLieu && <TranSoLieu so={soLieu} />}
+      {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
 
       {lienQuan.ds.length > 0 && (
         <section className="mt-8">

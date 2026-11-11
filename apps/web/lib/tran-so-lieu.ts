@@ -106,3 +106,23 @@ export function cauBanThang(tt: ThanhTich): string | null {
 
 /** "31/10" từ YYYY-MM-DD. */
 export const ngayNgan = (ngay: string) => `${Number(ngay.slice(8, 10))}/${Number(ngay.slice(5, 7))}`;
+
+/** Kết quả của `doi`, mới nhất trước (bỏ trận không có đội này). */
+const kqMoiTruoc = (ds: readonly TranGanDay[], doi: string) =>
+  moiTruoc(ds).map((t) => kqCuaDoi(t, doi)).filter((k): k is KQ => k !== null);
+
+/**
+ * Chuỗi đang chạy tính từ trận mới nhất: trận mới nhất thua → số trận liền CHƯA THẮNG,
+ * ngược lại → số trận liền CHƯA THUA. Không có trận → null.
+ */
+export function chuoiHienTai(ds: readonly TranGanDay[], doi: string): { loai: "chuaThang" | "chuaThua"; so: number } | null {
+  const kq = kqMoiTruoc(ds, doi);
+  if (kq.length === 0) return null;
+  const loai = kq[0] === "B" ? "chuaThang" : "chuaThua";
+  const dut = kq.findIndex((k) => (loai === "chuaThang" ? k === "T" : k === "B"));
+  return { loai, so: dut === -1 ? kq.length : dut };
+}
+
+/** Số trận `doi` không thủng lưới. */
+export const giuSach = (ds: readonly TranGanDay[], doi: string) =>
+  ds.filter((t) => kqCuaDoi(t, doi) !== null && (tenSo(t.nha) === tenSo(doi) ? t.tsk : t.tsn) === 0).length;
