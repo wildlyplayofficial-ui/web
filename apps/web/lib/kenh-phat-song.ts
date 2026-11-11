@@ -71,3 +71,23 @@ export function conDaDuoc(kickoffUtc: string | null | undefined, now = new Date(
   if (Number.isNaN(t)) return false;
   return t > now.getTime();
 }
+
+/** Tên giải TIẾNG VIỆT trên bảng dự đoán (`HangDuDoan.giai`, đã qua tenGiaiViet) → mã giải.
+ *  Khớp ĐÚNG NGUYÊN TÊN, không khớp tiền tố: "Ligue 1" ≠ "VĐQG Algeria", "Serie A" ≠ "VĐQG Brazil".
+ *  Giải không có ở đây (giao hữu, tuyển Việt Nam…) → null, trang ẩn dòng kênh, không đoán. */
+const THEO_TEN_VIET: Readonly<Record<string, string>> = {
+  "Ngoại hạng Anh": "epl-2026",
+  "Premier League": "epl-2026",
+  "La Liga": "laliga-2026",
+  "Serie A": "seriea-2026",
+  Bundesliga: "bundesliga-2026",
+  "Ligue 1": "ligue1-2026",
+  "Cúp C1": "ucl-2026",
+  "Champions League": "ucl-2026",
+  "UEFA Champions League": "ucl-2026",
+};
+
+export function kenhTheoTenViet(giai: string | null | undefined): KenhGiai | null {
+  const ma = giai ? THEO_TEN_VIET[giai.trim()] : undefined;
+  return ma ? THEO_MA[ma] : null;
+}

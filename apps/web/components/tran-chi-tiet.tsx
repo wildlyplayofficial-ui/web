@@ -3,6 +3,7 @@ import { DoiLogo } from "@/components/doi-logo";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { cauHaiDoiGhi, giaiThichTaiXiu, thuVN } from "@/lib/du-doan-tran";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
+import { kenhTheoTenViet } from "@/lib/kenh-phat-song";
 import { mauKQ, type KQ } from "@/lib/phong-do";
 
 /**
@@ -33,6 +34,8 @@ export function TranHero({ h, lang, tacGia }: { h: HangDuDoan; lang: Lang; /** B
   const ketLuan = chieu === null ? null : chieu === 1 ? t.draw : t.teamWins.replace("{team}", chieu === 0 ? h.nha : h.khach);
   const [y, m, d] = h.ngay.split("-").map(Number);
   const luc = [`${thuVN(h.ngay)} ${d}/${m}/${y}`, /^\d/.test(h.gio) ? `${h.gio} giờ Việt Nam` : null, h.san].filter(Boolean).join(" · ");
+  // Kênh xem chỉ hiện khi trận chưa đá và giải có trong bảng kênh (không đoán).
+  const kenh = h.sapDa && !h.that ? kenhTheoTenViet(h.giai) : null;
   const cham = h.dung === null ? null : h.dungTySo ? t.exactScore : h.dung ? t.correct : t.wrong;
   return (
     <section className="mt-4 rounded-card border border-brand/50 bg-brand/[.06] px-3 py-5 text-center lg:px-8 lg:py-7">
@@ -50,6 +53,14 @@ export function TranHero({ h, lang, tacGia }: { h: HangDuDoan; lang: Lang; /** B
       </div>
       {ketLuan && <p className="mt-3 font-display text-lg font-bold text-brand lg:text-xl">{ketLuan}</p>}
       <p className="mt-1 text-sm text-muted">{luc}</p>
+      {kenh && (
+        <p className="mt-1 text-sm">
+          Xem trực tiếp: <b>{kenh.kenh}</b>
+          <Link href={withLang(`/analysis/${kenh.bai}`, lang)} className="flex min-h-11 items-center justify-center text-brand hover:underline">
+            {kenh.linkChu}
+          </Link>
+        </p>
+      )}
       {h.that && (
         <p className="mt-4 border-t border-line pt-4 text-[15px]">
           Kết quả: <b className="font-display text-lg tabular-nums">{h.nha} {h.that[0]}-{h.that[1]} {h.khach}</b>

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
 import { TranKeoPhu } from "@/components/tran-keo-phu";
+import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranSoLieu } from "@/components/tran-so-lieu";
 import { metaLoc, TrangLoc } from "@/components/trang-du-doan-loc";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
@@ -14,6 +15,7 @@ import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
 import { keoPhuTuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
 /**
@@ -53,6 +55,8 @@ const MANH = "inline-flex min-h-11 items-center hover:text-ink";
 export default async function TrangTran({ params }: Props) {
   const { lang: l, slug } = await params;
   const lang = resolveLang(l);
+  // Hôm nay chính là /du-doan; ai gõ /du-doan/hom-nay thì chuyển về đó thay vì 404 (Peter 11/11).
+  if (slug === "hom-nay") permanentRedirect(withLang("/du-doan", lang));
   const loc = TrangLoc({ slug, lang });
   if (loc) return loc;
   const { muc, hang } = await taiDuDoan();
@@ -62,6 +66,7 @@ export default async function TrangTran({ params }: Props) {
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
   const keoPhu = keoPhuTuan(slug);
+  const lucLuong = lucLuongCua(slug);
   const cap = `${h.nha} vs ${h.khach}`;
   const cg = chuyenGiaCua(h);
 
@@ -93,6 +98,7 @@ export default async function TrangTran({ params }: Props) {
       <TranBaO h={h} lang={lang} />
       <p className="mt-4 text-[15px] leading-relaxed sm:text-base">{cauTomTat(h)}</p>
       <TranPhongDo h={h} lang={lang} />
+      {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}
       {keoPhu && <TranKeoPhu k={keoPhu} />}
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
 
