@@ -152,7 +152,6 @@ export default async function Home({ params }: Props) {
   // §7.1: Home hero numbers are curator-only (never blend Scout results)
   const picks = allPicks.filter((p) => (p.author ?? "curator") === "curator");
   // Dòng "Chú Tám chọn": pick thật đầu tiên hôm nay, không có thì ghi rõ là không chọn.
-  const heroPick = picks[0] ?? null;
   const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(mucDuDoan)), getTranDaDa(doiThieuPhongDo())]);
   const hangBai = gopTuan(dungHang(mucDuDoan, picks, oddsMatches, daDa));
   // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
@@ -253,7 +252,7 @@ export default async function Home({ params }: Props) {
       {/* Thiết kế lại 10/11 (Peter duyệt mẫu): h1 + Chú Tám chọn + 8 trận sắp đá + MỘT nút
           sang /du-doan. Đã gỡ khối hero cũ, băng "Bảng Dự Đoán Hôm Nay" và thẻ pick nổi bật
           — ba lối vào dự đoán chồng nhau; pick Chú Tám nay nằm ở dòng vàng trong khối này. */}
-      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} pick={heroPick} record={record} />
+      <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} />
       {/* Mùa nghỉ: đếm ngược tới ngày khai mạc (bảng rỗng hẳn và đã biết ngày mở màn). */}
       {preseason && (
         <section className="pb-4 pt-6 sm:pb-10">
@@ -526,13 +525,7 @@ export default async function Home({ params }: Props) {
       {/* 5. Trust strip: §7.1 firewall stated in plain words + About */}
       <section className="pb-14">
         <div className="rounded-card border border-line bg-card px-6 py-6">
-          <ul className="flex flex-col gap-3 text-sm">
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-brand" aria-hidden />
-              <span>{dict.home.trustCurator}</span>
-            </li>
-          </ul>
-          <div className="mt-5 flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4">
             <Link
               href={withLang("/about", lang)}
               prefetch={false}
