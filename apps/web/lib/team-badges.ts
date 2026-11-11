@@ -2,8 +2,18 @@ import { tenTra } from "./ten-doi";
 import clubBadges from "./data/club-badges.json";
 import countryIso from "./data/country-iso.json";
 
+/**
+ * TheSportsDB đổi máy chủ ảnh: link `www.thesportsdb.com/images/media/...` giờ trả 404
+ * (logo Chelsea, Sporting CP gãy 11/11/2026), cùng đường dẫn trên `r2.thesportsdb.com` vẫn chạy.
+ */
+export function chuanLogo(url: string): string {
+  return url.replace(/^https?:\/\/www\.thesportsdb\.com\/images\/media\//, "https://r2.thesportsdb.com/images/media/");
+}
+
 /** Club crest URLs keyed by the exact team name Livescore renders (Liga MX + MLS). */
-const CLUB: Record<string, string> = clubBadges;
+export const CLUB: Record<string, string> = Object.fromEntries(
+  Object.entries(clubBadges as Record<string, string>).map(([ten, url]) => [ten, chuanLogo(url)]),
+);
 /** Country name → ISO code for flag CDN (World Cup national teams). */
 const ISO: Record<string, string> = countryIso;
 

@@ -156,6 +156,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
   const clusters: NavCluster[] = [
     // Hub dự đoán đứng đầu (Peter duyệt mock 10/11); pick Chú Tám giữ ngay sau.
     { label: nav.predictions, href: "/du-doan", moi: true },
+    { label: nav.results, href: "/ket-qua" },
     {
       label: nav.todaysPick,
       accent: true,

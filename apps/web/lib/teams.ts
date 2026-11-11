@@ -1,4 +1,4 @@
-import clubBadges from "@/lib/data/club-badges.json";
+import { CLUB } from "@/lib/team-badges";
 
 /** Đội có trang hub /doi/[slug]. Nhãn `teams` trên bài (news_items/analysis_articles) dùng đúng slug này. */
 export type TeamHub = {
@@ -7,8 +7,6 @@ export type TeamHub = {
   crest: string | null;
   kind: "club" | "nation";
 };
-
-const CLUB: Record<string, string> = clubBadges;
 
 export const TEAM_HUBS: TeamHub[] = [
   { slug: "man-united", name: "Manchester United", crest: CLUB["Manchester United"] ?? null, kind: "club" },

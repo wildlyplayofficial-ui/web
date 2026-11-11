@@ -40,6 +40,7 @@ const GIAI: Record<string, string> = {
   "Slovenia 2. SNL": "Hạng 2 Slovenia",
   "Spain Segunda Division": "Hạng 2 Tây Ban Nha",
   "Spain La Liga": "La Liga",
+  "Spain Copa Del Rey": "Cúp Nhà vua Tây Ban Nha",
   "Uganda Premier League": "VĐQG Uganda",
   "Ukraine Persha Liga": "Hạng 2 Ukraine",
   "Uruguay Primera Division Finals": "Chung kết VĐQG Uruguay",

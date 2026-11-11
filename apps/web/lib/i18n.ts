@@ -74,6 +74,7 @@ export interface Dict {
     learn: string;
     /** Hub /du-doan — mọi bài dự đoán từng trận + bảng đúng/sai. */
     predictions: string;
+    results: string;
     /** Nhãn nhỏ cạnh mục nav mới. */
     newTag: string;
   };
@@ -453,6 +454,7 @@ const en: Dict = {
     analysis: "Analysis",
     learn: "Learn",
     predictions: "Predictions",
+    results: "Results",
     newTag: "New",
   },
   duDoan: {
@@ -817,6 +819,7 @@ const vi: Dict = {
     analysis: "Phân Tích",
     learn: "Học Hỏi",
     predictions: "Dự Đoán",
+    results: "Kết Quả",
     newTag: "Mới",
   },
   duDoan: {
@@ -1181,6 +1184,7 @@ const th: Dict = {
     analysis: "บทวิเคราะห์",
     learn: "เรียนรู้",
     predictions: "ทำนายผล",
+    results: "ผลการแข่งขัน",
     newTag: "ใหม่",
   },
   duDoan: {
@@ -1545,6 +1549,7 @@ const es: Dict = {
     analysis: "Análisis",
     learn: "Aprender",
     predictions: "Pronósticos",
+    results: "Resultados",
     newTag: "Nuevo",
   },
   duDoan: {
