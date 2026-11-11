@@ -58,6 +58,17 @@ for (const d of hang) {
   soKq++;
 }
 
+// Sổ thành tích (/du-doan/thanh-tich): ghi thêm mọi trận đã có kết quả, KHÔNG bao giờ xoá
+// (tệp tuần chỉ giữ 7 ngày). Cùng trận thì dòng mới đè dòng cũ.
+const SO = path.join(path.dirname(RA), "thanh-tich.json");
+const so0 = fs.existsSync(SO) ? JSON.parse(fs.readFileSync(SO, "utf8")) : [];
+const soMap = new Map(so0.map((d) => [khoa(d.ngay, d.nha, d.khach), d]));
+for (const d of hang.filter((x) => x.kq)) {
+  soMap.set(khoa(d.ngay, d.nha, d.khach), { ngay: d.ngay, giai: d.giai, nha: d.nha, khach: d.khach, du: d.du, tx: d.tx, btts: d.btts, kq: d.kq });
+}
+const soMoi = [...soMap.values()].sort((a, b) => a.ngay.localeCompare(b.ngay));
+fs.writeFileSync(SO, `[\n${soMoi.map((d) => JSON.stringify(d)).join(",\n")}\n]\n`);
+
 // Ghép giờ đá cho trận chưa có giờ.
 const LK = process.env.LIVESCORE_API_KEY || "";
 const LS = process.env.LIVESCORE_API_SECRET || "";
@@ -103,4 +114,5 @@ hang.sort((a, b) => (a.gioUtc ?? `${a.ngay}T99`).localeCompare(b.gioUtc ?? `${b.
 fs.writeFileSync(RA, `[\n${hang.map((d) => JSON.stringify(d)).join(",\n")}\n]\n`);
 in1(`giu ngay cu: ${giu.length} | tep moi: ${moi.tran.length} | tong: ${hang.length}`);
 in1(`co so lieu tran: ${hang.filter((d) => SO_LIEU.some((k) => coGiaTri(d[k]))).length}`);
+in1(`so thanh tich: ${soMoi.length} tran`);
 in1(`ket qua gan: ${soKq} | gio ghep moi: ${ghep} | con thieu gio: ${hang.filter((d) => !d.gioUtc).length}`);

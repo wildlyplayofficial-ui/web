@@ -48,7 +48,7 @@ const TEN_LOGO: Record<string, string> = {
   // PredictZ ghi CHDC Congo là "DR Congo"; "Congo" trơn là Cộng hoà Congo.
   Congo: "Republic of the Congo",
 };
-const logo = (ten: string) => teamBadge(TEN_LOGO[ten] ?? ten);
+export const logo = (ten: string) => teamBadge(TEN_LOGO[ten] ?? ten);
 
 const KQ_ANH: Record<string, KQ> = { W: "T", D: "H", L: "B" };
 const docForm = (s: string): KQ[] | null => {
@@ -56,7 +56,7 @@ const docForm = (s: string): KQ[] | null => {
   return kq.length > 0 ? kq : null;
 };
 
-const slugTuan = (d: DongTuan) => `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khach)}`;
+export const slugTuan = (d: DongTuan) => `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khach)}`;
 
 /** Đối đầu, bảng xếp hạng, các trận gần nhất của một trận tệp tuần; tệp không ghi gì → null. */
 export function soLieuTuan(slug: string): (SoLieuTran & { nha: string; khach: string }) | null {
@@ -138,3 +138,6 @@ export function keoPhuTuan(slug: string): KeoPhu | null {
   if (!d || !(d.pBtts || d.pOu || d.pCs)) return null;
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }
+
+/** Các dòng tệp tuần hiện tại (bảng thành tích gộp với sổ data/thanh-tich.json). */
+export const dongTuan = (): readonly DongTuan[] => DONG;

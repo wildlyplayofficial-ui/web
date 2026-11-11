@@ -125,6 +125,9 @@ export default async function DuDoanHub({ params }: Props) {
       <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} />
       <div className="mt-6 px-2.5">
         <OThanhTichDuDoan tong={thanhTichDuDoan(muc)} lang={lang} />
+        <Link href={withLang("/du-doan/thanh-tich", lang)} className="mt-2 inline-block text-sm font-semibold text-brand hover:underline">
+          Thành tích dự đoán: đúng bao nhiêu, sai bao nhiêu →
+        </Link>
       </div>
       <div className="mt-4 px-2.5">
         <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
