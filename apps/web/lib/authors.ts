@@ -23,7 +23,7 @@ export const AUTHORS: readonly AuthorProfile[] = [
   {
     name: CHU_TAM,
     slug: "chu-tam-banh",
-    path: "/tac-gia/chu-tam-banh",
+    path: "/about#doi-ngu-chuyen-gia", // 11/11: trang riêng đã 301 về /about
     role: "Phân tích · Nhận định trước trận",
     // Chép từ persona trên /about (app/[lang]/about/copy.ts) — sửa thì sửa cả hai.
     bio: "Chú Tám Banh là người thật đứng sau mọi nhận định trên banhbong.net — theo bóng đá châu Âu hơn 15 năm, chuyên Ngoại hạng Anh và các giải lớn châu Âu. Mỗi trận đều tự đọc số liệu, xem phong độ và đội hình rồi mới đặt bút. Không nhận định gượng ép: không thấy lợi thế thì ghi rõ là bỏ qua. Thành tích thắng thua công khai từ ngày đầu, không sửa, không xoá.",
