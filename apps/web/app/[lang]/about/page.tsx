@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { OG_VERSION, PETE } from "@/lib/brand";
-import { authorByName } from "@/lib/authors";
 import Link from "next/link";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import { buildPerson, buildOrganization, buildWebSite } from "@/lib/jsonld";
@@ -58,7 +57,6 @@ export default async function AboutPage({ params }: Props) {
     }),
   );
   const giaiHienDuoc = competitions.filter((_, i) => song[i]);
-  const pete = lang === "vi" ? authorByName(PETE) : undefined;
 
   return (
     <div className="mx-auto max-w-[800px] px-4 py-8 sm:px-5 sm:py-12">
@@ -156,12 +154,6 @@ export default async function AboutPage({ params }: Props) {
           <a href="https://t.me/banhbongnet" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Telegram</a>
           <a href="https://www.facebook.com/xemthethaotructiep" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand hover:underline">Facebook</a>
         </div>
-        {/* Pete Nguyễn biên tập tin + blog (Peter chốt 15/9) — từ 11/11 chỉ còn một dòng. */}
-        {pete && (
-          <p className="mt-6 text-xs text-muted">
-            Biên tập: <Link href={pete.path} className="font-semibold text-ink hover:text-brand hover:underline">{pete.name}</Link>
-          </p>
-        )}
       </section>
     </div>
   );

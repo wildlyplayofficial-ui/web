@@ -1,4 +1,6 @@
-import { SITE_URL } from "@/lib/brand";
+import Link from "next/link";
+import { authorByName } from "@/lib/authors";
+import { PETE, SITE_URL } from "@/lib/brand";
 import { CHUYEN_GIA, nguoiChuyenGia } from "@/lib/chuyen-gia";
 import { jsonLd } from "@/lib/du-doan-schema";
 
@@ -7,6 +9,8 @@ import { jsonLd } from "@/lib/du-doan-schema";
  * dòng "Dự đoán bởi …" trên trang trận trỏ về đây. Không ảnh, không trang riêng.
  */
 export function DoiNguChuyenGia() {
+  // Thẻ biên tập viên tin + blog đứng cuối đội ngũ (Peter 11/11/2026).
+  const pete = authorByName(PETE);
   return (
     <section id="doi-ngu-chuyen-gia" className="mt-12 scroll-mt-24">
       <script
@@ -28,6 +32,15 @@ export function DoiNguChuyenGia() {
             ))}
           </article>
         ))}
+        {pete && (
+          <article id={pete.slug} className="scroll-mt-24 rounded-card border border-line bg-card p-5 shadow-card sm:p-6">
+            <h3 className="font-display text-lg font-bold text-ink">
+              <Link href={pete.path} className="hover:text-brand hover:underline">{pete.name}</Link>
+            </h3>
+            <p className="mt-0.5 text-xs font-semibold text-brand">Biên tập viên: tin tức, blog bóng đá</p>
+            <p className="mt-3 text-sm leading-relaxed text-ink/90">{pete.bio}</p>
+          </article>
+        )}
       </div>
     </section>
   );
