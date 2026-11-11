@@ -1,7 +1,8 @@
 /**
  * Trang /ket-qua (Peter duyệt mẫu v2 11/11/2026): tỷ số các trận đã dự đoán.
  * Nguồn tỷ số, theo thứ tự: `that` của dòng dự đoán (bài nhận định: bảng kết quả CSDL; tệp tuần:
- * `kq` máy nạp gắn), rồi bảng fixtures CSDL khớp theo tên đội + giờ đá (tệp tuần chưa có `kq`).
+ * `kq` máy nạp gắn), rồi tỷ số livescore (lib/ket-qua-ls.ts) / bảng fixtures CSDL khớp theo tên đội
+ * + giờ đá (tệp tuần chưa có `kq`).
  */
 import { cungTran, ngayVN, type HangDuDoan } from "./du-doan-hang";
 import { slugTuan, type DongTuan } from "./du-doan-tuan";
@@ -99,3 +100,38 @@ export const homNayVN = () => ngayVN(Date.now());
 
 /** 5 tab: hôm nay, hôm qua, 3 ngày trước. */
 export const cacNgay = (homNay: string) => [0, -1, -2, -3, -4].map((n) => lechNgay(homNay, n));
+
+/** Một trận đã đá theo nhà cung cấp tỷ số (lib/ket-qua-ls.ts). */
+export interface TranLS {
+  home: string;
+  away: string;
+  /** ISO UTC giờ đá. */
+  kickoff: string;
+  kq: [number, number];
+}
+
+/** Chuẩn hoá tên đội như máy nạp (scripts/nap-predictz.mjs `so`): bỏ dấu, bỏ FC/United/Town… */
+export const soTen = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\b(fc|afc|cf|sc|united|utd|city|town|athletic|the)\b/g, "")
+    .replace(/[^a-z0-9]/g, "");
+const giong = (x: string, y: string) => x !== "" && y !== "" && (x === y || x.includes(y) || y.includes(x));
+
+/** Ghép dòng tệp tuần với trận nhà cung cấp: tên nhà + khách giống nhau, giờ đá lệch ≤ 36 tiếng
+ *  (dòng không có giờ thì lấy giữa trưa ngày PredictZ). Khoá theo slug trang trận. */
+export function tySoTuLS(dong: readonly DongTuan[], ls: readonly TranLS[]): Map<string, [number, number]> {
+  const m = new Map<string, [number, number]>();
+  for (const d of dong) {
+    const nha = soTen(d.nha);
+    const khach = soTen(d.khach);
+    const t = Date.parse(gioDa(d));
+    const f = ls.find(
+      (x) => giong(soTen(x.home), nha) && giong(soTen(x.away), khach) && Math.abs(Date.parse(x.kickoff) - t) <= 36 * 3_600_000,
+    );
+    if (f) m.set(slugTuan(d), f.kq);
+  }
+  return m;
+}

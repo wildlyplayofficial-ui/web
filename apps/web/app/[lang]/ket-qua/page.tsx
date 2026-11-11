@@ -7,7 +7,8 @@ import { OG_VERSION } from "@/lib/brand";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { dongTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
-import { cacNgay, canTraTySo, gomGiai, homNayVN, ketQuaNgay, lechNgay, nhanNgay, tieuDeNgay, tySoTuFixtures } from "@/lib/ket-qua";
+import { cacNgay, canTraTySo, gomGiai, homNayVN, ketQuaNgay, lechNgay, nhanNgay, tieuDeNgay, tySoTuFixtures, tySoTuLS } from "@/lib/ket-qua";
+import { lichSuTySo } from "@/lib/ket-qua-ls";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
@@ -76,12 +77,16 @@ export default async function KetQua({ params, searchParams }: Props) {
   const ngay = typeof xin === "string" && ngays.includes(xin) ? xin : lechNgay(homNay, -1);
   // Dòng tệp tuần chưa có `kq` (máy nạp chỉ gắn kết quả hôm sau) → tra tỷ số trong bảng fixtures.
   const traThem = canTraTySo(dongTuan());
-  const [{ hang }, daDa, bang] = await Promise.all([
+  // Ngày VN D gồm trận ngày Anh D-1 (tối/đêm) và D → hỏi nhà cung cấp tỷ số đúng 2 ngày đó.
+  const truoc = lechNgay(ngay, -1);
+  const [{ hang }, daDa, ls, bang] = await Promise.all([
     taiDuDoan(),
     getTranDaDa(traThem.flatMap((d) => [d.nha, d.khach])),
+    traThem.some((d) => d.ngay === truoc || d.ngay === ngay) ? lichSuTySo(truoc, ngay) : Promise.resolve([]),
     bangXepHang(),
   ]);
-  const nhom = gomGiai(ketQuaNgay(hang, ngay, tySoTuFixtures(traThem, daDa)));
+  // Nguồn chính: livescore (bảng fixtures CSDL ngừng có tỷ số từ 8/9); CSDL bù chỗ thiếu.
+  const nhom = gomGiai(ketQuaNgay(hang, ngay, new Map([...tySoTuFixtures(traThem, daDa), ...tySoTuLS(traThem, ls)])));
 
   return (
     <div className="mx-auto max-w-[1180px] px-3.5 py-4 sm:px-5 sm:py-8">
