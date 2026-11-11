@@ -39,6 +39,11 @@ function stripLangPrefix(pathname: string): string {
 // <template data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING">, đếm <header> = 0.
 // Một thành phần chết làm cả bộ điều hướng của site không vào được HTML.
 
+/** Khung viền xanh quanh tab đang mở (Peter 11/11: "làm có khung này… đang ở tab nào"). Mục khác giữ viền trong suốt để chữ không nhảy. */
+const KHUNG = "rounded-md border px-2.5 py-1 text-sm font-medium transition-colors";
+const KHUNG_ON = "border-brand text-ink";
+const KHUNG_OFF = "border-transparent text-muted hover:text-ink";
+
 /**
  * A nav cluster rendered as a dropdown of links. Inline list on mobile
  * (the nav is already an expanded column); absolute card menu on desktop.
@@ -81,7 +86,7 @@ function NavDropdown({
         className={
           accent
             ? "flex items-center gap-1 whitespace-nowrap rounded-full border border-brand/40 bg-brand-dim px-3 py-1 text-sm font-semibold text-brand transition-colors hover:border-brand"
-            : `flex items-center gap-1 whitespace-nowrap text-sm font-medium transition-colors hover:text-ink ${active ? "text-ink" : "text-muted"}`
+            : `flex items-center gap-1 whitespace-nowrap ${KHUNG} ${active ? KHUNG_ON : KHUNG_OFF}`
         }
       >
         {label}
@@ -196,7 +201,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
         <nav
           className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 xl:static xl:flex xl:flex-row xl:items-center xl:gap-6 xl:border-0 xl:p-0`}
         >
-          <ul className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-[18px]">
+          <ul className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-1">
             {clusters.map((cluster) => {
               if ("href" in cluster) {
                 return (
@@ -204,7 +209,8 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
                     <Link
                       href={withLang(cluster.href, lang)}
                       onClick={() => setOpen(false)}
-                      className={`whitespace-nowrap text-sm font-medium transition-colors hover:text-ink ${isActive(cluster.href) ? "text-ink" : "text-muted"}`}
+                      aria-current={isActive(cluster.href) ? "page" : undefined}
+                      className={`inline-block whitespace-nowrap ${KHUNG} ${isActive(cluster.href) ? KHUNG_ON : KHUNG_OFF}`}
                     >
                       {cluster.label}
                       {cluster.moi && (
