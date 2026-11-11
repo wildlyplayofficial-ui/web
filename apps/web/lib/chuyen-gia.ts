@@ -105,3 +105,19 @@ export function chuyenGiaCua(h: { giai: string; nha: string; khach: string }): C
   const ten = [h.giai, tenGiaiGoc(h.giai)].map((s) => s.toLowerCase().trim());
   return CHUYEN_GIA.find((c) => c.giai.some((re) => ten.some((t) => re.test(t)))) ?? KIET;
 }
+
+/** Tên cũ của tác giả nhận định (lib/brand.ts CHU_TAM), viết tay để file này khỏi kéo brand vào test. */
+const CHU_TAM = "Chú Tám Banh";
+
+/**
+ * Bài nhận định ký "Chú Tám Banh" → ký tên chuyên gia phụ trách trận (Peter 11/11/2026 "apply các
+ * chuyên gia vào các trận dự đoán"). Đổi cả chữ "Chú Tám" trong thân bài. Bài tác giả khác giữ nguyên.
+ */
+export function ganChuyenGia<
+  T extends { byline: string; league?: string | null; body?: string; du_doan?: { home: string; away: string } | null; teams?: string[] | null },
+>(a: T): T {
+  if (a.byline !== CHU_TAM) return a;
+  const [nha = "", khach = ""] = a.du_doan ? [a.du_doan.home, a.du_doan.away] : (a.teams ?? []);
+  const ten = chuyenGiaCua({ giai: a.league ?? "", nha, khach }).ten;
+  return { ...a, byline: ten, ...(a.body ? { body: a.body.replace(/Chú Tám( Banh)?/g, ten) } : {}) };
+}

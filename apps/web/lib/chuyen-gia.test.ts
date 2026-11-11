@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chuyenGiaCua, nguoiChuyenGia, CHUYEN_GIA } from "./chuyen-gia";
+import { chuyenGiaCua, nguoiChuyenGia, CHUYEN_GIA, ganChuyenGia } from "./chuyen-gia";
 
 const ai = (giai: string, nha = "A", khach = "B") => chuyenGiaCua({ giai, nha, khach }).ten;
 
@@ -27,5 +27,16 @@ describe("chuyenGiaCua", () => {
   });
   it("Person JSON-LD trỏ về neo của chuyên gia trên /about", () => {
     expect(nguoiChuyenGia(CHUYEN_GIA[2], "https://x.vn").url).toBe("https://x.vn/about#vu-duc-khai");
+  });
+});
+
+describe("ganChuyenGia", () => {
+  it("bài Chú Tám Banh trận Việt Nam ký Đặng Quang Vinh, đổi cả chữ trong thân bài", () => {
+    const a = ganChuyenGia({ byline: "Chú Tám Banh", league: "Giao hữu quốc tế", body: "Chú Tám vẫn nghiêng về chủ nhà.", du_doan: { home: "Việt Nam", away: "Đài Bắc Trung Hoa" } });
+    expect([a.byline, a.body]).toEqual(["Đặng Quang Vinh", "Đặng Quang Vinh vẫn nghiêng về chủ nhà."]);
+  });
+
+  it("bài của tác giả khác giữ nguyên", () => {
+    expect(ganChuyenGia({ byline: "Pete Nguyễn", league: "Premier League" }).byline).toBe("Pete Nguyễn");
   });
 });

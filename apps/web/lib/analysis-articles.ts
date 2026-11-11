@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
 import type { AnalysisArticle } from "./types";
+import { ganChuyenGia } from "./chuyen-gia";
 
 /**
  * Data layer for Desk-authored analysis articles (spec §2A-B).
@@ -28,12 +29,12 @@ async function getAnalysisArticlesImpl(
     if (error.code === "42P01" || error.message.includes("does not exist")) return [];
     throw new Error(`getAnalysisArticles: ${error.message}`);
   }
-  return (data ?? []) as AnalysisArticle[];
+  return ((data ?? []) as AnalysisArticle[]).map(ganChuyenGia);
 }
 
 export const getAnalysisArticles = unstable_cache(
   getAnalysisArticlesImpl,
-  ["analysis-articles"],
+  ["analysis-articles-cg"],
   { revalidate: 300, tags: ["analysis-articles"] },
 );
 
@@ -53,12 +54,12 @@ async function getAnalysisArticleBySlugImpl(
     if (error.code === "42P01" || error.message.includes("does not exist")) return null;
     throw new Error(`getAnalysisArticleBySlug: ${error.message}`);
   }
-  return (data as AnalysisArticle) ?? null;
+  return data ? ganChuyenGia(data as AnalysisArticle) : null;
 }
 
 export const getAnalysisArticleBySlug = unstable_cache(
   getAnalysisArticleBySlugImpl,
-  ["analysis-article-by-slug"],
+  ["analysis-article-by-slug-cg"],
   { revalidate: 300, tags: ["analysis-articles"] },
 );
 
@@ -70,7 +71,7 @@ async function getAllAnalysisArticleSlugsImpl(): Promise<
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("analysis_articles")
-    .select("slug, published_at, updated_at, title, byline")
+    .select("slug, published_at, updated_at, title, byline, league, teams")
     .eq("status", "published")
     .order("published_at", { ascending: false });
   if (error) {
@@ -86,7 +87,7 @@ async function getAllAnalysisArticleSlugsImpl(): Promise<
     // "đã thu thập – chưa lập chỉ mục", lastmod vẫn 9/8).
     modified: r.updated_at ?? r.published_at ?? new Date().toISOString(),
     title: r.title,
-    byline: r.byline,
+    byline: ganChuyenGia(r).byline,
   }));
 }
 
@@ -94,7 +95,7 @@ export const getAllAnalysisArticleSlugs = unstable_cache(
   getAllAnalysisArticleSlugsImpl,
   // Đổi khoá khi thêm `modified`: khoá cũ trả bản đệm thiếu trường này tới 1 giờ.
   // v3: thêm `byline` cho <dc:creator> của RSS (tác giả theo bài, 15/9).
-  ["analysis-article-slugs-v3"],
+  ["analysis-article-slugs-v4"],
   { revalidate: 3600, tags: ["analysis-articles"] },
 );
 
@@ -113,10 +114,10 @@ async function getAnalysisByTeamImpl(team: string, limit = 40): Promise<Analysis
     if (error.code === "42703" || error.message.includes("column") || error.message.includes("does not exist")) return [];
     throw new Error(`getAnalysisByTeam: ${error.message}`);
   }
-  return (data ?? []) as AnalysisArticle[];
+  return ((data ?? []) as AnalysisArticle[]).map(ganChuyenGia);
 }
 
-export const getAnalysisByTeam = unstable_cache(getAnalysisByTeamImpl, ["analysis-by-team"], {
+export const getAnalysisByTeam = unstable_cache(getAnalysisByTeamImpl, ["analysis-by-team-cg"], {
   revalidate: 300,
-  tags: ["analysis-articles"],
+  tags: ["analysis-articles-cg"],
 });
