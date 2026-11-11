@@ -86,7 +86,7 @@ export default async function TrangTran({ params }: Props) {
       </nav>
       <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[30px]">{tieuDeTran(h)}</h1>
       <p className="mt-1 text-[13px] text-muted">
-        Dự đoán bởi{" "}
+        Dự đoán bởi chuyên gia{" "}
         <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
       </p>
       <TranHero h={h} lang={lang} tacGia={tacGia} />
