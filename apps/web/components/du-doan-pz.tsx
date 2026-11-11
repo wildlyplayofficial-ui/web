@@ -37,9 +37,10 @@ const NUT = "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounde
 export function DuDoanPZ({ rows, homNay, lang }: { rows: HangDuDoan[]; /** Khoá ngày hôm nay giờ VN, dựng ở server. */ homNay: string; lang: Lang }) {
   const t = getDict(lang).duDoan;
   const coDuLieu = new Set(rows.map((r) => r.ngay));
-  // Hôm nay + 5 ngày tới; hôm qua chỉ hiện khi còn dòng để xem chấm đúng/sai.
-  const ngays = [-1, 0, 1, 2, 3, 4, 5].map((n) => lechNgay(homNay, n)).filter((n) => n >= homNay || coDuLieu.has(n));
-  const macDinh = coDuLieu.has(homNay) ? homNay : ngays.find((n) => n > homNay && coDuLieu.has(n)) ?? homNay;
+  // Hôm qua → 5 ngày tới, CHỈ ngày có trận (Peter 11/11: ngày không có trận thì đừng hiện tab).
+  const coTran = [-1, 0, 1, 2, 3, 4, 5].map((n) => lechNgay(homNay, n)).filter((n) => coDuLieu.has(n));
+  const ngays = coTran.length > 0 ? coTran : [homNay];
+  const macDinh = coDuLieu.has(homNay) ? homNay : ngays.find((n) => n > homNay) ?? ngays[ngays.length - 1];
   const [ngay, setNgay] = useState(macDinh);
   const [giai, setGiai] = useState("");
 

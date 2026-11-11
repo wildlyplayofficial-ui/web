@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { tenGiaiViet } from "@/lib/ten-viet";
 import Link from "next/link";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran, type CauHoi } from "@/lib/du-doan-schema";
-import { getBaiDuDoan, type MucDuDoan } from "@/lib/du-doan";
+import { getBaiDuDoan } from "@/lib/du-doan";
 import { cacTranChon } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
-import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN } from "@/lib/du-doan-hang";
@@ -50,54 +49,9 @@ function HoiNhanh({ ds }: { ds: CauHoi[] }) {
   );
 }
 
-const gioVN = (iso: string) =>
-  new Date(iso).toLocaleString("vi-VN", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    weekday: "short",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-/** Gom theo giải, giữ thứ tự xuất hiện (sắp đá trước, rồi bài mới nhất). */
-function theoGiai(muc: MucDuDoan[]): [string, MucDuDoan[]][] {
-  const nhom = new Map<string, MucDuDoan[]>();
-  for (const m of muc) {
-    const giai = m.bai.league || "Giải khác";
-    nhom.set(giai, [...(nhom.get(giai) ?? []), m]);
-  }
-  return [...nhom.entries()];
-}
-
-function DongBai({ m, lang }: { m: MucDuDoan; lang: Lang }) {
-  return (
-    <li>
-      <Link
-        href={withLang(`/analysis/${m.bai.slug}`, lang)}
-        className="block rounded-card border border-line bg-card px-5 py-4 shadow-card transition-colors hover:bg-card-hover"
-      >
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-          {m.sapDa && <span className="rounded-full bg-brand-dim px-2 py-0.5 font-semibold text-brand">Sắp đá</span>}
-          {m.kickoffUtc && <span>{gioVN(m.kickoffUtc)}</span>}
-          <span>{m.bai.byline}</span>
-        </div>
-        <p className="mt-1 font-display text-lg font-bold">{m.bai.title}</p>
-        {m.chot && (
-          <p className="mt-1 text-sm">
-            Dự đoán: <span className="font-display font-bold">{m.chot.home_goals}-{m.chot.away_goals}</span>
-          </p>
-        )}
-      </Link>
-    </li>
-  );
-}
-
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
-  const [{ muc, hang }, baiChon] = await Promise.all([taiDuDoan(), getBaiDuDoan()]);
-  // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
-  const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
+  const [{ hang }, baiChon] = await Promise.all([taiDuDoan(), getBaiDuDoan()]);
   const hoi = cauHoiDuDoan(hang);
   // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
@@ -124,17 +78,7 @@ export default async function DuDoanHub({ params }: Props) {
         <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
       </div>
 
-      {nhom.map(([giai, ds]) => (
-          <section key={giai} className="mt-10 px-2.5">
-            <h2 className="font-display text-xl font-bold">{tenGiaiViet(giai)}</h2>
-            <ul className="mt-4 space-y-3">
-              {ds.map((m) => (
-                <DongBai key={m.bai.slug} m={m} lang={lang} />
-              ))}
-            </ul>
-          </section>
-      ))}
-
+      {/* Peter 11/11: bỏ danh sách bài Chú Tám Banh theo giải khỏi trang dự đoán. */}
       <div className="px-2.5">
         {hoi.length > 0 && <HoiNhanh ds={hoi} />}
       </div>
