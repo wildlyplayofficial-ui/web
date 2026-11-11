@@ -5,7 +5,7 @@ import { DoiLogo } from "@/components/doi-logo";
 import { DongTran } from "@/components/dong-tran";
 import { ChuThichPhongDo } from "@/components/phong-do-dong";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
-import { ngayThang, thuVN, tieuDeH1 } from "@/lib/du-doan-tran";
+import { ngayTabDuDoan, ngayThang, thuVN, tieuDeH1 } from "@/lib/du-doan-tran";
 import { getDict, type Lang } from "@/lib/i18n";
 import { coGiaiGoc } from "@/lib/ten-viet";
 
@@ -14,9 +14,6 @@ import { coGiaiGoc } from "@/lib/ten-viet";
  * dòng đếm, hàng nút ngày + ô chọn giải, rồi từng khối giải với dòng trận dùng chung
  * (components/dong-tran.tsx) — bấm trận nào ra trang riêng của trận đó.
  */
-
-const lechNgay = (khoa: string, n: number) =>
-  new Date(Date.parse(`${khoa}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 /** Cờ tròn đầu khối giải: theo tên giải, không đoán được thì logo đội nhà trận đầu. */
 function coGiai(giai: string, dau: HangDuDoan): string | null {
@@ -36,19 +33,15 @@ const NUT = "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounde
 
 export function DuDoanPZ({ rows, homNay, lang }: { rows: HangDuDoan[]; /** Khoá ngày hôm nay giờ VN, dựng ở server. */ homNay: string; lang: Lang }) {
   const t = getDict(lang).duDoan;
-  const coDuLieu = new Set(rows.map((r) => r.ngay));
-  // Hôm qua → 5 ngày tới, CHỈ ngày có trận (Peter 11/11: ngày không có trận thì đừng hiện tab).
-  const coTran = [-1, 0, 1, 2, 3, 4, 5].map((n) => lechNgay(homNay, n)).filter((n) => coDuLieu.has(n));
-  const ngays = coTran.length > 0 ? coTran : [homNay];
-  const macDinh = coDuLieu.has(homNay) ? homNay : ngays.find((n) => n > homNay) ?? ngays[ngays.length - 1];
+  // Hôm nay → 5 ngày tới, CHỈ ngày có trận; hôm qua không hiện (Peter 11/11, xem /ket-qua).
+  const { ngays, macDinh } = ngayTabDuDoan(homNay, new Set(rows.map((r) => r.ngay)));
   const [ngay, setNgay] = useState(macDinh);
   const [giai, setGiai] = useState("");
 
   const trongNgay = rows.filter((r) => r.ngay === ngay).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
   const cacGiai = [...new Set(trongNgay.map((r) => r.giai))];
   const nhom = cacGiai.filter((g) => !giai || g === giai).map((g) => [g, trongNgay.filter((r) => r.giai === g)] as const);
-  const nhan = (n: string) =>
-    `${n === homNay ? t.today : n === lechNgay(homNay, -1) ? t.yesterday : thuVN(n)} ${ngayThang(n)}`;
+  const nhan = (n: string) => `${n === homNay ? t.today : thuVN(n)} ${ngayThang(n)}`;
 
   return (
     <div className="px-3.5 sm:px-2.5">

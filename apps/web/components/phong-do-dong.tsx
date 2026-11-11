@@ -26,12 +26,13 @@ export function PhongDoNho({ kq, doi }: { kq: readonly KQ[] | null; doi: string 
   );
 }
 
-const NHAN_KEO = ["1", "X", "2"] as const;
+// Chữ thay 1·X·2: người đọc không hiểu ký hiệu (Peter 11/11 "1, 2, 3 là gì").
+const NHAN_KEO = ["Chủ", "Hòa", "Khách"] as const;
 
-/** 3 ô tỷ lệ 1 · X · 2; `chieu` (0/1/2) = cửa dự đoán chọn, tô viền xanh. */
+/** 3 ô tỷ lệ Chủ · Hòa · Khách (1·X·2); `chieu` (0/1/2) = cửa dự đoán chọn, tô viền xanh. */
 export function Keo1X2({ mot, chieu }: { mot: readonly [number, number, number]; chieu: number | null }) {
   return (
-    <span className="flex gap-1" aria-label={`Tỷ lệ 1 X 2: ${mot.map((x) => x.toFixed(2)).join(" · ")}`}>
+    <span className="flex gap-1" aria-label={`Tỷ lệ chủ nhà thắng · hòa · khách thắng: ${mot.map((x) => x.toFixed(2)).join(" · ")}`}>
       {mot.map((x, i) => (
         <span
           key={i}
@@ -57,7 +58,7 @@ export function ChuThichPhongDo() {
           <PhongDoNho kq={[k]} doi="" /> {TEN[k]}
         </span>
       ))}
-      <span>· 1 X 2 = tỷ lệ chủ nhà thắng · hoà · khách thắng</span>
+      <span>· Chủ · Hòa · Khách = tỷ lệ chủ nhà thắng · hòa · khách thắng, ô viền xanh = cửa dự đoán</span>
     </p>
   );
 }

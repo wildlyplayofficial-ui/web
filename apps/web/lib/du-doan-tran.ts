@@ -20,6 +20,17 @@ export function tieuDeH1(khoa: string): string {
   return `Dự đoán bóng đá ${thuVN(khoa)}, ngày ${d} tháng ${m} năm ${y}`;
 }
 
+const lechNgay = (khoa: string, n: number) =>
+  new Date(Date.parse(`${khoa}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+
+/** Tab ngày /du-doan: hôm nay → 5 ngày tới, CHỈ ngày có trận; không hiện hôm qua (Peter 11/11 —
+ *  ngày đã qua xem ở /ket-qua). Không ngày nào có trận → chỉ tab hôm nay. */
+export function ngayTabDuDoan(homNay: string, coDuLieu: ReadonlySet<string>): { ngays: string[]; macDinh: string } {
+  const coTran = [0, 1, 2, 3, 4, 5].map((n) => lechNgay(homNay, n)).filter((n) => coDuLieu.has(n));
+  const ngays = coTran.length > 0 ? coTran : [homNay];
+  return { ngays, macDinh: ngays[0] };
+}
+
 type Tran = Pick<HangDuDoan, "nha" | "khach" | "ngay" | "gio">;
 
 /** H1 trang trận: "Dự đoán Anh vs Croatia, 02h45 ngày 13/11". */

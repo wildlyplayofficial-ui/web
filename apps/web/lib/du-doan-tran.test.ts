@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { tranDuocIndex } from "./chi-muc";
 import type { HangDuDoan } from "./du-doan-hang";
-import { cauHaiDoiGhi, cauThang, cauTomTat, giaiThichTaiXiu, metaTran, tieuDeH1, tieuDeTran, timTran, tranLienQuan } from "./du-doan-tran";
+import { cauHaiDoiGhi, cauThang, cauTomTat, giaiThichTaiXiu, metaTran, ngayTabDuDoan, tieuDeH1, tieuDeTran, timTran, tranLienQuan } from "./du-doan-tran";
 
 const tran = (slug: string, sua: Partial<HangDuDoan> = {}): HangDuDoan => ({
   slug, coBai: false, giai: "Nations League", kickoffUtc: "2026-11-12T19:45:00Z", ngay: "2026-11-13", gio: "02:45",
@@ -91,5 +91,20 @@ describe("tranDuocIndex", () => {
     ["Serie C Ý", "Arezzo", "Pisa", false],
   ])("%s · %s – %s → %s", (giai, nha, khach, mong) => {
     expect(tranDuocIndex({ giai, nha, khach })).toBe(mong);
+  });
+});
+
+describe("ngayTabDuDoan", () => {
+  it("không hiện hôm qua, bắt đầu từ hôm nay, chỉ ngày có trận", () => {
+    const r = ngayTabDuDoan("2026-11-11", new Set(["2026-11-10", "2026-11-11", "2026-11-13"]));
+    expect(r).toEqual({ ngays: ["2026-11-11", "2026-11-13"], macDinh: "2026-11-11" });
+  });
+
+  it("hôm nay không có trận → mặc định ngày tới gần nhất", () => {
+    expect(ngayTabDuDoan("2026-11-11", new Set(["2026-11-10", "2026-11-12"])).macDinh).toBe("2026-11-12");
+  });
+
+  it("chỉ có trận hôm qua → một tab hôm nay", () => {
+    expect(ngayTabDuDoan("2026-11-11", new Set(["2026-11-10"]))).toEqual({ ngays: ["2026-11-11"], macDinh: "2026-11-11" });
   });
 });

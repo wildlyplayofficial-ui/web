@@ -7,7 +7,7 @@ import { OG_VERSION } from "@/lib/brand";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { dongTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
-import { cacNgay, canTraTySo, gomGiai, homNayVN, ketQuaNgay, lechNgay, nhanNgay, tieuDeNgay, tySoTuFixtures, tySoTuLS } from "@/lib/ket-qua";
+import { canTraTySo, chonNgayKetQua, gomGiai, homNayVN, ketQuaNgay, lechNgay, nhanNgay, tieuDeNgay, tySoTuFixtures, tySoTuLS } from "@/lib/ket-qua";
 import { lichSuTySo } from "@/lib/ket-qua-ls";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { fetchCompetitionTable } from "@/lib/standings";
@@ -18,6 +18,7 @@ import { tenDoiViet } from "@/lib/ten-viet";
 /**
  * /ket-qua — tỷ số các trận banhbong đã dự đoán (Peter duyệt mẫu v2 11/11/2026).
  * Tab ngày bằng ?ngay=YYYY-MM-DD (link thường, Google bò được); mặc định hôm qua giờ VN.
+ * Chỉ hiện tab ngày có tỷ số (Peter 11/11); hôm qua trống thì mở ngày gần nhất có tỷ số.
  */
 export const revalidate = 300;
 
@@ -72,21 +73,22 @@ async function bangXepHang(): Promise<BangBxh[]> {
 export default async function KetQua({ params, searchParams }: Props) {
   const lang = resolveLang((await params).lang);
   const homNay = homNayVN();
-  const ngays = cacNgay(homNay);
   const xin = (await searchParams).ngay;
-  const ngay = typeof xin === "string" && ngays.includes(xin) ? xin : lechNgay(homNay, -1);
   // Dòng tệp tuần chưa có `kq` (máy nạp chỉ gắn kết quả hôm sau) → tra tỷ số trong bảng fixtures.
   const traThem = canTraTySo(dongTuan());
-  // Ngày VN D gồm trận ngày Anh D-1 (tối/đêm) và D → hỏi nhà cung cấp tỷ số đúng 2 ngày đó.
-  const truoc = lechNgay(ngay, -1);
+  // Phải biết ngày nào có tỷ số để ẩn tab trống → tra cả 5 tab. Ngày VN D gồm trận ngày Anh D-1
+  // (tối/đêm) và D → hỏi nhà cung cấp từng ngày Anh có dòng cần tra, từ tab cũ nhất - 1 (hôm nay - 5) tới hôm nay.
+  const ngayAnh = [...new Set(traThem.map((d) => d.ngay))].filter((d) => d >= lechNgay(homNay, -5) && d <= homNay);
   const [{ hang }, daDa, ls, bang] = await Promise.all([
     taiDuDoan(),
     getTranDaDa(traThem.flatMap((d) => [d.nha, d.khach])),
-    traThem.some((d) => d.ngay === truoc || d.ngay === ngay) ? lichSuTySo(truoc, ngay) : Promise.resolve([]),
+    Promise.all(ngayAnh.map((d) => lichSuTySo(d, d))).then((x) => x.flat()),
     bangXepHang(),
   ]);
   // Nguồn chính: livescore (bảng fixtures CSDL ngừng có tỷ số từ 8/9); CSDL bù chỗ thiếu.
-  const nhom = gomGiai(ketQuaNgay(hang, ngay, new Map([...tySoTuFixtures(traThem, daDa), ...tySoTuLS(traThem, ls)])));
+  const them = new Map([...tySoTuFixtures(traThem, daDa), ...tySoTuLS(traThem, ls)]);
+  const { ngays, ngay } = chonNgayKetQua(homNay, hang, them, typeof xin === "string" ? xin : undefined);
+  const nhom = ngay ? gomGiai(ketQuaNgay(hang, ngay, them)) : [];
 
   return (
     <div className="mx-auto max-w-[1180px] px-3.5 py-4 sm:px-5 sm:py-8">
@@ -98,28 +100,30 @@ export default async function KetQua({ params, searchParams }: Props) {
       />
       <div className="grid items-start gap-7 min-[900px]:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
-          <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[28px]">{tieuDeNgay(ngay, homNay)}</h1>
+          <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[28px]">{tieuDeNgay(ngay ?? lechNgay(homNay, -1), homNay)}</h1>
           <p className="mt-1.5 text-sm text-muted">
             Tỷ số các trận banhbong.net đã dự đoán, giờ Việt Nam. Bấm trận để xem chi tiết.
           </p>
-          <nav aria-label="Chọn ngày" className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
-            {ngays.map((k) => (
-              <Link
-                key={k}
-                href={withLang(`/ket-qua?ngay=${k}`, lang)}
-                aria-current={k === ngay ? "page" : undefined}
-                className={`shrink-0 rounded-[10px] border px-3.5 py-2 text-sm transition-colors ${
-                  k === ngay ? "border-ink font-semibold text-ink" : "border-line text-muted hover:text-ink"
-                }`}
-              >
-                {nhanNgay(k, homNay)}
-              </Link>
-            ))}
-          </nav>
+          {ngays.length > 0 && (
+            <nav aria-label="Chọn ngày" className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
+              {ngays.map((k) => (
+                <Link
+                  key={k}
+                  href={withLang(`/ket-qua?ngay=${k}`, lang)}
+                  aria-current={k === ngay ? "page" : undefined}
+                  className={`shrink-0 rounded-[10px] border px-3.5 py-2 text-sm transition-colors ${
+                    k === ngay ? "border-ink font-semibold text-ink" : "border-line text-muted hover:text-ink"
+                  }`}
+                >
+                  {nhanNgay(k, homNay)}
+                </Link>
+              ))}
+            </nav>
+          )}
           <div className="mt-3">
             {nhom.length === 0 ? (
               <div className="rounded-card border border-dashed border-line bg-card px-6 py-6 text-center text-sm">
-                <p className="text-muted">Chưa có tỷ số cho ngày này. Kết quả cập nhật mỗi sáng.</p>
+                <p className="text-muted">Chưa có tỷ số mấy ngày gần đây. Kết quả cập nhật mỗi sáng.</p>
                 <Link href={withLang("/du-doan", lang)} className="mt-2 inline-block font-semibold text-brand hover:underline">
                   Xem dự đoán hôm nay →
                 </Link>

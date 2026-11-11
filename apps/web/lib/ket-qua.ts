@@ -101,6 +101,20 @@ export const homNayVN = () => ngayVN(Date.now());
 /** 5 tab: hôm nay, hôm qua, 3 ngày trước. */
 export const cacNgay = (homNay: string) => [0, -1, -2, -3, -4].map((n) => lechNgay(homNay, n));
 
+/** Tab ngày /ket-qua (Peter 11/11 "ngày nào không có thì đừng hiện"): chỉ ngày có ≥1 trận có tỷ số.
+ *  Ngày chọn: `xin` nếu có tỷ số, rồi hôm qua, rồi ngày gần nhất có tỷ số; không ngày nào có → null. */
+export function chonNgayKetQua(
+  homNay: string,
+  hang: readonly HangDuDoan[],
+  them: ReadonlyMap<string, [number, number]>,
+  xin?: string,
+): { ngays: string[]; ngay: string | null } {
+  const ngays = cacNgay(homNay).filter((k) => ketQuaNgay(hang, k, them).length > 0);
+  const homQua = lechNgay(homNay, -1);
+  const ngay = xin && ngays.includes(xin) ? xin : ngays.includes(homQua) ? homQua : ngays[0] ?? null;
+  return { ngays, ngay };
+}
+
 /** Một trận đã đá theo nhà cung cấp tỷ số (lib/ket-qua-ls.ts). */
 export interface TranLS {
   home: string;

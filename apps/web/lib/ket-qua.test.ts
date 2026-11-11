@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/data/du-doan-tuan.json", () => ({ default: [] }));
 import type { HangDuDoan } from "./du-doan-hang";
 import { slugTuan, type DongTuan } from "./du-doan-tuan";
-import { cacNgay, canTraTySo, gomGiai, ketQuaNgay, nhanNgay, tieuDeNgay, tySoTuFixtures } from "./ket-qua";
+import { cacNgay, canTraTySo, chonNgayKetQua, gomGiai, ketQuaNgay, nhanNgay, tieuDeNgay, tySoTuFixtures } from "./ket-qua";
 
 const hang = (x: Partial<HangDuDoan>): HangDuDoan =>
   ({
@@ -93,5 +93,28 @@ describe("nhãn ngày", () => {
 
   it("tiêu đề mặc định là hôm qua", () => {
     expect(tieuDeNgay("2026-11-10", "2026-11-11")).toBe("Kết quả bóng đá hôm qua");
+  });
+});
+
+describe("chonNgayKetQua", () => {
+  const HN = "2026-11-11";
+
+  it("chỉ giữ tab ngày có ít nhất một tỷ số", () => {
+    const { ngays } = chonNgayKetQua(HN, [hang({ that: [1, 0] }), hang({ nha: "C", ngay: "2026-11-09" })], new Map());
+    expect(ngays).toEqual(["2026-11-10"]);
+  });
+
+  it("hôm qua trống thì mặc định ngày gần nhất có tỷ số", () => {
+    const { ngay } = chonNgayKetQua(HN, [hang({ ngay: "2026-11-08", that: [0, 0] }), hang({ nha: "C", ngay: "2026-11-09" })], new Map([["s-C", [2, 2]]]));
+    expect(ngay).toBe("2026-11-09");
+  });
+
+  it("?ngay= trỏ vào ngày trống thì bỏ qua, về hôm qua", () => {
+    const { ngay } = chonNgayKetQua(HN, [hang({ that: [1, 0] })], new Map(), "2026-11-08");
+    expect(ngay).toBe("2026-11-10");
+  });
+
+  it("không ngày nào có tỷ số → không tab, ngày null", () => {
+    expect(chonNgayKetQua(HN, [hang({})], new Map())).toEqual({ ngays: [], ngay: null });
   });
 });
