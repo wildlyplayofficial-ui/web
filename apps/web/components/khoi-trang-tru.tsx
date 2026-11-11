@@ -18,6 +18,15 @@ type Muc = { href: string; ten: string };
 
 const SO_BLOG_MOI = 5;
 
+/** Mỗi nhóm một màu riêng (Peter 11/11: "để màu hay highlight chỗ này") — vạch trên, nền ngả màu, chấm đầu dòng. */
+const MAU: Record<string, { the: string; chu: string; cham: string }> = {
+  "Xem ở đâu": { the: "border-t-brand from-brand/10", chu: "text-brand", cham: "bg-brand" },
+  "Lịch thi đấu cả mùa": { the: "border-t-info from-info/10", chu: "text-info", cham: "bg-info" },
+  "Đá mấy giờ (giờ Việt Nam)": { the: "border-t-warning from-warning/10", chu: "text-warning", cham: "bg-warning" },
+  "Bảng xếp hạng": { the: "border-t-violet-soft from-violet-soft/10", chu: "text-violet-soft", cham: "bg-violet-soft" },
+  "Blog bóng đá": { the: "border-t-loss from-loss/10", chu: "text-loss", cham: "bg-loss" },
+};
+
 export function KhoiTrangTru({
   lang,
   trangLich,
@@ -73,11 +82,15 @@ export function KhoiTrangTru({
       </h2>
       <div className="grid gap-4 md:grid-cols-3">
         {nhom.map((n) => (
-          <div key={n.ten} className="rounded-card border border-line bg-card p-5">
-            <h3 className="font-display text-base font-bold">{n.ten}</h3>
+          <div
+            key={n.ten}
+            className={`rounded-card border border-line border-t-[3px] bg-card bg-gradient-to-b to-transparent to-40% p-5 ${MAU[n.ten]?.the ?? ""}`}
+          >
+            <h3 className={`font-display text-base font-bold ${MAU[n.ten]?.chu ?? ""}`}>{n.ten}</h3>
             <ul className="mt-3 flex flex-col gap-2 text-sm">
               {n.muc.map((m) => (
-                <li key={m.href}>
+                <li key={m.href} className="flex gap-2.5">
+                  <span aria-hidden className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${MAU[n.ten]?.cham ?? "bg-brand"}`} />
                   <Link
                     href={withLang(m.href, lang)}
                     prefetch={false}

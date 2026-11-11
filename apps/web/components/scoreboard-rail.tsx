@@ -37,7 +37,7 @@ export function ScoreboardRail({
   return (
     <div className="border-b border-line bg-card" aria-label={labels.title}>
       <div className="mx-auto max-w-[1100px] px-5 py-2.5">
-        <ScrollRow className="flex items-stretch gap-2">
+        <ScrollRow tuChay className="flex items-stretch gap-2">
           <span className="flex shrink-0 items-center pr-1 font-display text-[11px] font-bold uppercase tracking-wide text-muted">
             {labels.title}
           </span>

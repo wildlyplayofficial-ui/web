@@ -7,7 +7,22 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  * KHÔNG còn cách nào kéo (Peter 9/8: "kéo k đc"). Mũi tên chỉ hiện trên
  * desktop khi nội dung thật sự tràn; mobile vuốt tay như cũ.
  */
-export function ScrollRow({ children, className = "" }: { children: ReactNode; className?: string }) {
+/** Tốc độ tự chạy, px mỗi giây. */
+const TOC_DO = 28;
+
+/** Mép mờ dần hai bên khi còn nội dung bị che — thay cho nút tròn đè lên thẻ. */
+const MEP = "linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent)";
+
+export function ScrollRow({
+  children,
+  className = "",
+  tuChay = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** Tự cuộn ngang chậm; nút ‹ › chỉ hiện khi rê chuột vào băng. */
+  tuChay?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -53,25 +68,72 @@ export function ScrollRow({ children, className = "" }: { children: ReactNode; c
     };
   }, []);
 
+  // Tự chạy ngang (Peter 11/11: "scroll ngang cho đẹp, kiểu tự động"). Chạy chậm,
+  // rê chuột / chạm / focus vào thì dừng; tới cuối nghỉ một nhịp rồi lướt về đầu.
+  // Người bật "giảm chuyển động" thì đứng yên. Chỉ bật khi truyền tuChay.
+  const dung = useRef(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !tuChay || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let vi = el.scrollLeft;
+    let truoc = 0;
+    let nghiDen = 0;
+    let id = 0;
+    const buoc = (t: number) => {
+      const dt = truoc ? Math.min(t - truoc, 64) : 0;
+      truoc = t;
+      const het = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+      if (dung.current || t < nghiDen) {
+        vi = el.scrollLeft;
+      } else if (het) {
+        nghiDen = t + 1500;
+        el.scrollTo({ left: 0, behavior: "smooth" });
+        vi = 0;
+      } else {
+        // Cộng dồn số lẻ rồi mới gán — gán thẳng 0,5px trình duyệt làm tròn về 0, băng đứng im.
+        vi += (TOC_DO * dt) / 1000;
+        el.scrollLeft = vi;
+      }
+      id = requestAnimationFrame(buoc);
+    };
+    // Chờ chút cho neo đặt xong và người đọc kịp thấy thẻ đầu.
+    const hen = setTimeout(() => (id = requestAnimationFrame(buoc)), 1200);
+    return () => {
+      clearTimeout(hen);
+      cancelAnimationFrame(id);
+    };
+  }, [tuChay]);
+  const dungChay = tuChay
+    ? {
+        onMouseEnter: () => (dung.current = true),
+        onMouseLeave: () => (dung.current = false),
+        onFocusCapture: () => (dung.current = true),
+        onBlurCapture: () => (dung.current = false),
+        onTouchStart: () => (dung.current = true),
+        onTouchEnd: () => setTimeout(() => (dung.current = false), 2500),
+      }
+    : {};
+
   const truot = (huong: 1 | -1) => {
     const el = ref.current;
     if (!el) return;
     el.scrollBy({ left: huong * el.clientWidth * 0.8, behavior: "smooth" });
   };
 
+  // Băng tự chạy: nút ẩn, rê chuột vào mới hiện (và băng dừng lại) — khỏi đè lên thẻ.
+  const nut = `absolute top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-bg/90 text-ink shadow-card backdrop-blur transition hover:border-brand/50 hover:text-brand sm:flex${
+    tuChay ? " opacity-0 group-hover:opacity-100 focus-visible:opacity-100" : ""
+  }`;
+  const mask = tuChay ? { maskImage: MEP, WebkitMaskImage: MEP } : {};
+
   return (
-    <div className="relative">
+    <div className="group relative" {...dungChay}>
       {canLeft && (
-        <button
-          type="button"
-          aria-label="Scroll left"
-          onClick={() => truot(-1)}
-          className="absolute left-1 top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-bg/90 text-ink shadow-card backdrop-blur transition-colors hover:border-brand/50 hover:text-brand sm:flex"
-        >
+        <button type="button" aria-label="Scroll left" onClick={() => truot(-1)} className={`${nut} left-1`}>
           ‹
         </button>
       )}
-      <div ref={ref} className={`overflow-x-auto ${className}`} style={{ scrollbarWidth: "none" }}>
+      <div ref={ref} className={`overflow-x-auto ${className}`} style={{ scrollbarWidth: "none", ...mask }}>
         {children}
       </div>
       {canRight && (
@@ -79,7 +141,7 @@ export function ScrollRow({ children, className = "" }: { children: ReactNode; c
           type="button"
           aria-label="Scroll right"
           onClick={() => truot(1)}
-          className="absolute right-1 top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-bg/90 text-ink shadow-card backdrop-blur transition-colors hover:border-brand/50 hover:text-brand sm:flex"
+          className={`${nut} right-1`}
         >
           ›
         </button>
