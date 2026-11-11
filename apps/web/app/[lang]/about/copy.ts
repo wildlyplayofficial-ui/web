@@ -162,7 +162,6 @@ export const copy: Record<Lang, AboutCopy> = {
     promiseTitle: "Cam kết",
     promises: [
       "Tỷ số được chốt trước giờ đá và giữ nguyên sau trận.",
-      "Không hợp tác với nhà cái nào, không đặt link nhà cái trên trang.",
       "Dự đoán để tham khảo, không bảo đảm kết quả trận đấu.",
       "Giờ thi đấu trên trang là giờ Việt Nam (GMT+7).",
     ],
