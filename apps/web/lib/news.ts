@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
+import { demChu } from "./chi-muc";
 import type { Lang } from "./i18n";
 
 /** Canonical news type list — single source of truth (worker/generator must use these values). */
@@ -80,12 +81,13 @@ export const getNewsItems = unstable_cache(
  *  getNewsItems caps at 30, so it can't be reused or older articles fall out.
  *  Includes the real headline (title) so the Google News sitemap doesn't fall
  *  back to the raw slug ("romero roi tottenham..." with no diacritics). */
-async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: string; title: string }[]> {
+async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: string; title: string; soChu: number }[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("news_items")
-    .select("slug, published_at, headline_vi, headline_en")
+    // body: để đếm chữ — tin mỏng (< NEWS_TOI_THIEU_CHU) không nộp sitemap (12/11).
+    .select("slug, published_at, headline_vi, headline_en, body_vi, body_en")
     .eq("status", "published")
     // Bài đã bị bài mới hơn thay thế thì bỏ khỏi sitemap — đừng mời Google vào
     // đọc ba trang cùng tranh một từ khoá. Trang vẫn sống cho người đọc.
@@ -98,12 +100,14 @@ async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: strin
     // Tiêu đề tiếng Việt trước — news-sitemap khai news:language=vi nên đưa
     // tiêu đề tiếng Anh vào là tự mâu thuẫn. Rơi về en rồi slug nếu thiếu.
     title: (r.headline_vi as string) || (r.headline_en as string) || (r.slug as string),
+    soChu: demChu((r.body_vi as string | null) || (r.body_en as string | null)),
   }));
 }
 
 export const getAllNewsItemSlugs = unstable_cache(
   getAllNewsItemSlugsImpl,
-  ["news-item-slugs"],
+  // Đổi khoá khi thêm `soChu`: khoá cũ trả bản đệm thiếu trường này tới 5 phút.
+  ["news-item-slugs-v2"],
   { revalidate: 300, tags: ["news"] },
 );
 

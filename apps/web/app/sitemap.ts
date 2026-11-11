@@ -5,14 +5,21 @@ import { getAllMatchSlugs, getAllGuideSlugs, getAllReportSlugs, getSettledPicks,
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
-import { newsDuocIndex, analysisDuocIndex, tranDuocIndex } from "@/lib/chi-muc";
+import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
-/** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8). */
+/** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8).
+ *
+ *  12/11/2026 — TÁCH NHÓM bằng generateSitemaps: /sitemap/static.xml, /sitemap/blog.xml,
+ *  /sitemap/analysis.xml, /sitemap/news.xml, /sitemap/du-doan.xml — Search Console đếm
+ *  "đã lập chỉ mục" riêng từng nhóm, nhìn ra nhóm nào Google bỏ. Next KHÔNG tự sinh mục
+ *  lục khi dùng generateSitemaps, nên /sitemap.xml (robots.txt trỏ vào) là route riêng
+ *  app/sitemap.xml/route.ts liệt kê 5 tệp trên. Nhóm `static` gồm trang tĩnh + mục lục
+ *  nhỏ (hub /doi, /guides, /transparency, /competitions, /match có bài). */
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -45,11 +52,7 @@ function moiNhat(dates: (string | null | undefined)[]): Date | undefined {
 
 /** Bài có dự đoán: trận đá xong thì trang tự thêm ô kết quả cạnh ô dự đoán (v3,
  *  10/11) dù hàng CSDL không đổi → lastmod = muộn hơn giữa ngày sửa và giờ đá + 2 giờ
- *  (safeLastMod chặn tương lai, nên trận chưa đá giữ ngày sửa).
- *
- *  Chưa tách sitemap "sắp đá / đã đá" như predictz: repo chỉ có MỘT sitemap.ts (không
- *  dùng generateSitemaps) và hiện mới có 1 bài dự đoán — tách file lúc này chỉ thêm
- *  một tệp gần rỗng. Khi số bài dự đoán đủ lớn thì tách bằng generateSitemaps. */
+ *  (safeLastMod chặn tương lai, nên trận chưa đá giữ ngày sửa). */
 function lastmodBaiDuDoan(slug: string, modified: string): Date {
   const ko = duDoanCua({ slug, du_doan: null })?.kickoff_utc;
   const xong = ko ? Date.parse(ko) + 2 * 3_600_000 : NaN;
@@ -70,7 +73,84 @@ function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
   };
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export async function generateSitemaps(): Promise<{ id: NhomSitemap }[]> {
+  return NHOM_SITEMAP.map((id) => ({ id }));
+}
+
+export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
+  const nhom = await id;
+  if (nhom === "blog") return nhomBlog();
+  if (nhom === "analysis") return nhomAnalysis();
+  if (nhom === "news") return nhomNews();
+  if (nhom === "du-doan") return nhomDuDoan();
+  return nhomStatic();
+}
+
+async function nhomBlog(): Promise<MetadataRoute.Sitemap> {
+  const blogs = await getAllBlogSlugs();
+  return blogs.map((b) => ({
+    url: `${BASE}/blog/${b.slug}`,
+    lastModified: safeLastMod(b.updated),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+    alternates: alternates(`/blog/${b.slug}`),
+  }));
+}
+
+// Dọn chỉ mục 9/11 (Peter chốt): chỉ nộp bài được mời index — khớp robots ở trang bài.
+async function nhomAnalysis(): Promise<MetadataRoute.Sitemap> {
+  const deskArticles = await getAllAnalysisArticleSlugs();
+  return deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated)).map((a) => ({
+    url: `${BASE}/analysis/${a.slug}`,
+    lastModified: lastmodBaiDuDoan(a.slug, a.modified),
+    changeFrequency: "weekly",
+    priority: 0.7,
+    alternates: alternates(`/analysis/${a.slug}`),
+  }));
+}
+
+// /news article pages: only the /news index was declared, never the individual
+// news_items — so every published news item (transfers, previews…) was orphaned
+// from Google despite being live. Declare each one (Jane 15/8).
+// 12/11: tin mỏng (< NEWS_TOI_THIEU_CHU chữ thân bài) không nộp — trang tự noindex.
+async function nhomNews(): Promise<MetadataRoute.Sitemap> {
+  const newsItems = await getAllNewsItemSlugs();
+  return newsItems.filter((n) => newsDuocIndex(n.slug, n.updated, n.soChu)).map((n) => ({
+    url: `${BASE}/news/${n.slug}`,
+    lastModified: safeLastMod(n.updated),
+    changeFrequency: "weekly",
+    priority: 0.7,
+    alternates: alternates(`/news/${n.slug}`),
+  }));
+}
+
+async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
+  // Trang riêng từng trận /du-doan/{slug} (10/11): CHỈ nộp trận được mời index — khớp
+  // robots ở trang trận (tranDuocIndex: giải lớn/đội tuyển/Việt Nam, và từ 12/11 loại
+  // hẳn trang khuôn từ tệp tuần `tuan-…`, chỉ còn bài tay `nhan-dinh-…`). Trận đá xong
+  // trang thêm tỷ số thật → lastmod = giờ đá + 2 giờ; trận chưa đá không có ngày sửa
+  // thật nên không khai lastmod.
+  const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
+  const tranRoutes: MetadataRoute.Sitemap = hang.filter(tranDuocIndex).map((h) => ({
+    url: `${BASE}/du-doan/${h.slug}`,
+    ...(h.sapDa ? {} : { lastModified: safeLastMod(Date.parse(h.kickoffUtc) + 2 * 3_600_000) }),
+    changeFrequency: "daily" as const,
+    priority: 0.6,
+    alternates: alternates(`/du-doan/${h.slug}`),
+  }));
+
+  // Trang theo giải + theo ngày (Peter 11/11): giải luôn nộp; ngày chỉ nộp ngày có trận, mỗi link một lần.
+  const homNay = ngayVN(Date.now());
+  const locRoutes: MetadataRoute.Sitemap = [
+    ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
+    ...[...new Set(hang.map((h) => h.ngay).filter((n) => n > homNay && n <= lechNgay(homNay, 6)).map((n) => duongDanNgay(n, homNay)))],
+  ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
+
+  return [...tranRoutes, ...locRoutes];
+}
+
+async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
+  // Bài/tin/blog chỉ lấy NGÀY để tính lastmod trang mục lục — URL của chúng nằm ở nhóm riêng.
   const [matches, guides, blogs, reports, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllMatchSlugs(), getAllGuideSlugs(), getAllBlogSlugs(), getAllReportSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   // Hub theo CLB: CHỈ khai hub nào đủ bài để được index. Hub dưới ngưỡng tự đặt
@@ -163,46 +243,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /play/* RÚT khỏi sitemap 9/11 (Peter duyệt GĐ1): trang kèo từng trận, đo GSC
   // 9/11 không trang nào được lập chỉ mục. Trang vẫn sống, vẫn có link nội bộ.
 
-  // Bảng `posts` KHÔNG còn khai URL nào qua đường /analysis/{slug} nữa — biến
-  // newsRoutes cũ đã xoá hẳn vì cả ba nhóm trong bảng đều có chỗ khác để đi:
-  //  - bài MÁY ĐẺ thời WildlyPlay (news/analysis/preview/recap/no-play/post-mortem):
-  //    tiếng Anh, mồ côi (đo 2/9: 272/418 URL bài trong sitemap không có link nội
-  //    bộ nào trỏ tới), đã đặt noindex — mà khai trang noindex vào sitemap thì
-  //    Search Console báo "Submitted URL marked noindex", đúng lỗi tự chuốc đã ghi
-  //    ở phần hub CLB phía trên (xem lib/bai-may-de.ts);
-  //  - `guide`: nhà riêng /guides + /transparency, đã bị .neq("type","guide") loại
-  //    ngay trong query từ đợt dọn 13 cặp URL trùng (25/8) → guideRoutes/reportRoutes;
-  //  - `blog`: nhà riêng /blog/{slug}, đã có blogRoutes khai. Khai thêm bản
-  //    /analysis/{slug} là dựng lại đúng cái lỗi trùng vừa dọn cho guide — đo 2/9,
-  //    3 bài blog sống ở CẢ HAI đường dẫn, cả hai đều 200 và đều tự nhận canonical
-  //    về chính mình, Google tự chia phiếu giữa hai bản.
-  // Bài thật vẫn vào sitemap đầy đủ qua deskRoutes (analysis_articles),
-  // newsItemRoutes (news_items), guideRoutes, blogRoutes. Trang /analysis/{slug}
-  // của bài blog vẫn sống bình thường, chỉ canonical về /blog/{slug} — xem
-  // app/[lang]/analysis/[slug]/page.tsx.
+  // Bảng `posts` KHÔNG còn khai URL nào qua đường /analysis/{slug} nữa — bài máy đẻ
+  // thời WildlyPlay đã noindex (lib/bai-may-de.ts); `guide` có nhà riêng /guides;
+  // `blog` có nhà riêng /blog/{slug} (khai thêm /analysis/{slug} là dựng lại lỗi trùng
+  // dọn 25/8 — xem app/[lang]/analysis/[slug]/page.tsx, canonical về /blog).
 
   // Trận TƯƠNG LAI xa hơn 14 ngày chưa vào sitemap — 154 trang rỗng tháng 9 đang
   // hút crawl budget (kiểm kê 25/8). Tới gần ngày đá tự vào lại vì sitemap là
-  // force-dynamic. Trận sắp đá ≤14 ngày GIỮ (nhu cầu "mấy giờ/xem ở đâu" là thật —
-  // Jane 16/8 + trang top impression). Trận đã đá giữ (có tỷ số + match facts).
+  // force-dynamic. Trận đã đá giữ (có tỷ số + match facts).
   const HORIZON_MS = 14 * 24 * 3600 * 1000;
   const cutoff = Date.now() + HORIZON_MS;
-  // Trang trận CHỈ có trong lịch mùa (chưa pick/watching/bài) render noindex —
-  // xem generateMetadata của /match/[slug]. Trước đây chúng vẫn nằm trong sitemap:
-  // sitemap bảo Google "vào index", trang lại bảo "đừng". Bản xuất GSC 8/9 cho
-  // thấy 318/481 trang kẹt "Discovered – currently not indexed" là /match, và
-  // CẢ 481 đều còn trong sitemap với "lần thu thập cuối" TRỐNG — Google chưa
-  // từng cào. Hàng đợi dài nên trang đáng cào bị xếp sau. Bỏ nhóm noindex ra để
-  // dồn hạn mức cào cho trang có nội dung thật.
-  //
-  // 10/9/2026 — SIẾT THÊM MỘT NẤC (Peter chốt). Lọc theo `hasContent` ở trên đã
-  // kéo 736 → 481, nhưng bản xuất GSC 10/9 cho thấy vẫn còn 158/191 trang /match
-  // mình NỘP mà Google chưa từng cào — 83%. Giờ chỉ nộp trang CÓ BÀI VIẾT thật
-  // (`coBai`); trang chỉ có pick/watching thì bỏ, vì pick đã có trang /play riêng
-  // trong sitemap rồi, nộp thêm /match là nộp hai lần một nội dung.
-  // Trang vẫn sống và vẫn có link nội bộ trỏ tới — chỉ thôi mời Google.
+  // 10/9/2026 (Peter chốt): chỉ nộp trang /match CÓ BÀI VIẾT thật (`coBai`); trang chỉ
+  // có pick/watching đã có /play riêng, nộp thêm /match là nộp hai lần. Bản xuất GSC
+  // 8/9: 318/481 trang kẹt "Discovered – currently not indexed" là /match.
   // ⚠️ Điều kiện này PHẢI khớp với `isThin` trong /match/[slug]/page.tsx. Lệch nhau
-  // là sitemap bảo "vào index" còn trang bảo "đừng" — đúng lỗi đã ghi ở trên.
+  // là sitemap bảo "vào index" còn trang bảo "đừng".
   const matchRoutes: MetadataRoute.Sitemap = matches.filter((m) => {
     if (!m.coBai) return false;
     const kick = Date.parse(m.kickoffUtc);
@@ -215,21 +270,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/match/${m.slug}`),
   }));
 
-  // 6 guide nặng thuật ngữ cá cược đặt noindex ở bản VI (Nick chốt 4/8). Trước đây
-  // chúng vẫn nằm trong sitemap vì còn mang hreflang sang /en /th /es. Ba bản đó bỏ
-  // từ 23/8, nên `LANGS.filter(l => l !== "vi")` ra mảng RỖNG: 6 URL này đang được
-  // nộp cho Google dưới dạng URL noindex trần, không alternates (kiểm prod 26/8 —
-  // đúng 6/721 URL trong sitemap không có thẻ hreflang nào). Đó là tự chuốc lỗi
-  // "Submitted URL marked noindex" trong Search Console. Bỏ hẳn khỏi sitemap;
-  // trang vẫn sống, vẫn follow, chỉ không nộp cho Google nữa.
-  const blogRoutes: MetadataRoute.Sitemap = blogs.map((b) => ({
-    url: `${BASE}/blog/${b.slug}`,
-    lastModified: safeLastMod(b.updated),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-    alternates: alternates(`/blog/${b.slug}`),
-  }));
-
+  // 6 guide nặng thuật ngữ cá cược đặt noindex ở bản VI (Nick chốt 4/8) — bỏ hẳn khỏi
+  // sitemap (kiểm prod 26/8: nộp URL noindex trần là tự chuốc lỗi "Submitted URL
+  // marked noindex"). Trang vẫn sống, vẫn follow.
   const guideRoutes: MetadataRoute.Sitemap = guides
     .filter((g) => !VI_BLOCKED_GUIDE_SLUGS.has(g.slug))
     .map((g) => ({
@@ -248,42 +291,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/transparency/${r.slug}`),
   }));
 
-  // Dọn chỉ mục 9/11 (Peter chốt): chỉ nộp bài được mời index — khớp robots ở trang bài.
-  const deskRoutes: MetadataRoute.Sitemap = deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated)).map((a) => ({
-    url: `${BASE}/analysis/${a.slug}`,
-    lastModified: lastmodBaiDuDoan(a.slug, a.modified),
-    changeFrequency: "weekly",
-    priority: 0.7,
-    alternates: alternates(`/analysis/${a.slug}`),
-  }));
-
-  // /news article pages: only the /news index was declared (line above), never the
-  // individual news_items — so every published news item (transfers, previews…) was
-  // orphaned from Google despite being live. Declare each one (Jane 15/8).
-  const newsItemRoutes: MetadataRoute.Sitemap = newsItems.filter((n) => newsDuocIndex(n.slug, n.updated)).map((n) => ({
-    url: `${BASE}/news/${n.slug}`,
-    lastModified: safeLastMod(n.updated),
-    changeFrequency: "weekly",
-    priority: 0.7,
-    alternates: alternates(`/news/${n.slug}`),
-  }));
-
-  // Trang giải + 2 trang con (lịch thi đấu, phong độ). Trước chỉ phát trang gốc nên
-  // 2 trang con đã dựng xong mà Google không biết chúng tồn tại (4/8).
-  // Sitemap phải soi ĐÚNG điều kiện sống của trang giải — xem
+  // Trang giải: sitemap phải soi ĐÚNG điều kiện sống của trang giải — xem
   // app/[lang]/competitions/[slug]/page.tsx: notFound() khi status khác "active"
-  // VÀ cờ standings_<slug> tắt. Chỉ lọc theo status thì aff-cup/asian-cup/
-  // euro-qualifiers được nộp cho Google dưới dạng 404, còn giải soft-launch bằng
-  // cờ lại sống mà vắng mặt trong sitemap — hai mặt của cùng một lỗi (5/8).
-  // World Cup (362) giữ trang gốc nhưng bỏ trang con: trang giải ẩn tab cho WC.
-  //
-  // 10/9/2026 — ĐẢO LẠI quyết định 4/8 ở trên: 2 trang con nay đặt noindex, nên
-  // BỎ HẲN khỏi sitemap. Lý do đo được: 18 trang con chỉ 109-232 chữ, là bảng
-  // trần không câu văn, trong khi cả site đang bị Google trả về "đã thu thập –
-  // chưa lập chỉ mục" (19/459 trang còn chỉ mục, lượt hiện 103/ngày xuống 1/ngày
-  // từ 4/9). Và khai URL noindex vào sitemap là tự chuốc lỗi "Submitted URL
-  // marked noindex" — đúng cái lỗi đã ghi hai lần ở đầu tệp này.
-  // Trang vẫn sống, vẫn follow, người dùng bấm tab vẫn xem được.
+  // VÀ cờ standings_<slug> tắt (5/8). 10/9/2026: 2 trang con (lịch, phong độ) đặt
+  // noindex nên BỎ HẲN khỏi sitemap (18 trang con chỉ 109-232 chữ, bảng trần).
   const subPages = (_c: { livescoreId: number }) => [""];
   const visible = await Promise.all(
     competitions.map(async (c) => {
@@ -310,24 +321,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     );
 
-  // Trang riêng từng trận /du-doan/{slug} (10/11): CHỈ nộp trận được mời index — khớp
-  // robots ở trang trận (tranDuocIndex). Trận đá xong trang thêm tỷ số thật → lastmod =
-  // giờ đá + 2 giờ; trận chưa đá không có ngày sửa thật nên không khai lastmod.
-  const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
-  const tranRoutes: MetadataRoute.Sitemap = hang.filter(tranDuocIndex).map((h) => ({
-    url: `${BASE}/du-doan/${h.slug}`,
-    ...(h.sapDa ? {} : { lastModified: safeLastMod(Date.parse(h.kickoffUtc) + 2 * 3_600_000) }),
-    changeFrequency: "daily" as const,
-    priority: 0.6,
-    alternates: alternates(`/du-doan/${h.slug}`),
-  }));
-
-  // Trang theo giải + theo ngày (Peter 11/11): giải luôn nộp; ngày chỉ nộp ngày có trận, mỗi link một lần.
-  const homNay = ngayVN(Date.now());
-  const locRoutes: MetadataRoute.Sitemap = [
-    ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
-    ...[...new Set(hang.map((h) => h.ngay).filter((n) => n > homNay && n <= lechNgay(homNay, 6)).map((n) => duongDanNgay(n, homNay)))],
-  ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
-
-  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...tranRoutes, ...locRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...hubRoutes, ...guideRoutes, ...reportRoutes, ...matchRoutes, ...standingsRoutes];
 }

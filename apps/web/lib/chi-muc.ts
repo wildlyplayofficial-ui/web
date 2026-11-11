@@ -63,7 +63,22 @@ function conMoi(ngayDang: string | null | undefined): boolean {
   return Number.isFinite(t) && Date.now() - t < HAN_BAI_MOI_MS;
 }
 
-export function newsDuocIndex(slug: string, ngayDang?: string | null): boolean {
+/** Tin dưới ngưỡng này là tin mỏng (12/11): noindex + không nộp sitemap, dù mới hay trong danh sách giữ. */
+export const NEWS_TOI_THIEU_CHU = 400;
+
+/** Đếm chữ thân bài, bỏ thẻ HTML/ký hiệu markdown. Không có thân bài → 0. */
+export function demChu(body: string | null | undefined): number {
+  if (!body) return 0;
+  const chu = body
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[#*_>`~\[\]()|-]+/g, " ")
+    .trim();
+  return chu ? chu.split(/\s+/).length : 0;
+}
+
+/** `soChu` không truyền = chưa đo (giữ luật cũ); truyền thì tin dưới NEWS_TOI_THIEU_CHU không được index. */
+export function newsDuocIndex(slug: string, ngayDang?: string | null, soChu?: number): boolean {
+  if (soChu !== undefined && soChu < NEWS_TOI_THIEU_CHU) return false;
   return conMoi(ngayDang) || NEWS_GIU_INDEX.has(slug);
 }
 
@@ -83,8 +98,17 @@ const GIAI_LON_INDEX = /^(ngoại hạng anh|premier league|la ?liga|serie a|bun
 const GIAI_DOI_TUYEN_INDEX = /nations league|world cup|\beuro\b|asian cup|asean cup|aff cup|copa am[eé]rica|giao hữu|friendl|vòng loại|qualif/i;
 const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
 
-export function tranDuocIndex(h: { giai: string; nha: string; khach: string }): boolean {
+export function tranDuocIndex(h: { slug: string; giai: string; nha: string; khach: string }): boolean {
+  // 12/11: trang trận dựng từ TỆP TUẦN (slug `tuan-…`, xem lib/du-doan-tuan.ts) là trang
+  // khuôn mỏng, không có bài — noindex,follow + không nộp sitemap. Chỉ bài tay
+  // `nhan-dinh-…` mới xét giải/đội như dưới.
+  if (h.slug.startsWith("tuan-")) return false;
   return (
     GIAI_LON_INDEX.test(h.giai) || GIAI_DOI_TUYEN_INDEX.test(h.giai) || DOI_VIET_NAM.test(h.nha) || DOI_VIET_NAM.test(h.khach)
   );
 }
+
+/** Nhóm sitemap con (12/11): /sitemap/{id}.xml, mỗi nhóm một dòng riêng trong Search Console.
+ *  Mục lục /sitemap.xml liệt kê các nhóm này — xem app/sitemap.xml/route.ts. */
+export const NHOM_SITEMAP = ["static", "blog", "analysis", "news", "du-doan"] as const;
+export type NhomSitemap = (typeof NHOM_SITEMAP)[number];

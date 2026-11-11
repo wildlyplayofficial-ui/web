@@ -90,7 +90,11 @@ describe("tranDuocIndex", () => {
     ["VĐQG Bắc Ireland", "Larne", "Linfield", false],
     ["Serie C Ý", "Arezzo", "Pisa", false],
   ])("%s · %s – %s → %s", (giai, nha, khach, mong) => {
-    expect(tranDuocIndex({ giai, nha, khach })).toBe(mong);
+    expect(tranDuocIndex({ slug: "nhan-dinh-a-vs-b-12-11-2026", giai, nha, khach })).toBe(mong);
+  });
+
+  it("trang từ tệp tuần (tuan-…) không index dù giải lớn", () => {
+    expect(tranDuocIndex({ slug: "tuan-2026-11-12-england-croatia", giai: "Nations League", nha: "Anh", khach: "Croatia" })).toBe(false);
   });
 });
 

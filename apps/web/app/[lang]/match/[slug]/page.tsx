@@ -62,8 +62,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!found) {
       return { title, description, robots: { index: false, follow: true } };
     }
+    // 12/11: lịch mùa còn `provisional` thì NGÀY trong lịch chỉ là ngày tạm (La Liga/
+    // Serie A ghi cả vòng vào Chủ nhật 22/11 15:00 chờ chốt), còn ngày trong slug đến
+    // từ giờ đá thật của CSDL — trang …-2026-11-21 từng tự khai bản chính …-2026-11-22
+    // (ngày tạm) là tự chỉ sang trang không ai link. Ngày tạm thì canonical giữ ĐÚNG
+    // ngày của slug; chỉ lịch đã chốt (`provisional === false`, cùng mốc tin giờ đá ở
+    // lib/match-context.ts) mới được kéo slug lệch ngày về bản chính.
+    const ngayChinh = found.hit.provisional === false ? found.hit.date : dateMatch[1];
     const canonicalSlug = buildMatchSlug(
-      found.hit.homeName, found.hit.awayName, `${found.hit.date}T${found.hit.time}:00Z`,
+      found.hit.homeName, found.hit.awayName, `${ngayChinh}T${found.hit.time}:00Z`,
     );
     // Trang lịch-mùa CHÍNH CHỦ (slug = bản chính) nhưng chưa có pick/nội dung
     // thật = trang mỏng (~160 từ khung + BXH auto). 318 trang kiểu này kẹt

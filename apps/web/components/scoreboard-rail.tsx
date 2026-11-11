@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { withLang, type Lang } from "@/lib/i18n";
-import { buildMatchSlug } from "@/lib/data";
 import { TeamCrest } from "@/components/team-crest";
 import { LocalKickoffTime } from "@/components/local-kickoff-time";
 import { COMPETITION_LOGOS } from "@/lib/competition-logos";
@@ -15,16 +12,18 @@ import type { StripMatch } from "@/components/home-next-matches";
  * near-upcoming kickoffs across every competition. Distinct from LiveTicker
  * (live-only headline scores): this is the always-on scores & fixtures strip.
  *
- * Reuses the SAME `stripMatches` the homepage feeds to HomeNextMatches — no
- * extra fetch — so the two stay in lockstep.
+ * Reuses the SAME `stripMatches` the homepage used to feed HomeNextMatches — no
+ * extra fetch.
+ *
+ * 12/11: thẻ KHÔNG còn link sang /match/{slug}. Trang /match chỉ-có-lịch là trang
+ * khuôn mỏng tự noindex; trang chủ (trang duy nhất Google còn giữ) đẩy 11 link vào
+ * đó là mời Google bò đúng nhóm không muốn index. Băng chỉ còn là băng tỉ số.
  */
 export function ScoreboardRail({
   matches,
-  lang,
   labels,
 }: {
   matches: StripMatch[];
-  lang: Lang;
   labels: { title: string; finished: string };
 }) {
   if (matches.length === 0) return null;
@@ -42,12 +41,6 @@ export function ScoreboardRail({
             {labels.title}
           </span>
           {matches.map((m) => {
-            const href = m.time
-              ? withLang(
-                  `/match/${buildMatchSlug(m.homeName, m.awayName, `${m.date}T${m.time}:00Z`)}`,
-                  lang,
-                )
-              : null;
             const status = m.finished ? (
               <span className="font-display text-[10px] font-bold uppercase tracking-wide text-brand">
                 {labels.finished}
@@ -90,16 +83,7 @@ export function ScoreboardRail({
             const cls =
               "flex w-[168px] shrink-0 flex-col rounded-md border border-line bg-bg px-2.5 py-1.5 transition-colors";
             const neo = m.id === neoTaiId ? { "data-neo": "" } : {};
-            return href ? (
-              <Link
-                key={`${m.compSlug}-${m.id}`}
-                href={href}
-                className={`${cls} hover:border-line-hover hover:bg-card-hover`}
-                {...neo}
-              >
-                {body}
-              </Link>
-            ) : (
+            return (
               <div key={`${m.compSlug}-${m.id}`} className={cls} {...neo}>
                 {body}
               </div>

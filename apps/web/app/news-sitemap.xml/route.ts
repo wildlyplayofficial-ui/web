@@ -42,7 +42,7 @@ export async function GET(): Promise<Response> {
     ...deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated)).map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
     // news_items live at /news/, not /analysis/. Use the real headline (not the
     // slug) so Google News shows a proper title, not "romero roi tottenham...".
-    ...newsItems.filter((n) => newsDuocIndex(n.slug, n.updated)).map((n) => ({ path: "news", slug: n.slug, title: n.title, updated: n.updated })),
+    ...newsItems.filter((n) => newsDuocIndex(n.slug, n.updated, n.soChu)).map((n) => ({ path: "news", slug: n.slug, title: n.title, updated: n.updated })),
   ];
 
   const recent = allItems.filter((p) => p.updated && new Date(p.updated) >= cutoff);

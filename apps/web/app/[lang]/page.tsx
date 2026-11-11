@@ -14,7 +14,8 @@ import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
-import { HomeNextMatches, type StripMatch } from "@/components/home-next-matches";
+import type { StripMatch } from "@/components/home-next-matches";
+import { DaiDuDoanGiai } from "@/components/dai-du-doan-giai";
 import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laTrangLichCaMua } from "@/lib/chi-muc";
@@ -245,7 +246,6 @@ export default async function Home({ params }: Props) {
       {/* Top scoreboard rail (ESPN strip) — reuses the same match data as HomeNextMatches. */}
       <ScoreboardRail
         matches={stripMatches}
-        lang={lang}
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
@@ -326,18 +326,10 @@ export default async function Home({ params }: Props) {
         </section>
       )}
 
-      {/* 3b. Matches strip — full container width, not boxed into the main column
-          (Nick 17/8: "kéo dài ra" — the column squeezed it to ~3 visible cards). */}
-      <HomeNextMatches
-        matches={stripMatches}
-        lang={lang}
-        labels={{
-          title: dict.home.matchesTitle,
-          all: dict.home.allCompetitions,
-          finished: dict.home.finished,
-          noTime: dict.standings.provisionalTime,
-        }}
-      />
+      {/* 3b. Dải dự đoán theo giải + bài mới (12/11) — THAY dải trận cũ (HomeNextMatches)
+          vốn đẩy 11 link /match/{slug} mỏng, tự noindex ra trang chủ. Cùng khung cuộn
+          ngang full chiều rộng như cũ (Nick 17/8: "kéo dài ra"). */}
+      <DaiDuDoanGiai lang={lang} baiMoi={articles} blogMoi={blogs} />
 
       {/* 3a-bis. Banner Kèo — Nick 2/9: chuyển XUỐNG đây, ngay dưới bài nổi bật và
           tin mới nhất. Trước nó nằm sát dưới băng Dự đoán và đẩy bài viết xuống dưới
