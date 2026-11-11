@@ -4,9 +4,11 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BxhBen, type BangBxh } from "@/components/bxh-ben";
 import { KetQuaLoc } from "@/components/ket-qua-loc";
 import { OG_VERSION } from "@/lib/brand";
+import { taiDuDoan } from "@/lib/du-doan-tai";
 import { dongTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
-import { cacNgay, gomGiai, homNayVN, ketQuaNgay, lechNgay, nhanNgay, tieuDeNgay } from "@/lib/ket-qua";
+import { cacNgay, canTraTySo, gomGiai, homNayVN, ketQuaNgay, lechNgay, nhanNgay, tieuDeNgay, tySoTuFixtures } from "@/lib/ket-qua";
+import { getTranDaDa } from "@/lib/phong-do-db";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { teamBadge } from "@/lib/team-badges";
@@ -72,8 +74,14 @@ export default async function KetQua({ params, searchParams }: Props) {
   const ngays = cacNgay(homNay);
   const xin = (await searchParams).ngay;
   const ngay = typeof xin === "string" && ngays.includes(xin) ? xin : lechNgay(homNay, -1);
-  const nhom = gomGiai(ketQuaNgay(dongTuan(), ngay));
-  const bang = await bangXepHang();
+  // Dòng tệp tuần chưa có `kq` (máy nạp chỉ gắn kết quả hôm sau) → tra tỷ số trong bảng fixtures.
+  const traThem = canTraTySo(dongTuan());
+  const [{ hang }, daDa, bang] = await Promise.all([
+    taiDuDoan(),
+    getTranDaDa(traThem.flatMap((d) => [d.nha, d.khach])),
+    bangXepHang(),
+  ]);
+  const nhom = gomGiai(ketQuaNgay(hang, ngay, tySoTuFixtures(traThem, daDa)));
 
   return (
     <div className="mx-auto max-w-[1180px] px-3.5 py-4 sm:px-5 sm:py-8">

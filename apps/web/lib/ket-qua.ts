@@ -1,15 +1,16 @@
 /**
- * Trang /ket-qua (Peter duyệt mẫu v2 11/11/2026): tỷ số các trận đã dự đoán, lấy từ tệp tuần
- * (data/du-doan-tuan.json) — dòng nào máy nạp đã gắn `kq` [bàn nhà, bàn khách] là trận đã đá.
+ * Trang /ket-qua (Peter duyệt mẫu v2 11/11/2026): tỷ số các trận đã dự đoán.
+ * Nguồn tỷ số, theo thứ tự: `that` của dòng dự đoán (bài nhận định: bảng kết quả CSDL; tệp tuần:
+ * `kq` máy nạp gắn), rồi bảng fixtures CSDL khớp theo tên đội + giờ đá (tệp tuần chưa có `kq`).
  */
-import { ngayVN } from "./du-doan-hang";
-import { logo, slugTuan, type DongTuan } from "./du-doan-tuan";
-import { tenDoiViet, tenGiaiViet } from "./ten-viet";
+import { cungTran, ngayVN, type HangDuDoan } from "./du-doan-hang";
+import { slugTuan, type DongTuan } from "./du-doan-tuan";
+import type { TranDaDa } from "./phong-do";
 
 export interface TranKetQua {
   slug: string;
   giai: string;
-  /** Giờ đá VN "02:30"; tệp không có giờ thì "--:--". */
+  /** Giờ đá VN "02:30"; không có giờ thì "--:--". */
   gio: string;
   /** Khoá xếp thứ tự trong ngày. */
   khoa: string;
@@ -20,32 +21,48 @@ export interface TranKetQua {
   kq: [number, number];
 }
 
-const gioVN = (iso: string) =>
-  new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hour12: false }).format(
-    new Date(iso),
-  );
-
 /** Cộng/trừ ngày trên khoá YYYY-MM-DD (tính ở UTC để khỏi lệch múi giờ máy). */
 export const lechNgay = (khoa: string, n: number) =>
   new Date(Date.parse(`${khoa}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
+const gioDa = (d: DongTuan) => d.gioUtc ?? `${d.ngay}T12:00:00Z`;
+
+/** Dòng tệp tuần đã tới giờ đá mà chưa có `kq` — cần tra bảng fixtures. */
+export const canTraTySo = (dong: readonly DongTuan[], bayGio = Date.now()): DongTuan[] =>
+  dong.filter((d) => d.kq?.length !== 2 && Date.parse(gioDa(d)) < bayGio);
+
+/** Tỷ số từ bảng fixtures cho dòng tệp tuần, khoá theo slug trang trận. Tên đội dùng tên GỐC tiếng Anh. */
+export function tySoTuFixtures(dong: readonly DongTuan[], daDa: readonly TranDaDa[]): Map<string, [number, number]> {
+  const m = new Map<string, [number, number]>();
+  for (const d of dong) {
+    const tran = { home: d.nha, away: d.khach, kickoff: gioDa(d) };
+    const f = daDa.find((x) => cungTran(tran, { home: x.home, away: x.away, kickoff: x.kickoff_utc }));
+    if (f) m.set(slugTuan(d), [f.home_score, f.away_score]);
+  }
+  return m;
+}
+
 /** Trận đã có tỷ số trong ngày `ngay` (giờ VN), xếp theo giờ đá. */
-export function ketQuaNgay(dong: readonly DongTuan[], ngay: string): TranKetQua[] {
-  return dong
-    .flatMap((d): TranKetQua[] => {
-      if (d.kq?.length !== 2) return [];
-      if ((d.gioUtc ? ngayVN(d.gioUtc) : d.ngay) !== ngay) return [];
+export function ketQuaNgay(
+  hang: readonly HangDuDoan[],
+  ngay: string,
+  them: ReadonlyMap<string, [number, number]> = new Map(),
+): TranKetQua[] {
+  return hang
+    .flatMap((h): TranKetQua[] => {
+      const kq = h.that ?? them.get(h.slug);
+      if (!kq || h.ngay !== ngay) return [];
       return [
         {
-          slug: slugTuan(d),
-          giai: tenGiaiViet(d.giai),
-          gio: d.gioUtc ? gioVN(d.gioUtc) : "--:--",
-          khoa: d.gioUtc ?? `${d.ngay}T99`,
-          nha: tenDoiViet(d.nha),
-          khach: tenDoiViet(d.khach),
-          logoNha: logo(d.nha),
-          logoKhach: logo(d.khach),
-          kq: [d.kq[0], d.kq[1]],
+          slug: h.slug,
+          giai: h.giai,
+          gio: h.gio,
+          khoa: h.gio === "--:--" ? `${h.ngay}T99` : h.kickoffUtc,
+          nha: h.nha,
+          khach: h.khach,
+          logoNha: h.logoNha,
+          logoKhach: h.logoKhach,
+          kq,
         },
       ];
     })
