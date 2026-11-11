@@ -205,29 +205,6 @@ export default async function StandingSlugPage({ params }: Props) {
         )}
       </section>
 
-      <CompetitionNews articles={compArticles} lang={lang} title={dict.news.title} />
-
-      {trangTru.length > 0 && (
-        <section className="mb-10 rounded-card border border-line bg-card p-5" aria-labelledby="trang-tru-giai">
-          <h2 id="trang-tru-giai" className="font-display text-lg font-bold">
-            {`Lịch thi đấu, giờ đá & xem ${compName} ở đâu`}
-          </h2>
-          <ul className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-            {trangTru.map((a) => (
-              <li key={a.slug}>
-                <Link
-                  href={withLang(`/analysis/${a.slug}`, lang)}
-                  prefetch={false}
-                  className="text-ink transition-colors hover:text-brand hover:underline"
-                >
-                  {a.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {/* Tabs — hidden for WC. Label localize qua dict (trước hardcode tiếng Anh —
           Jane flag 28/7). Tái dùng key sẵn cho cả 4 lang: nav.standings/schedule/form. */}
       {!isWorldCup && (
@@ -345,6 +322,31 @@ export default async function StandingSlugPage({ params }: Props) {
           </p>
         </section>
       )}
+      {/* Peter 11/11: tin + bài trụ xuống cuối trang, BXH lên trước. */}
+      <div className="mt-12">
+      <CompetitionNews articles={compArticles} lang={lang} title={dict.news.title} />
+
+      {trangTru.length > 0 && (
+        <section className="mt-10 rounded-card border border-line bg-card p-5" aria-labelledby="trang-tru-giai">
+          <h2 id="trang-tru-giai" className="font-display text-lg font-bold">
+            {`Lịch thi đấu, giờ đá & xem ${compName} ở đâu`}
+          </h2>
+          <ul className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            {trangTru.map((a) => (
+              <li key={a.slug}>
+                <Link
+                  href={withLang(`/analysis/${a.slug}`, lang)}
+                  prefetch={false}
+                  className="text-ink transition-colors hover:text-brand hover:underline"
+                >
+                  {a.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      </div>
     </div>
   );
 }
