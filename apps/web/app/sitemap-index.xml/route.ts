@@ -2,9 +2,11 @@ import { SITE_URL } from "@/lib/brand";
 import { NHOM_SITEMAP } from "@/lib/chi-muc";
 
 /**
- * GET /sitemap.xml — MỤC LỤC sitemap (12/11/2026). app/sitemap.ts dùng generateSitemaps
- * nên Next chỉ phát /sitemap/{id}.xml, KHÔNG tự sinh mục lục; robots.txt vẫn trỏ
- * /sitemap.xml nên dựng mục lục ở đây. Không khai lastmod: không có ngày thật.
+ * MỤC LỤC sitemap (12/11/2026), khách gọi bằng /sitemap.xml (rewrite trong next.config).
+ * app/sitemap.ts dùng generateSitemaps nên Next chỉ phát /sitemap/{id}.xml, KHÔNG tự
+ * sinh mục lục. Không đặt tệp này ở app/sitemap.xml/route.ts được: Turbopack báo
+ * "Conflicting route and metadata at /sitemap.xml" và build Vercel hỏng.
+ * Không khai lastmod: không có ngày thật.
  */
 
 export const dynamic = "force-static";
