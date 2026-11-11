@@ -13,6 +13,7 @@ const DOI_TUYEN: Record<string, string> = {
   Vietnam: "Việt Nam", "Chinese Taipei": "Đài Bắc Trung Hoa", Thailand: "Thái Lan", Malaysia: "Malaysia",
   Indonesia: "Indonesia", Philippines: "Philippines", Cambodia: "Campuchia", Pakistan: "Pakistan",
   "Sri Lanka": "Sri Lanka", Turkmenistan: "Turkmenistan", "Hong Kong": "Hồng Kông", Macau: "Ma Cao", Mongolia: "Mông Cổ",
+  "Equatorial Guinea": "Guinea Xích Đạo", "United Arab Emirates": "UAE",
 };
 
 const GIAI: Record<string, string> = {

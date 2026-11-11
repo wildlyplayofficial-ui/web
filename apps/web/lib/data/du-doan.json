@@ -12,6 +12,16 @@
     "anh_khach": "/images/cau-thu/tpe-chen-hao-wei.webp",
     "credit_anh": "Ảnh vẽ lại từ: Sao Thể Thao, Dltl2010 / Wikimedia Commons · CC BY-SA 3.0"
   },
+  "nhan-dinh-viet-nam-vs-kyrgyzstan-17-11-2026": {
+    "home": "Vietnam",
+    "away": "Kyrgyzstan",
+    "home_vi": "Việt Nam",
+    "away_vi": "Kyrgyzstan",
+    "kickoff_utc": "2026-11-17T12:00:00Z",
+    "san": "Sân Thiên Trường, Ninh Bình",
+    "home_goals": 2,
+    "away_goals": 1
+  },
   "nhan-dinh-u23-viet-nam-vs-u23-thai-lan-10-11-2026": {
     "home": "Vietnam U23",
     "away": "Thailand U23",

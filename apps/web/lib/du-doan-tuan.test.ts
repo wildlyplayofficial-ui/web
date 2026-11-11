@@ -33,3 +33,29 @@ describe("dòng tệp tuần gắn bài nhận định", () => {
     expect(hangTuan([], [], Date.parse("2026-11-11T05:00:00Z")).some((h) => h.slug.includes("vietnam"))).toBe(false);
   });
 });
+
+describe("trận Việt Nam vs Kyrgyzstan 17/11 gắn bài nhận định", () => {
+  const KGZ = "nhan-dinh-viet-nam-vs-kyrgyzstan-17-11-2026";
+  const baiKgz = (): HangDuDoan => ({ ...bai(), slug: KGZ, kickoffUtc: "2026-11-17T12:00:00Z", ngay: "2026-11-17", khach: "Kyrgyzstan" });
+
+  it("gopTuan điền tài xỉu và hai đội ghi bàn cho trang bài", () => {
+    const g = gopTuan([baiKgz()])[0];
+    expect([g.taiXiu, g.haiDoiGhi]).toEqual(["Tài 2.5", true]);
+  });
+
+  it("phong độ Kyrgyzstan đọc từ chuỗi tệp, cũ trước mới sau", () => {
+    expect(gopTuan([baiKgz()])[0].formKhach).toEqual(["B", "H", "H", "T", "T"]);
+  });
+
+  it("trang bài có đối đầu duy nhất năm 2024 Kyrgyzstan thắng 2-1", () => {
+    expect(soLieuTuan(KGZ)?.h2h).toEqual([{ mua: "2024", nha: "Kyrgyzstan", khach: "Vietnam", tsn: 2, tsk: 1 }]);
+  });
+
+  it("trang bài có 10 trận gần nhất của Kyrgyzstan", () => {
+    expect(soLieuTuan(KGZ)?.gk?.length).toBe(10);
+  });
+
+  it("dòng Kyrgyzstan không sinh thêm trận lẻ trên /du-doan", () => {
+    expect(hangTuan([], [], Date.parse("2026-11-11T05:00:00Z")).some((h) => h.khach === "Kyrgyzstan")).toBe(false);
+  });
+});
