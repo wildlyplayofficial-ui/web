@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
+      // Mục lục sitemap: xem app/sitemap-index.xml/route.ts.
+      { source: "/sitemap.xml", destination: "/sitemap-index.xml" },
       // Serve /daily-line/* from /goalline/* code. Chỉ còn 'vi': proxy viết lại
       // đường không tiền tố thành /vi/... trước khi tới đây, còn /en /th /es đã 301
       // mất ở luật redirect bên dưới. Bỏ en|th|es khỏi đây để nếu luật 301 kia có
