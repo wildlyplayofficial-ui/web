@@ -26,21 +26,37 @@ export function PhongDoNho({ kq, doi }: { kq: readonly KQ[] | null; doi: string 
   );
 }
 
-// Chữ thay 1·X·2: người đọc không hiểu ký hiệu (Peter 11/11 "1, 2, 3 là gì").
+// Tên cột ghi MỘT LẦN trên đầu bảng, ô chỉ còn số (Peter 11/11 gửi mẫu PredictZ: chữ trong từng ô khó nhìn).
 const NHAN_KEO = ["Chủ", "Hòa", "Khách"] as const;
 
-/** 3 ô tỷ lệ Chủ · Hòa · Khách (1·X·2); `chieu` (0/1/2) = cửa dự đoán chọn, tô viền xanh. */
+/** Hàng tên cột đặt đầu mỗi khối giải, cùng lưới với DongTran (bảng /du-doan, không hienGiai). */
+export function DauCotKeo() {
+  return (
+    <div
+      aria-hidden
+      className="grid grid-cols-[44px_minmax(0,1fr)_auto_12px] gap-x-2.5 border-b border-line/60 px-0.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted lg:grid-cols-[58px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px] lg:gap-x-3 lg:px-1.5"
+    >
+      <div className="col-span-3 col-start-2 flex gap-1 lg:col-span-1 lg:col-start-5">
+        {NHAN_KEO.map((n) => (
+          <span key={n} className="flex-1 text-center">{n}</span>
+        ))}
+      </div>
+      <span className="hidden text-center lg:col-start-6 lg:block">Tài/Xỉu</span>
+    </div>
+  );
+}
+
+/** 3 ô tỷ lệ chủ thắng · hòa · khách thắng (tên cột ở DauCotKeo); `chieu` (0/1/2) = cửa dự đoán chọn, tô viền xanh. */
 export function Keo1X2({ mot, chieu }: { mot: readonly [number, number, number]; chieu: number | null }) {
   return (
-    <span className="flex gap-1" aria-label={`Tỷ lệ chủ nhà thắng · hòa · khách thắng: ${mot.map((x) => x.toFixed(2)).join(" · ")}`}>
+    <span className="flex w-full gap-1" aria-label={`Tỷ lệ chủ nhà thắng · hòa · khách thắng: ${mot.map((x) => x.toFixed(2)).join(" · ")}`}>
       {mot.map((x, i) => (
         <span
           key={i}
-          className={`inline-flex flex-1 items-baseline justify-center gap-1 whitespace-nowrap rounded border px-1 py-0.5 text-[12px] tabular-nums lg:text-[13px] ${
+          className={`flex-1 rounded border py-0.5 text-center text-[13px] tabular-nums ${
             i === chieu ? "border-brand font-bold text-brand" : "border-line bg-card"
           }`}
         >
-          <span className="text-[10px] font-normal text-muted">{NHAN_KEO[i]}</span>
           {x.toFixed(2)}
         </span>
       ))}
@@ -58,7 +74,7 @@ export function ChuThichPhongDo() {
           <PhongDoNho kq={[k]} doi="" /> {TEN[k]}
         </span>
       ))}
-      <span>· Chủ · Hòa · Khách = tỷ lệ chủ nhà thắng · hòa · khách thắng, ô viền xanh = cửa dự đoán</span>
+      <span>· Ô viền xanh = cửa dự đoán chọn</span>
     </p>
   );
 }

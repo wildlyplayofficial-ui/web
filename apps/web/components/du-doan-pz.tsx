@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DoiLogo } from "@/components/doi-logo";
 import { DongTran } from "@/components/dong-tran";
-import { ChuThichPhongDo } from "@/components/phong-do-dong";
+import { ChuThichPhongDo, DauCotKeo } from "@/components/phong-do-dong";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { ngayTabDuDoan, ngayThang, thuVN, tieuDeH1 } from "@/lib/du-doan-tran";
 import { getDict, type Lang } from "@/lib/i18n";
@@ -94,6 +94,7 @@ export function DuDoanPZ({ rows, homNay, lang }: { rows: HangDuDoan[]; /** Khoá
               <h2 className="min-w-0 font-display text-[17px] font-bold leading-snug">Dự đoán {g}</h2>
               <span className="shrink-0 text-[13px] text-muted">{ds.length} {t.matchesUnit}</span>
             </div>
+            <DauCotKeo />
             <ul>
               {ds.map((h) => (
                 <li key={h.slug}>
