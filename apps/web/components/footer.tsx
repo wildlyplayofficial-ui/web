@@ -13,21 +13,21 @@ export function Footer() {
   const dict = getDict(lang);
 
   const links: ReadonlyArray<{ href: string; label: string }> = [
-    { href: "/daily-board", label: dict.nav.board },
-    { href: "/track-record", label: dict.nav.trackRecord },
-    { href: "/analysis", label: dict.nav.analysis },
+    // Peter 11/11: bỏ Bảng Dự Đoán, Thành Tích, Minh Bạch, Học Hỏi; Blog + Giới Thiệu chỉ ở đây.
+    { href: "/du-doan", label: dict.nav.predictions },
+    { href: "/ket-qua", label: dict.nav.results },
     { href: "/matches", label: dict.nav.matches },
     { href: "/competitions", label: dict.nav.standings },
-    { href: "/learn", label: dict.nav.learn },
+    { href: "/news", label: dict.nav.news },
     // Blog phải có mặt Ở ĐÂY chứ không chỉ trong menu thả xuống ở đầu trang: menu đó
     // nằm trong component client, không có trong HTML máy chủ trả về, nên Google
     // không thấy đường nào bò vào /blog. Đo 30/8: trang chủ có /learn, /guides,
     // /calculators (đều từ chân trang này) nhưng KHÔNG có /blog lần nào.
     { href: "/blog", label: dict.nav.blog },
+    { href: "/analysis", label: dict.nav.analysis },
     { href: "/guides", label: dict.nav.guides },
     { href: "/calculators", label: dict.nav.calculators },
     { href: "/about", label: dict.nav.about },
-    { href: "/transparency", label: dict.nav.transparency },
     { href: "/responsible-play", label: dict.nav.responsiblePlay },
   ];
 

@@ -154,28 +154,10 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
 
   const nav = dict.nav;
   const clusters: NavCluster[] = [
-    // Hub dự đoán đứng đầu (Peter duyệt mock 10/11); pick Chú Tám giữ ngay sau.
+    // Peter 11/11: menu trên chỉ 4 mục; Blog, Phân Tích, Giới Thiệu xuống chân trang.
+    // Bỏ Chú Tám chọn, Thành Tích, Kèo (trang vẫn sống, chỉ gỡ khỏi menu).
     { label: nav.predictions, href: "/du-doan", moi: true },
     { label: nav.results, href: "/ket-qua" },
-    {
-      label: nav.todaysPick,
-      accent: true,
-      items: [
-        { name: nav.todaysPick, href: "/daily-board" },
-        { name: nav.dailyLine, href: "/daily-line" },
-      ],
-    },
-    {
-      label: nav.trackRecord,
-      items: [
-        { name: nav.trackRecord, href: "/track-record" },
-        { name: nav.archive, href: "/archive" },
-        { name: nav.stats, href: "/stats" },
-        { name: nav.transparency, href: "/transparency" },
-      ],
-    },
-    { label: nav.analysis, href: "/analysis" },
-    { label: nav.odds, href: "/keo" },
     {
       label: nav.matches,
       items: [
@@ -184,19 +166,9 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
         ...competitions,
       ],
     },
-    {
-      label: nav.learn,
-      items: [
-        { name: nav.learn, href: "/learn" },
-        { name: nav.blog, href: "/blog" },
-        { name: nav.guides, href: "/guides" },
-        { name: nav.calculators, href: "/calculators" },
-      ],
-    },
-    { label: nav.about, href: "/about" },
-    // Site DỰ ĐOÁN, không phải trang tin (Peter 10/11): Tin tức xếp cuối.
     { label: nav.news, href: "/news" },
   ];
+
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
