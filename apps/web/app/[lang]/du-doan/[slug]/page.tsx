@@ -6,6 +6,7 @@ import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
 import { TranKeoPhu } from "@/components/tran-keo-phu";
 import { TranSoLieu } from "@/components/tran-so-lieu";
+import { metaLoc, TrangLoc } from "@/components/trang-du-doan-loc";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gia";
@@ -27,6 +28,9 @@ type Props = { params: Promise<{ lang: string; slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang: l, slug } = await params;
+  // Trang theo ngày / theo giải (Peter 11/11) dùng chung route.
+  const loc = await metaLoc(slug, resolveLang(l));
+  if (loc) return loc;
   const h = timTran((await taiDuDoan()).hang, slug);
   if (!h) return {};
   const { tieuDe, moTa } = metaTran(h);
@@ -49,6 +53,8 @@ const MANH = "inline-flex min-h-11 items-center hover:text-ink";
 export default async function TrangTran({ params }: Props) {
   const { lang: l, slug } = await params;
   const lang = resolveLang(l);
+  const loc = TrangLoc({ slug, lang });
+  if (loc) return loc;
   const { muc, hang } = await taiDuDoan();
   const h = timTran(hang, slug);
   if (!h) notFound();

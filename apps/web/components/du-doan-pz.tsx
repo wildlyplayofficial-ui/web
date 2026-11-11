@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { DoiLogo } from "@/components/doi-logo";
 import { DongTran } from "@/components/dong-tran";
 import { ChuThichPhongDo, DauCotKeo } from "@/components/phong-do-dong";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { ngayTabDuDoan, ngayThang, thuVN, tieuDeH1 } from "@/lib/du-doan-tran";
-import { getDict, type Lang } from "@/lib/i18n";
+import { duongDanNgay, GIAI_TRANG } from "@/lib/du-doan-loc";
+import { getDict, withLang, type Lang } from "@/lib/i18n";
 import { coGiaiGoc } from "@/lib/ten-viet";
 
 /**
@@ -31,11 +33,25 @@ function coGiai(giai: string, dau: HangDuDoan): string | null {
 
 const NUT = "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-3.5 text-sm";
 
-export function DuDoanPZ({ rows, homNay, lang }: { rows: HangDuDoan[]; /** Khoá ngày hôm nay giờ VN, dựng ở server. */ homNay: string; lang: Lang }) {
+export function DuDoanPZ({
+  rows,
+  homNay,
+  ngayChon,
+  lang,
+}: {
+  rows: HangDuDoan[];
+  /** Khoá ngày hôm nay giờ VN, dựng ở server. */
+  homNay: string;
+  /** Ngày trang này hiện (trang ngày /du-doan/ngay-mai, /du-doan/thu-bay…); bỏ trống = ngày đầu có trận. */
+  ngayChon?: string;
+  lang: Lang;
+}) {
   const t = getDict(lang).duDoan;
   // Hôm nay → 5 ngày tới, CHỈ ngày có trận; hôm qua không hiện (Peter 11/11, xem /ket-qua).
-  const { ngays, macDinh } = ngayTabDuDoan(homNay, new Set(rows.map((r) => r.ngay)));
-  const [ngay, setNgay] = useState(macDinh);
+  // Mỗi tab ngày là LINK riêng (Peter 11/11: Google phải thấy được trang từng ngày).
+  const tab = ngayTabDuDoan(homNay, new Set(rows.map((r) => r.ngay)));
+  const ngay = ngayChon ?? tab.macDinh;
+  const ngays = tab.ngays.includes(ngay) ? tab.ngays : [...tab.ngays, ngay].sort();
   const [giai, setGiai] = useState("");
 
   const trongNgay = rows.filter((r) => r.ngay === ngay).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
@@ -45,23 +61,29 @@ export function DuDoanPZ({ rows, homNay, lang }: { rows: HangDuDoan[]; /** Khoá
 
   return (
     <div className="px-3.5 sm:px-2.5">
-      <h1 className="font-display text-[21px] font-bold leading-tight sm:text-[28px]">{tieuDeH1(ngay)}</h1>
+      <h1 className="font-display text-[21px] font-bold leading-tight sm:text-[28px]">{ngayChon && duongDanNgay(ngayChon, homNay).endsWith("ngay-mai") ? `Dự đoán bóng đá ngày mai, ${thuVN(ngayChon)} ${ngayThang(ngayChon)}` : tieuDeH1(ngay)}</h1>
       <p className="mt-1.5 text-[13px] text-muted sm:text-[15px]">
         {trongNgay.length} {t.matchesUnit} · {cacGiai.length} giải · giờ Việt Nam · tỷ số chốt trước giờ bóng lăn
       </p>
-      <div className="mt-3 flex flex-col gap-2.5 border-b border-line pb-2.5 lg:flex-row lg:items-center">
+      <nav aria-label="Dự đoán theo giải" className="mt-2.5 flex gap-x-4 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
+        {GIAI_TRANG.map((g) => (
+          <Link key={g.slug} href={withLang(`/du-doan/${g.slug}`, lang)} className="inline-flex min-h-9 items-center text-brand hover:underline">
+            {g.ten}
+          </Link>
+        ))}
+      </nav>
+      <div className="mt-1 flex flex-col gap-2.5 border-b border-line pb-2.5 lg:flex-row lg:items-center">
         {/* 1 hàng cuộn ngang thay nút xếp dọc (ăn nửa màn điện thoại) — góp ý Jane 10/11. */}
         <div className="flex min-w-0 gap-2 overflow-x-auto [scrollbar-width:none]">
           {ngays.map((n) => (
-            <button
+            <Link
               key={n}
-              type="button"
-              aria-pressed={n === ngay}
-              onClick={() => { setNgay(n); setGiai(""); }}
+              href={withLang(duongDanNgay(n, homNay), lang)}
+              aria-current={n === ngay ? "page" : undefined}
               className={`${NUT} ${n === ngay ? "border-ink font-semibold text-ink" : "border-line text-muted hover:text-ink"}`}
             >
               {nhan(n)}
-            </button>
+            </Link>
           ))}
         </div>
         <select

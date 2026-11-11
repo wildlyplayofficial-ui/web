@@ -7,6 +7,8 @@ import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
 import { newsDuocIndex, analysisDuocIndex, tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
+import { ngayVN } from "@/lib/du-doan-hang";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
@@ -321,5 +323,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/du-doan/${h.slug}`),
   }));
 
-  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...tranRoutes, ...standingsRoutes];
+  // Trang theo giải + theo ngày (Peter 11/11): giải luôn nộp; ngày chỉ nộp ngày có trận, mỗi link một lần.
+  const homNay = ngayVN(Date.now());
+  const locRoutes: MetadataRoute.Sitemap = [
+    ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
+    ...[...new Set(hang.map((h) => h.ngay).filter((n) => n > homNay && n <= lechNgay(homNay, 6)).map((n) => duongDanNgay(n, homNay)))],
+  ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
+
+  return [...staticRoutes, ...hubRoutes, ...newsItemRoutes, ...deskRoutes, ...guideRoutes, ...blogRoutes, ...reportRoutes, ...matchRoutes, ...tranRoutes, ...locRoutes, ...standingsRoutes];
 }
