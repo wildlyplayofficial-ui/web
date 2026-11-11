@@ -8,6 +8,7 @@ import { TranKeoPhu } from "@/components/tran-keo-phu";
 import { TranSoLieu } from "@/components/tran-so-lieu";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { tranDuocIndex } from "@/lib/chi-muc";
+import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gia";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
@@ -56,6 +57,7 @@ export default async function TrangTran({ params }: Props) {
   const soLieu = soLieuTuan(slug);
   const keoPhu = keoPhuTuan(slug);
   const cap = `${h.nha} vs ${h.khach}`;
+  const cg = chuyenGiaCua(h);
 
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
@@ -66,7 +68,7 @@ export default async function TrangTran({ params }: Props) {
           { name: cap, url: `/du-doan/${slug}` },
         ]}
       />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", ...suKienTran(h, SITE_URL, true) }) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", ...suKienTran(h, SITE_URL, true), author: nguoiChuyenGia(cg, SITE_URL) }) }} />
       <nav aria-label="Đường dẫn" className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted">
         <Link href={withLang("/", lang)} className={MANH}>Trang chủ</Link>
         <span aria-hidden>›</span>
@@ -77,6 +79,10 @@ export default async function TrangTran({ params }: Props) {
         <span className="hidden text-ink sm:inline">{cap}</span>
       </nav>
       <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[30px]">{tieuDeTran(h)}</h1>
+      <p className="mt-1 text-[13px] text-muted">
+        Dự đoán bởi{" "}
+        <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
+      </p>
       <TranHero h={h} lang={lang} tacGia={tacGia} />
       <TranBaO h={h} lang={lang} />
       <p className="mt-4 text-[15px] leading-relaxed sm:text-base">{cauTomTat(h)}</p>

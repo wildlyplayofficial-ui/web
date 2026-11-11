@@ -50,6 +50,8 @@ const GIAI: Record<string, string> = {
 export const tenDoiViet = (ten: string) => DOI_TUYEN[ten] ?? ten;
 export const tenGiaiViet = (ten: string) => GIAI[ten] ?? ten;
 const GIAI_GOC = Object.fromEntries(Object.entries(GIAI).map(([goc, viet]) => [viet, goc]));
+/** Tên giải gốc (tiếng Anh) từ tên Việt; tên chưa có trong bảng thì trả lại nguyên. */
+export const tenGiaiGoc = (giai: string) => GIAI_GOC[giai] ?? giai;
 
 /** Tên nước đứng đầu tên giải gốc ("England League One") → mã cờ. Bắc Ireland xét trước Anh. */
 const NUOC_GIAI: [RegExp, string][] = [

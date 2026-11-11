@@ -29,27 +29,31 @@ export interface AboutCopy {
   /** Meta description viết đủ ý 150-160 ký tự — KHÔNG cắt `intro`. */
   metaDescription: string;
   intro: string;
-  cards: ReadonlyArray<{ heading: string; body: string }>;
-  personas: [Persona];
+  cardsTitle?: string;
+  /** `href`: thẻ bấm được sang trang tương ứng (bản VI 11/11). */
+  cards: ReadonlyArray<{ heading: string; body: string; href?: string }>;
   promiseTitle: string;
   promises: readonly string[];
   methodTitle: string;
   methodIntro: string;
   methodSteps: readonly MethodStep[];
-  trackTitle: string;
-  trackBody: string;
-  trackCta: string;
   leaguesTitle: string;
   leaguesIntro: string;
   leaguesSeason: string;
-  toolsTitle: string;
-  toolsIntro: string;
-  tools: readonly Tool[];
-  responsibleTitle: string;
-  responsibleBody: string;
-  helplines: readonly Helpline[];
   contactTitle: string;
   contactBody: string;
+  // Trang /about soạn lại 11/11/2026 (Peter): bỏ thẻ Chú Tám, mục thành tích, công cụ, đường dây
+  // hỗ trợ. Các trường dưới KHÔNG còn hiện; giữ tuỳ chọn để bản en/th/es (đều 301 về VI) khỏi sửa.
+  personas?: [Persona];
+  trackTitle?: string;
+  trackBody?: string;
+  trackCta?: string;
+  toolsTitle?: string;
+  toolsIntro?: string;
+  tools?: readonly Tool[];
+  responsibleTitle?: string;
+  responsibleBody?: string;
+  helplines?: readonly Helpline[];
 }
 
 export const copy: Record<Lang, AboutCopy> = {
@@ -120,72 +124,53 @@ export const copy: Record<Lang, AboutCopy> = {
     contactTitle: "Get in touch",
     contactBody: "Follow us or drop a message on any of these channels.",
   },
+  // Bản VI soạn lại 11/11/2026 (Peter): trang nói về DỰ ĐOÁN + đội ngũ chuyên gia, không còn
+  // xoay quanh Chú Tám. Không bịa số năm, nơi làm, giải thưởng hay tỷ lệ trúng.
   vi: {
     title: "Về banhbong.net",
-    metaTitle: "Về banhbong.net — Nhận định bóng đá do người tuyển chọn, thành tích công khai",
+    metaTitle: "Về banhbong.net — Dự đoán bóng đá mỗi ngày",
     metaDescription:
-      "banhbong.net là trang nhận định bóng đá do Chú Tám Banh viết. Mỗi trận có nghiên cứu, lập luận; mọi dự đoán lưu công khai, minh bạch từ ngày đầu.",
+      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: chốt tỷ số kèm tỷ lệ 1X2, tài xỉu, phong độ, đối đầu và bảng xếp hạng, do chuyên gia từng giải ký tên.",
     intro:
-      "banhbong.net là trang nhận định bóng đá do con người thực hiện. Chú Tám Banh chọn trận, đọc số liệu và viết nhận định. Mọi nhận định được tổng kết sau trận và lưu trữ công khai, vĩnh viễn.",
+      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi chốt tỷ số các trận đáng chú ý, kèm tỷ lệ 1X2, tài xỉu, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng. Mỗi trận do chuyên gia phụ trách giải đó ký tên.",
+    cardsTitle: "banhbong.net có gì",
     cards: [
       {
-        heading: "Nhận định có lập luận, không đoán mò",
-        body: "Mỗi nhận định đều được nghiên cứu và lập luận — không ngẫu nhiên, không cam kết chắc chắn. Chúng tôi chia sẻ góc nhìn, không phải lời tiên tri.",
+        heading: "Dự đoán mỗi ngày",
+        body: "Tỷ số dự đoán từng trận theo ngày, kèm tỷ lệ 1X2, tài xỉu, cả hai đội ghi bàn và phong độ 5 trận gần nhất.",
+        href: "/du-doan",
       },
       {
-        heading: "Mọi nhận định công khai vĩnh viễn",
-        body: "Tỷ lệ tham chiếu được ghi lại ngay lúc đăng và không bao giờ chỉnh sửa. Đúng, trượt, hòa — toàn bộ thành tích luôn hiển thị, bắt đầu từ số 0.",
+        heading: "Kết quả",
+        body: "Tỷ số thật của các trận đã dự đoán, đặt cạnh tỷ số đã chốt trước trận để bạn tự đối chiếu.",
+        href: "/ket-qua",
       },
       {
-        heading: "Miễn phí, cho cộng đồng toàn cầu",
-        body: "Không gói VIP, không thu phí, không quảng cáo trá hình. Người hâm mộ từ mọi múi giờ, gắn kết bởi tình yêu bóng đá.",
+        heading: "Bảng xếp hạng & lịch thi đấu",
+        body: "Bảng xếp hạng, lịch đấu và kết quả theo từng giải đang theo dõi.",
+        href: "/competitions",
       },
     ],
-    personas: [
-      {
-        name: "Chú Tám Banh",
-        role: "Người thật chọn trận",
-        description: "Chú Tám Banh là người thật đứng sau mọi nhận định trên banhbong.net — theo bóng đá châu Âu hơn 15 năm, chuyên Ngoại hạng Anh và các giải lớn châu Âu. Mỗi trận đều tự đọc số liệu, xem phong độ và đội hình rồi mới đặt bút. Không nhận định gượng ép: không thấy lợi thế thì ghi rõ là bỏ qua. Thành tích thắng thua công khai từ ngày đầu, không sửa, không xoá.",
-      },
+    methodTitle: "Cách chúng tôi dự đoán",
+    methodIntro: "Trận nào cũng đi qua bốn bước giống nhau.",
+    methodSteps: [
+      { title: "Gom số liệu", body: "Phong độ 10 trận gần nhất của hai đội, lịch sử đối đầu, vị trí trên bảng xếp hạng và tỷ lệ thị trường của trận." },
+      { title: "Chuyên gia phụ trách giải đọc trận", body: "Người theo dõi giải đó xem số liệu cùng bối cảnh trận: lịch thi đấu dày hay thưa, đội nào cần điểm hơn, đá sân nhà hay sân khách." },
+      { title: "Chốt tỷ số trước giờ bóng lăn", body: "Tỷ số dự đoán được chốt và đăng trước giờ đá. Trận đã bắt đầu thì dự đoán không được sửa nữa." },
+      { title: "Cập nhật kết quả", body: "Sáng hôm sau, tỷ số thật được cập nhật ở trang Kết quả, đặt cạnh tỷ số đã dự đoán." },
     ],
     promiseTitle: "Cam kết",
     promises: [
-      "Chú Tám Banh là người đứng ra lựa chọn trận đấu có cơ sở, góc nhìn để phân tích. Thành tích của Chú Tám Banh được theo dõi riêng, minh bạch từ ngày đầu.",
-      "Huy hiệu tính đúng-một-nửa là ĐÚNG, sai-một-nửa là SAI — nhưng chỉ số đơn vị được/mất theo chấp châu Á thực tế luôn hiển thị cạnh thành tích, không tô hồng.",
-      "Nhận định trượt chúng tôi cũng đăng. Chỉ mang tính tham khảo, giải trí — không phải lời khuyên tài chính.",
+      "Tỷ số được chốt trước giờ đá và giữ nguyên sau trận.",
+      "Không hợp tác với nhà cái nào, không đặt link nhà cái trên trang.",
+      "Dự đoán để tham khảo, không bảo đảm kết quả trận đấu.",
+      "Giờ thi đấu trên trang là giờ Việt Nam (GMT+7).",
     ],
-    methodTitle: "Cách chọn trận",
-    methodIntro: "Mỗi nhận định trải qua năm bước trước khi được xuất bản.",
-    methodSteps: [
-      { title: "Nghiên cứu trước trận", body: "Bảng phong độ, lịch sử đối đầu, tình hình chấn thương, đội hình dự kiến — tất cả được kiểm tra trước khi xét bất kỳ chỉ số nào." },
-      { title: "Đối chiếu tỷ lệ", body: "Chúng tôi so sánh tỷ lệ từ nhiều nguồn dữ liệu thị trường. Chỉ quan tâm những chỉ số mà giá lệch so với xác suất thực tế." },
-      { title: "Kiểm tra lợi thế", body: "Nhận định chỉ được đăng khi chúng tôi kỳ vọng giá đóng cửa sẽ dịch chuyển theo hướng của mình — nghĩa là thị trường đồng ý với góc nhìn của chúng tôi." },
-      { title: "Chuẩn hoá cách đo", body: "Mỗi nhận định tính một đơn vị quy ước để đo hiệu quả thống kê. Không nhân đôi, không gỡ, ghi chép mọi lần." },
-      { title: "Chú Tám Banh viết nhận định", body: "Bài phân tích trước trận và tổng kết sau trận do Chú Tám Banh viết, xuất bản cùng mỗi nhận định." },
-    ],
-    trackTitle: "Thành tích",
-    trackBody: "Mọi nhận định từ ngày đầu được lưu trữ công khai. Không chụp màn hình, không chọn lọc — toàn bộ sổ sách, cập nhật sau mỗi trận.",
-    trackCta: "Xem toàn bộ thành tích \u2192",
     leaguesTitle: "Giải đấu theo dõi",
-    leaguesIntro: "Chúng tôi theo dõi các giải lớn và các giải đấu quốc tế. Bảng xếp hạng, lịch thi đấu và nhận định có sẵn cho mỗi giải.",
+    leaguesIntro: "Bảng xếp hạng và lịch thi đấu của các giải đang có trang riêng.",
     leaguesSeason: "Mùa giải",
-    toolsTitle: "Công cụ miễn phí",
-    toolsIntro: "Nâng cao phân tích của bạn với các công cụ thống kê này — không cần đăng ký.",
-    // Bản VI ẩn de-vig + Kelly (công cụ đặt cược thuần) theo Route A — giữ công cụ
-    // thống kê trung tính. EN/ES vẫn đủ 4 công cụ.
-    tools: [
-      { name: "Chuyển đổi tỷ lệ", emoji: "\ud83d\udd04", href: "/calculators/odds-converter" },
-      { name: "Mô hình Poisson", emoji: "\ud83c\udfaf", href: "/calculators/poisson" },
-    ],
-    responsibleTitle: "Theo dõi có trách nhiệm",
-    responsibleBody: "banhbong.net mang tính phân tích thể thao và giải trí. Chúng tôi chia sẻ góc nhìn — không phải lời mời hay hướng dẫn cá cược, không phải lời khuyên tài chính. Nếu việc theo dõi không còn lành mạnh, hãy tìm hỗ trợ.",
-    helplines: [
-      { name: "BeGambleAware", detail: "begambleaware.org (UK)" },
-      { name: "NCPG", detail: "1-800-522-4700 (US)" },
-      { name: "Gamblers Help", detail: "1800 858 858 (AU)" },
-    ],
     contactTitle: "Liên hệ",
-    contactBody: "Theo dõi hoặc nhắn tin trên các kênh sau.",
+    contactBody: "Theo dõi hoặc nhắn tin cho chúng tôi trên các kênh sau.",
   },
   th: {
     title: "\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a banhbong.net",
