@@ -27,6 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: TIEU_DE,
     description: MO_TA,
     alternates: buildAlternates("/du-doan/thanh-tich", lang),
+    // Peter 11/11: gỡ khỏi /du-doan + sitemap, trang vẫn giữ nhưng không cho lập chỉ mục.
+    robots: { index: false, follow: true },
     openGraph: {
       locale: "vi_VN",
       title: `${TIEU_DE} | banhbong.net`,

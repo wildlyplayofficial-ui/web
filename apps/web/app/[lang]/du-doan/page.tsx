@@ -8,9 +8,6 @@ import { cacTranChon } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { BangDungSai } from "@/components/bang-dung-sai";
-import { OThanhTichDuDoan } from "@/components/o-thanh-tich-du-doan";
-import { thanhTichDuDoan } from "@/lib/du-doan-cham";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { taiDuDoan } from "@/lib/du-doan-tai";
@@ -101,7 +98,7 @@ export default async function DuDoanHub({ params }: Props) {
   const [{ muc, hang }, baiChon] = await Promise.all([taiDuDoan(), getBaiDuDoan()]);
   // Bài chưa khai trận (thiếu giờ đá) không xếp được vào tab ngày → giữ danh sách cũ.
   const nhom = theoGiai(muc.filter((m) => !m.duDoan || !m.kickoffUtc));
-  const hoi = cauHoiDuDoan(muc, hang);
+  const hoi = cauHoiDuDoan(hang);
   // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
 
@@ -124,12 +121,6 @@ export default async function DuDoanHub({ params }: Props) {
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} />
       <div className="mt-6 px-2.5">
-        <OThanhTichDuDoan tong={thanhTichDuDoan(muc)} lang={lang} />
-        <Link href={withLang("/du-doan/thanh-tich", lang)} className="mt-2 inline-block text-sm font-semibold text-brand hover:underline">
-          Thành tích dự đoán: đúng bao nhiêu, sai bao nhiêu →
-        </Link>
-      </div>
-      <div className="mt-4 px-2.5">
         <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
       </div>
 
@@ -145,7 +136,6 @@ export default async function DuDoanHub({ params }: Props) {
       ))}
 
       <div className="px-2.5">
-        <BangDungSai muc={muc} lang={lang} />
         {hoi.length > 0 && <HoiNhanh ds={hoi} />}
       </div>
 

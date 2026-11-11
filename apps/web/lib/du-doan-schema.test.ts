@@ -89,21 +89,18 @@ describe("suKienTran — JSON-LD SportsEvent", () => {
 
 describe("cauHoiDuDoan — FAQ chỉ có số thật", () => {
   it("chưa có trận chốt tỷ số → rỗng", () => {
-    expect(cauHoiDuDoan([], [])).toEqual([]);
+    expect(cauHoiDuDoan([])).toEqual([]);
   });
-  it("trước giờ đá: đếm 1 trận, 0 đã chấm, không có câu tỉ lệ đúng", () => {
-    const m = dungMuc(BAI, [], Date.parse("2026-11-11T11:00:00Z"));
-    const ds = cauHoiDuDoan([m], [HANG]);
-    expect(ds[0].dap).toBe("1 trận có tỷ số chốt trước giờ bóng lăn: 0 trận đã chấm, 1 trận sắp đá.");
+  it("trước giờ đá: đếm 1 trận, không nói chuyện chấm", () => {
+    const ds = cauHoiDuDoan([HANG]);
+    expect(ds[0].dap).toBe("1 trận có tỷ số chốt trước giờ bóng lăn, 1 trận sắp đá.");
+    expect(ds.some((c) => /chấm/.test(c.hoi + c.dap))).toBe(false);
     expect(ds.some((c) => c.hoi.startsWith("Dự đoán đúng"))).toBe(false);
     expect(ds.find((c) => c.hoi.startsWith("Trận sắp tới"))?.dap).toContain("Việt Nam thắng 2-1");
   });
-  it("sau trận: thành tích theo tác giả", () => {
-    const m = dungMuc(BAI, that(2, 1), SAU_TRAN);
-    const ds = cauHoiDuDoan([m], [{ ...HANG, sapDa: false }]);
-    expect(ds.find((c) => c.hoi.startsWith("Dự đoán đúng"))?.dap).toBe(
-      "Chú Tám: 1/1 trận đúng kết quả (100%), 1/1 trận đúng tỷ số.",
-    );
+  it("sau trận: không có câu thành tích đúng/sai", () => {
+    const ds = cauHoiDuDoan([{ ...HANG, sapDa: false, that: [2, 1], dung: true, dungTySo: false }]);
+    expect(ds.some((c) => c.hoi.startsWith("Dự đoán đúng"))).toBe(false);
     expect(faqSchema(ds).mainEntity).toHaveLength(ds.length);
   });
 });

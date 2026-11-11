@@ -3,8 +3,6 @@
  * SportsEvent, FAQ có số thật). Hàm THUẦN — số lấy từ dữ liệu đã chấm, không bịa.
  * Import TƯƠNG ĐỐI để vitest chạy không cần alias.
  */
-import { tongKetTheoTacGia } from "./du-doan-cham";
-import type { MucDuDoan } from "./du-doan";
 import type { HangDuDoan } from "./du-doan-hang";
 
 const doi = (name: string) => ({ "@type": "SportsTeam", name });
@@ -46,8 +44,6 @@ export interface CauHoi {
   dap: string;
 }
 
-const pt = (n: number, d: number) => `${Math.round((n / d) * 100)}%`;
-
 const gioNgayVN = (iso: string) =>
   new Intl.DateTimeFormat("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -65,26 +61,17 @@ const gioNgayVN = (iso: string) =>
  * số thì trả mảng rỗng (không hiện khối). Thành tích tách THEO TÁC GIẢ (firewall
  * Curator/Scout — không gộp một tổng).
  */
-export function cauHoiDuDoan(muc: readonly MucDuDoan[], hang: readonly HangDuDoan[]): CauHoi[] {
+export function cauHoiDuDoan(hang: readonly HangDuDoan[]): CauHoi[] {
   // Đếm theo bảng đang hiện (bài + tệp tuần) để FAQ khớp số trận người đọc thấy.
+  // Peter 11/11: /du-doan bỏ phần chấm đúng/sai → FAQ không nói chuyện chấm.
   const coDu = hang.filter((h) => h.du);
   if (coDu.length === 0) return [];
-  const daCham = muc.filter((m) => m.chot && m.ketQua);
   const ds: CauHoi[] = [
     {
       hoi: "banhbong.net đã dự đoán bao nhiêu trận?",
-      dap: `${coDu.length} trận có tỷ số chốt trước giờ bóng lăn: ${coDu.filter((h) => h.that).length} trận đã chấm, ${coDu.filter((h) => h.sapDa).length} trận sắp đá.`,
+      dap: `${coDu.length} trận có tỷ số chốt trước giờ bóng lăn, ${coDu.filter((h) => h.sapDa).length} trận sắp đá.`,
     },
   ];
-  if (daCham.length > 0) {
-    const tong = tongKetTheoTacGia(daCham.map((m) => ({ tacGia: m.bai.byline, ...m.ketQua! })));
-    ds.push({
-      hoi: "Dự đoán đúng bao nhiêu trận?",
-      dap: tong
-        .map((t) => `${t.tacGia}: ${t.dungKetQua}/${t.tran} trận đúng kết quả (${pt(t.dungKetQua, t.tran)}), ${t.dungTySo}/${t.tran} trận đúng tỷ số.`)
-        .join(" "),
-    });
-  }
   const ke = hang.filter((h) => h.sapDa && h.du).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))[0];
   if (ke) {
     ds.push({
@@ -93,8 +80,8 @@ export function cauHoiDuDoan(muc: readonly MucDuDoan[], hang: readonly HangDuDoa
     });
   }
   ds.push({
-    hoi: "Chấm đúng/sai thế nào?",
-    dap: "Chỉ chấm tỷ số chốt trước giờ bóng lăn. Đúng kết quả là đoán đúng thắng, hòa hay thua; đúng tỷ số là trúng cả hai con số. Tỷ số thật lấy từ dữ liệu trận sau khi kết thúc.",
+    hoi: "Mỗi trận có những gì?",
+    dap: "Tỷ số dự đoán chốt trước giờ bóng lăn, phong độ 5 trận gần nhất của hai đội (T thắng, H hoà, B bại, mới nhất bên phải) và tỷ lệ 1 X 2 khi có. Bấm vào trận để xem số liệu đầy đủ.",
   });
   return ds;
 }
