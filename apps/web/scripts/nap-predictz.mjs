@@ -44,7 +44,8 @@ const dong = (t) => ({
 });
 
 const tuNgay = moi.ngay_lay;
-const giu = cu.filter((d) => d.ngay < tuNgay && d.ngay >= cong(tuNgay, -7));
+// Dòng gõ tay cho trận có bài nhận định (trường `bai`, vd ĐTQG nguồn không có) giữ qua lần nạp lại cùng ngày.
+const giu = cu.filter((d) => (d.ngay < tuNgay || d.bai) && d.ngay >= cong(tuNgay, -7));
 const hang = [...giu, ...moi.tran.map(dong)];
 
 // Kết quả hôm qua: [ngày, giờ Anh, giải, nhà, bàn nhà, khách, bàn khách]. Tháng 11 giờ Anh = UTC.

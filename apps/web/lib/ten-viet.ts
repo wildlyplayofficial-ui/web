@@ -10,6 +10,9 @@ const DOI_TUYEN: Record<string, string> = {
   Poland: "Ba Lan", Portugal: "Bồ Đào Nha", "Rep of Ireland": "CH Ireland", Spain: "Tây Ban Nha", Sweden: "Thụy Điển",
   Switzerland: "Thụy Sĩ", Turkey: "Thổ Nhĩ Kỳ", Wales: "Xứ Wales", Scotland: "Scotland", Italy: "Italy",
   Croatia: "Croatia", Hungary: "Hungary", Romania: "Romania", Serbia: "Serbia", Ukraine: "Ukraine",
+  Vietnam: "Việt Nam", "Chinese Taipei": "Đài Bắc Trung Hoa", Thailand: "Thái Lan", Malaysia: "Malaysia",
+  Indonesia: "Indonesia", Philippines: "Philippines", Cambodia: "Campuchia", Pakistan: "Pakistan",
+  "Sri Lanka": "Sri Lanka", Turkmenistan: "Turkmenistan", "Hong Kong": "Hồng Kông", Macau: "Ma Cao", Mongolia: "Mông Cổ",
 };
 
 const GIAI: Record<string, string> = {

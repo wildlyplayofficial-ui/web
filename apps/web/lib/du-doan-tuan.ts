@@ -3,7 +3,7 @@
  * phong độ 5 trận, tỷ lệ 1·X·2 và giờ đá UTC (ghép từ lịch livescore lúc nạp).
  * Trận không có bài nhận định → nút "Xem nhận định" ẩn, JSON-LD trỏ về /du-doan.
  */
-import duLieu from "@/data/du-doan-tuan.json";
+import duLieu from "../data/du-doan-tuan.json";
 import { tenSo } from "./du-doan-cham";
 import { cungTran, ngayVN, nhanTran, type HangDuDoan } from "./du-doan-hang";
 import { chieuDuDoan, phongDoCuTruoc, type KQ, type TranDaDa } from "./phong-do";
@@ -35,6 +35,8 @@ export interface DongTuan extends SoLieuTran {
   pBtts?: ThiTruongPhu;
   pOu?: ThiTruongPhu;
   pCs?: ThiTruongPhu;
+  /** Slug bài nhận định của cùng trận (trận ĐTQG nguồn tuần không có): số liệu tệp gắn vào trang bài. */
+  bai?: string;
 }
 
 const DONG = duLieu as DongTuan[];
@@ -58,12 +60,16 @@ const docForm = (s: string): KQ[] | null => {
 
 export const slugTuan = (d: DongTuan) => `tuan-${d.ngay}-${tenSo(d.nha)}-${tenSo(d.khach)}`;
 
+/** Dòng tệp theo slug trang trận: slug tuần, hoặc slug bài nhận định ghi ở trường `bai`. */
+const timDong = (slug: string) => DONG.find((x) => slugTuan(x) === slug || x.bai === slug);
+
 /** Đối đầu, bảng xếp hạng, các trận gần nhất của một trận tệp tuần; tệp không ghi gì → null. */
 export function soLieuTuan(slug: string): (SoLieuTran & { nha: string; khach: string }) | null {
-  const d = DONG.find((x) => slugTuan(x) === slug);
+  const d = timDong(slug);
   if (!d) return null;
-  const gn = conMoi(d.gn, d.ngay);
-  const gk = conMoi(d.gk, d.ngay);
+  // Dòng gõ tay (ĐTQG): đội tuyển nghỉ vài tháng giữa 2 đợt là thường, không lọc "cũ quá 30 ngày".
+  const gn = d.bai ? d.gn : conMoi(d.gn, d.ngay);
+  const gk = d.bai ? d.gk : conMoi(d.gk, d.ngay);
   const bxn = bxConMoi(d.bxn, d.gn, d.ngay);
   const bxk = bxConMoi(d.bxk, d.gk, d.ngay);
   if (!(d.h2h?.length || bxn || bxk || gn || gk)) return null;
@@ -88,7 +94,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
   return DONG.flatMap((d): HangDuDoan[] => {
     const kickoffUtc = d.gioUtc ?? `${d.ngay}T12:00:00Z`;
     const tran = { home: d.nha, away: d.khach, kickoff: kickoffUtc };
-    if (daCo.some((h) => cungTran(tran, { home: h.nha, away: h.khach, kickoff: h.kickoffUtc }))) return [];
+    if (d.bai || daCo.some((h) => cungTran(tran, { home: h.nha, away: h.khach, kickoff: h.kickoffUtc }))) return [];
     const so = d.du.match(/(\d+)\s*-\s*(\d+)/);
     const du: [number, number] | null = so ? [Number(so[1]), Number(so[2])] : null;
     const that: [number, number] | null = d.kq?.length === 2 ? [d.kq[0], d.kq[1]] : null;
@@ -130,11 +136,32 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
   });
 }
 
+/**
+ * Dòng có bài nhận định mà tệp tuần cũng ghi trận đó (trường `bai`): giữ tỷ số dự đoán của bài,
+ * bù tỷ lệ 1·X·2, tài xỉu, hai đội ghi bàn, phong độ từ tệp — trang bài hiện đủ khối như trận tuần.
+ */
+export function gopTuan(hang: readonly HangDuDoan[]): HangDuDoan[] {
+  return hang.map((h) => {
+    const d = DONG.find((x) => x.bai === h.slug);
+    if (!d) return h;
+    const mot: HangDuDoan["mot"] = d.o.length === 3 && d.o.every((x) => x > 0) ? [d.o[0], d.o[1], d.o[2]] : h.mot;
+    const g: HangDuDoan = {
+      ...h,
+      mot,
+      formNha: docForm(d.fn) ?? phongDoTuTran(conMoi(d.gn, d.ngay), d.nha) ?? h.formNha,
+      formKhach: docForm(d.fk) ?? phongDoTuTran(conMoi(d.gk, d.ngay), d.khach) ?? h.formKhach,
+      taiXiu: d.tx ?? h.taiXiu,
+      haiDoiGhi: d.btts ? d.btts === "Có" : h.haiDoiGhi,
+    };
+    return { ...g, nhan: nhanTran(g) };
+  });
+}
+
 export type KeoPhu = Pick<DongTuan, "nha" | "khach" | "pBtts" | "pOu" | "pCs">;
 
 /** Khối hai đội ghi bàn · tài xỉu · tỷ số chính xác của một trận tệp tuần; tệp không ghi gì → null. */
 export function keoPhuTuan(slug: string): KeoPhu | null {
-  const d = DONG.find((x) => slugTuan(x) === slug);
+  const d = timDong(slug);
   if (!d || !(d.pBtts || d.pOu || d.pCs)) return null;
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }

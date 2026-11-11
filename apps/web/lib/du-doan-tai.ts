@@ -7,7 +7,7 @@ import { cache } from "react";
 import { getTodaysPicks } from "./data";
 import { getMucDuDoan } from "./du-doan";
 import { doiCanPhongDo, dungHang } from "./du-doan-hang";
-import { doiThieuPhongDo, hangTuan } from "./du-doan-tuan";
+import { doiThieuPhongDo, gopTuan, hangTuan } from "./du-doan-tuan";
 import { getOddsBoard } from "./odds-data";
 import { getTranDaDa } from "./phong-do-db";
 
@@ -19,7 +19,7 @@ export const taiDuDoan = cache(async () => {
   ]);
   const curator = picks.filter((p) => (p.author ?? "curator") === "curator");
   const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(muc)), getTranDaDa(doiThieuPhongDo())]);
-  const hangBai = dungHang(muc, curator, odds, daDa);
+  const hangBai = gopTuan(dungHang(muc, curator, odds, daDa));
   // Bài có nhận định trước, rồi dự đoán nạp từ tệp tuần (trùng trận thì giữ bài).
   return { muc, hang: [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())] };
 });

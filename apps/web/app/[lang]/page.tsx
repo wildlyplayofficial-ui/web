@@ -25,7 +25,7 @@ import { getOddsBoard } from "@/lib/odds-data";
 import { getMucDuDoan } from "@/lib/du-doan";
 import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
-import { doiThieuPhongDo, hangTuan } from "@/lib/du-doan-tuan";
+import { doiThieuPhongDo, gopTuan, hangTuan } from "@/lib/du-doan-tuan";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
 export const revalidate = 300;
@@ -154,7 +154,7 @@ export default async function Home({ params }: Props) {
   // Dòng "Chú Tám chọn": pick thật đầu tiên hôm nay, không có thì ghi rõ là không chọn.
   const heroPick = picks[0] ?? null;
   const [daDa, daDaTuan] = await Promise.all([getTranDaDa(doiCanPhongDo(mucDuDoan)), getTranDaDa(doiThieuPhongDo())]);
-  const hangBai = dungHang(mucDuDoan, picks, oddsMatches, daDa);
+  const hangBai = gopTuan(dungHang(mucDuDoan, picks, oddsMatches, daDa));
   // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
   const hangDuDoan = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
