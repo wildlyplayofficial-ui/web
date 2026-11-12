@@ -25,6 +25,21 @@ type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
+// Meta description = đoạn đầu thân bài, tối đa 160 ký tự, cắt ở khoảng trắng.
+// Trước đây cắt cứng 160 ký tự cả thân bài → meta lẹm sang "## Diễn biến" và đứt giữa chữ.
+function metaFromBody(body: string): string {
+  const lede = body
+    .trim()
+    .split(/\n\s*\n/)[0]
+    .replace(/[#*_>`\[\]()!]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (lede.length <= 160) return lede;
+  const cut = lede.slice(0, 159);
+  const space = cut.lastIndexOf(" ");
+  return (space > 80 ? cut.slice(0, space) : cut).replace(/[\s,;:.–-]+$/, "") + "…";
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
@@ -33,9 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const headline = getHeadline(item, lang);
   const body = getBody(item, lang);
-  const description = body
-    ? body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160)
-    : headline;
+  const description = body ? metaFromBody(body) : headline;
 
   // Bài "lịch đá HÔM NAY d-m" qua ngày là chữ "hôm nay" thành sai (audit 8/9:
   // bài 30/8 vẫn sống nguyên "hôm nay" khi đã 8/9). Qua ngày (giờ VN) → noindex
