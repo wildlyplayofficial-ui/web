@@ -8,7 +8,7 @@ import { taiDuDoan } from "@/lib/du-doan-tai";
 import { ngayTabDuDoan, ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
-import { cacXienNgay, type LoaiXien, type XienNgay } from "@/lib/xien";
+import { cacXienNgay, tenLoaiXien, type XienNgay } from "@/lib/xien";
 
 /**
  * Trang kèo xiên /keo-xien (Peter 12/11: tách khỏi dự đoán, "làm theo PredictZ" — trang
@@ -20,12 +20,6 @@ import { cacXienNgay, type LoaiXien, type XienNgay } from "@/lib/xien";
 export const duongDanXien = (ngay: string, homNay: string) => duongDanNgay(ngay, homNay).replace("/du-doan", "/keo-xien");
 
 const tenNgay = (n: string, homNay: string) => (n === homNay ? "hôm nay" : n === lechNgay(homNay, 1) ? "ngày mai" : thuVN(n));
-
-const TEN_LOAI: Record<LoaiXien, (n: number) => string> = {
-  thang: (n) => `Xiên ${n} đội thắng`,
-  "tai-xiu": (n) => `Xiên ${n} tài xỉu 2.5`,
-  btts: (n) => `Xiên ${n} hai đội ghi bàn`,
-};
 
 export async function xienCuaNgay(ngay: string): Promise<{ ds: XienNgay[]; coNgay: string[] }> {
   const { hang } = await taiDuDoan();
@@ -104,17 +98,19 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
         Giờ đá là giờ Việt Nam; bấm vào trận để xem dự đoán tỷ số và phong độ hai đội.
       </p>
 
-      {ds.map((x) => (
-        <KhoiXien
-          key={x.khoa}
-          id={x.khoa}
-          xien={x.xien}
-          giai={`${thuVN(ngay)} ${x.giai}`}
-          loai={TEN_LOAI[x.loai](x.xien.chan.length)}
-          moDau={`Trận đầu đá lúc ${x.xien.chan[0].h.gio} ${ten}`}
-          lang={lang}
-        />
-      ))}
+      <div className="mt-3 lg:columns-2 lg:gap-x-4">
+        {ds.map((x) => (
+          <KhoiXien
+            key={x.khoa}
+            id={x.khoa}
+            xien={x.xien}
+            giai={x.giai}
+            loai={tenLoaiXien(x.loai, x.xien.chan)}
+            moDau={`Trận đầu đá lúc ${x.xien.chan[0].h.gio} ${ten}`}
+            lang={lang}
+          />
+        ))}
+      </div>
       <Link href={withLang(duongDanNgay(ngay, homNay), lang)} className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-brand hover:underline">
         Dự đoán tỷ số từng trận {ten} {ngayThang(ngay)} →
       </Link>

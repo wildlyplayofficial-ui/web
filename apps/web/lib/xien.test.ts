@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HangDuDoan } from "./du-doan-hang";
-import { cacXienNgay, xienDoiThang, xienHaiDoiGhi, xienTaiXiu } from "./xien";
+import { cacXienNgay, tenLoaiXien, xienDoiThang, xienHaiDoiGhi, xienTaiXiu } from "./xien";
 
 const tran = (slug: string, du: [number, number] | null, mot: [number, number, number] | null, sapDa = true, giai = "Giao hữu", kickoffUtc = "2026-11-12T19:45:00Z") =>
   ({ slug, du, mot, sapDa, giai, kickoffUtc }) as HangDuDoan;
@@ -61,5 +61,17 @@ describe("cacXienNgay", () => {
   });
   it("không có trận thì mảng rỗng", () => {
     expect(cacXienNgay([], () => null)).toEqual([]);
+  });
+});
+
+describe("tenLoaiXien", () => {
+  it("xiên tài xỉu mọi chân cùng Xỉu thì gọi là xiên xỉu", () => {
+    expect(tenLoaiXien("tai-xiu", [{ cua: "xiu" }, { cua: "xiu" }])).toBe("Xiên 2 xỉu 2.5");
+  });
+  it("mọi chân cùng Tài thì gọi là xiên tài", () => {
+    expect(tenLoaiXien("tai-xiu", [{ cua: "tai" }, { cua: "tai" }, { cua: "tai" }])).toBe("Xiên 3 tài 2.5");
+  });
+  it("lẫn Tài và Xỉu thì giữ tên tài xỉu", () => {
+    expect(tenLoaiXien("tai-xiu", [{ cua: "tai" }, { cua: "xiu" }])).toBe("Xiên 2 tài xỉu 2.5");
   });
 });
