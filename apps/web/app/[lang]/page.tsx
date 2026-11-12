@@ -231,7 +231,9 @@ export default async function Home({ params }: Props) {
   const keoHomNay = oddsMatches.filter((m) => ngayVN(new Date(m.kickoffUtc)) === homNay).length;
 
   const hot = recaps[0] ?? null;
-  const restArticles = articles.filter((a) => !recaps.some((r) => r.slug === a.slug)).slice(0, 6);
+  // 13/11 (Peter: "ghi vừa đủ"): còn 3 bài (1 lớn + 2 nhỏ). Trước đây 6, ba thẻ lớn cuối là
+  // bài lịch tháng 9 đã qua, dài thêm ~1.100px trên điện thoại.
+  const restArticles = articles.filter((a) => !recaps.some((r) => r.slug === a.slug)).slice(0, 3);
   // Nhận định mới nhất — lấp ô trống cột phải (Nick 20/8, Cách A). Bài dự đoán/nhận
   // định (kind preview|analysis) — loại đã hiện ở lead/2 thẻ compact, tối đa 4, text-only.
   const shownSlugs = new Set(
@@ -433,13 +435,6 @@ export default async function Home({ params }: Props) {
               </div>
             )}
           </div>
-          {restArticles.length > 3 && (
-            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {restArticles.slice(3).map((a) => (
-                <AnalysisCard key={a.slug} article={a} lang={lang} variant="lead" />
-              ))}
-            </div>
-          )}
         </section>
       )}
 

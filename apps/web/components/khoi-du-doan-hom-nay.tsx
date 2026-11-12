@@ -31,7 +31,7 @@ export function KhoiDuDoanHomNay({
   return (
     <section aria-label={t.title} className="pb-8 pt-4 sm:pt-6">
       <h1 className="font-display text-[21px] font-bold leading-tight sm:text-[28px]">{t.homeTitle}</h1>
-      <p className="mt-1.5 hidden text-muted sm:block">{t.homeSub}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted sm:text-base">{t.homeSub}</p>
       <h2 className="mt-4 font-display text-lg font-bold sm:mt-5 sm:text-xl">{t.upcoming}</h2>
       {sapDa.length === 0 && <p className="border-b border-line py-6 text-sm text-muted">{t.empty}</p>}
       {ngays.map((n) => (

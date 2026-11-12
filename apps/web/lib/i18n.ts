@@ -856,7 +856,7 @@ const vi: Dict = {
     hitRate: "đoán đúng",
     matchesUnit: "trận",
     homeTitle: "Nhận định và dự đoán tỷ số bóng đá",
-    homeSub: "Tỷ số chốt trước giờ bóng lăn, đá xong ghi đúng hay sai · giờ Việt Nam",
+    homeSub: "banhbong.net dự đoán tỷ số, kèo xiên, lịch thi đấu và bảng xếp hạng bóng đá theo giờ Việt Nam. Tỷ số chốt trước giờ bóng lăn, đá xong ghi công khai đúng hay sai.",
     upcoming: "Trận sắp đá",
     seeAllShort: "Xem tất cả dự đoán",
     hasArticle: "Có nhận định",
