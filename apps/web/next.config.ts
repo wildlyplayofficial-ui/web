@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
       // một nhịp nữa (apps/web/proxy.ts) — đo 10/9: 77 địa chỉ đi 2-4 nhịp vì lỗi này.
       // 11/11/2026 (Peter "gộp tác giả"): bài nhận định ký tên 5 chuyên gia, hồ sơ nằm chung
       // trên /about → trang Chú Tám Banh cũ dồn về đó.
+      // 12/11/2026 (Peter "phần xiên để riêng"): kèo xiên rời /du-doan thành /keo-xien.
+      { source: "/du-doan/xien", destination: "/keo-xien", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/du-doan/xien", destination: "/keo-xien", statusCode: 301 },
       { source: "/tac-gia/chu-tam-banh", destination: "/about#doi-ngu-chuyen-gia", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/tac-gia/chu-tam-banh", destination: "/about#doi-ngu-chuyen-gia", statusCode: 301 },
       // 308 permanent redirect old /goalline URLs to /daily-line

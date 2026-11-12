@@ -74,6 +74,8 @@ export interface Dict {
     learn: string;
     /** Hub /du-doan — mọi bài dự đoán từng trận + bảng đúng/sai. */
     predictions: string;
+    /** Trang kèo xiên /keo-xien. */
+    parlay: string;
     results: string;
     /** Nhãn nhỏ cạnh mục nav mới. */
     newTag: string;
@@ -454,6 +456,7 @@ const en: Dict = {
     analysis: "Analysis",
     learn: "Learn",
     predictions: "Predictions",
+    parlay: "Parlay Tips",
     results: "Results",
     newTag: "New",
   },
@@ -819,6 +822,7 @@ const vi: Dict = {
     analysis: "Phân Tích",
     learn: "Học Hỏi",
     predictions: "Dự Đoán",
+    parlay: "Kèo Xiên",
     results: "Kết Quả",
     newTag: "Mới",
   },
@@ -1184,6 +1188,7 @@ const th: Dict = {
     analysis: "บทวิเคราะห์",
     learn: "เรียนรู้",
     predictions: "ทำนายผล",
+    parlay: "สเต็ปบอล",
     results: "ผลการแข่งขัน",
     newTag: "ใหม่",
   },
@@ -1549,6 +1554,7 @@ const es: Dict = {
     analysis: "Análisis",
     learn: "Aprender",
     predictions: "Pronósticos",
+    parlay: "Combinadas",
     results: "Resultados",
     newTag: "Nuevo",
   },
