@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  bylineTheoLoai, MIN_BODY_CHARS,
+  bylineTheoLoai, demChuThanBai, MIN_BODY_CHARS, MIN_BODY_WORDS_VI,
   dungDong, kiemTraBai, mocThoiGian, ngayVN, phanLoai, slugAnToan,
   type NewsInput,
 } from '../upsert-news.mjs';
@@ -16,7 +16,7 @@ function baiTot(sua: Partial<NewsInput> = {}): NewsInput {
     subjects: ['Sávio', 'Tottenham'],
     headline_vi: 'CHÍNH THỨC: Tottenham ký Sávio từ Manchester City',
     headline_en: 'Official: Tottenham sign Savio from Manchester City',
-    body_vi: CAU.repeat(6),
+    body_vi: CAU.repeat(24), // 432 chữ — qua mức MIN_BODY_WORDS_VI
     body_en: CAU_EN.repeat(6),
     source: 'Sky Sports',
     ...sua,
@@ -151,6 +151,31 @@ describe('bộ lọc câu hỏng', () => {
 
   it('chặn bản tiếng Anh hỏng dù bản tiếng Việt ổn (cột body_en NOT NULL)', () => {
     expect(kiemTraBai(baiTot({ body_en: 'Savio joins.' })).join(' ')).toContain('body_en quá ngắn');
+  });
+});
+
+// ── Tin mỏng: web tự noindex tin dưới 400 CHỮ, nên cửa đăng phải chặn từ trước ──
+
+describe('tin mỏng dưới 400 chữ', () => {
+  it('đếm chữ giống web: bỏ thẻ HTML và ký hiệu markdown', () => {
+    expect(demChuThanBai('## Tiêu đề\n\n**Sávio** tới <b>Tottenham</b> [xem](/doi/tottenham)')).toBe(7);
+    expect(demChuThanBai('')).toBe(0);
+  });
+
+  it('chặn bài ĐĂNG có thân tiếng Việt 288 chữ (đủ 400 ký tự nhưng web sẽ noindex)', () => {
+    const mong = CAU.repeat(16);
+    expect(mong.length).toBeGreaterThan(MIN_BODY_CHARS);
+    expect(demChuThanBai(mong)).toBeLessThan(MIN_BODY_WORDS_VI);
+    expect(kiemTraBai(baiTot({ body_vi: mong })).join(' ')).toContain('body_vi mỏng: 288 chữ < 400');
+  });
+
+  it('bài NHÁP mỏng thì cho qua — viết tiếp rồi mới đăng', () => {
+    expect(kiemTraBai(baiTot({ body_vi: CAU.repeat(16), status: 'draft' }))).toEqual([]);
+  });
+
+  it('bài đăng đủ 400 chữ thì qua', () => {
+    expect(demChuThanBai(baiTot().body_vi)).toBeGreaterThanOrEqual(MIN_BODY_WORDS_VI);
+    expect(kiemTraBai(baiTot())).toEqual([]);
   });
 });
 

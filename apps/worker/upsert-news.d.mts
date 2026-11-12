@@ -43,6 +43,8 @@ export const MIN_HEADLINE_CHARS: number;
 export const MIN_HEADLINE_WORDS: number;
 export const MIN_BODY_CHARS: number;
 export const MIN_BODY_SENTENCES: number;
+export const MIN_BODY_WORDS_VI: number;
+export function demChuThanBai(body: unknown): number;
 
 export function boDau(s: unknown): string;
 export function ngayVN(iso: string): string;
