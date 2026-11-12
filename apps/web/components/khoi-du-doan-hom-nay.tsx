@@ -37,9 +37,10 @@ export function KhoiDuDoanHomNay({
       <p className="mt-1.5 text-sm leading-relaxed text-muted sm:text-base">
         banhbong.net{" "}
         <Link href={withLang("/du-doan", lang)} className="text-brand hover:underline">dự đoán tỷ số bóng đá</Link> mỗi ngày theo giờ Việt Nam.
-        {tatCa.length > 0 && ` Hiện có ${tatCa.length} trận sắp đá ở ${giai.length} giải, gồm ${giai.slice(0, 3).join(", ")}.`} Mỗi trận có tỷ số dự đoán
-        và phong độ 5 trận gần nhất; tỷ số chốt trước giờ bóng lăn, đá xong ghi công khai đúng hay sai. Ngoài ra có{" "}
-        <Link href={withLang("/keo-xien", lang)} className="text-brand hover:underline">kèo xiên hôm nay</Link>, lịch thi đấu và{" "}
+        {tatCa.length > 0 && ` Hiện có ${tatCa.length} trận sắp đá ở ${giai.length} giải, gồm ${giai.slice(0, 3).join(", ")}.`} Mỗi trận có tỷ số dự đoán,
+        kèm phong độ gần nhất khi có dữ liệu; tỷ số chốt trước giờ bóng lăn, đá xong ghi công khai đúng hay sai. Ngoài ra có{" "}
+        <Link href={withLang("/keo-xien", lang)} className="text-brand hover:underline">kèo xiên hôm nay</Link>,{" "}
+        <Link href={withLang("/matches", lang)} className="text-brand hover:underline">lịch thi đấu</Link> và{" "}
         <Link href={withLang("/competitions", lang)} className="text-brand hover:underline">bảng xếp hạng</Link> từng giải.
       </p>
       <h2 className="mt-4 font-display text-lg font-bold sm:mt-5 sm:text-xl">{t.upcoming}</h2>
