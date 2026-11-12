@@ -93,3 +93,12 @@ export function cacXienNgay(rows: readonly HangDuDoan[], tra: TraKeoPhu): XienNg
       ),
     );
 }
+
+/** Tên loại xiên; xiên tài xỉu mà mọi chân cùng một cửa thì gọi thẳng cửa đó ("Xiên 5 xỉu 2.5"). */
+export function tenLoaiXien(loai: LoaiXien, chan: readonly { cua: CuaXien }[]): string {
+  const n = chan.length;
+  if (loai === "thang") return `Xiên ${n} đội thắng`;
+  if (loai === "btts") return `Xiên ${n} hai đội ghi bàn`;
+  const cua = chan.every((c) => c.cua === "xiu") ? "xỉu" : chan.every((c) => c.cua === "tai") ? "tài" : "tài xỉu";
+  return `Xiên ${n} ${cua} 2.5`;
+}

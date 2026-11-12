@@ -14,6 +14,9 @@ const DOI_TUYEN: Record<string, string> = {
   Indonesia: "Indonesia", Philippines: "Philippines", Cambodia: "Campuchia", Pakistan: "Pakistan",
   "Sri Lanka": "Sri Lanka", Turkmenistan: "Turkmenistan", "Hong Kong": "Hồng Kông", Macau: "Ma Cao", Mongolia: "Mông Cổ",
   "Equatorial Guinea": "Guinea Xích Đạo", "United Arab Emirates": "UAE",
+  "Congo DR": "CHDC Congo", Egypt: "Ai Cập", "Ivory Coast": "Bờ Biển Ngà", Morocco: "Ma Rốc", "South Africa": "Nam Phi",
+  "South Sudan": "Nam Sudan", "Central African Republic": "CH Trung Phi", "Cape Verde Islands": "Cabo Verde",
+  Georgia: "Gruzia", "Bosnia-Herzegovina": "Bosnia và Herzegovina", Iceland: "Iceland", Slovakia: "Slovakia",
 };
 
 const GIAI: Record<string, string> = {
@@ -46,6 +49,7 @@ const GIAI: Record<string, string> = {
   "Ukraine Persha Liga": "Hạng 2 Ukraine",
   "Uruguay Primera Division Finals": "Chung kết VĐQG Uruguay",
   "UEFA Nations League": "Nations League",
+  "Africa Cup Of Nations": "Cúp châu Phi (CAN)",
 };
 
 export const tenDoiViet = (ten: string) => DOI_TUYEN[ten] ?? ten;
