@@ -67,6 +67,10 @@ export const MIN_HEADLINE_CHARS = 20;
 export const MIN_HEADLINE_WORDS = 4;
 export const MIN_BODY_CHARS = 400;
 export const MIN_BODY_SENTENCES = 3;
+/** Tin ĐĂNG dưới mức này bị web tự noindex + bỏ khỏi sitemap (NEWS_TOI_THIEU_CHU trong
+ *  apps/web/lib/chi-muc.ts). Đo 12/11: 27/30 tin mới nhất 224–399 chữ, lọt cửa vì cửa cũ
+ *  chỉ đếm KÝ TỰ. Đổi số ở đây thì đổi cả bên web. */
+export const MIN_BODY_WORDS_VI = 400;
 
 /** Ký tự kết câu — thân bài cụt giữa chừng ("Vào sáng ngày") không có cái nào. */
 const KET_CAU = /[.!?…"”'’)\]]$/;
@@ -125,6 +129,16 @@ function demTu(s) {
   return String(s ?? '').trim().split(/\s+/).filter(Boolean).length;
 }
 
+/** Gương của demChu() trong apps/web/lib/chi-muc.ts (worker không import được apps/web):
+ *  bỏ thẻ HTML + ký hiệu markdown rồi đếm chữ. Phải đếm Y HỆT web, lệch là bài lọt. */
+export function demChuThanBai(body) {
+  const chu = String(body ?? '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[#*_>`~\[\]()|-]+/g, ' ')
+    .trim();
+  return chu ? chu.split(/\s+/).length : 0;
+}
+
 function demCau(s) {
   return String(s ?? '').split(/[.!?…]+(?:\s|$)/).map((c) => c.trim()).filter(Boolean).length;
 }
@@ -178,6 +192,11 @@ export function kiemTraBai(bai) {
     if (v.length < MIN_BODY_CHARS) loi.push(`${cot} quá ngắn: ${v.length} ký tự < ${MIN_BODY_CHARS}`);
     if (demCau(v) < MIN_BODY_SENTENCES) loi.push(`${cot} quá ngắn: ${demCau(v)} câu < ${MIN_BODY_SENTENCES}`);
     if (!KET_CAU.test(v)) loi.push(`${cot} cụt giữa chừng — kết thúc bằng "…${v.slice(-24)}", không có dấu kết câu`);
+  }
+  // Web chỉ đo bản tiếng Việt; bài nháp được mỏng, viết đủ rồi mới đăng.
+  const soChu = demChuThanBai(bai.body_vi);
+  if ((bai.status ?? 'published') === 'published' && soChu > 0 && soChu < MIN_BODY_WORDS_VI) {
+    loi.push(`body_vi mỏng: ${soChu} chữ < ${MIN_BODY_WORDS_VI} — web sẽ tự noindex tin này; viết thêm hoặc để status "draft"`);
   }
 
   // Tên đối tượng đang nói tới phải THẬT SỰ xuất hiện trong bài.
