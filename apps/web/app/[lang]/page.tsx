@@ -18,7 +18,7 @@ import type { StripMatch } from "@/components/home-next-matches";
 import { DaiDuDoanGiai } from "@/components/dai-du-doan-giai";
 import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
-import { laTrangLichCaMua } from "@/lib/chi-muc";
+import { laTrangLichCaMua, newsDuocIndex, demChu } from "@/lib/chi-muc";
 import { KhoiTrangTru } from "@/components/khoi-trang-tru";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, noPlays, watching, eplDays, competitions, articles, newsItems, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan] =
+  const [allPicks, record, noPlays, watching, eplDays, competitions, articles, newsTho, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -86,7 +86,7 @@ export default async function Home({ params }: Props) {
       getCompetitionFixtures(EPL_LIVESCORE_ID).catch(() => []),
       getStandingsCompetitions().catch(() => []),
       getAnalysisArticles(undefined, 12),
-      getNewsItems(undefined, 6),
+      getNewsItems(undefined, 30),
       getOddsBoard(),
       getRecentRecapPosts(lang, 2),
       // Khối "Lịch & xem ở đâu" (9/11): trang chủ là trang duy nhất Google còn giữ,
@@ -99,6 +99,12 @@ export default async function Home({ params }: Props) {
       // Khối "Dự đoán hôm nay" (10/11). Hỏng thì khối chỉ rỗng, trang vẫn lên.
       getMucDuDoan().catch(() => []),
     ]);
+
+  // 12/11: trang chủ chỉ dẫn tới tin Google được lập chỉ mục — trước đây 6 tin mới nhất
+  // có cả tin mỏng/noindex, tức trang duy nhất Google tin lại dồn link vào trang bị giấu.
+  const newsItems = newsTho
+    .filter((n) => !n.noindex && newsDuocIndex(n.slug, n.published_at, demChu(getBody(n, lang))))
+    .slice(0, 6);
 
   const todayKey = new Date().toISOString().slice(0, 10);
 
