@@ -28,10 +28,20 @@ export function KhoiDuDoanHomNay({
     .sort((a, b) => a.ngay.localeCompare(b.ngay) || Number(a.gio === "--:--") - Number(b.gio === "--:--") || a.kickoffUtc.localeCompare(b.kickoffUtc))
     .slice(0, SO_TRAN);
   const ngays = [...new Set(sapDa.map((r) => r.ngay))];
+  // Số thật cho đoạn giới thiệu (Peter 13/11: câu giới thiệu phải đủ cho SEO và GEO).
+  const tatCa = rows.filter((r) => r.sapDa);
+  const giai = [...new Set(tatCa.map((r) => r.giai))];
   return (
     <section aria-label={t.title} className="pb-8 pt-4 sm:pt-6">
       <h1 className="font-display text-[21px] font-bold leading-tight sm:text-[28px]">{t.homeTitle}</h1>
-      <p className="mt-1.5 text-sm leading-relaxed text-muted sm:text-base">{t.homeSub}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted sm:text-base">
+        banhbong.net{" "}
+        <Link href={withLang("/du-doan", lang)} className="text-brand hover:underline">dự đoán tỷ số bóng đá</Link> mỗi ngày theo giờ Việt Nam.
+        {tatCa.length > 0 && ` Hiện có ${tatCa.length} trận sắp đá ở ${giai.length} giải, gồm ${giai.slice(0, 3).join(", ")}.`} Mỗi trận có tỷ số dự đoán
+        và phong độ 5 trận gần nhất; tỷ số chốt trước giờ bóng lăn, đá xong ghi công khai đúng hay sai. Ngoài ra có{" "}
+        <Link href={withLang("/keo-xien", lang)} className="text-brand hover:underline">kèo xiên hôm nay</Link>, lịch thi đấu và{" "}
+        <Link href={withLang("/competitions", lang)} className="text-brand hover:underline">bảng xếp hạng</Link> từng giải.
+      </p>
       <h2 className="mt-4 font-display text-lg font-bold sm:mt-5 sm:text-xl">{t.upcoming}</h2>
       {sapDa.length === 0 && <p className="border-b border-line py-6 text-sm text-muted">{t.empty}</p>}
       {ngays.map((n) => (
