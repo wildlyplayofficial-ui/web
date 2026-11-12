@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DoiLogo } from "@/components/doi-logo";
+import { PhongDoNho } from "@/components/phong-do-dong";
 import { withLang, type Lang } from "@/lib/i18n";
 import type { CuaXien, Xien } from "@/lib/xien";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
@@ -42,6 +43,18 @@ export function KhoiXien({ xien, giai, loai, moDau, id, lang }: { xien: Xien; gi
               <span className="min-w-0">
                 <span className="block text-[15px] font-semibold leading-snug">{h.nha} – {h.khach}</span>
                 <span className="block text-[13px] text-muted"><span className="tabular-nums">{h.gio}</span> · {chuCua(cua, h)}</span>
+                {h.formNha && h.formKhach && (
+                  <span className="mt-1 flex items-center gap-2">
+                    <PhongDoNho kq={h.formNha} doi={h.nha} />
+                    <span aria-hidden className="text-xs text-muted">–</span>
+                    <PhongDoNho kq={h.formKhach} doi={h.khach} />
+                  </span>
+                )}
+                {h.mot && (
+                  <span className="mt-1 block text-xs tabular-nums text-muted">
+                    Chủ {h.mot[0].toFixed(2)} · Hòa {h.mot[1].toFixed(2)} · Khách {h.mot[2].toFixed(2)}
+                  </span>
+                )}
               </span>
               <span className="text-base font-bold tabular-nums text-brand">{gia.toFixed(2)}</span>
             </Link>

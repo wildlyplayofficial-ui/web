@@ -93,9 +93,9 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
       </h1>
       <p className="mt-1.5 text-[15px] leading-relaxed">
         {ds.length > 0
-          ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải, gom từ bảng dự đoán của banhbong.net: xiên đội thắng, xiên tài xỉu 2.5 bàn và xiên hai đội ghi bàn. `
+          ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải, gom từ bảng dự đoán của banhbong.net: xiên đội thắng, xiên tài xỉu 2.5 bàn và xiên hai đội ghi bàn. Mỗi trận có kèo 1X2 (Chủ, Hòa, Khách) và phong độ 5 trận gần nhất của hai đội, trận mới nhất nằm bên phải. `
           : `Chưa gom được kèo xiên bóng đá ${ten}: cần một giải có từ 2 trận chưa đá trở lên. `}
-        Giờ đá là giờ Việt Nam; bấm vào trận để xem dự đoán tỷ số và phong độ hai đội.
+        Giờ đá là giờ Việt Nam; bấm vào trận để xem dự đoán tỷ số.
       </p>
 
       <div className="mt-3 lg:columns-2 lg:gap-x-4">
