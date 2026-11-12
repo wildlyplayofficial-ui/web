@@ -241,6 +241,8 @@ export default async function Home({ params }: Props) {
   );
   const predictions = articles
     .filter((a) => (a.kind === "preview" || a.kind === "analysis") && !shownSlugs.has(a.slug))
+    // Peter 13/11: chỉ bài trong 30 ngày, bài tháng 9 không còn là "mới nhất".
+    .filter((a) => Date.now() - new Date(a.published_at).getTime() < 30 * 86_400_000)
     .slice(0, 4);
   const predDate = (iso: string) =>
     new Intl.DateTimeFormat(lang === "vi" ? "vi-VN" : lang, {

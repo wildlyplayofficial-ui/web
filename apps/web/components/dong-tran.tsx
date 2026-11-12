@@ -24,6 +24,8 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
   const chieu = h.du ? (h.du[0] > h.du[1] ? 0 : h.du[0] === h.du[1] ? 1 : 2) : null;
   const chuDai = chieu === null ? "" : chieu === 1 ? t.draw : t.teamWins.replace("{team}", chieu === 0 ? h.nha : h.khach);
   const chuNgan = chieu === null ? "" : [t.homeSide, t.draw, t.awayShort][chieu];
+  // Peter 13/11 "phong độ k đều": chỉ hiện khi CẢ HAI đội có phong độ, không để hàng lệch một bên.
+  const coPhongDo = phongDo && !!h.formNha && !!h.formKhach;
   const keoDong = phongDo && h.mot !== null;
   const giaiDong = [hienGiai ? h.giai : null, h.coBai ? t.hasArticle.toLowerCase() : null].filter(Boolean).join(" · ");
   return (
@@ -43,7 +45,7 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
           <DoiLogo src={h.logoNha} ten={h.nha} lop={LOGO} />
           <span className="truncate text-[15px] font-semibold">{h.nha}</span>
         </div>
-        {phongDo && h.formNha && (
+        {coPhongDo && h.formNha && (
           <div className="mt-1 flex pl-[34px] lg:justify-end lg:pl-0 lg:pr-9">
             <PhongDoNho kq={h.formNha} doi={h.nha} />
           </div>
@@ -54,7 +56,7 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
           <DoiLogo src={h.logoKhach} ten={h.khach} lop={LOGO} />
           <span className="truncate text-[15px] font-semibold">{h.khach}</span>
         </div>
-        {phongDo && h.formKhach && (
+        {coPhongDo && h.formKhach && (
           <div className="mt-1 flex pl-[34px] lg:pl-9">
             <PhongDoNho kq={h.formKhach} doi={h.khach} />
           </div>
