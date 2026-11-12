@@ -9,6 +9,8 @@ import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type Nho
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { ngayVN } from "@/lib/du-doan-hang";
+import { keoPhuTuan } from "@/lib/du-doan-tuan";
+import { cacXienNgay } from "@/lib/xien";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
@@ -141,10 +143,13 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
 
   // Trang theo giải + theo ngày (Peter 11/11): giải luôn nộp; ngày chỉ nộp ngày có trận, mỗi link một lần.
   const homNay = ngayVN(Date.now());
+  const ngaySau = [...new Set(hang.map((h) => h.ngay).filter((n) => n > homNay && n <= lechNgay(homNay, 6)))];
   const locRoutes: MetadataRoute.Sitemap = [
-    "/du-doan/xien",
+    // Kèo xiên: trang hôm nay luôn nộp, ngày sau chỉ nộp ngày gom được xiên (ngày rỗng trả 404).
+    "/keo-xien",
+    ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
-    ...[...new Set(hang.map((h) => h.ngay).filter((n) => n > homNay && n <= lechNgay(homNay, 6)).map((n) => duongDanNgay(n, homNay)))],
+    ...ngaySau.map((n) => duongDanNgay(n, homNay)),
   ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
 
   return [...tranRoutes, ...locRoutes];

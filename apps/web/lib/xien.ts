@@ -1,16 +1,18 @@
 /**
- * Kèo xiên dựng từ bảng dự đoán (Peter gật 12/11): gom các trận chưa đá mà cửa dự đoán có tỷ lệ
- * thấp nhất (nguồn tin cửa đó nhất), nhân tỷ lệ thành tỷ lệ gộp. Khối nhỏ trên /du-doan và trang
- * riêng /du-doan/xien dùng chung. Chỉ dùng số đã có trên dòng trận — không thêm dự đoán mới,
- * không tên nhà cái. Hàm THUẦN, import tương đối để vitest chạy không cần alias.
+ * Kèo xiên dựng từ bảng dự đoán (Peter 12/11: "làm theo PredictZ"): mỗi giải trong ngày gom thành
+ * xiên đội thắng, xiên tài xỉu 2,5 và xiên hai đội ghi bàn — mỗi trận một chân, nhân tỷ lệ thành
+ * tỷ lệ gộp. Chỉ dùng số đã có trên dòng trận — không thêm dự đoán mới, không tên nhà cái.
+ * Hàm THUẦN, import tương đối để vitest chạy không cần alias.
  */
 import type { HangDuDoan } from "./du-doan-hang";
-import { GIAI_TRANG } from "./du-doan-loc";
+
+export type CuaXien = 0 | 2 | "tai" | "xiu" | "co" | "khong";
+export type LoaiXien = "thang" | "tai-xiu" | "btts";
 
 export interface ChanXien {
   h: HangDuDoan;
-  /** 0 = chủ nhà thắng, 1 = hòa, 2 = khách thắng (trùng thứ tự ô 1·X·2); "tai"/"xiu" = mốc 2,5 bàn. */
-  cua: 0 | 1 | 2 | "tai" | "xiu";
+  /** 0 = chủ nhà thắng, 2 = khách thắng (trùng ô 1·X·2); "tai"/"xiu" = mốc 2,5 bàn; "co"/"khong" = hai đội cùng ghi bàn. */
+  cua: CuaXien;
   gia: number;
 }
 
@@ -20,73 +22,74 @@ export interface Xien {
   tong: number;
 }
 
-/** Dưới 1,20 gộp vào không thêm được gì; trên 2,20 thì chính nguồn cũng không chắc cửa đó. */
-const GIA_MIN = 1.2;
-const GIA_MAX = 2.2;
-const IT_NHAT = 3;
+/** Một thị trường phụ của trận: `tip` kiểu "Over 2.5" / "BTTS Yes", `keo` = [cửa thuận, cửa nghịch]. */
+interface Phu { tip: string; keo: number[] }
+export type TraKeoPhu = (slug: string) => { pOu?: Phu; pBtts?: Phu } | null | undefined;
 
-function gom(chan: ChanXien[], toiDa: number): Xien | null {
+const IT_NHAT = 2;
+const TOI_DA = 8;
+
+function gom(chan: ChanXien[]): Xien | null {
   const chon = chan
-    .filter((c) => c.gia >= GIA_MIN && c.gia <= GIA_MAX)
-    .sort((a, b) => a.gia - b.gia || a.h.kickoffUtc.localeCompare(b.h.kickoffUtc))
-    .slice(0, toiDa);
+    .filter((c) => c.gia > 1)
+    .sort((a, b) => a.h.kickoffUtc.localeCompare(b.h.kickoffUtc) || a.h.slug.localeCompare(b.h.slug))
+    .slice(0, TOI_DA);
   if (chon.length < IT_NHAT) return null;
   return { chan: chon, tong: chon.reduce((t, c) => t * c.gia, 1) };
 }
 
-/** Xiên đội thắng: cửa 1·X·2 khớp tỷ số dự đoán của từng trận. Dưới 3 chân → null. */
-export function xienTrongNgay(rows: readonly HangDuDoan[], toiDa = 5): Xien | null {
+/** Chân từ thị trường phụ: tip khớp `thuan` lấy tỷ lệ đầu, khớp `nghich` lấy tỷ lệ sau. */
+function chanPhu(h: HangDuDoan, p: Phu | undefined, thuan: RegExp, nghich: RegExp, cua: [CuaXien, CuaXien]): ChanXien[] {
+  if (!p) return [];
+  const i = thuan.test(p.tip) ? 0 : nghich.test(p.tip) ? 1 : null;
+  const gia = i === null ? undefined : p.keo[i];
+  return i !== null && typeof gia === "number" ? [{ h, cua: cua[i], gia }] : [];
+}
+
+/** Xiên đội thắng: đội mà tỷ số dự đoán cho thắng. Trận dự đoán hòa thì bỏ. */
+export function xienDoiThang(rows: readonly HangDuDoan[]): Xien | null {
   return gom(
     rows.flatMap((h): ChanXien[] => {
-      if (!h.sapDa || !h.du || !h.mot) return [];
-      const cua = h.du[0] > h.du[1] ? 0 : h.du[0] === h.du[1] ? 1 : 2;
+      if (!h.sapDa || !h.du || !h.mot || h.du[0] === h.du[1]) return [];
+      const cua = h.du[0] > h.du[1] ? 0 : 2;
       return [{ h, cua, gia: h.mot[cua] }];
     }),
-    toiDa,
   );
 }
 
-/** Dự đoán tài/xỉu 2,5 của một trận: `tip` "Over 2.5"/"Under 2.5", `keo` = [Tài, Xỉu]. */
-export type TraTaiXiu = (slug: string) => { tip: string; keo: number[] } | null | undefined;
+/** Xiên tài/xỉu 2,5 bàn. Trận tệp không ghi tài xỉu thì bỏ. */
+export function xienTaiXiu(rows: readonly HangDuDoan[], tra: TraKeoPhu): Xien | null {
+  return gom(rows.flatMap((h) => (h.sapDa ? chanPhu(h, tra(h.slug)?.pOu, /over/i, /under/i, ["tai", "xiu"]) : [])));
+}
 
-/** Xiên tài/xỉu 2,5 bàn. Trận tệp không ghi tài xỉu thì bỏ. Dưới 3 chân → null. */
-export function xienTaiXiu(rows: readonly HangDuDoan[], tra: TraTaiXiu, toiDa = 5): Xien | null {
-  return gom(
-    rows.flatMap((h): ChanXien[] => {
-      const p = h.sapDa ? tra(h.slug) : null;
-      if (!p) return [];
-      const tai = /over/i.test(p.tip);
-      if (!tai && !/under/i.test(p.tip)) return [];
-      const gia = p.keo[tai ? 0 : 1];
-      return typeof gia === "number" ? [{ h, cua: tai ? "tai" : "xiu", gia }] : [];
-    }),
-    toiDa,
-  );
+/** Xiên hai đội cùng ghi bàn (có / không). */
+export function xienHaiDoiGhi(rows: readonly HangDuDoan[], tra: TraKeoPhu): Xien | null {
+  return gom(rows.flatMap((h) => (h.sapDa ? chanPhu(h, tra(h.slug)?.pBtts, /yes/i, /no/i, ["co", "khong"]) : [])));
 }
 
 export interface XienNgay {
-  /** Khoá ngắn làm id khối: "xien-3", "xien-5", "tai-xiu", slug giải. */
+  /** id khối, kiểu "nations-league-thang". */
   khoa: string;
-  ten: string;
+  giai: string;
+  loai: LoaiXien;
   xien: Xien;
 }
 
+const khoaGiai = (ten: string) =>
+  ten.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/gi, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
 /**
- * Các xiên của một ngày: xiên 3 + xiên 5 đội thắng, xiên tài/xỉu, rồi xiên riêng từng giải lớn
- * có đủ 3 trận. Ngày không gom nổi xiên nào → mảng rỗng.
+ * Các xiên của một ngày, gom theo giải: giải nhiều trận đứng trước, mỗi giải lần lượt đội thắng,
+ * tài xỉu, hai đội ghi bàn. Giải chỉ có 1 trận thì không có xiên. Không gom nổi → mảng rỗng.
  */
-export function cacXienNgay(rows: readonly HangDuDoan[], tra: TraTaiXiu): XienNgay[] {
-  const ba = xienTrongNgay(rows, 3);
-  const nam = xienTrongNgay(rows, 5);
-  const tx = xienTaiXiu(rows, tra);
-  return [
-    ...(ba ? [{ khoa: "xien-3", ten: "Xiên 3 đội thắng", xien: ba }] : []),
-    // Chỉ có 3–4 chân thì xiên 5 trùng hoặc gần trùng xiên 3 → không lặp.
-    ...(nam && nam.chan.length === 5 ? [{ khoa: "xien-5", ten: "Xiên 5 đội thắng", xien: nam }] : []),
-    ...(tx ? [{ khoa: "tai-xiu", ten: `Xiên ${tx.chan.length} tài xỉu`, xien: tx }] : []),
-    ...GIAI_TRANG.flatMap((g) => {
-      const x = xienTrongNgay(rows.filter((h) => g.khop.test(h.giai)));
-      return x ? [{ khoa: g.slug, ten: `Xiên ${x.chan.length} ${g.ten}`, xien: x }] : [];
-    }),
-  ];
+export function cacXienNgay(rows: readonly HangDuDoan[], tra: TraKeoPhu): XienNgay[] {
+  const theoGiai = new Map<string, HangDuDoan[]>();
+  for (const h of rows) theoGiai.set(h.giai, [...(theoGiai.get(h.giai) ?? []), h]);
+  return [...theoGiai]
+    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+    .flatMap(([giai, ds]) =>
+      ([["thang", xienDoiThang(ds)], ["tai-xiu", xienTaiXiu(ds, tra)], ["btts", xienHaiDoiGhi(ds, tra)]] as const).flatMap(([loai, xien]) =>
+        xien ? [{ khoa: `${khoaGiai(giai)}-${loai}`, giai, loai, xien }] : [],
+      ),
+    );
 }

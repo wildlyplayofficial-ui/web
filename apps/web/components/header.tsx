@@ -162,6 +162,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     // Peter 11/11: menu trên chỉ 4 mục; Blog, Phân Tích, Giới Thiệu xuống chân trang.
     // Bỏ Chú Tám chọn, Thành Tích, Kèo (trang vẫn sống, chỉ gỡ khỏi menu).
     { label: nav.predictions, href: "/du-doan", moi: true },
+    { label: nav.parlay, href: "/keo-xien" },
     { label: nav.results, href: "/ket-qua" },
     {
       label: nav.matches,
