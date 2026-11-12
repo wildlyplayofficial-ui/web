@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { DoiLogo } from "@/components/doi-logo";
 import { DongTran } from "@/components/dong-tran";
+import { XienHomNay } from "@/components/xien-hom-nay";
 import { ChuThichPhongDo, DauCotKeo } from "@/components/phong-do-dong";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { ngayTabDuDoan, ngayThang, thuVN, tieuDeH1 } from "@/lib/du-doan-tran";
@@ -99,6 +100,7 @@ export function DuDoanPZ({
         </select>
       </div>
 
+      {!giai && <XienHomNay rows={trongNgay} tieuDe={ngay === homNay ? "Xiên hôm nay" : `Xiên ${thuVN(ngay)} ${ngayThang(ngay)}`} lang={lang} />}
       {nhom.length > 0 && (
         <div className="pt-2.5">
           <ChuThichPhongDo />

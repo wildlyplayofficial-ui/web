@@ -142,6 +142,7 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   // Trang theo giải + theo ngày (Peter 11/11): giải luôn nộp; ngày chỉ nộp ngày có trận, mỗi link một lần.
   const homNay = ngayVN(Date.now());
   const locRoutes: MetadataRoute.Sitemap = [
+    "/du-doan/xien",
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
     ...[...new Set(hang.map((h) => h.ngay).filter((n) => n > homNay && n <= lechNgay(homNay, 6)).map((n) => duongDanNgay(n, homNay)))],
   ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
