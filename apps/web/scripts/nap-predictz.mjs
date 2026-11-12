@@ -81,6 +81,14 @@ const so = (s) =>
     .replace(/\b(fc|afc|cf|sc|united|utd|city|town|athletic|the)\b/g, "")
     .replace(/[^a-z0-9]/g, "");
 const giong = (x, y) => x && y && (x === y || x.includes(y) || y.includes(x));
+const tu = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z0-9]+/).filter((w) => w.length >= 4);
+const chungTu = (x, y) => tu(x).some((w) => tu(y).includes(w));
+// Khớp: cả 2 đội giống, hoặc 1 đội giống + đội kia chung 1 từ >= 4 chữ (Congo DR / DR Congo, Rep of Ireland / Republic of Ireland).
+const khop = (f, d) => {
+  const n = giong(f.h, so(d.nha));
+  const k = giong(f.a, so(d.khach));
+  return (n && k) || (n && chungTu(f.an, d.khach)) || (k && chungTu(f.hn, d.nha));
+};
 const thieu = hang.filter((d) => !d.gioUtc);
 let ghep = 0;
 if (thieu.length > 0 && LK && LS) {
@@ -95,13 +103,15 @@ if (thieu.length > 0 && LK && LS) {
       }
       const j = await r.json();
       for (const f of j?.data?.fixtures ?? []) {
-        fx.push({ d: f.date, t: f.time, h: so(f.home?.name ?? f.home_name), a: so(f.away?.name ?? f.away_name) });
+        const hn = f.home?.name ?? f.home_name;
+        const an = f.away?.name ?? f.away_name;
+        fx.push({ d: f.date, t: f.time, hn, an, h: so(hn), a: so(an) });
       }
       if (!j?.data?.next_page) break;
     }
   }
   for (const d of thieu) {
-    const f = fx.find((f) => f.d === d.ngay && giong(f.h, so(d.nha)) && giong(f.a, so(d.khach)));
+    const f = fx.find((f) => f.d === d.ngay && khop(f, d));
     if (f) {
       d.gioUtc = `${f.d}T${f.t.length === 5 ? `${f.t}:00` : f.t}Z`;
       ghep++;
