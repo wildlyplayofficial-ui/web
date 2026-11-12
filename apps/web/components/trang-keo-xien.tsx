@@ -93,9 +93,8 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
       </h1>
       <p className="mt-1.5 text-[15px] leading-relaxed">
         {ds.length > 0
-          ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải, gom từ bảng dự đoán của banhbong.net: xiên đội thắng, xiên tài xỉu 2.5 bàn và xiên hai đội ghi bàn. Mỗi trận có kèo 1X2 (Chủ, Hòa, Khách) và phong độ 5 trận gần nhất của hai đội, trận mới nhất nằm bên phải. `
-          : `Chưa gom được kèo xiên bóng đá ${ten}: cần một giải có từ 2 trận chưa đá trở lên. `}
-        Giờ đá là giờ Việt Nam; bấm vào trận để xem dự đoán tỷ số.
+          ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải: xiên đội thắng, tài xỉu 2.5 bàn, hai đội ghi bàn. Giờ Việt Nam, phong độ 5 trận gần nhất (mới nhất bên phải).`
+          : `Chưa có kèo xiên bóng đá ${ten}: cần một giải có từ 2 trận chưa đá.`}
       </p>
 
       <div className="mt-3 lg:columns-2 lg:gap-x-4">
@@ -119,8 +118,7 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
         <h2 className={H2}>Kèo xiên là gì?</h2>
         <div className={DOAN}>
           <p>
-            Kèo xiên bóng đá là cách gộp nhiều lựa chọn ở nhiều trận vào một lần chọn. Xiên 3 gồm 3 trận, xiên 5 gồm 5 trận.
-            Xiên chỉ đúng khi mọi lựa chọn trong đó cùng đúng: sai một trận là hỏng cả xiên.
+            Kèo xiên bóng đá là gộp lựa chọn của nhiều trận vào một lần chọn: xiên 3 gồm 3 trận. Sai một trận là hỏng cả xiên.
           </p>
         </div>
       </section>
@@ -129,9 +127,8 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
         <h2 className={H2}>Xiên đội thắng, xiên tài xỉu khác nhau thế nào?</h2>
         <div className={DOAN}>
           <p>
-            Xiên đội thắng gộp các đội được dự đoán thắng trong cùng một giải. Xiên tài xỉu gộp lựa chọn trên hoặc dưới 2.5 bàn của từng trận.
-            Xiên hai đội ghi bàn gộp lựa chọn cả hai đội cùng ghi bàn hoặc không. Trang này lấy đúng cửa đang ghi trên{" "}
-            <Link href={withLang("/du-doan", lang)} className="text-brand hover:underline">bảng dự đoán bóng đá hôm nay</Link>, trận dự đoán hòa không vào xiên đội thắng.
+            Xiên đội thắng gộp các đội được dự đoán thắng, xiên tài xỉu gộp cửa trên hoặc dưới 2.5 bàn, xiên hai đội ghi bàn gộp cửa có hoặc không. Các cửa lấy từ{" "}
+            <Link href={withLang("/du-doan", lang)} className="text-brand hover:underline">bảng dự đoán bóng đá hôm nay</Link>.
           </p>
         </div>
       </section>
@@ -140,8 +137,8 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
         <h2 className={H2}>Nên chọn xiên mấy trận?</h2>
         <div className={DOAN}>
           <p>
-            Thêm trận thì tỷ lệ gộp tăng, nhưng khả năng đúng hết giảm theo. Ba trận mỗi trận 70% khả năng đúng thì cả xiên chỉ còn khoảng 34%;
-            năm trận như vậy còn khoảng 17%. Vì vậy xiên 5 luôn khó trúng hơn xiên 3. Trận đá xong được chấm đúng sai công khai ở{" "}
+            Càng nhiều trận, tỷ lệ gộp càng cao nhưng càng khó đúng hết: mỗi trận 70% khả năng đúng thì xiên 3 còn khoảng 34%, xiên 5 còn khoảng 17%.
+            Kết quả được chấm công khai ở{" "}
             <Link href={withLang("/du-doan/thanh-tich", lang)} className="text-brand hover:underline">bảng thành tích dự đoán</Link>.
           </p>
         </div>
