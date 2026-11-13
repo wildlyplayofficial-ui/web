@@ -59,7 +59,7 @@ for (const d of hang) {
   soKq++;
 }
 
-// Sổ thành tích (/du-doan/thanh-tich): ghi thêm mọi trận đã có kết quả, KHÔNG bao giờ xoá
+// Sổ thành tích (số nội bộ, không hiện lên web — Peter 13/11): ghi thêm mọi trận đã có kết quả, KHÔNG bao giờ xoá
 // (tệp tuần chỉ giữ 7 ngày). Cùng trận thì dòng mới đè dòng cũ.
 const SO = path.join(path.dirname(RA), "thanh-tich.json");
 const so0 = fs.existsSync(SO) ? JSON.parse(fs.readFileSync(SO, "utf8")) : [];
