@@ -138,8 +138,6 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
         <div className={DOAN}>
           <p>
             Càng nhiều trận, tỷ lệ gộp càng cao nhưng càng khó đúng hết: mỗi trận 70% khả năng đúng thì xiên 3 còn khoảng 34%, xiên 5 còn khoảng 17%.
-            Kết quả được chấm công khai ở{" "}
-            <Link href={withLang("/du-doan/thanh-tich", lang)} className="text-brand hover:underline">bảng thành tích dự đoán</Link>.
           </p>
         </div>
       </section>

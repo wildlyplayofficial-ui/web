@@ -166,5 +166,5 @@ export function keoPhuTuan(slug: string): KeoPhu | null {
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }
 
-/** Các dòng tệp tuần hiện tại (bảng thành tích gộp với sổ data/thanh-tich.json). */
+/** Các dòng tệp tuần hiện tại. */
 export const dongTuan = (): readonly DongTuan[] => DONG;
