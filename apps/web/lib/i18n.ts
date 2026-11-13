@@ -856,7 +856,7 @@ const vi: Dict = {
     hitRate: "đoán đúng",
     matchesUnit: "trận",
     homeTitle: "Nhận định và dự đoán tỷ số bóng đá",
-    homeSub: "banhbong.net dự đoán tỷ số, kèo xiên, lịch thi đấu và bảng xếp hạng bóng đá theo giờ Việt Nam. Tỷ số chốt trước giờ bóng lăn, đá xong ghi công khai đúng hay sai.",
+    homeSub: "banhbong.net dự đoán tỷ số, kèo xiên, lịch thi đấu và bảng xếp hạng bóng đá theo giờ Việt Nam. Tỷ số chốt trước giờ bóng lăn.",
     upcoming: "Trận sắp đá",
     seeAllShort: "Xem tất cả dự đoán",
     hasArticle: "Có nhận định",
@@ -888,7 +888,7 @@ const vi: Dict = {
     asOf: "tính đến",
   },
   home: {
-    seoDescription: "Nhận định bóng đá miễn phí mỗi ngày, công khai cả thắng lẫn thua. Lịch thi đấu giờ Việt Nam, xem ở đâu, BXH Ngoại hạng Anh, La Liga, Serie A, Bundesliga.",
+    seoDescription: "Nhận định và dự đoán tỷ số bóng đá miễn phí mỗi ngày. Lịch thi đấu giờ Việt Nam, xem ở đâu, BXH Ngoại hạng Anh, La Liga, Serie A, Bundesliga.",
     latestAnalysis: "Phân tích mới nhất",
     latestPredictions: "Nhận định mới nhất",
     latestNews: "Tin mới nhất",

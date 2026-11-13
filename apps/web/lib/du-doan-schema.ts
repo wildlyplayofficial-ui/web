@@ -111,6 +111,6 @@ export function metaDuDoan(now: number | Date): { tieuDe: string; moTa: string }
   const ngay = ngayVNChu(now);
   return {
     tieuDe: `Dự đoán bóng đá hôm nay ${ngay}`,
-    moTa: `Dự đoán tỷ số từng trận ngày ${ngay} (giờ Việt Nam): các giải đấu trong ngày, kèm bảng đúng/sai công khai sau mỗi trận.`,
+    moTa: `Dự đoán tỷ số từng trận ngày ${ngay} (giờ Việt Nam): các giải đấu trong ngày, tỷ số chốt trước giờ bóng lăn.`,
   };
 }
