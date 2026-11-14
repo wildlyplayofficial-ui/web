@@ -177,6 +177,14 @@ export function keoPhuTuan(slug: string): KeoPhu | null {
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }
 
+export interface PhongDoChung { c?: number[]; gn: DongTuan["gn"]; gk: DongTuan["gk"]; ngay: string }
+
+/** Điểm phong độ chung + 10 trận gần nhất của một dòng tệp tuần (cho bảng đội phong độ tốt nhất); không có dòng → null. */
+export function phongDoChungTuan(slug: string): PhongDoChung | null {
+  const d = timDong(slug);
+  return d ? { c: d.diem?.c, gn: d.gn, gk: d.gk, ngay: d.ngay } : null;
+}
+
 export type GanNhat = Pick<DongTuan, "nha" | "khach" | "gn" | "gk">;
 
 /** 10 trận gần nhất của hai đội một trận tệp tuần, KHÔNG lọc theo độ mới (đội nghỉ lâu vẫn hiện); cả hai rỗng → null. */
