@@ -1,6 +1,7 @@
 import type { Keo3Tuan } from "@/lib/du-doan-tuan";
 import { cauDnb, cauKqBtts, cauKqOu, docDnb, docKqBtts, docKqOu, KHOA_BTTS, KHOA_OU, oThapNhat } from "@/lib/tran-keo3";
 import { tenDoiViet } from "@/lib/ten-viet";
+import { Ty } from "@/components/ty-le";
 
 /** Ba hộp tỷ lệ phụ (Hòa hoàn tiền · Kết quả + cả hai đội ghi bàn · Kết quả + tài xỉu 2.5). Hộp nào thiếu số thì không vẽ. */
 
@@ -20,7 +21,7 @@ function Luoi({ cot, hang, khoa, g }: { cot: string[]; hang: string[]; khoa: rea
         {khoa.map((k, i) => (
           <span key={k} className="contents">
             {i % 2 === 0 && <span className="self-center pr-1 text-left text-muted">{hang[i / 2]}</span>}
-            <span className={ODS(k === hot)}>{g[k].toFixed(2)}</span>
+            <span className={ODS(k === hot)}><Ty v={g[k]} /></span>
           </span>
         ))}
       </div>
@@ -44,8 +45,8 @@ export function TranKeo3({ k }: { k: Keo3Tuan }) {
           <div className="mt-3 grid max-w-[560px] grid-cols-2 gap-1 text-center text-xs sm:text-sm">
             <span className="py-1 text-muted">Nhà thắng</span>
             <span className="py-1 text-muted">Khách thắng</span>
-            <span className={ODS(dnb[0] <= dnb[1])}>{dnb[0].toFixed(2)}</span>
-            <span className={ODS(dnb[1] < dnb[0])}>{dnb[1].toFixed(2)}</span>
+            <span className={ODS(dnb[0] <= dnb[1])}><Ty v={dnb[0]} /></span>
+            <span className={ODS(dnb[1] < dnb[0])}><Ty v={dnb[1]} /></span>
           </div>
         </section>
       )}

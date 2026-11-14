@@ -10,6 +10,7 @@ import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demNhom, dongTipNgay, type DongTip, type LoaiTip } from "@/lib/tip-ngay";
+import { Ty } from "@/components/ty-le";
 
 /**
  * Ba trang gom theo loại kèo cho NGÀY HÔM NAY (Peter gật 14/11): /tai-xiu-hom-nay,
@@ -162,7 +163,7 @@ export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTip; lang
       </div>
       <div className="min-w-[72px] text-center">
         <span className="inline-block min-w-[64px] rounded-md border-2 border-brand px-2 py-px font-display text-base font-bold text-brand tabular-nums">{d.nhom}</span>
-        {d.keo !== null && <p className="mt-1 text-xs text-muted">Tỷ lệ <b className="tabular-nums text-ink">{d.keo.toFixed(2)}</b></p>}
+        {d.keo !== null && <p className="mt-1 text-xs text-muted">Tỷ lệ <b className="tabular-nums text-ink"><Ty v={d.keo} /></b></p>}
       </div>
     </Link>
   );

@@ -5,6 +5,7 @@ import { cauHaiDoiGhi, giaiThichTaiXiu, thuVN } from "@/lib/du-doan-tran";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
 import { kenhTheoTenViet } from "@/lib/kenh-phat-song";
 import { mauKQ, type KQ } from "@/lib/phong-do";
+import { Ty } from "@/components/ty-le";
 
 /**
  * Các khối trên trang riêng một trận /du-doan/{slug} (mẫu Peter duyệt 10/11).
@@ -103,7 +104,7 @@ export function TranBaO({ h, lang }: { h: HangDuDoan; lang: Lang }) {
               <p key={i} className={`min-w-0 rounded-lg border px-1.5 py-2 text-center ${i === chieu ? "border-brand" : "border-line"}`}>
                 <span className="block text-xs leading-tight text-muted sm:hidden">{nhanNgan[i]}</span>
                 <span className="hidden text-xs leading-tight text-muted sm:block">{nhan[i]}</span>
-                <b className={`font-display text-xl tabular-nums ${i === chieu ? "text-brand" : ""}`}>{x.toFixed(2)}</b>
+                <b className={`font-display text-xl tabular-nums ${i === chieu ? "text-brand" : ""}`}><Ty v={x} /></b>
               </p>
             ))}
           </div>

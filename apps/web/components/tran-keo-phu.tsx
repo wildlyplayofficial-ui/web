@@ -1,6 +1,7 @@
 import type { KeoPhu } from "@/lib/du-doan-tuan";
 import { cauChuoi, cauTySo, docChuoi, type ThiTruongPhu } from "@/lib/tran-keo-phu";
 import { tenDoiViet } from "@/lib/ten-viet";
+import { Ty } from "@/components/ty-le";
 
 /**
  * Khối hai đội ghi bàn · tài xỉu 2,5 · tỷ số chính xác trên trang trận. Thị trường nào tệp không
@@ -48,7 +49,7 @@ function ThiTruong({ ten, loai, p, nha, khach }: { ten: string; loai: "btts" | "
         Dự đoán: <b className="font-display text-brand">{TIP[loai](p.tip)}</b>
         {coKeo && (
           <span className="text-muted">
-            {" "}· Tỷ lệ {co} <b className="tabular-nums text-ink">{p.keo[0].toFixed(2)}</b>, {khong} <b className="tabular-nums text-ink">{p.keo[1].toFixed(2)}</b>
+            {" "}· Tỷ lệ {co} <b className="tabular-nums text-ink"><Ty v={p.keo[0]} /></b>, {khong} <b className="tabular-nums text-ink"><Ty v={p.keo[1]} /></b>
           </span>
         )}
       </p>
