@@ -20,6 +20,8 @@ import { tranCuaGiai } from "@/lib/bxh-san-tai";
 
 // 10 phút (trước 3600): bản dựng lúc build có thể rỗng nếu nhà cung cấp chập chờn, phải tự lành nhanh.
 export const revalidate = 600;
+// Dựng nguội gọi nhiều lượt nhà cung cấp (bảng + lịch sử + phong độ): cho thêm thời gian để khỏi bị cắt giữa chừng.
+export const maxDuration = 60;
 
 /** League palette for competition OG cards (spec §1: hubs use league colors). */
 const LEAGUE_COLORS: Record<string, string> = {
