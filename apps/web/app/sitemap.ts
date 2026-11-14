@@ -11,6 +11,7 @@ import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { cacXienNgay } from "@/lib/xien";
+import { CHU_DE, xienChuDeTheoNgay } from "@/lib/xien-chu-de";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 
@@ -149,6 +150,8 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   const locRoutes: MetadataRoute.Sitemap = [
     // Kèo xiên: trang hôm nay luôn nộp, ngày sau chỉ nộp ngày gom được xiên (ngày rỗng trả 404).
     "/keo-xien",
+    // Trang chủ đề: chỉ nộp khi 7 ngày tới có ít nhất một xiên (lúc rỗng trang vẫn mở được nhưng không mời Google).
+    ...CHU_DE.filter((c) => xienChuDeTheoNgay(c.khoa, hang, [homNay, ...ngaySau], keoPhuTuan).length > 0).map((c) => `/keo-xien/${c.slug}`),
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
     ...ngaySau.map((n) => duongDanNgay(n, homNay)),
