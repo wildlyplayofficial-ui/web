@@ -1,4 +1,5 @@
 import type { KQ } from "@/lib/phong-do";
+import { Ty } from "@/components/ty-le";
 
 /**
  * Ô phong độ + tỷ lệ 1·X·2 gọn cho dòng trận /du-doan (kiểu PredictZ, Peter gật 11/11).
@@ -57,7 +58,7 @@ export function Keo1X2({ mot, chieu }: { mot: readonly [number, number, number];
             i === chieu ? "border-brand font-bold text-brand" : "border-line bg-card"
           }`}
         >
-          {x.toFixed(2)}
+          <Ty v={x} />
         </span>
       ))}
     </span>

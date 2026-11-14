@@ -5,6 +5,7 @@ import { withLang, type Lang } from "@/lib/i18n";
 import type { CuaXien, Xien } from "@/lib/xien";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { coGiaiGoc } from "@/lib/ten-viet";
+import { Ty } from "@/components/ty-le";
 
 const chuCua = (cua: CuaXien, h: HangDuDoan) =>
   cua === "tai" ? "Tài 2.5 bàn" : cua === "xiu" ? "Xỉu 2.5 bàn" : cua === "co" ? "Hai đội cùng ghi bàn" : cua === "khong" ? "Ít nhất một đội không ghi bàn" : `${cua === 0 ? h.nha : h.khach} thắng`;
@@ -28,7 +29,7 @@ export function KhoiXien({ xien, giai, loai, moDau, id, lang }: { xien: Xien; gi
           <span className="min-w-0">{giai}</span>
         </span>
         <span className="mt-0.5 block">
-          {loai} <span className="tabular-nums text-brand">@ {xien.tong.toFixed(2)}</span>
+          {loai} <span className="tabular-nums text-brand">@ <Ty v={xien.tong} /></span>
         </span>
       </h3>
       <p className="mt-0.5 text-[13px] text-muted">{moDau}</p>
@@ -52,11 +53,11 @@ export function KhoiXien({ xien, giai, loai, moDau, id, lang }: { xien: Xien; gi
                 )}
                 {h.mot && (
                   <span className="mt-1 block text-xs tabular-nums text-muted">
-                    Chủ {h.mot[0].toFixed(2)} · Hòa {h.mot[1].toFixed(2)} · Khách {h.mot[2].toFixed(2)}
+                    Chủ <Ty v={h.mot[0]} /> · Hòa <Ty v={h.mot[1]} /> · Khách <Ty v={h.mot[2]} />
                   </span>
                 )}
               </span>
-              <span className="text-base font-bold tabular-nums text-brand">{gia.toFixed(2)}</span>
+              <span className="text-base font-bold tabular-nums text-brand"><Ty v={gia} /></span>
             </Link>
           </li>
         ))}

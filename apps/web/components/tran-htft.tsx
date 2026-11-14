@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { HtftDiem } from "@/lib/du-doan-tuan";
 import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docDiemChung, docHtft, KHOA_HTFT, xacSuatTheoHang } from "@/lib/tran-htft";
 import { tenDoiViet } from "@/lib/ten-viet";
+import { Ty } from "@/components/ty-le";
 
 /**
  * Khối "Hiệp 1 / Cả trận" (9 cửa, tô cửa tỷ lệ thấp nhất) và "Điểm tấn công / phòng ngự" (thang 1 đến 10) của từng đội.
@@ -36,7 +37,7 @@ function Hiep({ k }: { k: HtftDiem }) {
               <span
                 className={`rounded border py-2 font-display font-bold tabular-nums ${khoa === noi ? "border-brand bg-brand/10 text-brand" : "border-line text-ink"}`}
               >
-                {ds[i].toFixed(2)}
+                <Ty v={ds[i]} />
               </span>
             </span>
           ))}

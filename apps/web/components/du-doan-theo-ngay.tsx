@@ -6,6 +6,7 @@ import { DoiLogo } from "@/components/doi-logo";
 import { OKetQua, OPhongDo, OTySoDuDoan } from "@/components/phong-do";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
+import { Ty } from "@/components/ty-le";
 
 /** Cộng/trừ ngày trên khoá YYYY-MM-DD (tính ở UTC để khỏi lệch múi giờ máy). */
 const lechNgay = (khoa: string, n: number) =>
@@ -56,7 +57,7 @@ function Dong({ h, lang, hienTyLe }: { h: HangDuDoan; lang: Lang; hienTyLe: bool
             ))}
             {hienTyLe && h.sapDa && h.mot && (
               <span className="block text-[11px] tabular-nums text-muted">
-                1 {h.mot[0].toFixed(2)} · X {h.mot[1].toFixed(2)} · 2 {h.mot[2].toFixed(2)}
+                1 <Ty v={h.mot[0]} /> · X <Ty v={h.mot[1]} /> · 2 <Ty v={h.mot[2]} />
               </span>
             )}
           </span>

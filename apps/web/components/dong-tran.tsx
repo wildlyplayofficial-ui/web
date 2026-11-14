@@ -3,6 +3,7 @@ import { DoiLogo } from "@/components/doi-logo";
 import { Keo1X2, PhongDoNho } from "@/components/phong-do-dong";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
+import { Ty } from "@/components/ty-le";
 
 /**
  * MỘT dòng trận dùng chung trang chủ, /du-doan và trang trận (mẫu Peter duyệt 10/11).
@@ -95,7 +96,7 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
         ) : h.mot
           ? h.mot.map((x, i) => (
               <span key={i} className={`${O_KEO} ${i === chieu ? "border-brand font-bold text-brand" : "border-line bg-card"}`}>
-                {x.toFixed(2)}
+                <Ty v={x} />
               </span>
             ))
           : h.coBai && (

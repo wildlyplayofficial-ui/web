@@ -6,6 +6,7 @@ import { getDict, resolveLang, withLang } from "@/lib/i18n";
 import { trackTgFollowClick } from "@/lib/analytics";
 import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 import { BrandMark } from "./brand-mark";
+import { DoiDinhDang } from "./doi-dinh-dang";
 
 type FooterLink = { href: string; label: string };
 
@@ -89,6 +90,9 @@ export function Footer() {
             </span>
           </span>
           <p className="mt-2 text-sm text-muted">{dict.footerDisclaimer}</p>
+        </div>
+        <div className="flex justify-center">
+          <DoiDinhDang />
         </div>
         <nav className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
           {groups.map((g) => (
