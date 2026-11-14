@@ -9,7 +9,6 @@ import type { AnalysisArticle } from "@/lib/types";
 import { getTeamHub, TEAM_HUBS } from "@/lib/teams";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
-import { DOI_LUON_INDEX } from "@/lib/chi-muc";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -84,7 +83,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const L = LABELS[lang];
   // Noindex khi chưa đủ bài (tránh trang mỏng dìm site) — tự bật index khi đủ.
   const [news, analysis] = await Promise.all([getNewsByTeam(slug, MIN_INDEX), getAnalysisByTeam(slug, MIN_INDEX)]);
-  const dense = DOI_LUON_INDEX.has(slug) || news.length + analysis.length >= MIN_INDEX;
+  const dense = news.length + analysis.length >= MIN_INDEX;
   return {
     title: L.about(team.name),
     description: L.sub(team.name),
