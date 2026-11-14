@@ -108,6 +108,10 @@ export function tranDuocIndex(h: { slug: string; giai: string; nha: string; khac
   );
 }
 
+/** Hub /doi/{slug} luôn index dù chưa đủ ngưỡng bài (Peter duyệt 14/11/2026: Man United).
+ *  Đội khác vẫn theo ngưỡng MIN_INDEX ở doi/[slug]/page.tsx + HUB_MIN ở sitemap.ts. */
+export const DOI_LUON_INDEX = new Set(["man-united"]);
+
 /** Nhóm sitemap con (12/11): /sitemap/{id}.xml, mỗi nhóm một dòng riêng trong Search Console.
  *  Mục lục /sitemap.xml liệt kê các nhóm này — xem app/sitemap.xml/route.ts. */
 export const NHOM_SITEMAP = ["static", "blog", "analysis", "news", "du-doan"] as const;
