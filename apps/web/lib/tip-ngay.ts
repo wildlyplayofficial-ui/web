@@ -1,5 +1,5 @@
 /**
- * Trang gom theo loại kèo cho một ngày (Peter gật 14/11): "Tài xỉu hôm nay", "Cả 2 đội ghi bàn hôm nay",
+ * Trang gom theo loại kèo cho một ngày (Peter gật 14/11): "Over/Under hôm nay", "Cả 2 đội ghi bàn hôm nay",
  * "Tỷ số hôm nay". Dữ liệu là dòng dự đoán sẵn có (HangDuDoan) + khối thị trường phụ trong tệp tuần
  * (pOu · pBtts · pCs) — chỉ lọc và gom, không tính thêm. Hàm THUẦN, import TƯƠNG ĐỐI để vitest chạy không cần alias.
  */
@@ -21,11 +21,11 @@ export interface KeoPhuTip {
 
 export interface DongTip {
   h: HangDuDoan;
-  /** Nhãn nhóm: "Tài 2.5" · "Xỉu 2.5" · "Có" · "Không" · "2-1". */
+  /** Nhãn nhóm: "Over 2.5" · "Under 2.5" · "Có" · "Không" · "2-1". */
   nhom: string;
   /** Tỷ lệ của cửa được chọn; null = tệp không ghi. */
   keo: number | null;
-  /** Chuỗi 5 trận (CŨ TRƯỚC, mới nhất cuối) của đội nhà / khách; null = không có. Tài xỉu: true = Tài. BTTS: true = cả hai ghi. */
+  /** Chuỗi 5 trận (CŨ TRƯỚC, mới nhất cuối) của đội nhà / khách; null = không có. Over/Under: true = Tài. BTTS: true = cả hai ghi. */
   chuoiNha: boolean[] | null;
   chuoiKhach: boolean[] | null;
 }
@@ -36,12 +36,12 @@ const chuoi = (s: string | undefined, dat: "Y" | "O"): boolean[] | null => {
   return [...s].map((c) => c === dat);
 };
 
-/** Tài/Xỉu: ưu tiên khối pOu, thiếu thì lấy chữ "Tài 2.5" trong dòng; không có gì → null. */
+/** Over/Under: ưu tiên khối pOu, thiếu thì lấy chữ "Over 2.5" trong dòng; không có gì → null. */
 function dongTaiXiu(h: HangDuDoan, k: KeoPhuTip | undefined): DongTip | null {
-  const tai = k?.pOu ? /over/i.test(k.pOu.tip) : h.taiXiu ? /^tài/i.test(h.taiXiu) : null;
+  const tai = k?.pOu ? /over/i.test(k.pOu.tip) : h.taiXiu ? /^(tài|over)/i.test(h.taiXiu) : null;
   if (tai === null) return null;
   const keo = k?.pOu?.keo.length === 2 ? duong(k.pOu.keo[tai ? 0 : 1]) : null;
-  return { h, nhom: tai ? "Tài 2.5" : "Xỉu 2.5", keo, chuoiNha: chuoi(k?.pOu?.h5, "O"), chuoiKhach: chuoi(k?.pOu?.a5, "O") };
+  return { h, nhom: tai ? "Over 2.5" : "Under 2.5", keo, chuoiNha: chuoi(k?.pOu?.h5, "O"), chuoiKhach: chuoi(k?.pOu?.a5, "O") };
 }
 
 function dongHaiDoi(h: HangDuDoan, k: KeoPhuTip | undefined): DongTip | null {

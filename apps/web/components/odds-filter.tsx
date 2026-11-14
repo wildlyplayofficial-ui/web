@@ -116,7 +116,7 @@ export function FilterBar({
   );
 }
 
-/** Nhà cái ra tới ~20 mức chấp và ~20 mức tài xỉu mỗi trận. Đổ hết thì một trận
+/** Nhà cái ra tới ~20 mức chấp và ~20 mức Over/Under mỗi trận. Đổ hết thì một trận
  *  chiếm gần 40 dòng. Bảng nhà cái thật chỉ hiện mức CHUẨN và vài mức kề.
  *
  *  Mức chuẩn = mức hai bên gần ngang giá nhất; đó là mức nhà cái coi là cân bằng.

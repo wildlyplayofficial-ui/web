@@ -861,7 +861,7 @@ const vi: Dict = {
     seeAllShort: "Xem tất cả dự đoán",
     hasArticle: "Có nhận định",
     homeSide: "Chủ nhà",
-    overUnder: "Tài/Xỉu",
+    overUnder: "Over/Under",
   },
   tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",

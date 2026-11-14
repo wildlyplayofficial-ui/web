@@ -8,7 +8,7 @@ const tran = (slug: string, sua: Partial<HangDuDoan> = {}): HangDuDoan => ({
   slug, coBai: false, giai: "Nations League", kickoffUtc: "2026-11-12T19:45:00Z", ngay: "2026-11-13", gio: "02:45",
   nha: "Anh", khach: "Croatia", logoNha: null, logoKhach: null, anhNha: null, anhKhach: null, creditAnh: null,
   du: [3, 0], that: null, dung: null, dungTySo: null, san: null, sapDa: true, pick: false, mot: [1.27, 6.5, 9],
-  formNha: null, formKhach: null, doiDau: null, taiXiu: "Tài 2.5", haiDoiGhi: false, nhan: [], ...sua,
+  formNha: null, formKhach: null, doiDau: null, taiXiu: "Over 2.5", haiDoiGhi: false, nhan: [], ...sua,
 });
 const ANH = tran("tuan-2026-11-12-england-croatia");
 
@@ -42,8 +42,8 @@ describe("câu chữ sinh từ số", () => {
     expect(cauThang({ nha: "Anh", khach: "Croatia", du: null })).toBeNull();
   });
 
-  it("tài 2.5 = từ 3 bàn, xỉu 2.5 = nhiều nhất 2 bàn", () => {
-    expect([giaiThichTaiXiu("Tài 2.5"), giaiThichTaiXiu("Xỉu 2.5")]).toEqual(["dự đoán trận có từ 3 bàn trở lên", "dự đoán trận có nhiều nhất 2 bàn"]);
+  it("Over 2.5 = từ 3 bàn, Under 2.5 = nhiều nhất 2 bàn", () => {
+    expect([giaiThichTaiXiu("Over 2.5"), giaiThichTaiXiu("Under 2.5")]).toEqual(["dự đoán trận có từ 3 bàn trở lên", "dự đoán trận có nhiều nhất 2 bàn"]);
   });
 
   it("'Không' + tỷ số 3-0 → chỉ một đội ghi bàn; nguồn không ghi → null", () => {
@@ -52,7 +52,7 @@ describe("câu chữ sinh từ số", () => {
 
   it("đoạn tóm tắt trước trận", () => {
     expect(cauTomTat(ANH)).toBe(
-      "banhbong.net dự đoán Anh thắng Croatia 3-0 ở Nations League, trận đá lúc 02h45 thứ Sáu 13/11 giờ Việt Nam. Tỷ lệ 1·X·2 đang là 1.27 · 6.50 · 9.00. Dự đoán kèm theo: Tài 2.5, chỉ một đội ghi bàn.",
+      "banhbong.net dự đoán Anh thắng Croatia 3-0 ở Nations League, trận đá lúc 02h45 thứ Sáu 13/11 giờ Việt Nam. Tỷ lệ 1·X·2 đang là 1.27 · 6.50 · 9.00. Dự đoán kèm theo: Over 2.5, chỉ một đội ghi bàn.",
     );
   });
 

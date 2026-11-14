@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // "bảng kèo". Đặt cụm đó lên đầu title và H1.
   const title = "Kèo Bóng Đá Hôm Nay – Tỷ Lệ Kèo & Xác Suất Thực";
   const description =
-    "Cập nhật kèo bóng đá hôm nay gồm kèo châu Á, tài xỉu và 1X2. Xem kèo mở, kèo hiện tại, biến động và xác suất thực sau khi loại margin.";
+    "Cập nhật kèo bóng đá hôm nay gồm kèo châu Á, Over/Under và 1X2. Xem kèo mở, kèo hiện tại, biến động và xác suất thực sau khi loại margin.";
   return {
     title,
     description,
@@ -101,7 +101,7 @@ export default async function OddsBoardPage({ params }: Props) {
       <section className="pt-10 pb-6">
         <h1 className="text-center font-display text-3xl font-bold">Kèo Bóng Đá Hôm Nay</h1>
         <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted">
-          Kèo 1X2, kèo châu Á, tài xỉu — cập nhật mỗi 3 tiếng. Bấm vào 1 trận để xem xác suất thực (đã bóc
+          Kèo 1X2, kèo châu Á, Over/Under — cập nhật mỗi 3 tiếng. Bấm vào 1 trận để xem xác suất thực (đã bóc
           phần nhà cái giữ lại) và kèo đã chạy thế nào từ lúc mở tới giờ. Chỉ để tham khảo — banhbong.net
           không tổ chức cá cược.
         </p>

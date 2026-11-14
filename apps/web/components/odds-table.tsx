@@ -14,7 +14,7 @@ import { teamBadge } from "@/lib/team-badges";
 
 /**
  * Bảng kèo kiểu trang nhà cái (Nick 25/8: "user quen nhìn kiểu này rồi").
- * Sáu cột: chấp / tài xỉu / 1X2, mỗi thứ hai bản — toàn trận và hiệp 1.
+ * Sáu cột: chấp / Over/Under / 1X2, mỗi thứ hai bản — toàn trận và hiệp 1.
  *
  * CHỈ dùng cho màn hình rộng. Điện thoại vẫn là dòng gọn bấm-mở của
  * OddsBoardList — nhét sáu cột vào 390px thì không đọc nổi.
@@ -52,7 +52,7 @@ function So({ hien, mo }: { hien: number | null; mo?: number | null }) {
 }
 
 /** Cột 1X2 giữ GIÁ THẬP PHÂN, không đổi sang Malay.
- *  Đọc kỹ ảnh mẫu Nick gửi: cột chấp và tài xỉu là số Malay (-0.98 / 0.92),
+ *  Đọc kỹ ảnh mẫu Nick gửi: cột chấp và Over/Under là số Malay (-0.98 / 0.92),
  *  nhưng cột 1X2 vẫn là thập phân (2.36 / 3.35 / 3.05) và không có số âm.
  *  Bảng nhà cái đâu cũng vậy — đổi cả cột 1X2 sang Malay là sai kiểu. */
 function SoThapPhan({ hien, mo }: { hien: number | null; mo?: number | null }) {
@@ -96,7 +96,7 @@ function LogoDoi({ ten }: { ten: string }) {
   );
 }
 
-/** Mức chấp / mức tài xỉu, in kèm dấu như bảng nhà cái.
+/** Mức chấp / mức Over/Under, in kèm dấu như bảng nhà cái.
  *
  *  Khung rộng CỐ ĐỊNH và giữ chỗ cả khi rỗng: dòng trên có nhãn ("-0.5"), dòng
  *  dưới không — để nhãn co giãn thì hai số odds trong cùng ô lệch nhau
@@ -105,13 +105,13 @@ function Muc({ chu }: { chu: string }) {
   return <span className="mr-1.5 inline-block w-[30px] shrink-0 text-right text-[11px] text-muted tabular-nums">{chu}</span>;
 }
 
-/** Chữ nhãn mức: kèo chấp in dấu +/-, tài xỉu in số trần. */
+/** Chữ nhãn mức: kèo chấp in dấu +/-, Over/Under in số trần. */
 function nhanMuc(hdp: number | null, totals: boolean): string {
   if (hdp == null) return "";
   return totals ? String(hdp) : hdp > 0 ? `+${hdp}` : String(hdp);
 }
 
-/** Một ô kèo hai vế (chấp: chủ/khách · tài xỉu: tài/xỉu). */
+/** Một ô kèo hai vế (chấp: chủ/khách · Over/Under: Over/Under). */
 function OChap({ line, totals = false }: { line?: MarketLine; totals?: boolean }) {
   if (!line) return <td className={`border-l border-line px-2 py-1 ${NEN_KEO}`} />;
   const c = line.current;
@@ -148,8 +148,8 @@ function O1x2({ line }: { line?: MarketLine }) {
 const NEN_KEO = "bg-brand-dim/15";
 
 const COT = [
-  "Chấp Toàn Trận", "Tài Xỉu Toàn Trận", "1X2 Toàn Trận",
-  "Chấp Hiệp 1", "Tài Xỉu Hiệp 1", "1X2 Hiệp 1",
+  "Chấp Toàn Trận", "Over/Under Toàn Trận", "1X2 Toàn Trận",
+  "Chấp Hiệp 1", "Over/Under Hiệp 1", "1X2 Hiệp 1",
 ];
 
 function gioVN(iso: string): { ngay: string; gio: string } {

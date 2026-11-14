@@ -9,10 +9,11 @@ import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type Nho
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { xepDoiPhongDo } from "@/lib/doi-phong-do";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
-import { duongTipGiai, giaiCoTip } from "@/lib/tip-giai";
+import { duongTipGiai, giaiCoTip, GOC_TIP_GIAI } from "@/lib/tip-giai";
+import { dongTipNgay, type LoaiTip } from "@/lib/tip-ngay";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { keoPhuTuan, keoThangTuan, phongDoChungTuan } from "@/lib/du-doan-tuan";
-import { dongTipNgay } from "@/lib/tip-ngay";
+
 import { cacXienNgay } from "@/lib/xien";
 import { CHU_DE, xienChuDeTheoNgay } from "@/lib/xien-chu-de";
 import { duDoanCua } from "@/lib/du-doan-nguon";
@@ -156,11 +157,15 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     // Trang chủ đề: chỉ nộp khi 7 ngày tới có ít nhất một xiên (lúc rỗng trang vẫn mở được nhưng không mời Google).
     ...CHU_DE.filter((c) => xienChuDeTheoNgay(c.khoa, hang, [homNay, ...ngaySau], keoPhuTuan).length > 0).map((c) => `/keo-xien/${c.slug}`),
     // Gom theo loại kèo hôm nay + chuỗi đáng chú ý (14/11).
-    "/tai-xiu-hom-nay",
+    "/over-under-hom-nay",
     "/ca-2-doi-ghi-ban-hom-nay",
     "/ty-so-hom-nay",
     // Bản ngày mai: chỉ nộp khi ngày mai có trận (trang rỗng là noindex).
-    ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/tai-xiu-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
+    ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/over-under-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
+    // Tip theo ngày cụ thể (3 ngày sau ngày mai, mục I 14/11): chỉ nộp ngày + loại có ít nhất một dòng tip.
+    ...([2, 3, 4] as const).flatMap((i) =>
+      (Object.keys(GOC_TIP_GIAI) as LoaiTip[]).flatMap((l) => (dongTipNgay(hang, lechNgay(homNay, i), l, keoPhuTuan).length > 0 ? [`${GOC_TIP_GIAI[l]}/ngay/${lechNgay(homNay, i)}`] : [])),
+    ),
     // Cả 2 đội ghi bàn + thắng: mỗi ngày chỉ nộp khi có ít nhất một trận đủ số liệu (15/11).
     ...(dongTipNgay(hang, homNay, "thang-hai-doi-ghi-ban", keoThangTuan).length > 0 ? ["/ca-2-doi-ghi-ban-thang-hom-nay"] : []),
     ...(dongTipNgay(hang, lechNgay(homNay, 1), "thang-hai-doi-ghi-ban", keoThangTuan).length > 0 ? ["/ca-2-doi-ghi-ban-thang-ngay-mai"] : []),

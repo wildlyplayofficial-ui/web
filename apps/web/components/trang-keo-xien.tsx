@@ -32,8 +32,8 @@ export async function xienCuaNgay(ngay: string): Promise<{ ds: XienNgay[]; coNga
 
 export function metaKeoXien(ngay: string, homNay: string, lang: Lang): Metadata {
   const ten = `${tenNgay(ngay, homNay)} ${ngayThang(ngay)}`;
-  const title = ngay === homNay ? "Kèo xiên bóng đá hôm nay: xiên đội thắng, tài xỉu" : `Kèo xiên bóng đá ${ten}`;
-  const description = `Kèo xiên bóng đá ${ten} theo giờ Việt Nam, gom theo từng giải: xiên đội thắng, xiên tài xỉu 2.5 bàn, xiên hai đội ghi bàn, kèm tỷ lệ từng trận và tỷ lệ gộp.`;
+  const title = ngay === homNay ? "Kèo xiên bóng đá hôm nay: xiên đội thắng, Over/Under" : `Kèo xiên bóng đá ${ten}`;
+  const description = `Kèo xiên bóng đá ${ten} theo giờ Việt Nam, gom theo từng giải: xiên đội thắng, xiên Over/Under 2.5 bàn, xiên hai đội ghi bàn, kèm tỷ lệ từng trận và tỷ lệ gộp.`;
   return {
     title,
     description,
@@ -96,7 +96,7 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
       </h1>
       <p className="mt-1.5 text-[15px] leading-relaxed">
         {ds.length > 0
-          ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải: xiên đội thắng, tài xỉu 2.5 bàn, hai đội ghi bàn. Giờ Việt Nam, phong độ 5 trận gần nhất (mới nhất bên phải).`
+          ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải: xiên đội thắng, Over/Under 2.5 bàn, hai đội ghi bàn. Giờ Việt Nam, phong độ 5 trận gần nhất (mới nhất bên phải).`
           : `Chưa có kèo xiên bóng đá ${ten}: cần một giải có từ 2 trận chưa đá.`}
       </p>
 
@@ -130,10 +130,10 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
       </section>
 
       <section className="mt-8">
-        <h2 className={H2}>Xiên đội thắng, xiên tài xỉu khác nhau thế nào?</h2>
+        <h2 className={H2}>Xiên đội thắng, xiên Over/Under khác nhau thế nào?</h2>
         <div className={DOAN}>
           <p>
-            Xiên đội thắng gộp các đội được dự đoán thắng, xiên tài xỉu gộp cửa trên hoặc dưới 2.5 bàn, xiên hai đội ghi bàn gộp cửa có hoặc không. Các cửa lấy từ{" "}
+            Xiên đội thắng gộp các đội được dự đoán thắng, xiên Over/Under gộp cửa Over hoặc Under 2.5, xiên hai đội ghi bàn gộp cửa có hoặc không. Các cửa lấy từ{" "}
             <Link href={withLang("/du-doan", lang)} className="text-brand hover:underline">bảng dự đoán bóng đá hôm nay</Link>.
           </p>
         </div>

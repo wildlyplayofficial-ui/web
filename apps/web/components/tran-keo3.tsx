@@ -3,7 +3,7 @@ import { cauDnb, cauKqBtts, cauKqOu, docDnb, docKqBtts, docKqOu, KHOA_BTTS, KHOA
 import { tenDoiViet } from "@/lib/ten-viet";
 import { ChuTy, Ty } from "@/components/ty-le";
 
-/** Ba hộp tỷ lệ phụ (Hòa hoàn tiền · Kết quả + cả hai đội ghi bàn · Kết quả + tài xỉu 2.5). Hộp nào thiếu số thì không vẽ. */
+/** Ba hộp tỷ lệ phụ (Hòa hoàn tiền · Kết quả + cả hai đội ghi bàn · Kết quả + Over/Under 2.5). Hộp nào thiếu số thì không vẽ. */
 
 const O = "mt-3 rounded-card border border-line bg-card p-4";
 const NHAN = "text-xs font-semibold uppercase tracking-wide text-muted";
@@ -59,9 +59,9 @@ export function TranKeo3({ k }: { k: Keo3Tuan }) {
       )}
       {ou && (
         <section className={O} data-hop="keo3">
-          <h2 className={NHAN}>Kết quả + tài xỉu 2.5</h2>
+          <h2 className={NHAN}>Kết quả + Over/Under 2.5</h2>
           <p className="mt-2 text-[15px]"><ChuTy text={cauKqOu(ou, nha, khach)} /></p>
-          <Luoi cot={["Tài", "Xỉu"]} hang={hang} khoa={KHOA_OU} g={ou} />
+          <Luoi cot={["Over", "Under"]} hang={hang} khoa={KHOA_OU} g={ou} />
         </section>
       )}
     </>

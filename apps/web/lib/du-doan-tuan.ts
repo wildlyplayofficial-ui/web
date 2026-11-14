@@ -29,11 +29,11 @@ export interface DongTuan extends SoLieuTran {
   gioUtc: string | null;
   /** Kết quả thật [nhà, khách] khi tệp hôm sau báo về. */
   kq?: number[];
-  /** "Tài 2.5" / "Xỉu 2.5". */
+  /** "Over 2.5" / "Under 2.5". */
   tx?: string;
   /** Cả hai đội ghi bàn: "Có" / "Không". */
   btts?: string;
-  /** Chi tiết hai đội ghi bàn / tài xỉu 2,5 / tỷ số chính xác: tip + tỷ lệ + chuỗi 5 trận. */
+  /** Chi tiết hai đội ghi bàn / Over/Under 2,5 / tỷ số chính xác: tip + tỷ lệ + chuỗi 5 trận. */
   pBtts?: ThiTruongPhu;
   pOu?: ThiTruongPhu;
   pCs?: ThiTruongPhu;
@@ -45,7 +45,7 @@ export interface DongTuan extends SoLieuTran {
   oCapNhat?: string;
   /** Kết quả & BTTS: n nhà thắng, k khách thắng, h hòa; Y/N hai đội cùng ghi bàn có/không. */
   pKqBtts?: { nY: number; nN: number; kY: number; kN: number; hY: number; hN: number };
-  /** Kết quả & Tài/Xỉu 2.5: T tài, X xỉu. */
+  /** Kết quả & Over/Under 2.5: T = Over, X = Under. */
   pKqOu?: { nT: number; nX: number; kT: number; kX: number; hT: number; hX: number };
   /** Điểm phong độ [tấn công, phòng ngự], thang 1–10, của đội nhà (n) và đội khách (k). */
   diem?: DiemDoi;
@@ -65,6 +65,16 @@ const TEN_LOGO: Record<string, string> = {
   Congo: "Republic of the Congo",
 };
 export const logo = (ten: string) => teamBadge(TEN_LOGO[ten] ?? ten);
+
+/**
+ * Trùng tên khác CLB: bảng logo khớp theo tên đã rút "FC", nên "Liverpool FC" của Uruguay (Montevideo) dính
+ * huy hiệu Liverpool nước Anh. Giải nằm trong danh sách này thì KHÔNG tra theo tên (để trống, hiện chữ viết tắt).
+ */
+const TRUNG_TEN: ReadonlyArray<{ ten: string; giai: RegExp }> = [{ ten: "Liverpool FC", giai: /^Uruguay\b/ }];
+/** Tệp dữ liệu cũ ghi "Tài/Xỉu 2.5": hiển thị luôn là Over/Under. */
+const chuanOU = (t?: string | null) => (t ? t.replace(/^Tài/i, "Over").replace(/^Xỉu/i, "Under") : null);
+
+export const logoTheoGiai = (ten: string, giai: string) => (TRUNG_TEN.some((x) => x.ten === ten && x.giai.test(giai)) ? null : logo(ten));
 
 const KQ_ANH: Record<string, KQ> = { W: "T", D: "H", L: "B" };
 const docForm = (s: string): KQ[] | null => {
@@ -123,8 +133,8 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       gio: d.gioUtc ? gioVN(d.gioUtc) : "--:--",
       nha: d.nha,
       khach: d.khach,
-      logoNha: logo(d.nha),
-      logoKhach: logo(d.khach),
+      logoNha: logoTheoGiai(d.nha, d.giai),
+      logoKhach: logoTheoGiai(d.khach, d.giai),
       anhNha: null,
       anhKhach: null,
       creditAnh: null,
@@ -141,7 +151,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       formNha: docForm(d.fn) ?? phongDoTuTran(conMoi(d.gn, d.ngay), d.nha) ?? phongDoCuTruoc(daDa, d.nha, kickoffUtc),
       formKhach: docForm(d.fk) ?? phongDoTuTran(conMoi(d.gk, d.ngay), d.khach) ?? phongDoCuTruoc(daDa, d.khach, kickoffUtc),
       doiDau: null,
-      taiXiu: d.tx ?? null,
+      taiXiu: chuanOU(d.tx),
       haiDoiGhi: d.btts ? d.btts === "Có" : null,
       nhan: [],
     };
@@ -152,7 +162,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
 
 /**
  * Dòng có bài nhận định mà tệp tuần cũng ghi trận đó (trường `bai`): giữ tỷ số dự đoán của bài,
- * bù tỷ lệ 1·X·2, tài xỉu, hai đội ghi bàn, phong độ từ tệp — trang bài hiện đủ khối như trận tuần.
+ * bù tỷ lệ 1·X·2, Over/Under, hai đội ghi bàn, phong độ từ tệp — trang bài hiện đủ khối như trận tuần.
  */
 export function gopTuan(hang: readonly HangDuDoan[]): HangDuDoan[] {
   return hang.map((h) => {
@@ -164,7 +174,7 @@ export function gopTuan(hang: readonly HangDuDoan[]): HangDuDoan[] {
       mot,
       formNha: docForm(d.fn) ?? phongDoTuTran(conMoi(d.gn, d.ngay), d.nha) ?? h.formNha,
       formKhach: docForm(d.fk) ?? phongDoTuTran(conMoi(d.gk, d.ngay), d.khach) ?? h.formKhach,
-      taiXiu: d.tx ?? h.taiXiu,
+      taiXiu: chuanOU(d.tx) ?? h.taiXiu,
       haiDoiGhi: d.btts ? d.btts === "Có" : h.haiDoiGhi,
     };
     return { ...g, nhan: nhanTran(g) };
@@ -173,7 +183,7 @@ export function gopTuan(hang: readonly HangDuDoan[]): HangDuDoan[] {
 
 export type KeoPhu = Pick<DongTuan, "nha" | "khach" | "pBtts" | "pOu" | "pCs">;
 
-/** Khối hai đội ghi bàn · tài xỉu · tỷ số chính xác của một trận tệp tuần; tệp không ghi gì → null. */
+/** Khối hai đội ghi bàn · Over/Under · tỷ số chính xác của một trận tệp tuần; tệp không ghi gì → null. */
 export function keoPhuTuan(slug: string): KeoPhu | null {
   const d = timDong(slug);
   if (!d || !(d.pBtts || d.pOu || d.pCs)) return null;

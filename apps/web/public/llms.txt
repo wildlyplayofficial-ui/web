@@ -8,7 +8,7 @@ Nhận định trước trận do Chú Tám Banh chọn trận và góc nhìn, A
 
 - [Tin tức bóng đá](https://www.banhbong.net/news): tin chuyển nhượng, kết quả, diễn biến mới nhất
 - [Nhận định trước trận](https://www.banhbong.net/analysis): nhận định, xem trước và tổng kết trận đấu
-- [Kèo bóng đá hôm nay](https://www.banhbong.net/keo): kèo châu Á, tài xỉu, 1X2 và xác suất thực sau khi loại margin
+- [Kèo bóng đá hôm nay](https://www.banhbong.net/keo): kèo châu Á, Over/Under, 1X2 và xác suất thực sau khi loại margin
 - [Lịch thi đấu](https://www.banhbong.net/matches): các trận sắp diễn ra; mỗi trận có trang riêng dạng /match/<doi-nha>-vs-<doi-khach>-<yyyy-mm-dd>
 - [Bảng xếp hạng các giải](https://www.banhbong.net/competitions)
 - [Blog bóng đá](https://www.banhbong.net/blog)

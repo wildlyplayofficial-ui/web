@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: `%s | ${VI.BRAND}`,
   },
   description:
-    "Daily Line — trò chơi dự đoán Tài/Xỉu tổng bàn thắng bóng đá mỗi ngày. Chọn phe, leo bảng xếp hạng. Chỉ để giải trí.",
+    "Daily Line — trò chơi dự đoán Over/Under tổng bàn thắng bóng đá mỗi ngày. Chọn phe, leo bảng xếp hạng. Chỉ để giải trí.",
   openGraph: {
     locale: "vi_VN",
     images: [{ url: `/api/og/daily-line?v=${OG_VERSION}`, width: 1200, height: 630 }],

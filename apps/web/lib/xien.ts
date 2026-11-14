@@ -1,6 +1,6 @@
 /**
  * Kèo xiên dựng từ bảng dự đoán (Peter 12/11: "làm theo PredictZ"): mỗi giải trong ngày gom thành
- * xiên đội thắng, xiên tài xỉu 2,5 và xiên hai đội ghi bàn — mỗi trận một chân, nhân tỷ lệ thành
+ * xiên đội thắng, xiên Over/Under 2,5 và xiên hai đội ghi bàn — mỗi trận một chân, nhân tỷ lệ thành
  * tỷ lệ gộp. Chỉ dùng số đã có trên dòng trận — không thêm dự đoán mới, không tên nhà cái.
  * Hàm THUẦN, import tương đối để vitest chạy không cần alias.
  */
@@ -57,7 +57,7 @@ export function xienDoiThang(rows: readonly HangDuDoan[]): Xien | null {
   );
 }
 
-/** Xiên tài/xỉu 2,5 bàn. Trận tệp không ghi tài xỉu thì bỏ. */
+/** Xiên Over/Under 2,5 bàn. Trận tệp không ghi Over/Under thì bỏ. */
 export function xienTaiXiu(rows: readonly HangDuDoan[], tra: TraKeoPhu): Xien | null {
   return gom(rows.flatMap((h) => (h.sapDa ? chanPhu(h, tra(h.slug)?.pOu, /over/i, /under/i, ["tai", "xiu"]) : [])));
 }
@@ -80,7 +80,7 @@ const khoaGiai = (ten: string) =>
 
 /**
  * Các xiên của một ngày, gom theo giải: giải nhiều trận đứng trước, mỗi giải lần lượt đội thắng,
- * tài xỉu, hai đội ghi bàn. Giải chỉ có 1 trận thì không có xiên. Không gom nổi → mảng rỗng.
+ * Over/Under, hai đội ghi bàn. Giải chỉ có 1 trận thì không có xiên. Không gom nổi → mảng rỗng.
  */
 export function cacXienNgay(rows: readonly HangDuDoan[], tra: TraKeoPhu): XienNgay[] {
   const theoGiai = new Map<string, HangDuDoan[]>();
@@ -94,11 +94,11 @@ export function cacXienNgay(rows: readonly HangDuDoan[], tra: TraKeoPhu): XienNg
     );
 }
 
-/** Tên loại xiên; xiên tài xỉu mà mọi chân cùng một cửa thì gọi thẳng cửa đó ("Xiên 5 xỉu 2.5"). */
+/** Tên loại xiên; xiên Over/Under mà mọi chân cùng một cửa thì gọi thẳng cửa đó ("Xiên 5 Under 2.5"). */
 export function tenLoaiXien(loai: LoaiXien, chan: readonly { cua: CuaXien }[]): string {
   const n = chan.length;
   if (loai === "thang") return `Xiên ${n} đội thắng`;
   if (loai === "btts") return `Xiên ${n} hai đội ghi bàn`;
-  const cua = chan.every((c) => c.cua === "xiu") ? "xỉu" : chan.every((c) => c.cua === "tai") ? "tài" : "tài xỉu";
+  const cua = chan.every((c) => c.cua === "xiu") ? "Under" : chan.every((c) => c.cua === "tai") ? "Over" : "Over/Under";
   return `Xiên ${n} ${cua} 2.5`;
 }

@@ -17,9 +17,9 @@ describe("dòng tệp tuần gắn bài nhận định", () => {
     expect(gopTuan([bai()])[0].mot).toEqual([1.11, 8.5, 17]);
   });
 
-  it("gopTuan điền tài xỉu và hai đội ghi bàn", () => {
+  it("gopTuan điền Over/Under và hai đội ghi bàn", () => {
     const g = gopTuan([bai()])[0];
-    expect([g.taiXiu, g.haiDoiGhi]).toEqual(["Tài 2.5", true]);
+    expect([g.taiXiu, g.haiDoiGhi]).toEqual(["Over 2.5", true]);
   });
 
   it("số liệu trang bài giữ đủ 10 trận dù đội tuyển nghỉ lâu", () => {
@@ -39,9 +39,9 @@ describe("trận Việt Nam vs Kyrgyzstan 17/11 gắn bài nhận định", () =
   const KGZ = "nhan-dinh-viet-nam-vs-kyrgyzstan-17-11-2026";
   const baiKgz = (): HangDuDoan => ({ ...bai(), slug: KGZ, kickoffUtc: "2026-11-17T12:00:00Z", ngay: "2026-11-17", khach: "Kyrgyzstan" });
 
-  it("gopTuan điền tài xỉu và hai đội ghi bàn cho trang bài", () => {
+  it("gopTuan điền Over/Under và hai đội ghi bàn cho trang bài", () => {
     const g = gopTuan([baiKgz()])[0];
-    expect([g.taiXiu, g.haiDoiGhi]).toEqual(["Tài 2.5", true]);
+    expect([g.taiXiu, g.haiDoiGhi]).toEqual(["Over 2.5", true]);
   });
 
   it("phong độ Kyrgyzstan đọc từ chuỗi tệp, cũ trước mới sau", () => {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { chuoiHomNay, metaChuoi, TrangChuoi } from "@/components/trang-chuoi";
 import { resolveLang } from "@/lib/i18n";
 
-/** Đội đang có chuỗi đáng chú ý (thắng · bất bại · tài xỉu · hai đội ghi bàn…), từ dữ liệu 10 trận gần nhất. */
+/** Đội đang có chuỗi đáng chú ý (thắng · bất bại · Over/Under · hai đội ghi bàn…), từ dữ liệu 10 trận gần nhất. */
 export const revalidate = 300;
 
 type Props = { params: Promise<{ lang: string }> };

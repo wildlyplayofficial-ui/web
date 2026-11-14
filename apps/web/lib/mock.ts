@@ -145,12 +145,12 @@ England were 2-0 up inside 35 minutes and the over was sealed before the hour.
 
 The board moves to **1-0-0**, +0.85u. Every pick stays public, forever.`;
 
-const recap1Vi = `## Anh 3-1 Croatia — Tài 2.5 về sớm
+const recap1Vi = `## Anh 3-1 Croatia — Over 2.5 về sớm
 
 The Curator gọi trận này là "buổi tổng duyệt tấn công, không phải trận đấu vì kết quả" và cả hai đội đã chứng minh điều đó.
-Anh dẫn 2-0 trong 35 phút đầu và kèo tài được chốt trước giờ thứ 60.
+Anh dẫn 2-0 trong 35 phút đầu và kèo Over được chốt trước giờ thứ 60.
 
-**Kèo:** Tài 2.5 @ 1.85 — **THẮNG**, +0.85u.
+**Kèo:** Over 2.5 @ 1.85 — **THẮNG**, +0.85u.
 
 ### Những gì đã diễn ra
 
@@ -208,7 +208,7 @@ export const mockPosts: Post[] = [
     type: "recap",
     slug: "england-croatia-over-lands",
     lang: "vi",
-    title: "Recap: Anh 3-1 Croatia — Tài 2.5 về sớm",
+    title: "Recap: Anh 3-1 Croatia — Over 2.5 về sớm",
     body_md: recap1Vi,
     pick_ids: ["00000000-0000-4000-8000-000000000001"],
     status: "published",

@@ -14,11 +14,11 @@ import { mucTheoBang, sangMalay } from "./odds-filter";
 const MARKET_LABEL: Record<string, string> = {
   ML: "1X2 (thắng / hoà / thua)",
   Spread: "Kèo châu Á (chấp)",
-  Totals: "Tài / Xỉu",
+  Totals: "Over/Under",
   "European Handicap": "Kèo chấp châu Âu",
   "ML HT": "1X2 hiệp 1",
   "Spread HT": "Kèo châu Á hiệp 1",
-  "Totals HT": "Tài / Xỉu hiệp 1",
+  "Totals HT": "Over/Under hiệp 1",
 };
 
 export function pct(v: number): string {
@@ -34,7 +34,7 @@ function MoveItem({
   label: string;
   from: number | null;
   to: number | null;
-  /** Bảng hiện cột chấp/tài xỉu theo kiểu Malay, cột 1X2 theo thập phân.
+  /** Bảng hiện cột chấp/Over/Under theo kiểu Malay, cột 1X2 theo thập phân.
    *  Chi tiết phải in CÙNG KIỂU, không thì bảng ghi 0.88 mà chi tiết ghi 1.88. */
   malay: boolean;
 }) {
@@ -57,13 +57,13 @@ function dongDaDoi(
     ["Chủ", mo.home_odds, gio.home_odds],
     ["Hòa", mo.draw_odds, gio.draw_odds],
     ["Khách", mo.away_odds, gio.away_odds],
-    ["Tài", mo.over_odds, gio.over_odds],
-    ["Xỉu", mo.under_odds, gio.under_odds],
+    ["Over", mo.over_odds, gio.over_odds],
+    ["Under", mo.under_odds, gio.under_odds],
   ];
   const doi = cap.filter(([, a, b]) => a != null && b != null && a !== b) as Array<[string, number, number]>;
   if (doi.length === 0) return null;
   const ten = MARKET_LABEL[market] ?? market;
-  // Tài/Xỉu là mức bàn thắng, in số trần (2.5). Chỉ kèo chấp mới có dấu +/-.
+  // Over/Under là mức bàn thắng, in số trần (2.5). Chỉ kèo chấp mới có dấu +/-.
   const laTaiXiu = market === "Totals" || market === "Totals HT";
   const muc = line.hdp == null ? "" : ` ${laTaiXiu || line.hdp <= 0 ? line.hdp : `+${line.hdp}`}`;
   const malay = market !== "ML" && market !== "ML HT";

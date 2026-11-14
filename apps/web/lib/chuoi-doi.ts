@@ -1,6 +1,6 @@
 /**
  * "Chuỗi đáng chú ý" (Peter gật 14/11): đội đang có chuỗi thắng / không thua / không thắng / thua,
- * chuỗi tài, xỉu, hai đội ghi bàn, giữ sạch lưới — tính từ danh sách 10 trận gần nhất trong tệp tuần.
+ * chuỗi Over, Under, hai đội ghi bàn, giữ sạch lưới — tính từ danh sách 10 trận gần nhất trong tệp tuần.
  * Chuỗi tính từ trận MỚI NHẤT lùi về trước, dừng ở trận đầu tiên không đạt. Hàm THUẦN, import TƯƠNG ĐỐI.
  */
 import { tenSo } from "./du-doan-cham";

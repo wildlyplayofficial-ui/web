@@ -10,10 +10,11 @@ import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { keoPhuTuan, keoThangTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demNhom, dongTipNgay, type DongTip, type LoaiTipNgay } from "@/lib/tip-ngay";
+import { ChonNgayTip } from "@/components/chon-ngay-tip";
 import { Ty } from "@/components/ty-le";
 
 /**
- * Ba trang gom theo loại kèo cho NGÀY HÔM NAY (Peter gật 14/11): /tai-xiu-hom-nay,
+ * Ba trang gom theo loại kèo cho NGÀY HÔM NAY (Peter gật 14/11): /over-under-hom-nay,
  * /ca-2-doi-ghi-ban-hom-nay, /ty-so-hom-nay. Mỗi trận một dòng: logo hai đội, giờ, giải, tip + tỷ lệ,
  * dòng là link sang trang riêng /du-doan/{slug}. Không hiện kết quả/đúng sai (không có nội dung thành tích công khai),
  * không tên nhà cái, không nút đặt cược.
@@ -22,7 +23,7 @@ import { Ty } from "@/components/ty-le";
 interface CauHinh {
   duong: string;
   ten: string;
-  /** Cụm in đậm trong tiêu đề + h1: "Tài xỉu hôm nay". */
+  /** Cụm in đậm trong tiêu đề + h1: "Over/Under hôm nay". */
   tieuDe: string;
   mota: (soTran: number, ngay: string) => string;
   cotTip: string;
@@ -31,12 +32,12 @@ interface CauHinh {
 
 export const CAU_HINH: Record<LoaiTipNgay, CauHinh> = {
   "tai-xiu": {
-    duong: "/tai-xiu-hom-nay",
-    ten: "Tài xỉu",
-    tieuDe: "Tài xỉu hôm nay",
-    mota: (n, ngay) => `Tài xỉu hôm nay ${ngay}: ${n} trận có dự đoán trên hoặc dưới 2.5 bàn, kèm tỷ lệ và số trận Tài trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
-    cotTip: "Tài/Xỉu 2.5",
-    moDau: "Mốc 2.5 bàn: tổng bàn thắng của cả hai đội từ 3 trở lên là Tài, từ 2 trở xuống là Xỉu.",
+    duong: "/over-under-hom-nay",
+    ten: "Over/Under",
+    tieuDe: "Over/Under hôm nay",
+    mota: (n, ngay) => `Over/Under hôm nay ${ngay}: ${n} trận có dự đoán Over hoặc Under 2.5, kèm tỷ lệ và số trận Over trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
+    cotTip: "Over/Under 2.5",
+    moDau: "Mốc 2.5 bàn: tổng bàn thắng của cả hai đội từ 3 trở lên là Over, từ 2 trở xuống là Under.",
   },
   "hai-doi-ghi-ban": {
     duong: "/ca-2-doi-ghi-ban-hom-nay",
@@ -66,17 +67,26 @@ export const CAU_HINH: Record<LoaiTipNgay, CauHinh> = {
 
 export const LOAI_TIP = Object.keys(CAU_HINH) as LoaiTipNgay[];
 
-export type KyNgay = "hom-nay" | "ngay-mai";
+/** Kỳ của trang: hôm nay, ngày mai, hoặc một ngày cụ thể YYYY-MM-DD (3 ngày kế sau ngày mai, mục I 14/11). */
+export type KyNgay = "hom-nay" | "ngay-mai" | `${number}-${number}-${number}`;
 
-/** Cụm chữ theo ngày: bản "hôm nay" viết sẵn, bản "ngày mai" đổi cụm đó (Peter duyệt mục E, 14/11). */
-const chuNgay = (s: string, ky: KyNgay) => (ky === "hom-nay" ? s : s.replace(/hôm nay/gi, (m) => (m[0] === "H" ? "Ngày mai" : "ngày mai")).replace(/-hom-nay/g, "-ngay-mai"));
-export const duongTip = (loai: LoaiTipNgay, ky: KyNgay) => chuNgay(CAU_HINH[loai].duong, ky);
+/** Cụm chữ theo kỳ: "hôm nay" / "ngày mai" / "Thứ Hai". */
+export const nhanKy = (ky: KyNgay) => (ky === "hom-nay" ? "hôm nay" : ky === "ngay-mai" ? "ngày mai" : thuVN(ky));
+const hoa = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+/** Bản "hôm nay" viết sẵn, các kỳ khác đổi cụm đó (Peter duyệt mục E, 14/11). */
+const chuNgay = (s: string, ky: KyNgay) => (ky === "hom-nay" ? s : s.replace(/hôm nay/gi, (m) => (m[0] === "H" ? hoa(nhanKy(ky)) : nhanKy(ky))));
+/** Hôm nay / ngày mai giữ đường cũ; ngày khác: /over-under/ngay/2026-11-17. */
+export const duongTip = (loai: LoaiTipNgay, ky: KyNgay) => {
+  const d = CAU_HINH[loai].duong;
+  return ky === "hom-nay" ? d : ky === "ngay-mai" ? d.replace("-hom-nay", "-ngay-mai") : `${d.replace("-hom-nay", "")}/ngay/${ky}`;
+};
 export const tieuDeTip = (loai: LoaiTipNgay, ky: KyNgay) => chuNgay(CAU_HINH[loai].tieuDe, ky);
 
-/** Ngày (giờ VN) của trang: hôm nay hoặc ngày mai. */
+/** Ngày (giờ VN) của trang. */
 export const ngayCuaKy = (ky: KyNgay, bayGio = Date.now()) => {
   const homNay = ngayVN(bayGio);
-  return ky === "hom-nay" ? homNay : lechNgay(homNay, 1);
+  return ky === "hom-nay" ? homNay : ky === "ngay-mai" ? lechNgay(homNay, 1) : ky;
 };
 
 /** Các dòng của loại tip trong ngày `ky` (giờ VN). */
@@ -97,7 +107,7 @@ export function metaTipNgay(loai: LoaiTipNgay, homNay: string, soTran: number, l
     title,
     description,
     alternates: buildAlternates(duongTip(loai, ky), lang),
-    ...(ky === "ngay-mai" && soTran === 0 ? { robots: { index: false, follow: true } } : {}),
+    ...(ky !== "hom-nay" && soTran === 0 ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,
@@ -111,7 +121,7 @@ const MANH = "inline-flex min-h-11 items-center hover:text-ink";
 const H2 = "border-b border-line pb-2 font-display text-[19px] font-bold leading-snug sm:text-[22px]";
 const LOGO = "h-6 w-6";
 
-/** Chuỗi 5 trận: ô sáng = đạt (Tài / hai đội ghi), ô mờ = không. Trái cũ, phải mới. */
+/** Chuỗi 5 trận: ô sáng = đạt (Over / hai đội ghi), ô mờ = không. Trái cũ, phải mới. */
 function Chuoi({ c, ten, ky }: { c: boolean[] | null; ten: string; ky: [string, string] }) {
   if (!c) return null;
   return (
@@ -129,7 +139,7 @@ function Chuoi({ c, ten, ky }: { c: boolean[] | null; ten: string; ky: [string, 
   );
 }
 
-const KY: Record<LoaiTipNgay, [string, string]> = { "tai-xiu": ["T", "X"], "hai-doi-ghi-ban": ["✓", "✗"], "thang-hai-doi-ghi-ban": ["✓", "✗"], "ty-so": ["", ""] };
+const KY: Record<LoaiTipNgay, [string, string]> = { "tai-xiu": ["O", "U"], "hai-doi-ghi-ban": ["✓", "✗"], "thang-hai-doi-ghi-ban": ["✓", "✗"], "ty-so": ["", ""] };
 
 export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTipNgay; lang: Lang }) {
   const { h } = d;
@@ -179,8 +189,8 @@ export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTipNgay; 
 
 const KE_BEN: Record<LoaiTipNgay, ReadonlyArray<{ hoi: string; dap: string }>> = {
   "tai-xiu": [
-    { hoi: "Tài xỉu 2.5 bàn là gì?", dap: "Chọn tổng số bàn thắng của cả hai đội trong 90 phút: Tài là từ 3 bàn trở lên, Xỉu là 2 bàn trở xuống. Mốc 2.5 không có trường hợp hoà nên luôn ra một bên." },
-    { hoi: "Chuỗi T và X dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng chữ T là trận có từ 3 bàn trở lên, ô viền chữ X là trận ít hơn. Trận cũ nhất bên trái, mới nhất bên phải." },
+    { hoi: "Over/Under 2.5 bàn là gì?", dap: "Chọn tổng số bàn thắng của cả hai đội trong 90 phút: Over là từ 3 bàn trở lên, Under là 2 bàn trở xuống. Mốc 2.5 không có trường hợp hoà nên luôn ra một bên." },
+    { hoi: "Chuỗi O và U dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng chữ O là trận có từ 3 bàn trở lên, ô viền chữ U là trận ít hơn. Trận cũ nhất bên trái, mới nhất bên phải." },
     { hoi: "Tỷ lệ ghi cạnh tip để làm gì?", dap: "Là tỷ lệ của cửa được dự đoán, lấy từ nguồn dự đoán của trang, chỉ để tham khảo và có thể đổi trước giờ bóng lăn." },
   ],
   "hai-doi-ghi-ban": [
@@ -203,7 +213,7 @@ export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai:
   const c = CAU_HINH[loai];
   const ngay = ngayThang(homNay);
   const dem = demNhom(ds);
-  // Tài/Xỉu và Có/Không: mỗi cửa một khối, cửa nhiều trận nhất trước; tỷ số: một danh sách theo giờ đá.
+  // Over/Under và Có/Không: mỗi cửa một khối, cửa nhiều trận nhất trước; tỷ số: một danh sách theo giờ đá.
   const nhom = loai === "ty-so" ? null : dem;
   const soGiai = new Set(ds.map((d) => d.h.giai)).size;
   const khac = LOAI_TIP.filter((l) => l !== loai);
@@ -216,30 +226,19 @@ export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai:
         <span aria-hidden>›</span>
         <Link href={withLang("/du-doan", lang)} className={MANH}>Dự đoán</Link>
         <span aria-hidden>›</span>
-        <span className="text-ink">{c.ten} {ky === "hom-nay" ? "hôm nay" : "ngày mai"}</span>
+        <span className="text-ink">{c.ten} {nhanKy(ky)}</span>
       </nav>
 
       <h1 className="mt-2 font-display text-[22px] font-bold leading-tight sm:text-[30px]">
-        {tieuDeTip(loai, ky)}, {thuVN(homNay)} {ngay}
+        {tieuDeTip(loai, ky)}{ky === "hom-nay" || ky === "ngay-mai" ? `, ${thuVN(homNay)}` : ""} {ngay}
       </h1>
       <p className="mt-1.5 text-[15px] leading-relaxed">
         {ds.length > 0
           ? `${ds.length} trận ở ${soGiai} giải, giờ Việt Nam. ${c.moDau}`
-          : `${ky === "hom-nay" ? "Hôm nay" : "Ngày mai"} chưa có trận nào có tip ${c.ten.toLowerCase()}. Dữ liệu cập nhật theo từng ngày, bạn có thể xem dự đoán các ngày khác ở trang Dự đoán.`}
+          : `${hoa(nhanKy(ky))} chưa có trận nào có tip ${c.ten.toLowerCase()}. Dữ liệu cập nhật theo từng ngày, bạn có thể xem dự đoán các ngày khác ở trang Dự đoán.`}
       </p>
 
-      <nav aria-label="Chọn ngày" className="mt-3 flex gap-2">
-        {(["hom-nay", "ngay-mai"] as const).map((k) => (
-          <Link
-            key={k}
-            href={withLang(duongTip(loai, k), lang)}
-            aria-current={k === ky ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 text-sm font-semibold ${k === ky ? "border-brand text-brand" : "border-line text-muted hover:text-ink"}`}
-          >
-            {c.ten} {k === "hom-nay" ? "hôm nay" : "ngày mai"}
-          </Link>
-        ))}
-      </nav>
+      {loai !== "thang-hai-doi-ghi-ban" && <ChonNgayTip loai={loai} ky={ky} lang={lang} />}
 
       <nav aria-label="Dự đoán theo loại kèo" className="mt-2 flex flex-wrap gap-2">
         {khac.map((l) => (
@@ -264,7 +263,7 @@ export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai:
           return (
             <section key={ten} className="mt-5">
               <h2 className="flex items-baseline gap-2 border-b border-line pb-2 font-display text-[19px] font-bold leading-snug sm:text-[22px]">
-                {loai === "thang-hai-doi-ghi-ban" ? `${ten} + cả 2 đội ghi bàn` : `${ten} ${ky === "hom-nay" ? "hôm nay" : "ngày mai"}`}
+                {loai === "thang-hai-doi-ghi-ban" ? `${ten} + cả 2 đội ghi bàn` : `${ten} ${nhanKy(ky)}`}
                 <span className="text-[13px] font-normal text-muted">{trong.length} trận</span>
               </h2>
               <ul>

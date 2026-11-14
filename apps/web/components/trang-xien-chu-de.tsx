@@ -12,7 +12,7 @@ import { ChuTy } from "@/components/ty-le";
 import { T } from "@/lib/ty-le";
 
 /**
- * Kèo xiên theo chủ đề /keo-xien/{xien-tai-2-5 | xien-xiu-2-5 | xien-hai-doi-ghi-ban | xien-doi-nha-thang |
+ * Kèo xiên theo chủ đề /keo-xien/{xien-over-2-5 | xien-under-2-5 | xien-hai-doi-ghi-ban | xien-doi-nha-thang |
  * xien-cua-tren-an-toan} (Peter duyệt 14/11). Mỗi ngày trong 7 ngày tới một xiên, gom từ mọi giải.
  * Không nút đặt cược, không tên nhà cái.
  */

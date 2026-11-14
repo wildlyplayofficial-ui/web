@@ -23,6 +23,6 @@ describe("tran-keo3", () => {
   it("câu giải thích nêu cửa thấp nhất và không có tên nhà cái", () => {
     expect(cauDnb([1.19, 4.6], "Uganda", "Botswana")).toContain("Uganda thắng (⟦1.19⟧)");
     expect(cauKqBtts(btts, "Uganda", "Botswana")).toContain("Uganda thắng, không phải cả hai đội cùng ghi bàn (⟦2.22⟧)");
-    expect(cauKqOu(ou, "Uganda", "Botswana")).toContain("xỉu (tối đa 2 bàn) (⟦3.01⟧)");
+    expect(cauKqOu(ou, "Uganda", "Botswana")).toContain("Under (tối đa 2 bàn) (⟦3.01⟧)");
   });
 });

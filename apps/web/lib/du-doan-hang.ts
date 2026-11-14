@@ -51,7 +51,7 @@ export interface HangDuDoan {
   formKhach: KQ[] | null;
   /** Tối đa 5 lần gặp nhau gần nhất (từ cùng dữ liệu phong độ); null = chưa có. */
   doiDau: TranDoiDau[] | null;
-  /** Dự đoán tài/xỉu kèm mốc bàn ("Tài 2.5"); null = nguồn không ghi. */
+  /** Dự đoán Over/Under kèm mốc bàn ("Over 2.5"); null = nguồn không ghi. */
   taiXiu: string | null;
   /** Dự đoán cả hai đội ghi bàn; null = nguồn không ghi. */
   haiDoiGhi: boolean | null;

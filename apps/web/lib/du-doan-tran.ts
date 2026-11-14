@@ -48,11 +48,11 @@ export function cauThang(h: Pick<HangDuDoan, "nha" | "khach" | "du">): string | 
   return a > b ? `${h.nha} thắng ${h.khach} ${a}-${b}` : `${h.khach} thắng ${h.nha} ${b}-${a}`;
 }
 
-/** Giải thích mốc tài/xỉu: "Tài 2.5" → "dự đoán trận có từ 3 bàn trở lên". */
+/** Giải thích mốc Over/Under: "Over 2.5" → "dự đoán trận có từ 3 bàn trở lên". */
 export function giaiThichTaiXiu(taiXiu: string): string | null {
   const moc = Number(taiXiu.match(/\d+(\.\d+)?/)?.[0]);
   if (!Number.isFinite(moc)) return null;
-  return /^tài/i.test(taiXiu)
+  return /^(tài|over)/i.test(taiXiu)
     ? `dự đoán trận có từ ${Math.floor(moc) + 1} bàn trở lên`
     : `dự đoán trận có nhiều nhất ${Math.ceil(moc) - 1} bàn`;
 }

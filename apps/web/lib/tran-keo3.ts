@@ -1,7 +1,7 @@
 import { T } from "./ty-le";
 /**
  * Ba bảng tỷ lệ phụ của trang trận tuần: Hòa hoàn tiền (pDnb), Kết quả + cả hai đội ghi bàn (pKqBtts),
- * Kết quả + tài xỉu 2.5 (pKqOu). Thiếu hoặc sai số (không phải số > 1) → null, hộp không vẽ.
+ * Kết quả + Over/Under 2.5 (pKqOu). Thiếu hoặc sai số (không phải số > 1) → null, hộp không vẽ.
  */
 export type KqBtts = { nY: number; nN: number; kY: number; kN: number; hY: number; hN: number };
 export type KqOu = { nT: number; nX: number; kT: number; kX: number; hT: number; hX: number };
@@ -15,7 +15,7 @@ function docLuoi<T extends string>(o: Partial<Record<T, number>> | undefined, kh
   return Object.fromEntries(khoa.map((k) => [k, o[k] as number])) as Record<T, number>;
 }
 export const KHOA_BTTS = ["nY", "nN", "hY", "hN", "kY", "kN"] as const; // nhà · hòa · khách, mỗi hàng Có / Không
-export const KHOA_OU = ["nT", "nX", "hT", "hX", "kT", "kX"] as const; // nhà · hòa · khách, mỗi hàng Tài / Xỉu
+export const KHOA_OU = ["nT", "nX", "hT", "hX", "kT", "kX"] as const; // nhà · hòa · khách, mỗi hàng Over/Under
 export const docKqBtts = (o: KqBtts | undefined) => docLuoi(o, KHOA_BTTS);
 export const docKqOu = (o: KqOu | undefined) => docLuoi(o, KHOA_OU);
 
@@ -39,5 +39,5 @@ export function cauKqBtts(g: KqBtts, nha: string, khach: string): string {
 
 export function cauKqOu(g: KqOu, nha: string, khach: string): string {
   const k = oThapNhat(g) as keyof KqOu;
-  return `Đoán kết quả và tổng số bàn so với 2.5. Cửa có tỷ lệ thấp nhất: ${doi(k[0], nha, khach)}, ${k[1] === "T" ? "tài (từ 3 bàn trở lên)" : "xỉu (tối đa 2 bàn)"} (${T(g[k])}).`;
+  return `Đoán kết quả và tổng số bàn so với 2.5. Cửa có tỷ lệ thấp nhất: ${doi(k[0], nha, khach)}, ${k[1] === "T" ? "Over (từ 3 bàn trở lên)" : "Under (tối đa 2 bàn)"} (${T(g[k])}).`;
 }

@@ -9,17 +9,17 @@ const khong = () => null;
 describe("dongTipNgay", () => {
   it("chỉ lấy trận đúng ngày, xếp theo giờ đá", () => {
     const hang = [
-      tran("a", { taiXiu: "Tài 2.5", kickoffUtc: "2026-11-14T15:00:00Z" }),
-      tran("b", { taiXiu: "Xỉu 2.5", kickoffUtc: "2026-11-14T11:00:00Z" }),
-      tran("c", { taiXiu: "Tài 2.5", ngay: "2026-11-15" }),
+      tran("a", { taiXiu: "Over 2.5", kickoffUtc: "2026-11-14T15:00:00Z" }),
+      tran("b", { taiXiu: "Under 2.5", kickoffUtc: "2026-11-14T11:00:00Z" }),
+      tran("c", { taiXiu: "Over 2.5", ngay: "2026-11-15" }),
     ];
     expect(dongTipNgay(hang, "2026-11-14", "tai-xiu", khong).map((d) => d.h.slug)).toEqual(["b", "a"]);
   });
-  it("tài xỉu: khối pOu thắng chữ trong dòng, lấy tỷ lệ đúng cửa và chuỗi", () => {
-    const [d] = dongTipNgay([tran("a", { taiXiu: "Xỉu 2.5" })], "2026-11-14", "tai-xiu", () => ({ pOu: { tip: "Over 2.5", keo: [1.6, 2.2], h5: "OOUUO", a5: "UUUUU" } }));
-    expect([d.nhom, d.keo, d.chuoiNha, d.chuoiKhach?.some(Boolean)]).toEqual(["Tài 2.5", 1.6, [true, true, false, false, true], false]);
+  it("Over/Under: khối pOu thắng chữ trong dòng, lấy tỷ lệ đúng cửa và chuỗi", () => {
+    const [d] = dongTipNgay([tran("a", { taiXiu: "Under 2.5" })], "2026-11-14", "tai-xiu", () => ({ pOu: { tip: "Over 2.5", keo: [1.6, 2.2], h5: "OOUUO", a5: "UUUUU" } }));
+    expect([d.nhom, d.keo, d.chuoiNha, d.chuoiKhach?.some(Boolean)]).toEqual(["Over 2.5", 1.6, [true, true, false, false, true], false]);
   });
-  it("tài xỉu: trận không có tip bị bỏ", () => {
+  it("Over/Under: trận không có tip bị bỏ", () => {
     expect(dongTipNgay([tran("a")], "2026-11-14", "tai-xiu", khong)).toEqual([]);
   });
   it("hai đội ghi bàn: có/không, tỷ lệ cửa Không là số thứ hai", () => {

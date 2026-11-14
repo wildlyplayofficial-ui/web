@@ -42,7 +42,7 @@ export function DauCotKeo() {
           <span key={n} className="flex-1 text-center">{n}</span>
         ))}
       </div>
-      <span className="hidden text-center lg:col-start-6 lg:block">Tài/Xỉu</span>
+      <span className="hidden text-center lg:col-start-6 lg:block">Over/Under</span>
     </div>
   );
 }
