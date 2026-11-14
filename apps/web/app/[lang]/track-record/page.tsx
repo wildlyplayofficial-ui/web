@@ -16,9 +16,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.nav.trackRecord} | banhbong.net`,
+    // Không tự gắn "| banhbong.net": layout gốc đã có template `%s | ${SITE_NAME}`.
+    title: dict.nav.trackRecord,
     description: dict.archive.subtitle,
     alternates: buildAlternates("/track-record", lang),
+    // Peter chốt 13/11: thành tích dự đoán chỉ là số NỘI BỘ — trang vẫn sống, không mời index.
+    robots: { index: false, follow: true },
     openGraph: {
       locale: "vi_VN",
       title: `${dict.nav.trackRecord} | banhbong.net`,

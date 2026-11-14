@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSupabase } from "@/lib/goalline/supabase";
 import { getDailyLineDict } from "@/lib/goalline/strings";
-import { resolveLang, withLang } from "@/lib/i18n";
+import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import type { DailyCard } from "@/lib/goalline/types";
 
 export const metadata: Metadata = {
-  title: "Archive",
+  title: getDailyLineDict("vi").NAV_ARCHIVE,
+  alternates: buildAlternates("/daily-line/archive"),
 };
 
 export const revalidate = 300;

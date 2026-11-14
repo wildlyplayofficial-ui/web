@@ -17,12 +17,20 @@ import { StickyTracker } from "./components/sticky-tracker";
 
 import { HowItWorks } from "./components/how-it-works"; // above-fold — eager load
 import { buildFAQPage } from "@/lib/jsonld";
+import type { Metadata } from "next";
+import { buildAlternates } from "@/lib/i18n";
 
 // Lazy-load below-fold client components
 const EngagementBar = lazy(() => import("./components/engagement-bar").then((m) => ({ default: m.EngagementBar })));
 const PickToast = lazy(() => import("./components/pick-toast").then((m) => ({ default: m.PickToast })));
 
 export const revalidate = 60;
+
+// Canonical tự trỏ (14/11). Đặt ở trang chứ KHÔNG ở layout: layout khai canonical thì
+// mọi trang con (/daily-line/card/N…) thừa hưởng, canonical sai về /daily-line.
+export const metadata: Metadata = {
+  alternates: buildAlternates("/daily-line"),
+};
 
 // ── Data fetching ──────────────────────────────────────────────────────────
 

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.nav.learn} | banhbong.net`,
+    title: dict.nav.learn,
     description: dict.guides.subtitle,
     alternates: buildAlternates("/learn", lang),
     openGraph: {

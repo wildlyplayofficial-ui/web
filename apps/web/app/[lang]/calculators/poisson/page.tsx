@@ -16,7 +16,7 @@ type Props = { params: Promise<{ lang: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   return {
-    title: `${NAME} | banhbong.net`,
+    title: NAME,
     description: DESC,
     alternates: buildAlternates("/calculators/poisson", lang),
     openGraph: {
