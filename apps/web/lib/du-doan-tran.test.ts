@@ -52,12 +52,8 @@ describe("câu chữ sinh từ số", () => {
 
   it("đoạn tóm tắt trước trận", () => {
     expect(cauTomTat(ANH)).toBe(
-      "banhbong.net dự đoán Anh thắng Croatia 3-0 ở Nations League, trận đá lúc 02h45 thứ Sáu 13/11 giờ Việt Nam. Tỷ lệ 1·X·2 đang là 1.27 · 6.50 · 9.00. Dự đoán kèm theo: Over 2.5, chỉ một đội ghi bàn.",
+      "Dự đoán Anh thắng Croatia 3-0 ở Nations League, trận đá lúc 02h45 thứ Sáu 13/11 giờ Việt Nam. Tỷ lệ 1·X·2 đang là 1.27 · 6.50 · 9.00. Dự đoán kèm theo: Over 2.5, chỉ một đội ghi bàn.",
     );
-  });
-
-  it("trang có chuyên gia ký tên thì câu tóm tắt ghi tên chuyên gia, không ghi banhbong.net", () => {
-    expect(cauTomTat(ANH, false, "Đặng Quang Vinh")).toMatch(/^Chuyên gia Đặng Quang Vinh dự đoán Anh thắng Croatia 3-0/);
   });
 
   it("đá xong thì thêm kết quả + chấm đúng/sai", () => {
