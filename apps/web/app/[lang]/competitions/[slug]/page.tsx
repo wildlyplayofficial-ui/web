@@ -119,8 +119,9 @@ export default async function StandingSlugPage({ params }: Props) {
   // fixtureDays đã bỏ 10/9: getCompetitionFixtures() được gọi rồi gán vào biến mà
   // không dùng ở đâu trong tệp này — lịch nằm ở tab /fixtures riêng. Mỗi lượt dựng
   // lại trang tốn thừa một lượt gọi API.
+  const dbg: string[] = [];
   const [tableRows, knockoutRounds, formMap, deskArticles, tranDaDa] = await Promise.all([
-    fetchCompetitionTable(comp.livescoreId).catch(() => []),
+    fetchCompetitionTable(comp.livescoreId).catch((e) => { dbg.push(`tbl:${String(e).slice(0, 80)}`); return []; }),
     isWorldCup ? getKnockoutRounds(comp.livescoreId).catch(() => []) : Promise.resolve([]),
     // livescore's table has no form for leagues — derive it from results.
     isWorldCup ? Promise.resolve<Record<string, string>>({}) : getCompetitionForm(comp.livescoreId).catch((): Record<string, string> => ({})),
@@ -128,7 +129,7 @@ export default async function StandingSlugPage({ params }: Props) {
     // mới" vẫn chỉ xét 30 bài mới nhất như cũ; khối "trang trụ" xét hết.
     getAnalysisArticles(undefined, 300),
     // Bảng sân nhà / sân khách tính từ các trận đã đá (chỉ giải châu Âu, bảng phẳng).
-    showQualification ? tranCuaGiai(comp.livescoreId).catch(() => []) : Promise.resolve([]),
+    showQualification ? tranCuaGiai(comp.livescoreId).catch((e) => { dbg.push(`tran:${String(e).slice(0, 80)}`); return []; }) : Promise.resolve([]),
   ]);
 
   // Khớp bài ↔ giải theo cột league tự do: xem lib/giai-cua-bai.ts.
@@ -179,8 +180,9 @@ export default async function StandingSlugPage({ params }: Props) {
     ? knockoutRounds.filter((r) => !isRoundFinished(r))
     : knockoutRounds;
 
+  const dbgTxt = `id=${comp.livescoreId} rows=${tableRows.length} tran=${tranDaDa.length} ${dbg.join(' | ')}`;
   return (
-    <div className="mx-auto max-w-[1100px] px-5 pb-12">
+    <div className="mx-auto max-w-[1100px] px-5 pb-12" data-dbg={dbgTxt}>
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
