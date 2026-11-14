@@ -114,7 +114,6 @@ export default async function TrangTran({ params }: Props) {
       <p className="mt-6 border-t border-line pt-4 text-[14px] text-muted">
         Tác giả:{" "}
         <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
-        {" · "}phụ trách {cg.phuTrach}
       </p>
 
       {lienQuan.ds.length > 0 && (
