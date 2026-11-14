@@ -38,6 +38,12 @@ export interface DongTuan extends SoLieuTran {
   pCs?: ThiTruongPhu;
   /** Tỷ lệ Hiệp 1 / Cả trận, khoá "hiệp 1 + cả trận" (H nhà · D hòa · A khách, vd DH): đủ 9 ô hoặc không ghi. */
   htft?: HtFt;
+  /** Draw No Bet [nhà, khách]. */
+  pDnb?: [number, number];
+  /** Kết quả & BTTS: n nhà thắng, k khách thắng, h hòa; Y/N hai đội cùng ghi bàn có/không. */
+  pKqBtts?: { nY: number; nN: number; kY: number; kN: number; hY: number; hN: number };
+  /** Kết quả & Tài/Xỉu 2.5: T tài, X xỉu. */
+  pKqOu?: { nT: number; nX: number; kT: number; kX: number; hT: number; hX: number };
   /** Điểm phong độ [tấn công, phòng ngự], thang 1–10, của đội nhà (n) và đội khách (k). */
   diem?: DiemDoi;
   /** Slug bài nhận định của cùng trận (trận ĐTQG nguồn tuần không có): số liệu tệp gắn vào trang bài. */
