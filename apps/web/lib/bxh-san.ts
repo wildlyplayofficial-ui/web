@@ -56,3 +56,28 @@ export function khopBangTong(tong: readonly StandingTeam[], nha: readonly Standi
     return !!a && !!b && a.played + b.played === t.played && a.points + b.points === t.points;
   });
 }
+
+/**
+ * Bảng tổng dựng từ chính các trận đã đá — dự phòng khi nguồn bảng xếp hạng trả rỗng.
+ * Cộng sân nhà + sân khách của từng đội rồi xếp theo điểm, hiệu số, bàn thắng.
+ */
+export function tinhBxhTong(tran: readonly TranDaDa[]): StandingTeam[] {
+  const nha = new Map(tinhBxhSan(tran, "nha").map((h) => [h.name, h]));
+  const khach = new Map(tinhBxhSan(tran, "khach").map((h) => [h.name, h]));
+  const ten = new Set([...nha.keys(), ...khach.keys()]);
+  const cong = (n: StandingTeam | undefined, k: StandingTeam | undefined, name: string): StandingTeam => ({
+    rank: 0, name, form: "", groupName: "", stageName: "",
+    played: (n?.played ?? 0) + (k?.played ?? 0),
+    won: (n?.won ?? 0) + (k?.won ?? 0),
+    drawn: (n?.drawn ?? 0) + (k?.drawn ?? 0),
+    lost: (n?.lost ?? 0) + (k?.lost ?? 0),
+    goals_for: (n?.goals_for ?? 0) + (k?.goals_for ?? 0),
+    goals_against: (n?.goals_against ?? 0) + (k?.goals_against ?? 0),
+    goal_diff: (n?.goal_diff ?? 0) + (k?.goal_diff ?? 0),
+    points: (n?.points ?? 0) + (k?.points ?? 0),
+  });
+  return [...ten]
+    .map((t) => cong(nha.get(t), khach.get(t), t))
+    .sort((a, b) => b.points - a.points || b.goal_diff - a.goal_diff || b.goals_for - a.goals_for || a.name.localeCompare(b.name))
+    .map((h, i) => ({ ...h, rank: i + 1 }));
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { khopBangTong, tinhBxhSan, type TranDaDa } from "./bxh-san";
+import { khopBangTong, tinhBxhSan, tinhBxhTong, type TranDaDa } from "./bxh-san";
 import { dauMua } from "./bxh-san-tai";
 
 const T: TranDaDa[] = [
@@ -52,5 +52,14 @@ describe("dauMua", () => {
   it("từ tháng 7 trở đi lấy năm nay, trước đó lấy năm trước", () => {
     expect(dauMua(new Date("2026-11-14T00:00:00Z"))).toBe("2026-07-01");
     expect(dauMua(new Date("2027-03-02T00:00:00Z"))).toBe("2026-07-01");
+  });
+});
+
+describe("tinhBxhTong", () => {
+  it("cộng nhà + khách: điểm, bàn thắng, xếp hạng", () => {
+    const b = tinhBxhTong(T);
+    const a = b.find((x) => x.name === "A")!;
+    expect([a.played, a.won, a.lost, a.goals_for, a.goals_against, a.points]).toEqual([3, 2, 1, 6, 2, 6]);
+    expect(b.map((x) => `${x.rank}${x.name}`)).toEqual(["1A", "2C", "3B"]);
   });
 });
