@@ -327,6 +327,7 @@ export default async function StandingSlugPage({ params }: Props) {
               ? dict.standings.seasonNote.replace("{season}", comp.season)
               : dict.standings.titleFor.replace("{name}", compName)}
           </h2>
+          <span hidden data-dbg={`tran=${tranDaDa.length} tong=${sortedRows.reduce((a, r) => a + r.played, 0)} nha=${sanNha.length} khop=${coSan}`} />
           <LeagueTable
             teams={sortedRows}
             labels={dict.standings}
