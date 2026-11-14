@@ -1,7 +1,7 @@
 import type { Keo3Tuan } from "@/lib/du-doan-tuan";
 import { cauDnb, cauKqBtts, cauKqOu, docDnb, docKqBtts, docKqOu, KHOA_BTTS, KHOA_OU, oThapNhat } from "@/lib/tran-keo3";
 import { tenDoiViet } from "@/lib/ten-viet";
-import { Ty } from "@/components/ty-le";
+import { ChuTy, Ty } from "@/components/ty-le";
 
 /** Ba hộp tỷ lệ phụ (Hòa hoàn tiền · Kết quả + cả hai đội ghi bàn · Kết quả + tài xỉu 2.5). Hộp nào thiếu số thì không vẽ. */
 
@@ -41,7 +41,7 @@ export function TranKeo3({ k }: { k: Keo3Tuan }) {
       {dnb && (
         <section className={O} data-hop="keo3">
           <h2 className={NHAN}>Hòa hoàn tiền</h2>
-          <p className="mt-2 text-[15px]">{cauDnb(dnb, nha, khach)}</p>
+          <p className="mt-2 text-[15px]"><ChuTy text={cauDnb(dnb, nha, khach)} /></p>
           <div className="mt-3 grid max-w-[560px] grid-cols-2 gap-1 text-center text-xs sm:text-sm">
             <span className="py-1 text-muted">Nhà thắng</span>
             <span className="py-1 text-muted">Khách thắng</span>
@@ -53,14 +53,14 @@ export function TranKeo3({ k }: { k: Keo3Tuan }) {
       {btts && (
         <section className={O} data-hop="keo3">
           <h2 className={NHAN}>Kết quả + cả hai đội ghi bàn</h2>
-          <p className="mt-2 text-[15px]">{cauKqBtts(btts, nha, khach)}</p>
+          <p className="mt-2 text-[15px]"><ChuTy text={cauKqBtts(btts, nha, khach)} /></p>
           <Luoi cot={["Có", "Không"]} hang={hang} khoa={KHOA_BTTS} g={btts} />
         </section>
       )}
       {ou && (
         <section className={O} data-hop="keo3">
           <h2 className={NHAN}>Kết quả + tài xỉu 2.5</h2>
-          <p className="mt-2 text-[15px]">{cauKqOu(ou, nha, khach)}</p>
+          <p className="mt-2 text-[15px]"><ChuTy text={cauKqOu(ou, nha, khach)} /></p>
           <Luoi cot={["Tài", "Xỉu"]} hang={hang} khoa={KHOA_OU} g={ou} />
         </section>
       )}

@@ -1,3 +1,4 @@
+import { T } from "./ty-le";
 /**
  * Khối "hai đội ghi bàn" · "tài xỉu 2.5" · "tỷ số chính xác" trên trang trận (Peter gật qua Jane 10/11).
  * Dữ liệu từ tệp tuần: tip + tỷ lệ + chuỗi 5 trận mỗi đội (h5/a5, CŨ TRƯỚC, mới nhất cuối).
@@ -36,6 +37,6 @@ export function cauChuoi(loai: "btts" | "ou", nha: string, h5: string | undefine
 export function cauTySo(tip: string, keo: readonly number[]): string | null {
   const so = tip.match(/(\d+)\s*-\s*(\d+)/);
   if (!so) return null;
-  const tl = keo[0] > 0 ? ` · tỷ lệ ${keo[0].toFixed(2)}` : "";
+  const tl = keo[0] > 0 ? ` · tỷ lệ ${T(keo[0])}` : "";
   return `Tỷ số dự đoán: ${so[1]}-${so[2]}${tl}`;
 }

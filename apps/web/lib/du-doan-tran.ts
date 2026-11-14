@@ -4,6 +4,7 @@
  * Import TƯƠNG ĐỐI để vitest chạy không cần alias.
  */
 import type { HangDuDoan } from "./du-doan-hang";
+import { T } from "./ty-le";
 
 /** Thứ viết tay (Intl của Node và trình duyệt ra chữ khác nhau → lỗi hydrate). */
 const THU = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
@@ -66,7 +67,8 @@ export function cauHaiDoiGhi(h: Pick<HangDuDoan, "haiDoiGhi" | "du">): string | 
 const haiSo = (x: number) => x.toFixed(2);
 
 /** Một đoạn tóm tắt sinh từ số của trận (cho người đọc lướt + máy tìm kiếm trích). */
-export function cauTomTat(h: HangDuDoan): string {
+export function cauTomTat(h: HangDuDoan, danhDau = false): string {
+  const so = danhDau ? T : (x: number) => x.toFixed(2);
   const gio = gioChu(h.gio);
   const luc = `${gio ? `lúc ${gio} ` : ""}${thuVN(h.ngay).replace(/^Thứ/, "thứ").replace(/^Chủ Nhật/, "Chủ nhật")} ${ngayThang(h.ngay)}`;
   const noi = h.san ? (h.san.startsWith("Sân ") ? ` trên sân ${h.san.slice(4)}` : ` tại ${h.san}`) : gio ? " giờ Việt Nam" : "";
@@ -76,7 +78,7 @@ export function cauTomTat(h: HangDuDoan): string {
       ? `banhbong.net dự đoán ${thang} ở ${h.giai}, trận đá ${luc}${noi}.`
       : `${h.nha} gặp ${h.khach} ở ${h.giai}, trận đá ${luc}${noi}.`,
   ];
-  if (h.mot) cau.push(`Tỷ lệ 1·X·2 ${h.sapDa ? "đang là" : "trước trận là"} ${h.mot.map(haiSo).join(" · ")}.`);
+  if (h.mot) cau.push(`Tỷ lệ 1·X·2 ${h.sapDa ? "đang là" : "trước trận là"} ${h.mot.map(so).join(" · ")}.`);
   const kem = [h.taiXiu, cauHaiDoiGhi(h)].filter(Boolean);
   if (kem.length > 0) cau.push(`Dự đoán kèm theo: ${kem.join(", ")}.`);
   if (h.that) {

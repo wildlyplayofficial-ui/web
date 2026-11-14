@@ -9,23 +9,29 @@ export const NHAN_DINH_DANG: ReadonlyArray<{ ma: DinhDangTyLe; nhan: string }> =
   { ma: "A", nhan: "Mỹ" },
 ];
 
-const MAU_SO = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 20, 25, 40, 50];
+// Bậc thang phân số của nhà cái Anh (cùng bộ PredictZ hiển thị). Trùng đúng bậc nào thì lấy bậc đó.
+const BAC_THANG = [
+  "1/10", "1/8", "1/6", "2/11", "1/5", "2/9", "1/4", "2/7", "3/10", "1/3", "4/11", "2/5", "4/9", "1/2", "8/15", "4/7", "8/13", "4/6", "8/11", "4/5", "5/6", "10/11", "1/1",
+  "11/10", "6/5", "5/4", "11/8", "6/4", "13/8", "7/4", "15/8", "2/1", "85/40", "9/4", "5/2", "11/4", "3/1", "10/3", "7/2", "4/1", "9/2", "5/1", "11/2", "6/1", "13/2", "7/1", "15/2", "8/1", "9/1", "10/1",
+  "11/1", "12/1", "14/1", "16/1", "18/1", "20/1", "22/1", "25/1", "28/1", "33/1", "40/1", "50/1", "66/1", "80/1", "100/1",
+].map((t) => {
+  const [n, m] = t.split("/").map(Number);
+  return { t, d: Math.round((1 + n / m) * 100) };
+});
 
 function ucln(a: number, b: number): number {
   return b === 0 ? a : ucln(b, a % b);
 }
 
-/** Phân số gần nhất với d-1 trong các mẫu số thông dụng; sai số không quá 1% (tối thiểu 0.005), không có thì rút gọn (d-1)*100/100. */
+/** Phân số kiểu nhà cái: đúng bậc thang thì lấy bậc đó; không thì (d-1) rút gọn trên mẫu 10 hoặc 100 (2.70 -> 17/10). */
 export function phanSo(d: number): string {
-  const x = d - 1;
-  const dung = Math.max(0.005, x * 0.01);
-  for (const m of MAU_SO) {
-    const t = Math.round(x * m);
-    if (Math.abs(t / m - x) <= dung) return `${t}/${m}`;
-  }
-  const t = Math.round(x * 100);
-  const g = ucln(t, 100);
-  return `${t / g}/${100 / g}`;
+  const cent = Math.round(d * 100);
+  const bac = BAC_THANG.find((b) => b.d === cent);
+  if (bac) return bac.t;
+  const t = cent - 100;
+  const m = t % 10 === 0 ? 10 : 100;
+  const g = ucln(t / (100 / m), m);
+  return `${t / (100 / m) / g}/${m / g}`;
 }
 
 export function kieuMy(d: number): string {
@@ -39,6 +45,9 @@ export function doiTyLe(d: number, dinhDang: DinhDangTyLe): string {
   if (dinhDang === "A") return kieuMy(d);
   return d.toFixed(2);
 }
+
+/** Đánh dấu một tỷ lệ trong câu chữ để ChuTy bọc lại thành số đổi được kiểu. */
+export const T = (x: number) => `\u27E6${x.toFixed(2)}\u27E7`;
 
 export function laDinhDang(v: unknown): v is DinhDangTyLe {
   return v === "D" || v === "F" || v === "A";

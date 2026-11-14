@@ -10,6 +10,8 @@ import { ngayTabDuDoan, ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { cacXienNgay, tenLoaiXien, type XienNgay } from "@/lib/xien";
+import { ChuTy } from "@/components/ty-le";
+import { T } from "@/lib/ty-le";
 
 /**
  * Trang kèo xiên /keo-xien (Peter 12/11: tách khỏi dự đoán, "làm theo PredictZ" — trang
@@ -151,9 +153,7 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
         <div className={DOAN}>
           <p>
             Tỷ lệ gộp bằng tích tỷ lệ từng trận.{" "}
-            {vd
-              ? `Ví dụ xiên đầu tiên trên trang: ${vd.chan.map((c) => c.gia.toFixed(2)).join(" × ")} = ${vd.tong.toFixed(2)}.`
-              : "Ví dụ ba trận có tỷ lệ 1.30, 1.50 và 1.60 thì tỷ lệ gộp là 1.30 × 1.50 × 1.60 = 3.12."}
+            <ChuTy text={vd ? `Ví dụ xiên đầu tiên trên trang: ${vd.chan.map((c) => T(c.gia)).join(" × ")} = ${T(vd.tong)}.` : `Ví dụ ba trận có tỷ lệ ${T(1.3)}, ${T(1.5)} và ${T(1.6)} thì tỷ lệ gộp là ${T(1.3)} × ${T(1.5)} × ${T(1.6)} = ${T(3.12)}.`} />
           </p>
         </div>
         <p className="mt-4 text-xs text-muted">Tỷ lệ chỉ để tham khảo và có thể đổi trước giờ bóng lăn. Nội dung mang tính giải trí.</p>

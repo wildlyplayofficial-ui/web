@@ -1,3 +1,4 @@
+import { T } from "./ty-le";
 /**
  * Ba bảng tỷ lệ phụ của trang trận tuần: Hòa hoàn tiền (pDnb), Kết quả + cả hai đội ghi bàn (pKqBtts),
  * Kết quả + tài xỉu 2.5 (pKqOu). Thiếu hoặc sai số (không phải số > 1) → null, hộp không vẽ.
@@ -28,15 +29,15 @@ const doi = (c: string, nha: string, khach: string) => (c === "n" ? `${nha} th�
 
 export function cauDnb(d: [number, number], nha: string, khach: string): string {
   const nhaTruoc = d[0] <= d[1];
-  return `Nếu trận kết thúc hòa, tiền cược được trả lại. Cửa có tỷ lệ thấp nhất: ${nhaTruoc ? nha : khach} thắng (${(nhaTruoc ? d[0] : d[1]).toFixed(2)}).`;
+  return `Nếu trận kết thúc hòa, tiền cược được trả lại. Cửa có tỷ lệ thấp nhất: ${nhaTruoc ? nha : khach} thắng (${T(nhaTruoc ? d[0] : d[1])}).`;
 }
 
 export function cauKqBtts(g: KqBtts, nha: string, khach: string): string {
   const k = oThapNhat(g) as keyof KqBtts;
-  return `Đoán kết quả và việc cả hai đội cùng ghi bàn. Cửa có tỷ lệ thấp nhất: ${doi(k[0], nha, khach)}, ${k[1] === "Y" ? "cả hai đội cùng ghi bàn" : "không phải cả hai đội cùng ghi bàn"} (${g[k].toFixed(2)}).`;
+  return `Đoán kết quả và việc cả hai đội cùng ghi bàn. Cửa có tỷ lệ thấp nhất: ${doi(k[0], nha, khach)}, ${k[1] === "Y" ? "cả hai đội cùng ghi bàn" : "không phải cả hai đội cùng ghi bàn"} (${T(g[k])}).`;
 }
 
 export function cauKqOu(g: KqOu, nha: string, khach: string): string {
   const k = oThapNhat(g) as keyof KqOu;
-  return `Đoán kết quả và tổng số bàn so với 2.5. Cửa có tỷ lệ thấp nhất: ${doi(k[0], nha, khach)}, ${k[1] === "T" ? "tài (từ 3 bàn trở lên)" : "xỉu (tối đa 2 bàn)"} (${g[k].toFixed(2)}).`;
+  return `Đoán kết quả và tổng số bàn so với 2.5. Cửa có tỷ lệ thấp nhất: ${doi(k[0], nha, khach)}, ${k[1] === "T" ? "tài (từ 3 bàn trở lên)" : "xỉu (tối đa 2 bàn)"} (${T(g[k])}).`;
 }

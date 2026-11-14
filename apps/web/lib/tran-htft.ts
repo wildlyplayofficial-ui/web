@@ -1,3 +1,4 @@
+import { T } from "./ty-le";
 /**
  * Khối "Hiệp 1 / Cả trận" và "Điểm tấn công / phòng ngự" trên trang trận (Peter duyệt 14/11).
  * Dữ liệu từ tệp tuần: htft = 9 tỷ lệ khoá "hiệp 1 + cả trận" (H nhà · D hòa · A khách, vd "DH" = hòa hiệp 1,
@@ -71,7 +72,7 @@ export function cauHtft(h: HtFt | undefined, nha: string, khach: string): string
   const ds = h && docHtft(h);
   const k = h && cuaNoiNhat(h);
   if (!ds || !k) return null;
-  return `Cửa có tỷ lệ thấp nhất: ${nhanCua(k, nha, khach)} (${ds[KHOA_HTFT.indexOf(k)].toFixed(2)}).`;
+  return `Cửa có tỷ lệ thấp nhất: ${nhanCua(k, nha, khach)} (${T(ds[KHOA_HTFT.indexOf(k)])}).`;
 }
 
 /** "Uganda tấn công 5/5, phòng ngự 4/5." */

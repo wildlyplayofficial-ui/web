@@ -20,6 +20,7 @@ import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du
 import { ganNhatTuan, htftDiemTuan, keo3Tuan, keoPhuTuan, soLieuTuan } from "@/lib/du-doan-tuan";
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
+import { ChuTy } from "@/components/ty-le";
 
 /**
  * Trang riêng một trận (thiết kế lại 10/11): /du-doan/{slug}. Trận nào trong bảng dự đoán
@@ -102,7 +103,7 @@ export default async function TrangTran({ params }: Props) {
       </p>
       <TranHero h={h} lang={lang} tacGia={tacGia} />
       <TranBaO h={h} lang={lang} />
-      <p className="mt-4 text-[15px] leading-relaxed sm:text-base">{cauTomTat(h)}</p>
+      <p className="mt-4 text-[15px] leading-relaxed sm:text-base"><ChuTy text={cauTomTat(h, true)} /></p>
       <TranPhongDo h={h} lang={lang} />
       {gan10 && <TranGan10 g={gan10} />}
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}

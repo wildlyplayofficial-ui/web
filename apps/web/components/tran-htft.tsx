@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { HtftDiem } from "@/lib/du-doan-tuan";
 import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docDiemChung, docHtft, KHOA_HTFT, xacSuatTheoHang } from "@/lib/tran-htft";
 import { tenDoiViet } from "@/lib/ten-viet";
-import { Ty } from "@/components/ty-le";
+import { ChuTy, Ty } from "@/components/ty-le";
 
 /**
  * Khối "Hiệp 1 / Cả trận" (9 cửa, tô cửa tỷ lệ thấp nhất) và "Điểm tấn công / phòng ngự" (thang 1 đến 10) của từng đội.
@@ -24,7 +24,7 @@ function Hiep({ k }: { k: HtftDiem }) {
   return (
     <section className={O}>
       <h2 className={NHAN}>Hiệp 1 / Cả trận</h2>
-      <p className="mt-2 text-[15px]">{cauHtft(k.htft, nha, khach)}</p>
+      <p className="mt-2 text-[15px]"><ChuTy text={cauHtft(k.htft, nha, khach) ?? ""} /></p>
       <div className="mt-3 max-w-[560px] overflow-x-auto">
         <div className="grid min-w-[300px] grid-cols-[64px_repeat(3,1fr)] gap-1 text-center text-xs sm:grid-cols-[84px_repeat(3,1fr)] sm:text-sm">
           <span />

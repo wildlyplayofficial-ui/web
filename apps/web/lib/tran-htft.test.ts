@@ -20,7 +20,7 @@ describe("docHtft — 9 tỷ lệ hiệp 1 / cả trận", () => {
 describe("cửa nổi nhất + câu tiếng Việt", () => {
   it("tỷ lệ thấp nhất là cửa nổi nhất", () => {
     expect(cuaNoiNhat(ODDS)).toBe("HH");
-    expect(cauHtft(ODDS, "Uganda", "Botswana")).toBe("Cửa có tỷ lệ thấp nhất: Uganda dẫn hiệp 1 và thắng cả trận (2.45).");
+    expect(cauHtft(ODDS, "Uganda", "Botswana")).toBe("Cửa có tỷ lệ thấp nhất: Uganda dẫn hiệp 1 và thắng cả trận (⟦2.45⟧).");
   });
   it("nhãn các kiểu cửa", () => {
     expect(nhanCua("DH", "Uganda", "Botswana")).toBe("Hòa hiệp 1, Uganda thắng cả trận");

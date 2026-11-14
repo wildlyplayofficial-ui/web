@@ -1,7 +1,7 @@
 import type { KeoPhu } from "@/lib/du-doan-tuan";
 import { cauChuoi, cauTySo, docChuoi, type ThiTruongPhu } from "@/lib/tran-keo-phu";
 import { tenDoiViet } from "@/lib/ten-viet";
-import { Ty } from "@/components/ty-le";
+import { ChuTy, Ty } from "@/components/ty-le";
 
 /**
  * Khối hai đội ghi bàn · tài xỉu 2,5 · tỷ số chính xác trên trang trận. Thị trường nào tệp không
@@ -71,7 +71,7 @@ export function TranKeoPhu({ k }: { k: KeoPhu }) {
       {cs && (
         <section className={O}>
           <h2 className={NHAN}>Tỷ số chính xác</h2>
-          <p className="mt-2 text-[15px]">{cs}</p>
+          <p className="mt-2 text-[15px]"><ChuTy text={cs} /></p>
         </section>
       )}
     </>
