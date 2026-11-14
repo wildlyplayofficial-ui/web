@@ -15,7 +15,7 @@ import { tenDoiViet } from "@/lib/ten-viet";
 import { conMoi, kqCuaDoi, ngayNgan, type TranGanDay } from "@/lib/tran-so-lieu";
 
 /**
- * /chuoi-dang-chu-y (Peter gật 14/11): đội nào đang có chuỗi thắng · bất bại · chưa thắng · thua, tài · xỉu ·
+ * /chuoi-dang-chu-y (Peter gật 14/11): đội nào đang có chuỗi thắng · bất bại · chưa thắng · thua, Over · Under ·
  * hai đội ghi bàn · giữ sạch lưới, tính từ 10 trận gần nhất trong tệp dự đoán tuần (lib/chuoi-doi.ts), kèm trận
  * sắp tới của đội. Chỉ đội có trận từ hôm nay trở đi. Không nhắc nhà cái, không số liệu "thành tích dự đoán".
  */
@@ -25,9 +25,9 @@ const DUONG = "/chuoi-dang-chu-y";
 const KHOI: ReadonlyArray<{ loai: LoaiChuoi; tieuDe: string; nhan: (so: number) => string }> = [
   { loai: "thang", tieuDe: "Đang thắng liên tiếp", nhan: (n) => `Thắng ${n} trận liền` },
   { loai: "khongThua", tieuDe: "Đang bất bại", nhan: (n) => `Bất bại ${n} trận liền` },
-  { loai: "tai", tieuDe: "Liên tiếp trên 2.5 bàn", nhan: (n) => `${n} trận liền trên 2.5 bàn` },
+  { loai: "tai", tieuDe: "Liên tiếp Over 2.5", nhan: (n) => `${n} trận liền Over 2.5` },
   { loai: "haiDoiGhi", tieuDe: "Liên tiếp cả hai đội ghi bàn", nhan: (n) => `${n} trận liền cả hai đội ghi bàn` },
-  { loai: "xiu", tieuDe: "Liên tiếp dưới 2.5 bàn", nhan: (n) => `${n} trận liền dưới 2.5 bàn` },
+  { loai: "xiu", tieuDe: "Liên tiếp Under 2.5", nhan: (n) => `${n} trận liền Under 2.5` },
   { loai: "giuSach", tieuDe: "Giữ sạch lưới liên tiếp", nhan: (n) => `Giữ sạch lưới ${n} trận liền` },
   { loai: "thua", tieuDe: "Đang thua liên tiếp", nhan: (n) => `Thua ${n} trận liền` },
   { loai: "khongThang", tieuDe: "Đang chưa thắng", nhan: (n) => `Chưa thắng ${n} trận liền` },
@@ -64,8 +64,8 @@ export async function chuoiHomNay(): Promise<{ homNay: string; ds: DongChuoiHien
 
 export function metaChuoi(homNay: string, soDoi: number, lang: Lang): Metadata {
   const ngay = ngayThang(homNay);
-  const title = `Chuỗi đáng chú ý ${ngay}: đội thắng liền, bất bại, tài xỉu, hai đội ghi bàn`;
-  const description = `${soDoi > 0 ? `${soDoi} chuỗi đáng chú ý` : "Chuỗi đáng chú ý"} của các đội sắp thi đấu: thắng liên tiếp, bất bại, chưa thắng, trên dưới 2.5 bàn, cả hai đội ghi bàn, giữ sạch lưới, tính từ 10 trận gần nhất.`;
+  const title = `Chuỗi đáng chú ý ${ngay}: đội thắng liền, bất bại, Over/Under, hai đội ghi bàn`;
+  const description = `${soDoi > 0 ? `${soDoi} chuỗi đáng chú ý` : "Chuỗi đáng chú ý"} của các đội sắp thi đấu: thắng liên tiếp, bất bại, chưa thắng, Over/Under 2.5, cả hai đội ghi bàn, giữ sạch lưới, tính từ 10 trận gần nhất.`;
   return {
     title,
     description,
@@ -199,7 +199,7 @@ export function TrangChuoi({ homNay, ds, lang }: { homNay: string; ds: DongChuoi
             Chuỗi tính từ trận gần nhất của đội lùi về trước, dừng ở trận đầu tiên không còn đạt điều kiện. Dữ liệu là 10 trận gần nhất của mỗi đội nên chuỗi dài nhất có thể thấy là 10. Mỗi đội có thể xuất hiện ở nhiều khối nếu đồng thời có nhiều chuỗi.
           </p>
           <p>
-            Ngưỡng để lên trang: thắng 4 trận liền, bất bại hoặc chưa thắng 6 trận, thua 4 trận, trên hoặc dưới 2.5 bàn 5 trận, cả hai đội ghi bàn 5 trận, giữ sạch lưới 3 trận. Đội đang thắng liên tiếp sẽ không bị tính lặp ở khối bất bại.
+            Ngưỡng để lên trang: thắng 4 trận liền, bất bại hoặc chưa thắng 6 trận, thua 4 trận, Over hoặc Under 2.5 5 trận, cả hai đội ghi bàn 5 trận, giữ sạch lưới 3 trận. Đội đang thắng liên tiếp sẽ không bị tính lặp ở khối bất bại.
           </p>
         </div>
         <p className="mt-4 text-xs text-muted">Chuỗi chỉ phản ánh phong độ gần đây, không đảm bảo kết quả trận sắp tới. Nội dung mang tính giải trí.</p>

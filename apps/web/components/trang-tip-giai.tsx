@@ -14,17 +14,17 @@ import { demTran, duongTipGiai, giaiCoTip, SO_NGAY, tipGiai, type NgayTip } from
 import type { LoaiTip } from "@/lib/tip-ngay";
 
 /**
- * Ba loại trang tip theo giải: /tai-xiu/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
+ * Ba loại trang tip theo giải: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
  * Mỗi trận một dòng (logo hai đội, giờ, tip + tỷ lệ), link sang /du-doan/{slug}. Không đúng/sai, không tên nhà cái.
  * Giải không có trận nào trong 7 ngày: trang vẫn mở nhưng noindex và không vào sitemap.
  */
 
 const CH: Record<LoaiTip, { ten: string; tieuDe: (g: string) => string; mota: (g: string, n: number) => string; moDau: string }> = {
   "tai-xiu": {
-    ten: "Tài xỉu",
-    tieuDe: (g) => `Tài xỉu 2.5 ${g}`,
-    mota: (g, n) => `Tài xỉu 2.5 ${g} 7 ngày tới: ${n} trận có dự đoán trên hoặc dưới 2.5 bàn, kèm tỷ lệ và số trận Tài trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
-    moDau: "Mốc 2.5 bàn: tổng bàn thắng của cả hai đội từ 3 trở lên là Tài, từ 2 trở xuống là Xỉu.",
+    ten: "Over/Under",
+    tieuDe: (g) => `Over/Under 2.5 ${g}`,
+    mota: (g, n) => `Over/Under 2.5 ${g} 7 ngày tới: ${n} trận có dự đoán Over hoặc Under 2.5, kèm tỷ lệ và số trận Over trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
+    moDau: "Mốc 2.5 bàn: tổng bàn thắng của cả hai đội từ 3 trở lên là Over, từ 2 trở xuống là Under.",
   },
   "hai-doi-ghi-ban": {
     ten: "Cả 2 đội ghi bàn",

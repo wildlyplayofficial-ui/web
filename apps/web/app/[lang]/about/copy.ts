@@ -130,14 +130,14 @@ export const copy: Record<Lang, AboutCopy> = {
     title: "Về banhbong.net",
     metaTitle: "Về banhbong.net — Dự đoán bóng đá mỗi ngày",
     metaDescription:
-      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: chốt tỷ số kèm tỷ lệ 1X2, tài xỉu, phong độ, đối đầu và bảng xếp hạng, do chuyên gia từng giải ký tên.",
+      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: chốt tỷ số kèm tỷ lệ 1X2, Over/Under, phong độ, đối đầu và bảng xếp hạng, do chuyên gia từng giải ký tên.",
     intro:
-      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi chốt tỷ số các trận đáng chú ý, kèm tỷ lệ 1X2, tài xỉu, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng. Mỗi trận do chuyên gia phụ trách giải đó ký tên.",
+      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi chốt tỷ số các trận đáng chú ý, kèm tỷ lệ 1X2, Over/Under, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng. Mỗi trận do chuyên gia phụ trách giải đó ký tên.",
     cardsTitle: "banhbong.net có gì",
     cards: [
       {
         heading: "Dự đoán mỗi ngày",
-        body: "Tỷ số dự đoán từng trận theo ngày, kèm tỷ lệ 1X2, tài xỉu, cả hai đội ghi bàn và phong độ 5 trận gần nhất.",
+        body: "Tỷ số dự đoán từng trận theo ngày, kèm tỷ lệ 1X2, Over/Under, cả hai đội ghi bàn và phong độ 5 trận gần nhất.",
         href: "/du-doan",
       },
       {

@@ -9,7 +9,7 @@ import { Ty } from "@/components/ty-le";
  * MỘT dòng trận dùng chung trang chủ, /du-doan và trang trận (mẫu Peter duyệt 10/11).
  * Cả dòng là một link sang trang riêng của trận /du-doan/{slug}.
  * Điện thoại: giờ | giải + hai đội xếp dọc | ô tỷ số | ›.
- * Máy tính (lg): giờ (+giải) | đội nhà | ô tỷ số | đội khách | 1·X·2 | Tài/Xỉu | ›.
+ * Máy tính (lg): giờ (+giải) | đội nhà | ô tỷ số | đội khách | 1·X·2 | Over/Under | ›.
  * `phongDo` (bảng /du-doan, Peter gật 11/11): ô phong độ 5 trận dưới tên đội + 1·X·2 ở cả điện thoại
  *   (một hàng nhỏ dưới hai đội). Trang chủ / trang trận không bật → giữ nguyên dòng cũ.
  * Không dùng hook → gọi được từ trang server lẫn bảng client.

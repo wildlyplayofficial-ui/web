@@ -33,7 +33,7 @@ export function KeoSeoContent({ lang }: { lang: Lang }) {
       <H2>Kèo bóng đá hôm nay: xem tỷ lệ, biến động và xác suất thực</H2>
       <P>
         Bảng kèo bóng đá hôm nay tại banhbong.net tổng hợp tỷ lệ của các trận đấu đáng chú ý theo giờ Việt Nam,
-        bao gồm kèo châu Á, Tài/Xỉu và 1X2 cho cả trận lẫn hiệp một.
+        bao gồm kèo châu Á, Over/Under và 1X2 cho cả trận lẫn hiệp một.
       </P>
       <P>
         Dữ liệu được cập nhật định kỳ mỗi 3 giờ. Khi mở chi tiết một trận đấu, bạn có thể so sánh kèo mở với kèo
@@ -66,14 +66,14 @@ export function KeoSeoContent({ lang }: { lang: Lang }) {
         <Link href={L("/guides/what-is-asian-handicap")} className="text-brand underline">Kèo Châu Á là gì?</Link>
       </P>
 
-      <H3>Kèo Tài/Xỉu</H3>
+      <H3>Kèo Over/Under</H3>
       <P>
-        Kèo Tài/Xỉu dựa trên tổng số bàn thắng của trận đấu. Thị trường đưa ra một mốc như 2.5 hoặc 3.0. Chọn Tài
-        2.5 khi đánh giá trận đấu có khả năng xuất hiện từ 3 bàn trở lên; chọn Xỉu 2.5 khi đánh giá tổng số bàn
+        Kèo Over/Under dựa trên tổng số bàn thắng của trận đấu. Thị trường đưa ra một mốc như 2.5 hoặc 3.0. Chọn Over
+        2.5 khi đánh giá trận đấu có khả năng xuất hiện từ 3 bàn trở lên; chọn Under 2.5 khi đánh giá tổng số bàn
         thắng không vượt quá 2. Với mốc nguyên như 3.0, trận đấu có đúng 3 bàn sẽ hòa kèo.
       </P>
       <P>
-        Bảng trên hiển thị cả Tài/Xỉu toàn trận và Tài/Xỉu hiệp một để người xem có thể so sánh cách thị trường
+        Bảng trên hiển thị cả Over/Under toàn trận và Over/Under hiệp một để người xem có thể so sánh cách thị trường
         định giá hai giai đoạn của trận đấu.
       </P>
 
@@ -123,7 +123,7 @@ export function KeoSeoContent({ lang }: { lang: Lang }) {
       <P>Một quy trình tham khảo đơn giản gồm bốn bước:</P>
       <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
         <li>Chọn ngày hoặc tìm tên đội bóng.</li>
-        <li>So sánh kèo châu Á, Tài/Xỉu và 1X2 của trận đấu.</li>
+        <li>So sánh kèo châu Á, Over/Under và 1X2 của trận đấu.</li>
         <li>Mở chi tiết để kiểm tra kèo mở, kèo hiện tại và xác suất sau khi loại margin.</li>
         <li>Đối chiếu với thông tin đội hình, phong độ và bối cảnh trận đấu trước khi hình thành nhận định.</li>
       </ol>
@@ -152,7 +152,7 @@ export function KeoSeoContent({ lang }: { lang: Lang }) {
       <H3>Tỷ lệ kèo bóng đá được cập nhật khi nào?</H3>
       <P>Bảng kèo tại banhbong.net được cập nhật định kỳ mỗi 3 giờ. Tỷ lệ có thể tiếp tục thay đổi trước khi trận đấu bắt đầu.</P>
       <H3>Bảng có kèo hiệp một không?</H3>
-      <P>Có. Trang hiển thị kèo châu Á, Tài/Xỉu và 1X2 cho cả toàn trận lẫn hiệp một khi dữ liệu tương ứng có sẵn.</P>
+      <P>Có. Trang hiển thị kèo châu Á, Over/Under và 1X2 cho cả toàn trận lẫn hiệp một khi dữ liệu tương ứng có sẵn.</P>
       <H3>Mũi tên tăng giảm trong bảng kèo có ý nghĩa gì?</H3>
       <P>Mũi tên thể hiện tỷ lệ hiện tại đã tăng hoặc giảm so với lần ghi nhận trước. Đây là dấu hiệu biến động giá, không phải tín hiệu đảm bảo một cửa sẽ thắng.</P>
       <H3>Xác suất thực có phải dự đoán kết quả không?</H3>

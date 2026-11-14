@@ -15,7 +15,7 @@ import { TeamCrest } from "@/components/team-crest";
  * Danh sách trận + kèo — CLIENT component (Nick 24/8: "bắt buộc phải gọn cho
  * tiện user", nhiều trận liệt kê đầy đủ như card cũ thì dài vô tận). Mỗi trận
  * mặc định 1 DÒNG GỌN (giờ + tên trận + 1X2 chính); bấm vào mới xoè đủ chi
- * tiết (xác suất thực, kèo châu Á, tài/xỉu, kèo chạy tô màu).
+ * tiết (xác suất thực, kèo châu Á, Over/Under, kèo chạy tô màu).
  */
 
 

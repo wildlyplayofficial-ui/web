@@ -15,12 +15,12 @@ const tra = (s: string) => keo[s];
 const ds = ["a", "b", "c", "d"].map((s) => tran(s, [2, 1], [1.5, 3.5, 5]));
 
 describe("xienChuDe", () => {
-  it("tài 2.5: chỉ cửa Over, xếp theo giờ đá; Under bị loại", () => {
+  it("Over 2.5: chỉ cửa Over, xếp theo giờ đá; Under bị loại", () => {
     const x = xienChuDe("tai", ds, tra);
     expect(x?.chan.map((c) => `${c.h.slug}:${c.cua}:${c.gia}`).sort()).toEqual(["a:tai:1.8", "c:tai:1.5", "d:tai:1.9"]);
     expect(x?.tong).toBeCloseTo(1.8 * 1.5 * 1.9);
   });
-  it("xỉu 2.5: chỉ cửa Under, lấy tỷ lệ xỉu; 1 chân thì không dựng", () => {
+  it("Under 2.5: chỉ cửa Under, lấy tỷ lệ Under; 1 chân thì không dựng", () => {
     expect(xienChuDe("xiu", ds, tra)).toBeNull();
     const x = xienChuDe("xiu", [...ds, tran("b2", [0, 0], null)], (s) => (s === "b2" ? keo.b : keo[s]));
     expect(x?.chan.map((c) => `${c.cua}:${c.gia}`)).toEqual(["xiu:1.6", "xiu:1.6"]);
@@ -69,7 +69,7 @@ describe("xienChuDeTheoNgay", () => {
 describe("danh mục chủ đề", () => {
   it("slug duy nhất, tra ngược được, tên xiên đúng", () => {
     expect(new Set(CHU_DE.map((c) => c.slug)).size).toBe(CHU_DE.length);
-    expect(chuDeTuSlug("xien-tai-2-5")?.khoa).toBe("tai");
+    expect(chuDeTuSlug("xien-over-2-5")?.khoa).toBe("tai");
     expect(chuDeTuSlug("thu-bay")).toBeNull();
     expect(tenXienChuDe("cua-tren", 3)).toBe("Xiên 3 cửa trên an toàn");
   });

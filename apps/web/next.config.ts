@@ -26,6 +26,19 @@ const nextConfig: NextConfig = {
       // 11/11/2026 (Peter "gộp tác giả"): bài nhận định ký tên 5 chuyên gia, hồ sơ nằm chung
       // trên /about → trang Chú Tám Banh cũ dồn về đó.
       // 12/11/2026 (Peter "phần xiên để riêng"): kèo xiên rời /du-doan thành /keo-xien.
+      // 14/11/2026 (Peter: bỏ hẳn chữ "tài xỉu", dùng Over/Under): URL cũ 301 sang URL mới, một nhịp.
+      { source: "/tai-xiu-hom-nay", destination: "/over-under-hom-nay", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/tai-xiu-hom-nay", destination: "/over-under-hom-nay", statusCode: 301 },
+      { source: "/tai-xiu-ngay-mai", destination: "/over-under-ngay-mai", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/tai-xiu-ngay-mai", destination: "/over-under-ngay-mai", statusCode: 301 },
+      { source: "/tai-xiu", destination: "/over-under-hom-nay", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/tai-xiu", destination: "/over-under-hom-nay", statusCode: 301 },
+      { source: "/tai-xiu/:path*", destination: "/over-under/:path*", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/tai-xiu/:path*", destination: "/over-under/:path*", statusCode: 301 },
+      { source: "/keo-xien/xien-tai-2-5", destination: "/keo-xien/xien-over-2-5", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/keo-xien/xien-tai-2-5", destination: "/keo-xien/xien-over-2-5", statusCode: 301 },
+      { source: "/keo-xien/xien-xiu-2-5", destination: "/keo-xien/xien-under-2-5", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/keo-xien/xien-xiu-2-5", destination: "/keo-xien/xien-under-2-5", statusCode: 301 },
       { source: "/du-doan/xien", destination: "/keo-xien", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/du-doan/xien", destination: "/keo-xien", statusCode: 301 },
       { source: "/tac-gia/chu-tam-banh", destination: "/about#doi-ngu-chuyen-gia", statusCode: 301 },

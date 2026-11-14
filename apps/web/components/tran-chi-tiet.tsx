@@ -84,7 +84,7 @@ export function TranHero({ h, lang, tacGia }: { h: HangDuDoan; lang: Lang; /** B
   );
 }
 
-/** Ba ô số kèm theo: tỷ lệ 1·X·2 · tài/xỉu · cả hai đội ghi bàn. Ô nào thiếu số thì bỏ ô đó. */
+/** Ba ô số kèm theo: tỷ lệ 1·X·2 · Over/Under · cả hai đội ghi bàn. Ô nào thiếu số thì bỏ ô đó. */
 export function TranBaO({ h, lang }: { h: HangDuDoan; lang: Lang }) {
   const t = getDict(lang).duDoan;
   const chieu = chieuCua(h.du);
@@ -112,7 +112,7 @@ export function TranBaO({ h, lang }: { h: HangDuDoan; lang: Lang }) {
       )}
       {h.taiXiu && (
         <section className={O}>
-          <h2 className={NHAN}>Tài / Xỉu</h2>
+          <h2 className={NHAN}>Over/Under</h2>
           <p className="mt-2 font-display text-2xl font-bold">{h.taiXiu}</p>
           {tx && <p className="mt-0.5 text-sm text-muted">{tx}</p>}
         </section>

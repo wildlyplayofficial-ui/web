@@ -156,11 +156,11 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     // Trang chủ đề: chỉ nộp khi 7 ngày tới có ít nhất một xiên (lúc rỗng trang vẫn mở được nhưng không mời Google).
     ...CHU_DE.filter((c) => xienChuDeTheoNgay(c.khoa, hang, [homNay, ...ngaySau], keoPhuTuan).length > 0).map((c) => `/keo-xien/${c.slug}`),
     // Gom theo loại kèo hôm nay + chuỗi đáng chú ý (14/11).
-    "/tai-xiu-hom-nay",
+    "/over-under-hom-nay",
     "/ca-2-doi-ghi-ban-hom-nay",
     "/ty-so-hom-nay",
     // Bản ngày mai: chỉ nộp khi ngày mai có trận (trang rỗng là noindex).
-    ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/tai-xiu-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
+    ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/over-under-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
     // Tip theo ngày cụ thể (3 ngày sau ngày mai, mục I 14/11): chỉ nộp ngày + loại có ít nhất một dòng tip.
     ...([2, 3, 4] as const).flatMap((i) =>
       (Object.keys(GOC_TIP_GIAI) as LoaiTip[]).flatMap((l) => (dongTipNgay(hang, lechNgay(homNay, i), l, keoPhuTuan).length > 0 ? [`${GOC_TIP_GIAI[l]}/ngay/${lechNgay(homNay, i)}`] : [])),

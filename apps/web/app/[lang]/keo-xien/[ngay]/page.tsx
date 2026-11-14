@@ -7,7 +7,7 @@ import { ngayVN } from "@/lib/du-doan-hang";
 import { ngayTuSlug } from "@/lib/du-doan-loc";
 import { resolveLang } from "@/lib/i18n";
 
-/** Kèo xiên một ngày sắp tới: /keo-xien/ngay-mai, /keo-xien/thu-bay… Ngày không gom được xiên → 404. Cùng đoạn URL cũng chứa trang chủ đề (/keo-xien/xien-tai-2-5…). */
+/** Kèo xiên một ngày sắp tới: /keo-xien/ngay-mai, /keo-xien/thu-bay… Ngày không gom được xiên → 404. Cùng đoạn URL cũng chứa trang chủ đề (/keo-xien/xien-over-2-5…). */
 export const revalidate = 300;
 
 type Props = { params: Promise<{ lang: string; ngay: string }> };

@@ -8,7 +8,7 @@ import { coGiaiGoc } from "@/lib/ten-viet";
 import { Ty } from "@/components/ty-le";
 
 const chuCua = (cua: CuaXien, h: HangDuDoan) =>
-  cua === "tai" ? "Tài 2.5 bàn" : cua === "xiu" ? "Xỉu 2.5 bàn" : cua === "co" ? "Hai đội cùng ghi bàn" : cua === "khong" ? "Ít nhất một đội không ghi bàn" : `${cua === 0 ? h.nha : h.khach} thắng`;
+  cua === "tai" ? "Over 2.5 bàn" : cua === "xiu" ? "Under 2.5 bàn" : cua === "co" ? "Hai đội cùng ghi bàn" : cua === "khong" ? "Ít nhất một đội không ghi bàn" : `${cua === 0 ? h.nha : h.khach} thắng`;
 
 /** Một xiên trên /keo-xien: đầu khối là cờ giải + giải + loại xiên + tỷ lệ gộp, mỗi chân là link sang trang trận. */
 export function KhoiXien({ xien, giai, loai, moDau, id, lang }: { xien: Xien; giai: string; loai: string; moDau: string; id: string; lang: Lang }) {

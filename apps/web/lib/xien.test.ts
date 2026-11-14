@@ -35,7 +35,7 @@ describe("xiên thị trường phụ", () => {
     a: { pOu: { tip: "Over 2.5", keo: [1.6, 2.2] }, pBtts: { tip: "BTTS Yes", keo: [1.7, 2.0] } },
     b: { pOu: { tip: "Under 2.5", keo: [2.4, 1.5] }, pBtts: { tip: "BTTS No", keo: [2.1, 1.62] } },
   };
-  it("Tài lấy tỷ lệ đầu, Xỉu lấy tỷ lệ sau; trận không ghi thì bỏ", () => {
+  it("Over lấy tỷ lệ đầu, Under lấy tỷ lệ sau; trận không ghi thì bỏ", () => {
     expect(xienTaiXiu(ds, (s) => keo[s])?.chan.map((c) => `${c.h.slug}:${c.cua}:${c.gia}`)).toEqual(["a:tai:1.6", "b:xiu:1.5"]);
   });
   it("hai đội ghi bàn: Có lấy tỷ lệ đầu, Không lấy tỷ lệ sau", () => {
@@ -65,13 +65,13 @@ describe("cacXienNgay", () => {
 });
 
 describe("tenLoaiXien", () => {
-  it("xiên tài xỉu mọi chân cùng Xỉu thì gọi là xiên xỉu", () => {
-    expect(tenLoaiXien("tai-xiu", [{ cua: "xiu" }, { cua: "xiu" }])).toBe("Xiên 2 xỉu 2.5");
+  it("xiên Over/Under mọi chân cùng Under thì gọi là xiên Under", () => {
+    expect(tenLoaiXien("tai-xiu", [{ cua: "xiu" }, { cua: "xiu" }])).toBe("Xiên 2 Under 2.5");
   });
-  it("mọi chân cùng Tài thì gọi là xiên tài", () => {
-    expect(tenLoaiXien("tai-xiu", [{ cua: "tai" }, { cua: "tai" }, { cua: "tai" }])).toBe("Xiên 3 tài 2.5");
+  it("mọi chân cùng Over thì gọi là xiên Over", () => {
+    expect(tenLoaiXien("tai-xiu", [{ cua: "tai" }, { cua: "tai" }, { cua: "tai" }])).toBe("Xiên 3 Over 2.5");
   });
-  it("lẫn Tài và Xỉu thì giữ tên tài xỉu", () => {
-    expect(tenLoaiXien("tai-xiu", [{ cua: "tai" }, { cua: "xiu" }])).toBe("Xiên 2 tài xỉu 2.5");
+  it("lẫn Over và Under thì giữ tên Over/Under", () => {
+    expect(tenLoaiXien("tai-xiu", [{ cua: "tai" }, { cua: "xiu" }])).toBe("Xiên 2 Over/Under 2.5");
   });
 });

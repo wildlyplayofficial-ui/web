@@ -42,7 +42,7 @@ export function metaNgay(ngay: string, homNay: string): { tieuDe: string; moTa: 
   const ten = tenNgay(ngay, homNay);
   return {
     tieuDe: `Dự đoán bóng đá ${ten}`,
-    moTa: `Dự đoán tỷ số từng trận ${ten}/${ngay.slice(0, 4)} theo giờ Việt Nam: tỷ lệ 1·X·2, tài xỉu, phong độ 5 trận gần nhất của hai đội.`,
+    moTa: `Dự đoán tỷ số từng trận ${ten}/${ngay.slice(0, 4)} theo giờ Việt Nam: tỷ lệ 1·X·2, Over/Under, phong độ 5 trận gần nhất của hai đội.`,
   };
 }
 
@@ -79,6 +79,6 @@ export function tranCuaGiai(hang: readonly HangDuDoan[], g: GiaiTrang, homNay: s
 export function metaGiai(g: GiaiTrang): { tieuDe: string; moTa: string } {
   return {
     tieuDe: `Dự đoán ${g.ten} vòng tới`,
-    moTa: `Dự đoán tỷ số các trận ${g.ten} sắp đá theo giờ Việt Nam: tỷ lệ 1·X·2, tài xỉu, phong độ 5 trận gần nhất, cập nhật trước giờ bóng lăn.`,
+    moTa: `Dự đoán tỷ số các trận ${g.ten} sắp đá theo giờ Việt Nam: tỷ lệ 1·X·2, Over/Under, phong độ 5 trận gần nhất, cập nhật trước giờ bóng lăn.`,
   };
 }

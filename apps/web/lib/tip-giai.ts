@@ -1,6 +1,6 @@
 /**
  * Tip theo GIẢI (Peter giao 14/11, học PredictZ "Over 2.5 Premier League"): mỗi giải lớn có ba trang
- * tài xỉu / cả 2 đội ghi bàn / tỷ số cho 7 ngày tới. Chỉ lọc + gom dòng sẵn có của tip-ngay, không tính thêm.
+ * Over/Under / cả 2 đội ghi bàn / tỷ số cho 7 ngày tới. Chỉ lọc + gom dòng sẵn có của tip-ngay, không tính thêm.
  * Hàm THUẦN, import TƯƠNG ĐỐI để vitest chạy không cần alias.
  */
 import type { HangDuDoan } from "./du-doan-hang";
@@ -10,9 +10,9 @@ import { dongTipNgay, type DongTip, type KeoPhuTip, type LoaiTip } from "./tip-n
 /** Số ngày tính từ hôm nay (gồm hôm nay). */
 export const SO_NGAY = 7;
 
-/** Đường dẫn gốc của từng loại: /tai-xiu/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}. */
+/** Đường dẫn gốc của từng loại: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}. */
 export const GOC_TIP_GIAI: Record<LoaiTip, string> = {
-  "tai-xiu": "/tai-xiu",
+  "tai-xiu": "/over-under",
   "hai-doi-ghi-ban": "/ca-2-doi-ghi-ban",
   "ty-so": "/ty-so",
 };

@@ -18,19 +18,19 @@ describe("demChuoi", () => {
   });
 });
 
-describe("cauChuoi — câu tiếng Việt cho khối hai đội ghi bàn / tài xỉu", () => {
+describe("cauChuoi — câu tiếng Việt cho khối hai đội ghi bàn / Over/Under", () => {
   it("hai đội ghi bàn", () => {
     expect(cauChuoi("btts", "Arsenal", "YYNNY", "Chelsea", "YNYNY")).toBe(
       "Arsenal có 3/5 trận gần nhất cả hai đội cùng ghi bàn, Chelsea có 3/5.",
     );
   });
-  it("tài xỉu", () => {
+  it("Over/Under", () => {
     expect(cauChuoi("ou", "Arsenal", "OOOOU", "Chelsea", "UUUUU")).toBe(
-      "Arsenal có 4/5 trận gần nhất trên 2.5 bàn, Chelsea có 0/5.",
+      "Arsenal có 4/5 trận gần nhất Over 2.5, Chelsea có 0/5.",
     );
   });
   it("thiếu chuỗi một đội thì chỉ nói đội còn lại", () => {
-    expect(cauChuoi("ou", "Arsenal", "OOOOU", "Chelsea", "")).toBe("Arsenal có 4/5 trận gần nhất trên 2.5 bàn.");
+    expect(cauChuoi("ou", "Arsenal", "OOOOU", "Chelsea", "")).toBe("Arsenal có 4/5 trận gần nhất Over 2.5.");
   });
   it("thiếu cả hai → null", () => {
     expect(cauChuoi("btts", "A", "", "B", "")).toBeNull();

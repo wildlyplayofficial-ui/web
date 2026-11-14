@@ -4,7 +4,7 @@ import { tenDoiViet } from "@/lib/ten-viet";
 import { ChuTy, Ty } from "@/components/ty-le";
 
 /**
- * Khối hai đội ghi bàn · tài xỉu 2,5 · tỷ số chính xác trên trang trận. Thị trường nào tệp không
+ * Khối hai đội ghi bàn · Over/Under 2,5 · tỷ số chính xác trên trang trận. Thị trường nào tệp không
  * ghi thì không vẽ; chuỗi 5 trận trái = cũ nhất, phải = mới nhất (như dải phong độ).
  */
 
@@ -13,9 +13,9 @@ const NHAN = "text-xs font-semibold uppercase tracking-wide text-muted";
 
 const TIP: Record<"btts" | "ou", (tip: string) => string> = {
   btts: (t) => (/yes/i.test(t) ? "Có" : "Không"),
-  ou: (t) => (/over/i.test(t) ? "Tài 2.5" : "Xỉu 2.5"),
+  ou: (t) => (/over/i.test(t) ? "Over 2.5" : "Under 2.5"),
 };
-const CHON: Record<"btts" | "ou", [string, string]> = { btts: ["Có", "Không"], ou: ["Tài", "Xỉu"] };
+const CHON: Record<"btts" | "ou", [string, string]> = { btts: ["Có", "Không"], ou: ["Over", "Under"] };
 const DAT: Record<"btts" | "ou", "Y" | "O"> = { btts: "Y", ou: "O" };
 
 function Chuoi({ ten, s, loai }: { ten: string; s?: string; loai: "btts" | "ou" }) {
@@ -67,7 +67,7 @@ export function TranKeoPhu({ k }: { k: KeoPhu }) {
   return (
     <>
       {k.pBtts && <ThiTruong ten="Hai đội cùng ghi bàn" loai="btts" p={k.pBtts} nha={k.nha} khach={k.khach} />}
-      {k.pOu && <ThiTruong ten="Tài xỉu 2.5 bàn" loai="ou" p={k.pOu} nha={k.nha} khach={k.khach} />}
+      {k.pOu && <ThiTruong ten="Over/Under 2.5 bàn" loai="ou" p={k.pOu} nha={k.nha} khach={k.khach} />}
       {cs && (
         <section className={O}>
           <h2 className={NHAN}>Tỷ số chính xác</h2>

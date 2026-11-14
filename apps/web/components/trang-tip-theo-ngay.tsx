@@ -8,7 +8,7 @@ import { withLang, type Lang } from "@/lib/i18n";
 import type { LoaiTip } from "@/lib/tip-ngay";
 
 /**
- * Tip theo NGÀY CỤ THỂ: /tai-xiu/ngay/2026-11-17 (mục I, 14/11). Chỉ 5 ngày từ hôm nay; hôm nay / ngày mai
+ * Tip theo NGÀY CỤ THỂ: /over-under/ngay/2026-11-17 (mục I, 14/11). Chỉ 5 ngày từ hôm nay; hôm nay / ngày mai
  * chuyển về đường cũ (-hom-nay / -ngay-mai). Ngoài 5 ngày hoặc sai dạng ngày → 404; ngày không có trận → noindex.
  */
 function kyTuThamSo(ngay: string): KyNgay | null {
