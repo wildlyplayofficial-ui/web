@@ -13,10 +13,9 @@ import { buildPlaySlug } from "@/lib/play-slug";
 import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
-import { localizedCompetitionName } from "@/lib/competition-logos";
-import type { StripMatch } from "@/components/home-next-matches";
 import { DaiDuDoanGiai } from "@/components/dai-du-doan-giai";
 import { ScoreboardRail } from "@/components/scoreboard-rail";
+import { railTran } from "@/lib/rail-tran";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laTrangLichCaMua, newsDuocIndex, demChu } from "@/lib/chi-muc";
 import { KhoiTrangTru } from "@/components/khoi-trang-tru";
@@ -70,6 +69,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const bayGioMs = () => Date.now();
+
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
@@ -108,49 +109,6 @@ export default async function Home({ params }: Props) {
 
   const todayKey = new Date().toISOString().slice(0, 10);
 
-  // Dải trận trang chủ gộp MỌI giải, không riêng Ngoại hạng Anh (Peter 8/8).
-  // Lấy trận vừa đá xong (có tỉ số) rồi tới trận sắp đá — tháng 8 Ngoại hạng Anh
-  // chưa lăn bóng nhưng MLS/Liga MX đang đá, trang chủ phải có cái để xem.
-  const active = competitions.filter((c) => c.status === "active" && c.slug);
-  const perComp = await Promise.all(
-    active.map(async (c) => {
-      const days = await getCompetitionFixtures(c.livescoreId).catch(() => []);
-      return days.flatMap((d) =>
-        d.matches.map(
-          (m): StripMatch => ({
-            ...m,
-            compSlug: c.slug,
-            compName: localizedCompetitionName(c.slug, c.shortName || c.name, lang),
-          }),
-        ),
-      );
-    }),
-  );
-  const allMatches = perComp.flat();
-  const key = (m: StripMatch) => `${m.date}T${m.time || "00:00"}`;
-  const vuaDa = allMatches
-    .filter((m) => m.finished && m.date <= todayKey)
-    .sort((a, b) => key(b).localeCompare(key(a)))
-    .slice(0, 3)
-    .reverse();
-  // Ngoại hạng Anh luôn đứng trước (Peter 8/8) — đây là giải mình đặt nặng nhất.
-  // Còn lại xếp theo giờ, tối đa 2 trận mỗi giải: xếp thuần theo giờ thì vòng
-  // loại Cúp C1 chiếm gần hết dải, vẫn là "một giải" y như cũ chỉ khác tên.
-  const chuaDa = allMatches
-    .filter((x) => !x.finished && x.date >= todayKey)
-    .sort((a, b) => key(a).localeCompare(key(b)));
-  const uuTien = chuaDa.filter((m) => m.compSlug === "premier-league").slice(0, 3);
-  const demTheoGiai = new Map<string, number>([["premier-league", uuTien.length]]);
-  const sapDa: StripMatch[] = [...uuTien];
-  for (const m of chuaDa) {
-    const da = demTheoGiai.get(m.compSlug) ?? 0;
-    if (da >= 2) continue;
-    demTheoGiai.set(m.compSlug, da + 1);
-    sapDa.push(m);
-    if (sapDa.length >= 8) break;
-  }
-  const stripMatches = [...vuaDa, ...sapDa];
-
   const eplOpenDate = eplDays.length ? eplDays[0].date : null;
   const daysToOpen =
     eplOpenDate && eplOpenDate > todayKey
@@ -163,6 +121,7 @@ export default async function Home({ params }: Props) {
   const hangBai = gopTuan(dungHang(mucDuDoan, picks, oddsMatches, daDa));
   // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
   const hangDuDoan = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
+  const railMatches = railTran(hangDuDoan, bayGioMs());
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
   // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
   const preseason =
@@ -255,7 +214,7 @@ export default async function Home({ params }: Props) {
     <>
       {/* Top scoreboard rail (ESPN strip) — reuses the same match data as HomeNextMatches. */}
       <ScoreboardRail
-        matches={stripMatches}
+        matches={railMatches}
         labels={{ title: dict.home.scoreboardTitle, finished: dict.matches.finished }}
       />
       <div className="mx-auto max-w-[1100px] px-5 overflow-x-hidden">
