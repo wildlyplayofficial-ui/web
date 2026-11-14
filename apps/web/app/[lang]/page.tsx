@@ -53,18 +53,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: { absolute: `banhbong.net — ${dict.tagline}` },
+    title: { absolute: `${dict.tagline} | banhbong.net` },
     description: dict.home.seoDescription,
     alternates: buildAlternates("/", lang),
     openGraph: {
       locale: "vi_VN",
-      title: `banhbong.net — ${dict.tagline}`,
+      title: `${dict.tagline} | banhbong.net`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `banhbong.net — ${dict.tagline}`,
+      title: `${dict.tagline} | banhbong.net`,
       description: dict.home.seoDescription,
       images: [{ url: `/api/og/home?lang=${lang}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },

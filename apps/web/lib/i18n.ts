@@ -863,7 +863,8 @@ const vi: Dict = {
     homeSide: "Chủ nhà",
     overUnder: "Over/Under",
   },
-  tagline: "Nhận Định Bóng Đá Miễn Phí, Phân Tích & Hướng Dẫn",
+  // Trang chủ: cụm người ta gõ ("dự đoán bóng đá hôm nay") đứng đầu <title>, tên miền xuống cuối.
+  tagline: "Dự Đoán Bóng Đá Hôm Nay, Nhận Định Tỷ Số Miễn Phí",
   taglineShort: "Nhận Định Bóng Đá Miễn Phí",
   footerDisclaimer: "Chỉ mang tính giải trí. Chơi có trách nhiệm.",
   board: {
@@ -888,7 +889,7 @@ const vi: Dict = {
     asOf: "tính đến",
   },
   home: {
-    seoDescription: "Nhận định và dự đoán tỷ số bóng đá miễn phí mỗi ngày. Lịch thi đấu giờ Việt Nam, xem ở đâu, BXH Ngoại hạng Anh, La Liga, Serie A, Bundesliga.",
+    seoDescription: "Dự đoán bóng đá hôm nay miễn phí: tỷ số, Over/Under 2.5, cả 2 đội ghi bàn cho từng trận theo giờ Việt Nam. Kèm BXH, lịch thi đấu Ngoại hạng Anh, La Liga, Cúp C1.",
     latestAnalysis: "Phân tích mới nhất",
     latestPredictions: "Nhận định mới nhất",
     latestNews: "Tin mới nhất",

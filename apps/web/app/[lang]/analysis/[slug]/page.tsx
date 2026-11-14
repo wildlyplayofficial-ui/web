@@ -64,6 +64,20 @@ async function resolveArticle(slug: string, lang: Lang) {
   return null;
 }
 
+/**
+ * Mô tả dự phòng khi bài chưa có meta_description: lấy đoạn đầu body, cắt ở cuối câu
+ * gần nhất trong 160 ký tự; không có câu nào đủ dài thì cắt ở khoảng trắng + "…".
+ * Trước 14/11 cắt cứng 160 ký tự → mô tả đứt giữa chữ ("…liên tiếp, từ ") trên Google.
+ */
+function moTaTuBody(body: string): string {
+  const tron = body.replace(/[#*_>`\[\]()!]/g, "").replace(/\s+/g, " ").trim();
+  if (tron.length <= 160) return tron;
+  const dau = tron.slice(0, 160);
+  const hetCau = Math.max(dau.lastIndexOf(". "), dau.lastIndexOf("? "), dau.lastIndexOf("! "));
+  if (hetCau >= 80) return dau.slice(0, hetCau + 1);
+  return `${dau.slice(0, dau.lastIndexOf(" ")).replace(/[,;:\s—-]+$/, "")}…`;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
@@ -74,11 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { desk } = resolved;
     // Ưu tiên mô tả viết tay; không có thì mới cắt 160 ký tự đầu body — cách cắt
     // này hay đứt giữa từ nên chỉ dùng làm phương án dự phòng.
-    const description = desk.meta_description?.trim() || desk.body
-      .replace(/[#*_>`\[\]()!]/g, "")
-      .replace(/\n+/g, " ")
-      .trim()
-      .slice(0, 160);
+    const description = desk.meta_description?.trim() || moTaTuBody(desk.body);
     const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
     const alternates = buildAlternates(`/analysis/${slug}`, lang);
     // og:image: prefer the article's hero_image (the real thumbnail) when set,
@@ -246,7 +256,7 @@ function DeskArticleView({
     // Cùng nguồn với thẻ meta và og:description — nếu chỗ này tự cắt body thì
     // structured data nói một đằng, thẻ meta nói một nẻo.
     article.meta_description?.trim()
-      || article.body.replace(/[#*_>`\[\]()!]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
+      || moTaTuBody(article.body),
     article.published_at,
     article.byline,
     article.slug,
