@@ -94,7 +94,8 @@ export function metaTran(h: HangDuDoan): { tieuDe: string; moTa: string } {
   const nam = h.ngay.slice(0, 4);
   const thang = cauThang(h);
   return {
-    tieuDe: `Dự đoán ${h.nha} vs ${h.khach} ngày ${ngayThang(h.ngay)}`,
+    // Peter 14/11: người ta tìm cả "nhận định" lẫn "dự đoán" nên tiêu đề có cả hai.
+    tieuDe: `Nhận định, dự đoán ${h.nha} vs ${h.khach} ${ngayThang(h.ngay)}`,
     moTa: [
       `Dự đoán tỷ số ${h.nha} vs ${h.khach} (${h.giai}), ${gio ? `${gio} ` : ""}ngày ${ngayThang(h.ngay)}/${nam}${gio ? " giờ Việt Nam" : ""}`,
       thang ? `: ${thang}.` : ".",

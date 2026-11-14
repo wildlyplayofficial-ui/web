@@ -27,7 +27,7 @@ describe("tiêu đề + meta trang trận", () => {
 
   it("title + description lấy từ số của trận", () => {
     expect(metaTran(ANH)).toEqual({
-      tieuDe: "Dự đoán Anh vs Croatia ngày 13/11",
+      tieuDe: "Nhận định, dự đoán Anh vs Croatia 13/11",
       moTa: "Dự đoán tỷ số Anh vs Croatia (Nations League), 02h45 ngày 13/11/2026 giờ Việt Nam: Anh thắng Croatia 3-0. Tỷ lệ 1·X·2: 1.27 · 6.50 · 9.00.",
     });
   });
