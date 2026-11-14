@@ -18,7 +18,8 @@ import { laBaiTru } from "@/lib/chi-muc";
 import { khopBangTong, tinhBxhSan, tinhBxhTong } from "@/lib/bxh-san";
 import { tranCuaGiai } from "@/lib/bxh-san-tai";
 
-export const revalidate = 3600;
+// 10 phút (trước 3600): bản dựng lúc build có thể rỗng nếu nhà cung cấp chập chờn, phải tự lành nhanh.
+export const revalidate = 600;
 
 /** League palette for competition OG cards (spec §1: hubs use league colors). */
 const LEAGUE_COLORS: Record<string, string> = {

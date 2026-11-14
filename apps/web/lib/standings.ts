@@ -122,23 +122,21 @@ async function fetchCompetitionTableImpl(livescoreId: number): Promise<StandingT
   const secret = process.env.LIVESCORE_API_SECRET;
   if (!key || !secret) return [];
 
-  try {
-    const res = await lsFetch(
-      `${LIVESCORE_BASE}/leagues/table.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&include_form=1`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return [];
+  // Lỗi / rỗng thì NÉM chứ không trả []: unstable_cache không lưu kết quả ném, còn trả [] thì bảng
+  // rỗng bị giữ cả giờ (đo 14/11: 5 trang BXH giải châu Âu rỗng sau mỗi lần deploy). Mọi chỗ gọi đã .catch(() => []).
+  const res = await lsFetch(
+    `${LIVESCORE_BASE}/leagues/table.json?competition_id=${livescoreId}&key=${key}&secret=${secret}&include_form=1`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) throw new Error(`table ${livescoreId}: HTTP ${res.status}`);
 
-    const data = (await res.json()) as {
-      success: boolean;
-      data?: { table?: LivescoreTableEntry[] };
-    };
-    if (!data.success || !data.data?.table) return [];
+  const data = (await res.json()) as {
+    success: boolean;
+    data?: { table?: LivescoreTableEntry[] };
+  };
+  if (!data.success || !data.data?.table?.length) throw new Error(`table ${livescoreId}: rỗng`);
 
-    return data.data.table.map(parseEntry);
-  } catch {
-    return [];
-  }
+  return data.data.table.map(parseEntry);
 }
 
 /** Generic table fetch for any competition. Cached 600s; livescoreId is part of the cache key (fn arg). */

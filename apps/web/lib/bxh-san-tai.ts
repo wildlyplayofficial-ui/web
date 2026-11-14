@@ -41,6 +41,8 @@ async function tranCuaGiaiImpl(livescoreId: number, tu: string, den: string): Pr
   } catch {
     /* giữ phần đã lấy */
   }
+  // Rỗng = coi như lỗi (không lưu cache); chỗ gọi .catch(() => []).
+  if (ra.length === 0) throw new Error(`lịch sử giải ${livescoreId}: rỗng`);
   return ra;
 }
 
