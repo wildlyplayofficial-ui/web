@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { laBaiMayDe } from "@/lib/bai-may-de";
 
 const LANG_PREFIX_RE = /^\/(en|vi|th|es)(\/|$)/;
+const ANALYSIS_SLUG_RE = /^\/analysis\/([^/]+)$/;
 
 /**
  * Next.js 16 Proxy — path-based i18n routing.
@@ -15,7 +17,7 @@ const LANG_PREFIX_RE = /^\/(en|vi|th|es)(\/|$)/;
  * - ?lang=... on any path -> 301 strip the param (back to the bare canonical)
  * - Admin/API routes pass through unchanged
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   // ── Legacy ?lang= migration: 301 về đúng URL canonical, MỘT nhịp ──
@@ -36,6 +38,18 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(3) || "/";
     return NextResponse.redirect(url, 301);
+  }
+
+  // ── Bài máy đẻ thời WildlyPlay (lib/bai-may-de.ts) → 410 Gone ──
+  // Đã noindex từ 2/9 nhưng vẫn trả 200 nên Google cứ bò lại; 410 báo "gỡ hẳn"
+  // để Google bỏ nhanh hơn. Trang App Router không tự đặt được mã 410
+  // (notFound() ra 404) nên chặn ở đây. Chỉ slug mang tiền tố máy đẻ mới tra DB.
+  const analysisSlug = pathname.match(ANALYSIS_SLUG_RE)?.[1];
+  if (analysisSlug && (await laBaiMayDe(analysisSlug))) {
+    return new NextResponse(
+      '<!doctype html><html lang="vi"><meta charset="utf-8"><title>Bài đã gỡ | banhbong.net</title><p>Bài này đã gỡ khỏi banhbong.net. <a href="/">Về trang chủ</a></p></html>',
+      { status: 410, headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex" } },
+    );
   }
 
   // ── TMA routes: pass through unchanged (no lang rewrite) ──
