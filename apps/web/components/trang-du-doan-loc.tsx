@@ -14,6 +14,7 @@ import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { teamBadge } from "@/lib/team-badges";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /**
  * Trang dự đoán theo NGÀY (/du-doan/ngay-mai, /du-doan/thu-bay…) và theo GIẢI (/du-doan/ngoai-hang-anh…),
@@ -31,13 +32,13 @@ export async function metaLoc(slug: string, lang: Lang): Promise<Metadata | null
   const { tieuDe, moTa } = ngay ? metaNgay(ngay, homNay) : metaGiai(giai!);
   // Thứ trùng ngày mai (vd hôm nay thứ Sáu, /du-doan/thu-bay) → canonical về /du-doan/ngay-mai, khỏi hai bản.
   const duong = ngay ? duongDanNgay(ngay, homNay) : `/du-doan/${slug}`;
-  // Ngày chưa có trận nào → noindex (trang rỗng); trang giải luôn có lịch vòng tới nên luôn index.
-  const rong = ngay ? !(await taiDuDoan()).hang.some((h) => h.ngay === ngay) : false;
+  // 14/11 gọn sitemap (Peter chốt): trang theo NGÀY là trang khuôn → luôn noindex,follow;
+  // trang giải có lịch vòng tới nên vẫn index (chỉ giải lớn vào sitemap).
   return {
     title: tieuDe,
     description: moTa,
     alternates: buildAlternates(duong, lang),
-    ...(rong ? { robots: { index: false, follow: true } } : {}),
+    ...(ngay ? { robots: NOINDEX_FOLLOW } : {}),
     openGraph: { locale: "vi_VN", title: `${tieuDe} | banhbong.net`, description: moTa, images: [og(tieuDe)] },
   };
 }

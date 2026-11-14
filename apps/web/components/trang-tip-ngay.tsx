@@ -12,6 +12,7 @@ import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demNhom, dongTipNgay, type DongTip, type LoaiTipNgay } from "@/lib/tip-ngay";
 import { ChonNgayTip } from "@/components/chon-ngay-tip";
 import { Ty } from "@/components/ty-le";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /**
  * Ba trang gom theo loại kèo cho NGÀY HÔM NAY (Peter gật 14/11): /over-under-hom-nay,
@@ -107,7 +108,8 @@ export function metaTipNgay(loai: LoaiTipNgay, homNay: string, soTran: number, l
     title,
     description,
     alternates: buildAlternates(duongTip(loai, ky), lang),
-    ...(ky !== "hom-nay" && soTran === 0 ? { robots: { index: false, follow: true } } : {}),
+    // 14/11 gọn sitemap (Peter chốt): trang khuôn, thôi mời Google — noindex,follow, rút khỏi sitemap.
+    robots: NOINDEX_FOLLOW,
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,
