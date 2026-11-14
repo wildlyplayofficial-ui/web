@@ -10,6 +10,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
 export const revalidate = 300;
 
@@ -74,6 +75,16 @@ export default async function DuDoanHub({ params }: Props) {
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} />
+      <nav aria-label="Dự đoán theo loại kèo" className="mt-6 flex flex-wrap gap-2 px-3.5 sm:px-2.5">
+        {LOAI_TIP.map((l) => (
+          <Link key={l} href={withLang(CAU_HINH[l].duong, lang)} className="inline-flex min-h-11 items-center rounded-lg border border-line px-3.5 text-sm font-semibold text-muted hover:text-ink">
+            {CAU_HINH[l].tieuDe}
+          </Link>
+        ))}
+        <Link href={withLang("/chuoi-dang-chu-y", lang)} className="inline-flex min-h-11 items-center rounded-lg border border-line px-3.5 text-sm font-semibold text-muted hover:text-ink">
+          Chuỗi đáng chú ý
+        </Link>
+      </nav>
       <div className="mt-6 px-2.5">
         <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
       </div>

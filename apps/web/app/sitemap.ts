@@ -152,6 +152,11 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     "/keo-xien",
     // Trang chủ đề: chỉ nộp khi 7 ngày tới có ít nhất một xiên (lúc rỗng trang vẫn mở được nhưng không mời Google).
     ...CHU_DE.filter((c) => xienChuDeTheoNgay(c.khoa, hang, [homNay, ...ngaySau], keoPhuTuan).length > 0).map((c) => `/keo-xien/${c.slug}`),
+    // Gom theo loại kèo hôm nay + chuỗi đáng chú ý (14/11).
+    "/tai-xiu-hom-nay",
+    "/ca-2-doi-ghi-ban-hom-nay",
+    "/ty-so-hom-nay",
+    "/chuoi-dang-chu-y",
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
     ...ngaySau.map((n) => duongDanNgay(n, homNay)),
