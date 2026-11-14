@@ -5,7 +5,7 @@ import { getAllMatchSlugs, getAllGuideSlugs, getSettledPicks, isFeatureEnabled, 
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
-import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
+import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, DOI_LUON_INDEX, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { xepDoiPhongDo } from "@/lib/doi-phong-do";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
@@ -195,7 +195,7 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
     await Promise.all(
       TEAM_HUBS.map(async (t) => {
         const [n, a] = await Promise.all([getNewsByTeam(t.slug, HUB_MIN), getAnalysisByTeam(t.slug, HUB_MIN)]);
-        if (n.length + a.length < HUB_MIN) return null;
+        if (!DOI_LUON_INDEX.has(t.slug) && n.length + a.length < HUB_MIN) return null;
         // 4 hub /doi/ là nhóm URL duy nhất trong sitemap không khai lastmod (kiểm
         // 25/8). Lấy bài mới nhất của hub làm mốc — hai mảng đã xếp published_at
         // giảm dần nên phần tử đầu là bài mới nhất.
