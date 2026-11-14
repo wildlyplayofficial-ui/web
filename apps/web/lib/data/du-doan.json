@@ -1,4 +1,23 @@
 {
+  "nhan-dinh-na-uy-vs-xu-wales-15-11-2026": {
+    "home": "Norway",
+    "away": "Wales",
+    "home_vi": "Na Uy",
+    "away_vi": "Xứ Wales",
+    "kickoff_utc": "2026-11-14T17:00:00Z",
+    "san": "Sân Ullevaal, Oslo",
+    "home_goals": 2,
+    "away_goals": 1
+  },
+  "nhan-dinh-bo-dao-nha-vs-dan-mach-15-11-2026": {
+    "home": "Portugal",
+    "away": "Denmark",
+    "home_vi": "Bồ Đào Nha",
+    "away_vi": "Đan Mạch",
+    "kickoff_utc": "2026-11-14T19:45:00Z",
+    "home_goals": 2,
+    "away_goals": 0
+  },
   "nhan-dinh-viet-nam-vs-dai-bac-trung-hoa-11-11-2026": {
     "home": "Vietnam",
     "away": "Chinese Taipei",

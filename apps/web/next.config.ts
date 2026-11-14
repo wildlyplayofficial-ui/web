@@ -27,6 +27,12 @@ const nextConfig: NextConfig = {
       // trên /about → trang Chú Tám Banh cũ dồn về đó.
       // 12/11/2026 (Peter "phần xiên để riêng"): kèo xiên rời /du-doan thành /keo-xien.
       // 14/11/2026 (Peter: bỏ hẳn chữ "tài xỉu", dùng Over/Under): URL cũ 301 sang URL mới, một nhịp.
+      // 14/11/2026 (Peter "mình quan trọng là dự đoán"): bài nhận định trận dời từ /blog sang
+      // trang dự đoán của trận (trang đó giờ mang cả thân bài); trang khuôn tuần cùng trận dồn về đó.
+      { source: "/blog/nhan-dinh-na-uy-vs-xu-wales-15-11-2026", destination: "/du-doan/nhan-dinh-na-uy-vs-xu-wales-15-11-2026", statusCode: 301 },
+      { source: "/blog/nhan-dinh-bo-dao-nha-vs-dan-mach-15-11-2026", destination: "/du-doan/nhan-dinh-bo-dao-nha-vs-dan-mach-15-11-2026", statusCode: 301 },
+      { source: "/du-doan/tuan-2026-11-14-norway-wales", destination: "/du-doan/nhan-dinh-na-uy-vs-xu-wales-15-11-2026", statusCode: 301 },
+      { source: "/du-doan/tuan-2026-11-14-portugal-denmark", destination: "/du-doan/nhan-dinh-bo-dao-nha-vs-dan-mach-15-11-2026", statusCode: 301 },
       { source: "/tai-xiu-hom-nay", destination: "/over-under-hom-nay", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/tai-xiu-hom-nay", destination: "/over-under-hom-nay", statusCode: 301 },
       { source: "/tai-xiu-ngay-mai", destination: "/over-under-ngay-mai", statusCode: 301 },
