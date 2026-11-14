@@ -13,6 +13,8 @@ export const DIEM_TOI_DA = 10;
 export interface DiemDoi {
   n: number[];
   k: number[];
+  /** Phong độ chung [đội nhà, đội khách], thang 1–10; chưa có khoá này thì không hiện dòng. */
+  c?: number[];
   /** "san": đội nhà tính riêng trận sân nhà, đội khách riêng trận sân khách (giải CLB, 10 trận gần nhất);
    *  "chung": phong độ chung gần đây (trận đội tuyển). Thiếu = chung. */
   loai?: "san" | "chung";
@@ -76,4 +78,10 @@ export function cauHtft(h: HtFt | undefined, nha: string, khach: string): string
 export function cauDiem(ten: string, d: number[] | undefined): string | null {
   const x = docDiem(d);
   return x ? `${ten} tấn công ${x[0]}/${DIEM_TOI_DA}, phòng ngự ${x[1]}/${DIEM_TOI_DA}.` : null;
+}
+
+/** Điểm phong độ chung của một đội (0 = nhà, 1 = khách); thiếu hoặc sai thang → null. */
+export function docDiemChung(c: number[] | undefined, i: 0 | 1): number | null {
+  const x = c?.length === 2 ? c[i] : undefined;
+  return x !== undefined && Number.isInteger(x) && x >= 1 && x <= DIEM_TOI_DA ? x : null;
 }

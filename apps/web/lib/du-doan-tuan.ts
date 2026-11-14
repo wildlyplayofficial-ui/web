@@ -171,6 +171,15 @@ export function keoPhuTuan(slug: string): KeoPhu | null {
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }
 
+export type GanNhat = Pick<DongTuan, "nha" | "khach" | "gn" | "gk">;
+
+/** 10 trận gần nhất của hai đội một trận tệp tuần, KHÔNG lọc theo độ mới (đội nghỉ lâu vẫn hiện); cả hai rỗng → null. */
+export function ganNhatTuan(slug: string): GanNhat | null {
+  const d = timDong(slug);
+  if (!d || !(d.gn?.length || d.gk?.length)) return null;
+  return { nha: d.nha, khach: d.khach, gn: d.gn, gk: d.gk };
+}
+
 export type HtftDiem = Pick<DongTuan, "nha" | "khach" | "htft" | "diem">;
 
 /** Hiệp 1 / Cả trận + điểm tấn công / phòng ngự của một trận tệp tuần; không có số hợp lệ nào → null. */
