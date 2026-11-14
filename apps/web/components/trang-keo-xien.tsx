@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { NutChuDe } from "@/components/trang-xien-chu-de";
 import { KhoiXien } from "@/components/xien-hom-nay";
 import { OG_VERSION } from "@/lib/brand";
 import { duongDanNgay, lechNgay } from "@/lib/du-doan-loc";
@@ -96,6 +97,9 @@ export function TrangKeoXien({ ngay, homNay, ds, coNgay, lang }: { ngay: string;
           ? `${ds.length} kèo xiên bóng đá ${ten} cho ${soGiai} giải: xiên đội thắng, tài xỉu 2.5 bàn, hai đội ghi bàn. Giờ Việt Nam, phong độ 5 trận gần nhất (mới nhất bên phải).`
           : `Chưa có kèo xiên bóng đá ${ten}: cần một giải có từ 2 trận chưa đá.`}
       </p>
+
+      <h2 className="mt-4 font-display text-[17px] font-bold">Xiên theo chủ đề</h2>
+      <NutChuDe hien={null} lang={lang} />
 
       <div className="mt-3 lg:columns-2 lg:gap-x-4">
         {ds.map((x) => (

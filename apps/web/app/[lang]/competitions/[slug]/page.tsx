@@ -15,6 +15,8 @@ import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
 import { laBaiTru } from "@/lib/chi-muc";
+import { khopBangTong, tinhBxhSan } from "@/lib/bxh-san";
+import { tranCuaGiai } from "@/lib/bxh-san-tai";
 
 export const revalidate = 3600;
 
@@ -116,7 +118,7 @@ export default async function StandingSlugPage({ params }: Props) {
   // fixtureDays đã bỏ 10/9: getCompetitionFixtures() được gọi rồi gán vào biến mà
   // không dùng ở đâu trong tệp này — lịch nằm ở tab /fixtures riêng. Mỗi lượt dựng
   // lại trang tốn thừa một lượt gọi API.
-  const [tableRows, knockoutRounds, formMap, deskArticles] = await Promise.all([
+  const [tableRows, knockoutRounds, formMap, deskArticles, tranDaDa] = await Promise.all([
     fetchCompetitionTable(comp.livescoreId).catch(() => []),
     isWorldCup ? getKnockoutRounds(comp.livescoreId).catch(() => []) : Promise.resolve([]),
     // livescore's table has no form for leagues — derive it from results.
@@ -124,6 +126,8 @@ export default async function StandingSlugPage({ params }: Props) {
     // 300 = cùng tham số với mục lục /analysis → dùng chung bản đệm. Khối "bài
     // mới" vẫn chỉ xét 30 bài mới nhất như cũ; khối "trang trụ" xét hết.
     getAnalysisArticles(undefined, 300),
+    // Bảng sân nhà / sân khách tính từ các trận đã đá (chỉ giải châu Âu, bảng phẳng).
+    showQualification ? tranCuaGiai(comp.livescoreId).catch(() => []) : Promise.resolve([]),
   ]);
 
   // Khớp bài ↔ giải theo cột league tự do: xem lib/giai-cua-bai.ts.
@@ -153,6 +157,13 @@ export default async function StandingSlugPage({ params }: Props) {
   }
 
   const sortedRows = rows.slice().sort((a, b) => a.rank - b.rank);
+
+  // Chỉ hiện tab sân nhà / sân khách khi cộng hai bảng ra đúng bảng tổng ở mọi đội.
+  const tenDoi = sortedRows.map((r) => r.name);
+  const sanNha = tinhBxhSan(tranDaDa, "nha", tenDoi);
+  const sanKhach = tinhBxhSan(tranDaDa, "khach", tenDoi);
+  const coSan = !hasGroups && khopBangTong(sortedRows, sanNha, sanKhach);
+  const tabLabels = lang === "vi" ? { all: "Tất cả", home: "Sân nhà", away: "Sân khách" } : undefined;
 
   // Fully finished rounds drop below the group tables (Nick's request 3/7)
   // so the bracket up top only shows rounds still in play/upcoming. Keep
@@ -314,7 +325,14 @@ export default async function StandingSlugPage({ params }: Props) {
               ? dict.standings.seasonNote.replace("{season}", comp.season)
               : dict.standings.titleFor.replace("{name}", compName)}
           </h2>
-          <LeagueTable teams={sortedRows} labels={dict.standings} showQualification={showQualification} />
+          <LeagueTable
+            teams={sortedRows}
+            labels={dict.standings}
+            showQualification={showQualification}
+            sanNha={coSan ? sanNha : undefined}
+            sanKhach={coSan ? sanKhach : undefined}
+            tabLabels={tabLabels}
+          />
           {/* Mốc tươi mới: description hứa "cập nhật trực tiếp" mà trên trang không
               có dấu hiệu nào. Trang dựng lại mỗi giờ (revalidate = 3600). */}
           <p className="mt-3 text-xs text-muted">

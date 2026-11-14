@@ -23,13 +23,13 @@ export interface Xien {
 }
 
 /** Một thị trường phụ của trận: `tip` kiểu "Over 2.5" / "BTTS Yes", `keo` = [cửa thuận, cửa nghịch]. */
-interface Phu { tip: string; keo: number[] }
+export interface Phu { tip: string; keo: number[] }
 export type TraKeoPhu = (slug: string) => { pOu?: Phu; pBtts?: Phu } | null | undefined;
 
 const IT_NHAT = 2;
 const TOI_DA = 8;
 
-function gom(chan: ChanXien[]): Xien | null {
+export function gom(chan: ChanXien[]): Xien | null {
   const chon = chan
     .filter((c) => c.gia > 1)
     .sort((a, b) => a.h.kickoffUtc.localeCompare(b.h.kickoffUtc) || a.h.slug.localeCompare(b.h.slug))

@@ -4,7 +4,10 @@ import { useState } from "react";
 import type { StandingTeam } from "@/lib/standings";
 import { TeamCrest } from "@/components/team-crest";
 
-type Tab = "all" | "form";
+type Tab = "all" | "home" | "away" | "form";
+
+export interface TabLabels { all: string; home: string; away: string }
+const NHAN_TAB: TabLabels = { all: "All", home: "Home", away: "Away" };
 
 const formBadge: Record<string, { bg: string; text: string }> = {
   W: { bg: "bg-brand", text: "text-bg" },
@@ -56,6 +59,9 @@ export function LeagueTable({
   teams,
   labels,
   showQualification = true,
+  sanNha,
+  sanKhach,
+  tabLabels = NHAN_TAB,
 }: {
   teams: StandingTeam[];
   labels: Labels;
@@ -63,31 +69,34 @@ export function LeagueTable({
   // North-American leagues (MLS, Liga MX) use playoffs, not European cups, so
   // the caller passes false to hide the misleading legend + row highlights.
   showQualification?: boolean;
+  /** Bảng tách sân (lib/bxh-san.ts). Thiếu một trong hai → ẩn tab sân nhà/khách. */
+  sanNha?: StandingTeam[];
+  sanKhach?: StandingTeam[];
+  tabLabels?: TabLabels;
 }) {
   const [tab, setTab] = useState<Tab>("all");
+  const coSan = !!sanNha?.length && !!sanKhach?.length;
+  const dong = tab === "home" ? (sanNha ?? teams) : tab === "away" ? (sanKhach ?? teams) : teams;
+  const bangDay = tab !== "form";
+  const tabs: Array<[Tab, string]> = [["all", tabLabels.all], ...(coSan ? ([["home", tabLabels.home], ["away", tabLabels.away]] as Array<[Tab, string]>) : []), ["form", labels.form]];
 
   return (
     <section>
       <div className="mb-2 flex items-center justify-end">
         <div className="flex gap-1 rounded-lg bg-card p-1">
-          <button
-            type="button"
-            onClick={() => setTab("all")}
-            className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
-              tab === "all" ? "bg-brand text-bg" : "text-muted hover:text-ink"
-            }`}
-          >
-            All
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("form")}
-            className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
-              tab === "form" ? "bg-brand text-bg" : "text-muted hover:text-ink"
-            }`}
-          >
-            {labels.form}
-          </button>
+          {tabs.map(([k, ten]) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setTab(k)}
+              aria-pressed={tab === k}
+              className={`rounded-md px-2.5 py-1 font-display text-xs font-semibold uppercase transition-colors ${
+                tab === k ? "bg-brand text-bg" : "text-muted hover:text-ink"
+              }`}
+            >
+              {ten}
+            </button>
+          ))}
         </div>
       </div>
       <div className="overflow-x-auto rounded-card border border-line bg-card shadow-card">
@@ -96,7 +105,7 @@ export function LeagueTable({
             <tr className="border-b border-line text-left text-muted">
               <th className="w-8 px-2 py-2 text-center font-medium">#</th>
               <th className="px-2 py-2 font-medium">{labels.team}</th>
-              {tab === "all" ? (
+              {bangDay ? (
                 <>
                   <th className="px-1.5 py-2 text-center font-medium">{labels.mp}</th>
                   <th className="px-1.5 py-2 text-center font-medium">{labels.w}</th>
@@ -113,17 +122,17 @@ export function LeagueTable({
             </tr>
           </thead>
           <tbody>
-            {teams.map((team) => (
+            {dong.map((team) => (
               <tr
                 key={team.name}
-                className={`border-b border-line last:border-0 ${showQualification ? zoneClass(team.rank, teams.length) : ""}`}
+                className={`border-b border-line last:border-0 ${showQualification && tab === "all" ? zoneClass(team.rank, teams.length) : ""}`}
               >
                 <td className="px-2 py-2 text-center text-muted">{team.rank}</td>
                 <td className="px-2 py-2 font-medium text-ink">
                   <TeamCrest name={team.name} />
                   {team.name}
                 </td>
-                {tab === "all" ? (
+                {bangDay ? (
                   <>
                     <td className="px-1.5 py-2 text-center text-muted">{team.played}</td>
                     <td className="px-1.5 py-2 text-center text-muted">{team.won}</td>
@@ -146,7 +155,7 @@ export function LeagueTable({
           </tbody>
         </table>
       </div>
-      {showQualification && (
+      {showQualification && tab === "all" && (
         <div className="mt-2 flex gap-4 text-[10px] text-muted">
           <span className="flex items-center gap-1">
             <span className="inline-block h-2 w-6 rounded border-l-2 border-l-brand" /> Champions League
