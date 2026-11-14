@@ -94,7 +94,7 @@ function xhDoi(k: HtftDiem, doi: "n" | "k"): (XuHuong | null)[] {
   return [docXuHuong(x, doi, 1), docXuHuong(x, doi, 2), docXuHuong(x, doi, 0)];
 }
 
-function Diem({ k }: { k: HtftDiem }) {
+export function Diem({ k }: { k: HtftDiem }) {
   const n = docDiem(k.diem?.n);
   const kh = docDiem(k.diem?.k);
   if (!n || !kh) return null;
