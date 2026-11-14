@@ -21,7 +21,7 @@ const khoa = (ngay, nha, khach) => `${ngay}|${nha}|${khach}`;
 const cong = (ngay, n) => new Date(Date.parse(`${ngay}T00:00:00Z`) + n * 864e5).toISOString().slice(0, 10);
 const gioCu = new Map(cu.map((d) => [khoa(d.ngay, d.nha, d.khach), d.gioUtc]));
 // Hiệp 1 / Cả trận + điểm tấn công / phòng ngự nạp riêng (scripts/nap-htft.mjs): nạp lại tệp ngày thì giữ.
-const htftCu = new Map(cu.filter((d) => d.htft || d.diem).map((d) => [khoa(d.ngay, d.nha, d.khach), { htft: d.htft, diem: d.diem }]));
+const htftCu = new Map(cu.filter((d) => d.htft || d.diem || d.pDnb).map((d) => [khoa(d.ngay, d.nha, d.khach), { htft: d.htft, diem: d.diem, pDnb: d.pDnb, pKqBtts: d.pKqBtts, pKqOu: d.pKqOu }]));
 
 const SO_LIEU = ["h2h", "bxn", "bxk", "gn", "gk"];
 const PHU = [["btts", "pBtts"], ["ou", "pOu"], ["cs", "pCs"]];

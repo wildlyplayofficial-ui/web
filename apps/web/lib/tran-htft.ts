@@ -18,6 +18,8 @@ export interface DiemDoi {
   /** "san": đội nhà tính riêng trận sân nhà, đội khách riêng trận sân khách (giải CLB, 10 trận gần nhất);
    *  "chung": phong độ chung gần đây (trận đội tuyển). Thiếu = chung. */
   loai?: "san" | "chung";
+  /** Overall Form [nhà, khách], thang 1–10. */
+  c?: [number, number];
 }
 
 const KY: KqKy[] = ["H", "D", "A"];

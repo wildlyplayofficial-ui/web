@@ -75,3 +75,17 @@ describe("htftDiemTuan — Hiệp 1 / Cả trận và điểm tấn công / phò
     }
   });
 });
+
+describe("tỷ lệ làm mới hằng sáng — dữ liệu tệp tuần", () => {
+  const hopLe = (x: number) => Number.isFinite(x) && x > 1;
+  it("pDnb, pKqBtts, pKqOu, diem.c, o: có thì phải đủ khoá và mọi giá > 1 / điểm 1–10", () => {
+    for (const d of dongTuan()) {
+      if (d.pDnb) expect(d.pDnb.length === 2 && d.pDnb.every(hopLe)).toBe(true);
+      if (d.pKqBtts) expect(Object.keys(d.pKqBtts).sort()).toEqual(["hN", "hY", "kN", "kY", "nN", "nY"]);
+      if (d.pKqOu) expect(Object.keys(d.pKqOu).sort()).toEqual(["hT", "hX", "kT", "kX", "nT", "nX"]);
+      for (const k of [d.pKqBtts, d.pKqOu]) if (k) expect(Object.values(k).every(hopLe)).toBe(true);
+      if (d.diem?.c) expect(d.diem.c.length === 2 && d.diem.c.every((x) => Number.isInteger(x) && x >= 1 && x <= 10)).toBe(true);
+      if (d.o.length) expect(d.o.length === 3 && d.o.every(hopLe)).toBe(true);
+    }
+  });
+});
