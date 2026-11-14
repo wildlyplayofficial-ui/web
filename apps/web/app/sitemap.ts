@@ -8,6 +8,7 @@ import { TEAM_HUBS } from "@/lib/teams";
 import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
+import { duongTipGiai, giaiCoTip } from "@/lib/tip-giai";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { cacXienNgay } from "@/lib/xien";
@@ -161,6 +162,8 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     "/chuoi-dang-chu-y",
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
+    // Tip theo giải (14/11): chỉ nộp giải + loại có ít nhất một trận trong 7 ngày tới.
+    ...giaiCoTip(hang, homNay, keoPhuTuan).map((x) => duongTipGiai(x.loai, x.giai)),
     ...ngaySau.map((n) => duongDanNgay(n, homNay)),
   ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
 
