@@ -33,11 +33,19 @@ const DOI_TUYEN = /nations league|world cup|euro|africa cup|copa america|asian c
 /** 0 = giải lớn / đội tuyển quốc gia, 1 = còn lại. */
 export const hang = (giai: string) => (GIAI_LON.test(giai) || DOI_TUYEN.test(giai) ? 0 : 1);
 
-export function railTran(rows: readonly HangDuDoan[], now: number, toiDa = TOI_DA): RailTran[] {
+export function railTran(
+  rows: readonly HangDuDoan[],
+  now: number,
+  /** Tỷ số tra thêm theo slug (dòng tệp tuần chưa có `kq`), cùng nguồn trang /ket-qua. */
+  them: ReadonlyMap<string, [number, number]> = new Map(),
+  toiDa = TOI_DA,
+): RailTran[] {
   const ung = rows.flatMap((h): { r: RailTran; t: number; kq: boolean }[] => {
     const t = Date.parse(h.kickoffUtc);
-    if (Number.isNaN(t) || !h.nha || !h.khach) return [];
-    const kq = h.that !== null;
+    // Mỗi thẻ phải có logo cả hai đội (luật Peter), thiếu một bên thì bỏ.
+    if (Number.isNaN(t) || !h.nha || !h.khach || !h.logoNha || !h.logoKhach) return [];
+    const that = h.that ?? them.get(h.slug) ?? null;
+    const kq = that !== null;
     if (kq ? now - t > KET_QUA_MS : t < now - DANG_DA_MS) return [];
     if (!kq && t > now + 5 * 86_400_000) return [];
     return [{
@@ -51,7 +59,7 @@ export function railTran(rows: readonly HangDuDoan[], now: number, toiDa = TOI_D
         logoNha: h.logoNha,
         logoKhach: h.logoKhach,
         kickoffUtc: h.kickoffUtc,
-        that: h.that,
+        that,
         dangDa: !kq && t <= now,
       },
     }];

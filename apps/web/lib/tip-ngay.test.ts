@@ -42,3 +42,12 @@ describe("demNhom", () => {
     expect(demNhom(dongTipNgay(hang, "2026-11-14", "ty-so", khong))).toEqual([{ nhom: "1-0", so: 2 }, { nhom: "2-1", so: 1 }]);
   });
 });
+
+describe("dongTipNgay — cả 2 đội ghi bàn + thắng", () => {
+  const hang = [tran("a"), tran("b"), tran("c")];
+  const kp = (slug: string) => (slug === "a" ? { pKqBtts: { nY: 7.5, kY: 3.75 } } : slug === "b" ? { pKqBtts: { nY: 2.2, kY: 6 } } : undefined);
+  it("chọn cửa thắng có tỷ lệ thấp hơn, bỏ trận không có số liệu", () => {
+    const ds = dongTipNgay(hang, "2026-11-14", "thang-hai-doi-ghi-ban", kp);
+    expect(ds.map((d) => [d.h.slug, d.nhom, d.keo])).toEqual([["a", "Khách thắng", 3.75], ["b", "Nhà thắng", 2.2]]);
+  });
+});

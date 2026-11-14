@@ -16,6 +16,8 @@ import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standing
 import { DaiDuDoanGiai } from "@/components/dai-du-doan-giai";
 import { ScoreboardRail } from "@/components/scoreboard-rail";
 import { railTran } from "@/lib/rail-tran";
+import { canTraTySo, homNayVN, lechNgay, tySoTuLS } from "@/lib/ket-qua";
+import { lichSuTySo } from "@/lib/ket-qua-ls";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laTrangLichCaMua, newsDuocIndex, demChu } from "@/lib/chi-muc";
 import { KhoiTrangTru } from "@/components/khoi-trang-tru";
@@ -25,7 +27,7 @@ import { getOddsBoard } from "@/lib/odds-data";
 import { getMucDuDoan } from "@/lib/du-doan";
 import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
-import { doiThieuPhongDo, gopTuan, hangTuan } from "@/lib/du-doan-tuan";
+import { doiThieuPhongDo, dongTuan, gopTuan, hangTuan } from "@/lib/du-doan-tuan";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
 
 export const revalidate = 300;
@@ -74,7 +76,7 @@ const bayGioMs = () => Date.now();
 export default async function Home({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const [allPicks, record, noPlays, watching, eplDays, competitions, articles, newsTho, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan] =
+  const [allPicks, record, noPlays, watching, eplDays, competitions, articles, newsTho, oddsMatches, recapPosts, trangLich, blogs, mucDuDoan, lsKq] =
     await Promise.all([
       getTodaysPicks(),
       getTrackRecordForAuthor("curator"),
@@ -99,6 +101,8 @@ export default async function Home({ params }: Props) {
       getAllBlogSlugs().catch(() => []),
       // Khối "Dự đoán hôm nay" (10/11). Hỏng thì khối chỉ rỗng, trang vẫn lên.
       getMucDuDoan().catch(() => []),
+      // Tỷ số các trận vừa đá cho dải trên cùng (cùng nguồn /ket-qua). Hỏng thì dải chỉ thiếu phần kết quả.
+      lichSuTySo(lechNgay(homNayVN(), -1), homNayVN()).catch(() => []),
     ]);
 
   // 12/11: trang chủ chỉ dẫn tới tin Google được lập chỉ mục — trước đây 6 tin mới nhất
@@ -121,7 +125,7 @@ export default async function Home({ params }: Props) {
   const hangBai = gopTuan(dungHang(mucDuDoan, picks, oddsMatches, daDa));
   // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
   const hangDuDoan = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
-  const railMatches = railTran(hangDuDoan, bayGioMs());
+  const railMatches = railTran(hangDuDoan, bayGioMs(), tySoTuLS(canTraTySo(dongTuan()), lsKq));
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
   // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
   const preseason =

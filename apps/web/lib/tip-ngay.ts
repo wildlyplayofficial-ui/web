@@ -7,12 +7,16 @@ import type { HangDuDoan } from "./du-doan-hang";
 import type { ThiTruongPhu } from "./tran-keo-phu";
 
 export type LoaiTip = "tai-xiu" | "hai-doi-ghi-ban" | "ty-so";
+/** Thêm trang "Cả 2 đội ghi bàn + thắng" (nhà/khách thắng và cả hai đội ghi bàn); chưa có trang theo giải nên tách khỏi LoaiTip. */
+export type LoaiTipNgay = LoaiTip | "thang-hai-doi-ghi-ban";
 
 /** Phần tệp tuần của một trận mà ba loại tip cần. */
 export interface KeoPhuTip {
   pBtts?: ThiTruongPhu;
   pOu?: ThiTruongPhu;
   pCs?: ThiTruongPhu;
+  /** Kết quả + cả hai đội ghi bàn: nY = nhà thắng và có, kY = khách thắng và có. */
+  pKqBtts?: { nY: number; kY: number };
 }
 
 export interface DongTip {
@@ -55,10 +59,20 @@ function dongTySo(h: HangDuDoan, k: KeoPhuTip | undefined): DongTip | null {
   return { h, nhom: so, keo: k?.pCs?.keo.length ? duong(k.pCs.keo[0]) : null, chuoiNha: null, chuoiKhach: null };
 }
 
-const DUNG = { "tai-xiu": dongTaiXiu, "hai-doi-ghi-ban": dongHaiDoi, "ty-so": dongTySo } as const;
+/** Cả hai đội ghi bàn + thắng: chọn cửa thắng có tỷ lệ thấp hơn trong (nhà thắng + có, khách thắng + có). */
+function dongThangHaiDoi(h: HangDuDoan, k: KeoPhuTip | undefined): DongTip | null {
+  const g = k?.pKqBtts;
+  const n = duong(g?.nY ?? NaN);
+  const kh = duong(g?.kY ?? NaN);
+  if (n === null || kh === null) return null;
+  const nha = n <= kh;
+  return { h, nhom: nha ? "Nhà thắng" : "Khách thắng", keo: nha ? n : kh, chuoiNha: chuoi(k?.pBtts?.h5, "Y"), chuoiKhach: chuoi(k?.pBtts?.a5, "Y") };
+}
+
+const DUNG = { "tai-xiu": dongTaiXiu, "hai-doi-ghi-ban": dongHaiDoi, "ty-so": dongTySo, "thang-hai-doi-ghi-ban": dongThangHaiDoi } as const;
 
 /** Các dòng của một loại tip trong `ngay` (YYYY-MM-DD giờ VN), xếp theo giờ đá rồi tên đội nhà. */
-export function dongTipNgay(hang: readonly HangDuDoan[], ngay: string, loai: LoaiTip, keoPhu: (slug: string) => KeoPhuTip | null | undefined): DongTip[] {
+export function dongTipNgay(hang: readonly HangDuDoan[], ngay: string, loai: LoaiTipNgay, keoPhu: (slug: string) => KeoPhuTip | null | undefined): DongTip[] {
   return hang
     .filter((h) => h.ngay === ngay)
     .flatMap((h) => {

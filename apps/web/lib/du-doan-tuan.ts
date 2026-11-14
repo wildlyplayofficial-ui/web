@@ -190,6 +190,13 @@ export function keoPhuTuan(slug: string): KeoPhu | null {
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
 }
 
+/** Dữ liệu trang "Cả 2 đội ghi bàn + thắng": chuỗi 5 trận (pBtts) + bảng kết quả + cả hai đội ghi bàn đã kiểm (pKqBtts). */
+export function keoThangTuan(slug: string): { pBtts?: KeoPhu["pBtts"]; pKqBtts: NonNullable<DongTuan["pKqBtts"]> } | null {
+  const d = timDong(slug);
+  const g = d && keo3Tuan(slug)?.pKqBtts;
+  return g ? { pBtts: d.pBtts, pKqBtts: g } : null;
+}
+
 export interface PhongDoChung { c?: number[]; gn: DongTuan["gn"]; gk: DongTuan["gk"]; ngay: string }
 
 /** Điểm phong độ chung + 10 trận gần nhất của một dòng tệp tuần (cho bảng đội phong độ tốt nhất); không có dòng → null. */
