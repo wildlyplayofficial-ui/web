@@ -30,11 +30,17 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/du-doan/xien", destination: "/keo-xien", statusCode: 301 },
       { source: "/tac-gia/chu-tam-banh", destination: "/about#doi-ngu-chuyen-gia", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/tac-gia/chu-tam-banh", destination: "/about#doi-ngu-chuyen-gia", statusCode: 301 },
-      // 308 permanent redirect old /goalline URLs to /daily-line
-      { source: "/goalline", destination: "/daily-line", permanent: true },
-      { source: "/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
-      { source: "/:lang(en|vi|th|es)/goalline", destination: "/daily-line", permanent: true },
-      { source: "/:lang(en|vi|th|es)/goalline/:path*", destination: "/daily-line/:path*", permanent: true },
+      // 14/11/2026 (Peter "bỏ đc k"): Daily Line chết — card cuối 7/7/2026, trang chỉ còn
+      // "Hôm nay không có card". Cả cụm /daily-line + /goalline cũ dồn 301 về /du-doan,
+      // một nhịp. Code app/[lang]/goalline giữ nguyên, chỉ không còn đường nào tới.
+      { source: "/daily-line", destination: "/du-doan", statusCode: 301 },
+      { source: "/daily-line/:path*", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/daily-line", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/daily-line/:path*", destination: "/du-doan", statusCode: 301 },
+      { source: "/goalline", destination: "/du-doan", statusCode: 301 },
+      { source: "/goalline/:path*", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/goalline", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/goalline/:path*", destination: "/du-doan", statusCode: 301 },
       // 2/9/2026: hai bài tổng kết chuyển nhượng đăng nhầm mục Phân tích, đã dời
       // sang Tin tức. Luật Peter chốt cùng ngày: MỌI nội dung chuyển nhượng vào
       // /news, kể cả bài tổng kết cả kỳ — /analysis chỉ để phân tích chuyên môn.
