@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { HtftDiem } from "@/lib/du-doan-tuan";
 import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docDiemChung, docHtft, KHOA_HTFT, xacSuatTheoHang } from "@/lib/tran-htft";
 import { tenDoiViet } from "@/lib/ten-viet";
@@ -106,10 +107,12 @@ function Diem({ k }: { k: HtftDiem }) {
   );
 }
 
-export function TranHtftDiem({ k }: { k: HtftDiem }) {
+/** `children` (ba hộp tỷ lệ phụ) chen giữa hộp Hiệp 1 / Cả trận và hộp điểm đội. */
+export function TranHtftDiem({ k, children }: { k: HtftDiem; children?: ReactNode }) {
   return (
     <>
       <Hiep k={k} />
+      {children}
       <Diem k={k} />
     </>
   );
