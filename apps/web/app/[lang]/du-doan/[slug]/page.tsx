@@ -6,8 +6,6 @@ import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
 import { TranHtftDiem } from "@/components/tran-htft";
 import { TranKeo3 } from "@/components/tran-keo3";
-import { TranGan10 } from "@/components/tran-gan-10";
-import { TranKeoPhu } from "@/components/tran-keo-phu";
 import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranSoLieu } from "@/components/tran-so-lieu";
 import { metaLoc, TrangLoc } from "@/components/trang-du-doan-loc";
@@ -17,7 +15,7 @@ import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gi
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
-import { ganNhatTuan, htftDiemTuan, keo3Tuan, keoPhuTuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { htftDiemTuan, keo3Tuan, soLieuTuan } from "@/lib/du-doan-tuan";
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { ChuTy } from "@/components/ty-le";
@@ -70,10 +68,8 @@ export default async function TrangTran({ params }: Props) {
   const bai = muc.find((m) => m.bai.slug === slug)?.bai ?? null;
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
-  const keoPhu = keoPhuTuan(slug);
   const htftDiem = htftDiemTuan(slug);
   const keo3 = keo3Tuan(slug);
-  const gan10 = ganNhatTuan(slug);
   const lucLuong = lucLuongCua(slug);
   const cap = `${h.nha} vs ${h.khach}`;
   const cg = chuyenGiaCua(h);
@@ -103,9 +99,9 @@ export default async function TrangTran({ params }: Props) {
       <TranBaO h={h} lang={lang} />
       <p className="mt-4 text-[15px] leading-relaxed sm:text-base"><ChuTy text={cauTomTat(h, true)} /></p>
       <TranPhongDo h={h} lang={lang} />
-      {gan10 && <TranGan10 g={gan10} />}
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}
-      {keoPhu && <TranKeoPhu k={keoPhu} />}
+      {/* Peter 14/11 "thấy hơi dư": bỏ bảng 10 trận gộp (thẻ từng đội phía dưới đã có) và 3 thẻ
+          Hai đội ghi bàn · Over/Under 2.5 · Tỷ số chính xác (đã có ở khung trên cùng). */}
       {htftDiem ? <TranHtftDiem k={htftDiem}>{keo3 && <TranKeo3 k={keo3} />}</TranHtftDiem> : keo3 && <TranKeo3 k={keo3} />}
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
       {/* 14/11: trận có bài nhận định viết tay thì mang luôn thân bài — trang trận là bản chính
