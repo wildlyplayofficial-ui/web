@@ -23,6 +23,22 @@ const gioCu = new Map(cu.map((d) => [khoa(d.ngay, d.nha, d.khach), d.gioUtc]));
 // Hiệp 1 / Cả trận + điểm tấn công / phòng ngự nạp riêng (scripts/nap-htft.mjs): nạp lại tệp ngày thì giữ.
 const htftCu = new Map(cu.filter((d) => d.htft || d.diem || d.pDnb).map((d) => [khoa(d.ngay, d.nha, d.khach), { htft: d.htft, diem: d.diem, pDnb: d.pDnb, pKqBtts: d.pKqBtts, pKqOu: d.pKqOu }]));
 
+// Tỷ lệ: nap-htft.mjs làm mới mỗi sáng và ghi oCapNhat (ISO). Tệp này đến sau mà CŨ hơn thì giữ tỷ lệ mới (o, pBtts.keo, pOu.keo).
+const gioTep = Date.parse(moi.chay_luc ?? moi.cap_nhat ?? "") || fs.statSync(vao).mtimeMs;
+const rowCu = new Map(cu.map((d) => [khoa(d.ngay, d.nha, d.khach), d]));
+const giuKeoMoi = (r) => {
+  const c = rowCu.get(khoa(r.ngay, r.nha, r.khach));
+  if (c?.oCapNhat && Date.parse(c.oCapNhat) > gioTep) {
+    if (Array.isArray(c.o) && c.o.length === 3) r.o = c.o;
+    if (r.pBtts && c.pBtts?.keo?.length) r.pBtts = { ...r.pBtts, keo: c.pBtts.keo };
+    if (r.pOu && c.pOu?.keo?.length) r.pOu = { ...r.pOu, keo: c.pOu.keo };
+    r.oCapNhat = c.oCapNhat;
+  } else {
+    r.oCapNhat = new Date(gioTep).toISOString();
+  }
+  return r;
+};
+
 const SO_LIEU = ["h2h", "bxn", "bxk", "gn", "gk"];
 const PHU = [["btts", "pBtts"], ["ou", "pOu"], ["cs", "pCs"]];
 // Tệp ghi [] hoặc {} cho trận không có số liệu (đội tuyển) → bỏ, đừng đếm là có.
@@ -49,7 +65,7 @@ const dong = (t) => ({
 const tuNgay = moi.ngay_lay;
 // Dòng gõ tay cho trận có bài nhận định (trường `bai`, vd ĐTQG nguồn không có) giữ qua lần nạp lại cùng ngày.
 const giu = cu.filter((d) => (d.ngay < tuNgay || d.bai) && d.ngay >= cong(tuNgay, -7));
-const hang = [...giu, ...moi.tran.map(dong)];
+const hang = [...giu, ...moi.tran.map((t) => giuKeoMoi(dong(t)))];
 
 // Kết quả hôm qua: [ngày, giờ Anh, giải, nhà, bàn nhà, khách, bàn khách]. Tháng 11 giờ Anh = UTC.
 const kq = new Map((moi.ket_qua_hom_qua ?? []).map((r) => [khoa(r[0], r[3], r[5]), r]));

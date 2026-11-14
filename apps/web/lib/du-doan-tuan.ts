@@ -11,6 +11,7 @@ import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
 import { bxConMoi, conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
 import type { ThiTruongPhu } from "./tran-keo-phu";
+import { docDnb, docKqBtts, docKqOu } from "./tran-keo3";
 import { docDiem, docHtft, type DiemDoi, type HtFt } from "./tran-htft";
 
 export interface DongTuan extends SoLieuTran {
@@ -40,6 +41,8 @@ export interface DongTuan extends SoLieuTran {
   htft?: HtFt;
   /** Draw No Bet [nhà, khách]. */
   pDnb?: [number, number];
+  /** ISO: lúc tỷ lệ o / pBtts.keo / pOu.keo được làm mới; tệp Jane đến sau mà cũ hơn thì không đè. */
+  oCapNhat?: string;
   /** Kết quả & BTTS: n nhà thắng, k khách thắng, h hòa; Y/N hai đội cùng ghi bàn có/không. */
   pKqBtts?: { nY: number; nN: number; kY: number; kN: number; hY: number; hN: number };
   /** Kết quả & Tài/Xỉu 2.5: T tài, X xỉu. */
@@ -195,6 +198,18 @@ export function htftDiemTuan(slug: string): HtftDiem | null {
   const htft = docHtft(d.htft) ? d.htft : undefined;
   const diem = docDiem(d.diem?.n) && docDiem(d.diem?.k) ? d.diem : undefined;
   return htft || diem ? { nha: d.nha, khach: d.khach, htft, diem } : null;
+}
+
+export type Keo3Tuan = Pick<DongTuan, "nha" | "khach" | "pDnb" | "pKqBtts" | "pKqOu">;
+
+/** Ba bảng tỷ lệ phụ của một trận tệp tuần; không bảng nào hợp lệ → null. */
+export function keo3Tuan(slug: string): Keo3Tuan | null {
+  const d = timDong(slug);
+  if (!d) return null;
+  const pDnb = docDnb(d.pDnb) ? d.pDnb : undefined;
+  const pKqBtts = docKqBtts(d.pKqBtts) ? d.pKqBtts : undefined;
+  const pKqOu = docKqOu(d.pKqOu) ? d.pKqOu : undefined;
+  return pDnb || pKqBtts || pKqOu ? { nha: d.nha, khach: d.khach, pDnb, pKqBtts, pKqOu } : null;
 }
 
 /** Các dòng tệp tuần hiện tại. */

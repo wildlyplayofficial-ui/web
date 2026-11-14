@@ -30,6 +30,10 @@ const so = (x) => Number.isFinite(x) && x > 1;
 const mang = (a, n) => Array.isArray(a) && a.length === n && a.every(so);
 const dict = (o, ks) => (o && ks.every((k) => so(o[k])) ? Object.fromEntries(ks.map((k) => [k, o[k]])) : null);
 let moiKeo = 0;
+const oCapNhat = (() => {
+  const t = Date.parse(JSON.parse(fs.readFileSync(vao, "utf8")).chay_luc ?? "");
+  return Number.isFinite(t) ? new Date(t).toISOString() : new Date().toISOString();
+})();
 function lamMoiKeo(d, p) {
   if (!chuaDa(d, p)) return;
   let dem = 0;
@@ -42,7 +46,10 @@ function lamMoiKeo(d, p) {
   if (kb) (d.pKqBtts = kb), dem++;
   const ko = dict(p.kq_ou, ["nT", "nX", "kT", "kX", "hT", "hX"]);
   if (ko) (d.pKqOu = ko), dem++;
-  if (dem) moiKeo++;
+  if (dem) {
+    moiKeo++;
+    if (oCapNhat) d.oCapNhat = oCapNhat;
+  }
 }
 
 let ghepHt = 0;
