@@ -60,7 +60,8 @@ async function tranCuaGiaiImpl(livescoreId: number, tu: string, den: string): Pr
   return ra;
 }
 
-const tranCuaGiaiCache = unstable_cache(tranCuaGiaiImpl, ["bxh-san-tran"], { revalidate: 3600 });
+// Khoá v2: Data Cache của Vercel sống qua các lần deploy, nên bản dở/rỗng do mã CŨ lưu (1 giờ) vẫn được phục vụ; đổi khoá để bỏ chúng.
+const tranCuaGiaiCache = unstable_cache(tranCuaGiaiImpl, ["bxh-san-tran-v2"], { revalidate: 3600 });
 
 export const tranCuaGiai = (livescoreId: number) => {
   const nay = new Date();
