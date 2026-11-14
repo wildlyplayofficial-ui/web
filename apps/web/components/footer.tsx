@@ -34,6 +34,7 @@ export function Footer() {
         { href: "/ca-2-doi-ghi-ban-ngay-mai", label: "Cả 2 đội ghi bàn ngày mai" },
         { href: "/ty-so-ngay-mai", label: "Tỷ số ngày mai" },
         { href: "/chuoi-dang-chu-y", label: "Chuỗi đáng chú ý" },
+        { href: "/doi-phong-do-tot-nhat", label: "Đội phong độ tốt nhất" },
         { href: "/ket-qua", label: dict.nav.results },
         { href: "/matches", label: dict.nav.matches },
       ],

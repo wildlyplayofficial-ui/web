@@ -7,10 +7,11 @@ import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
 import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { xepDoiPhongDo } from "@/lib/doi-phong-do";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { duongTipGiai, giaiCoTip } from "@/lib/tip-giai";
 import { ngayVN } from "@/lib/du-doan-hang";
-import { keoPhuTuan } from "@/lib/du-doan-tuan";
+import { keoPhuTuan, phongDoChungTuan } from "@/lib/du-doan-tuan";
 import { cacXienNgay } from "@/lib/xien";
 import { CHU_DE, xienChuDeTheoNgay } from "@/lib/xien-chu-de";
 import { duDoanCua } from "@/lib/du-doan-nguon";
@@ -160,6 +161,8 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     // Bản ngày mai: chỉ nộp khi ngày mai có trận (trang rỗng là noindex).
     ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/tai-xiu-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
     "/chuoi-dang-chu-y",
+    // Đội phong độ tốt nhất: chỉ nộp khi có ít nhất một đội đủ số liệu (trang rỗng là noindex).
+    ...(xepDoiPhongDo(hang, homNay, lechNgay(homNay, 6), phongDoChungTuan).length > 0 ? ["/doi-phong-do-tot-nhat"] : []),
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
     // Tip theo giải (14/11): chỉ nộp giải + loại có ít nhất một trận trong 7 ngày tới.
