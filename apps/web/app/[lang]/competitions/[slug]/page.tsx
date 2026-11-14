@@ -15,7 +15,7 @@ import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
 import { laBaiTru } from "@/lib/chi-muc";
-import { khopBangTong, tinhBxhSan } from "@/lib/bxh-san";
+import { khopBangTong, tinhBxhSan, tinhBxhTong } from "@/lib/bxh-san";
 import { tranCuaGiai } from "@/lib/bxh-san-tai";
 
 export const revalidate = 3600;
@@ -142,7 +142,9 @@ export default async function StandingSlugPage({ params }: Props) {
   const trangTru = baiCuaGiai.filter((a) => laBaiTru(a.slug) && !compArticles.includes(a));
 
   // Backfill the empty API form with the computed last-5 results.
-  const rows = tableRows.map((r) => (r.form ? r : { ...r, form: formMap[r.name] ?? "" }));
+  // Nguồn bảng xếp hạng trả rỗng (giải châu Âu) → dựng bảng từ các trận đã đá.
+  const bangGoc = tableRows.length === 0 && showQualification && tranDaDa.length > 0 ? tinhBxhTong(tranDaDa) : tableRows;
+  const rows = bangGoc.map((r) => (r.form ? r : { ...r, form: formMap[r.name] ?? "" }));
 
   // Group by groupName when multiple distinct values exist
   const distinctGroups = new Set(rows.map((r) => r.groupName).filter(Boolean));
