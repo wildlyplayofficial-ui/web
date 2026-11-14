@@ -1,5 +1,5 @@
 import type { HtftDiem } from "@/lib/du-doan-tuan";
-import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docHtft, KHOA_HTFT, xacSuatTheoHang } from "@/lib/tran-htft";
+import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docDiemChung, docHtft, KHOA_HTFT, xacSuatTheoHang } from "@/lib/tran-htft";
 import { tenDoiViet } from "@/lib/ten-viet";
 
 /**
@@ -60,17 +60,21 @@ function Cham({ v }: { v: number }) {
   );
 }
 
-function DongDiem({ ten, v }: { ten: string; v: [number, number] }) {
+function DongDiem({ ten, v, chung }: { ten: string; v: [number, number]; chung: number | null }) {
   return (
     <div className="py-2.5">
       <p className="truncate text-sm font-semibold">{ten}</p>
-      {(["Tấn công", "Phòng ngự"] as const).map((nhan, i) => (
-        <p key={nhan} className="mt-1.5 flex items-center gap-3 text-sm">
-          <span className="w-[72px] shrink-0 text-muted">{nhan}</span>
-          <Cham v={v[i]} />
-          <b className="font-display tabular-nums">{v[i]}/{DIEM_TOI_DA}</b>
-        </p>
-      ))}
+      {(["Tấn công", "Phòng ngự", "Phong độ chung"] as const).map((nhan, i) => {
+        const x = i < 2 ? v[i] : chung;
+        if (x === null) return null;
+        return (
+          <p key={nhan} className="mt-1.5 flex items-center gap-3 text-sm">
+            <span className="w-[72px] shrink-0 leading-tight text-muted">{nhan}</span>
+            <Cham v={x} />
+            <b className="font-display tabular-nums">{x}/{DIEM_TOI_DA}</b>
+          </p>
+        );
+      })}
     </div>
   );
 }
@@ -85,14 +89,17 @@ function Diem({ k }: { k: HtftDiem }) {
     <section className={O}>
       <h2 className={NHAN}>Điểm tấn công / phòng ngự</h2>
       <div className="mt-1 max-w-[560px] divide-y divide-line">
-        <DongDiem ten={nha} v={n} />
-        <DongDiem ten={khach} v={kh} />
+        <DongDiem ten={nha} v={n} chung={docDiemChung(k.diem?.c, 0)} />
+        <DongDiem ten={khach} v={kh} chung={docDiemChung(k.diem?.c, 1)} />
       </div>
       <p className="max-w-[560px] border-t border-line pt-2 text-[13px] leading-relaxed text-muted">
         {cauDiem(nha, k.diem?.n)} {cauDiem(khach, k.diem?.k)}{" "}
         {k.diem?.loai === "san"
           ? "Đội nhà tính riêng các trận sân nhà, đội khách tính riêng các trận sân khách (10 trận gần nhất)."
           : "Tính theo các trận gần đây."}{" "}
+        {docDiemChung(k.diem?.c, 0) !== null && docDiemChung(k.diem?.c, 1) !== null
+          ? `Phong độ chung ${nha} ${docDiemChung(k.diem?.c, 0)}/${DIEM_TOI_DA}, ${khach} ${docDiemChung(k.diem?.c, 1)}/${DIEM_TOI_DA}. `
+          : ""}
         Thang 1 đến 10, điểm cao là phong độ tốt hơn ở phần đó.
       </p>
     </section>
