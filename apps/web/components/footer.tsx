@@ -26,6 +26,10 @@ export function Footer() {
       links: [
         { href: "/du-doan", label: dict.nav.predictions },
         { href: "/keo-xien", label: dict.nav.parlay },
+        { href: "/tai-xiu-hom-nay", label: "Tài xỉu hôm nay" },
+        { href: "/ca-2-doi-ghi-ban-hom-nay", label: "Cả 2 đội ghi bàn" },
+        { href: "/ty-so-hom-nay", label: "Tỷ số hôm nay" },
+        { href: "/chuoi-dang-chu-y", label: "Chuỗi đáng chú ý" },
         { href: "/ket-qua", label: dict.nav.results },
         { href: "/matches", label: dict.nav.matches },
       ],

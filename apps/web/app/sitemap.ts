@@ -149,6 +149,11 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   const locRoutes: MetadataRoute.Sitemap = [
     // Kèo xiên: trang hôm nay luôn nộp, ngày sau chỉ nộp ngày gom được xiên (ngày rỗng trả 404).
     "/keo-xien",
+    // Gom theo loại kèo hôm nay + chuỗi đáng chú ý (14/11).
+    "/tai-xiu-hom-nay",
+    "/ca-2-doi-ghi-ban-hom-nay",
+    "/ty-so-hom-nay",
+    "/chuoi-dang-chu-y",
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
     ...ngaySau.map((n) => duongDanNgay(n, homNay)),
