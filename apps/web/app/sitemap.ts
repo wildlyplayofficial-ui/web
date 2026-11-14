@@ -156,6 +156,8 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     "/tai-xiu-hom-nay",
     "/ca-2-doi-ghi-ban-hom-nay",
     "/ty-so-hom-nay",
+    // Bản ngày mai: chỉ nộp khi ngày mai có trận (trang rỗng là noindex).
+    ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/tai-xiu-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
     "/chuoi-dang-chu-y",
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
