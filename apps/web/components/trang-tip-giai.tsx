@@ -47,7 +47,7 @@ async function nap(loai: LoaiTip, slug: string) {
   if (!g) return null;
   const homNay = ngayVN(Date.now());
   const { hang } = await taiDuDoan();
-  return { g, homNay, ngay: tipGiai(hang, g, loai, homNay, keoPhuTuan) };
+  return { g, homNay, ngay: tipGiai(hang, g, loai, homNay, keoPhuTuan, Date.now()) };
 }
 
 export async function metaTipGiai(loai: LoaiTip, slug: string, lang: Lang): Promise<Metadata> {
@@ -143,7 +143,7 @@ export async function KhoiTipGiai({ bxh, lang }: { bxh: string; lang: Lang }) {
   if (!g) return null;
   const homNay = ngayVN(Date.now());
   const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
-  const co = giaiCoTip(hang, homNay, keoPhuTuan).filter((x) => x.giai.slug === g.slug);
+  const co = giaiCoTip(hang, homNay, keoPhuTuan, undefined, Date.now()).filter((x) => x.giai.slug === g.slug);
   if (co.length === 0) return null;
   return (
     <section className="mt-8" aria-labelledby="tip-giai">

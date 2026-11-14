@@ -31,8 +31,10 @@ export function tipGiai(
   loai: LoaiTip,
   homNay: string,
   keoPhu: (slug: string) => KeoPhuTip | null | undefined,
+  now?: number,
 ): NgayTip[] {
-  const cua = hang.filter((h) => g.khop.test(h.giai));
+  // `now` (ms): bỏ trận đã bắt đầu/đã đá xong, để tiêu đề "7 ngày tới" đúng. Không truyền thì không lọc.
+  const cua = hang.filter((h) => g.khop.test(h.giai) && (now === undefined || Date.parse(h.kickoffUtc) > now));
   return Array.from({ length: SO_NGAY }, (_, i) => lechNgay(homNay, i))
     .map((ngay) => ({ ngay, ds: dongTipNgay(cua, ngay, loai, keoPhu) }))
     .filter((x) => x.ds.length > 0);
@@ -46,10 +48,11 @@ export function giaiCoTip(
   homNay: string,
   keoPhu: (slug: string) => KeoPhuTip | null | undefined,
   loai: readonly LoaiTip[] = ["tai-xiu", "hai-doi-ghi-ban", "ty-so"],
+  now?: number,
 ): { giai: GiaiTrang; loai: LoaiTip; soTran: number }[] {
   return GIAI_TRANG.flatMap((giai) =>
     loai.flatMap((l) => {
-      const soTran = demTran(tipGiai(hang, giai, l, homNay, keoPhu));
+      const soTran = demTran(tipGiai(hang, giai, l, homNay, keoPhu, now));
       return soTran > 0 ? [{ giai, loai: l, soTran }] : [];
     }),
   );
