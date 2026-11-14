@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
+import { TranHtftDiem } from "@/components/tran-htft";
 import { TranKeoPhu } from "@/components/tran-keo-phu";
 import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranSoLieu } from "@/components/tran-so-lieu";
@@ -14,7 +15,7 @@ import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gi
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
-import { keoPhuTuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { htftDiemTuan, keoPhuTuan, soLieuTuan } from "@/lib/du-doan-tuan";
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 
@@ -66,6 +67,7 @@ export default async function TrangTran({ params }: Props) {
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
   const keoPhu = keoPhuTuan(slug);
+  const htftDiem = htftDiemTuan(slug);
   const lucLuong = lucLuongCua(slug);
   const cap = `${h.nha} vs ${h.khach}`;
   const cg = chuyenGiaCua(h);
@@ -100,6 +102,7 @@ export default async function TrangTran({ params }: Props) {
       <TranPhongDo h={h} lang={lang} />
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}
       {keoPhu && <TranKeoPhu k={keoPhu} />}
+      {htftDiem && <TranHtftDiem k={htftDiem} />}
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
 
       {lienQuan.ds.length > 0 && (

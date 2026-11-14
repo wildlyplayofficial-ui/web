@@ -20,6 +20,8 @@ const in1 = (s) => process.stdout.write(`${s}\n`);
 const khoa = (ngay, nha, khach) => `${ngay}|${nha}|${khach}`;
 const cong = (ngay, n) => new Date(Date.parse(`${ngay}T00:00:00Z`) + n * 864e5).toISOString().slice(0, 10);
 const gioCu = new Map(cu.map((d) => [khoa(d.ngay, d.nha, d.khach), d.gioUtc]));
+// Hiệp 1 / Cả trận + điểm tấn công / phòng ngự nạp riêng (scripts/nap-htft.mjs): nạp lại tệp ngày thì giữ.
+const htftCu = new Map(cu.filter((d) => d.htft || d.diem).map((d) => [khoa(d.ngay, d.nha, d.khach), { htft: d.htft, diem: d.diem }]));
 
 const SO_LIEU = ["h2h", "bxn", "bxk", "gn", "gk"];
 const PHU = [["btts", "pBtts"], ["ou", "pOu"], ["cs", "pCs"]];
@@ -39,6 +41,7 @@ const dong = (t) => ({
   tx: t.ou?.tip ? (/over/i.test(t.ou.tip) ? "Tài 2.5" : "Xỉu 2.5") : undefined,
   // Khối phụ trang trận: tip + tỷ lệ + chuỗi 5 trận (h5/a5). cs chỉ ~1/10 trận có.
   ...Object.fromEntries(PHU.filter(([k]) => t[k]?.tip).map(([k, ra]) => [ra, { tip: t[k].tip, keo: Array.isArray(t[k].keo) ? t[k].keo : [], h5: t[k].h5 ?? "", a5: t[k].a5 ?? "" }])),
+  ...(htftCu.get(khoa(t.ngay, t.nha, t.khach)) ?? {}),
   // Số liệu trang trận (đối đầu, bảng xếp hạng, 10 trận gần nhất): có thì giữ nguyên.
   ...Object.fromEntries(SO_LIEU.filter((k) => coGiaTri(t[k])).map((k) => [k, t[k]])),
 });

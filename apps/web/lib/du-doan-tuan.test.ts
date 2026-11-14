@@ -1,7 +1,8 @@
 // Dòng tệp tuần gắn `bai` (trận ĐTQG có bài nhận định): số liệu đổ vào trang bài, không thành trận lẻ.
 import { describe, expect, it } from "vitest";
 import type { HangDuDoan } from "./du-doan-hang";
-import { gopTuan, hangTuan, keoPhuTuan, soLieuTuan } from "./du-doan-tuan";
+import { dongTuan, gopTuan, hangTuan, htftDiemTuan, keoPhuTuan, slugTuan, soLieuTuan } from "./du-doan-tuan";
+import { docDiem, docHtft } from "./tran-htft";
 
 const BAI = "nhan-dinh-viet-nam-vs-dai-bac-trung-hoa-11-11-2026";
 const bai = (): HangDuDoan => ({
@@ -57,5 +58,20 @@ describe("trận Việt Nam vs Kyrgyzstan 17/11 gắn bài nhận định", () =
 
   it("dòng Kyrgyzstan không sinh thêm trận lẻ trên /du-doan", () => {
     expect(hangTuan([], [], Date.parse("2026-11-11T05:00:00Z")).some((h) => h.khach === "Kyrgyzstan")).toBe(false);
+  });
+});
+
+describe("htftDiemTuan — Hiệp 1 / Cả trận và điểm tấn công / phòng ngự", () => {
+  it("slug không có trong tệp → null", () => {
+    expect(htftDiemTuan("khong-co-tran-nay")).toBeNull();
+  });
+
+  it("mọi dòng tệp có htft/diem đều qua kiểm hợp lệ; dòng không có → null (khối ẩn)", () => {
+    for (const d of dongTuan()) {
+      const r = htftDiemTuan(slugTuan(d));
+      if (d.htft && docHtft(d.htft)) expect(r?.htft).toBeDefined();
+      if (d.diem && docDiem(d.diem.n) && docDiem(d.diem.k)) expect(r?.diem).toBeDefined();
+      if (!d.htft && !d.diem) expect(r).toBeNull();
+    }
   });
 });
