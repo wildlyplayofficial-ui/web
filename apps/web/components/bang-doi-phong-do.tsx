@@ -36,7 +36,7 @@ export function BangDoiPhongDo({ ds, lang }: { ds: DongPhongDo[]; lang: Lang }) 
                   <span className="truncate text-[15px] font-semibold">{d.doi}</span>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-muted">{d.giai}</p>
-                <p className="mt-1 truncate text-xs text-muted">
+                <p className="mt-1 text-xs leading-snug text-muted">
                   Trận kế: gặp <b className="text-ink">{d.tran.doiThu}</b> · {ngayNgan(d.tran.ngay)} {d.tran.gio}
                 </p>
               </div>
