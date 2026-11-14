@@ -56,6 +56,10 @@ describe("câu chữ sinh từ số", () => {
     );
   });
 
+  it("trang có chuyên gia ký tên thì câu tóm tắt ghi tên chuyên gia, không ghi banhbong.net", () => {
+    expect(cauTomTat(ANH, false, "Đặng Quang Vinh")).toMatch(/^Chuyên gia Đặng Quang Vinh dự đoán Anh thắng Croatia 3-0/);
+  });
+
   it("đá xong thì thêm kết quả + chấm đúng/sai", () => {
     const xong = tran("x", { sapDa: false, that: [2, 0], dung: true, dungTySo: false, mot: null, taiXiu: null, haiDoiGhi: null });
     expect(cauTomTat(xong)).toContain("Kết quả: Anh 2-0 Croatia, dự đoán đúng kết quả.");

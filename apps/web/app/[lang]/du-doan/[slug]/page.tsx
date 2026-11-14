@@ -105,7 +105,7 @@ export default async function TrangTran({ params }: Props) {
       </p>
       <TranHero h={h} lang={lang} tacGia={tacGia} />
       <TranBaO h={h} lang={lang} />
-      <p className="mt-4 text-[15px] leading-relaxed sm:text-base"><ChuTy text={cauTomTat(h, true)} /></p>
+      <p className="mt-4 text-[15px] leading-relaxed sm:text-base"><ChuTy text={cauTomTat(h, true, cg.ten)} /></p>
       <TranPhongDo h={h} lang={lang} />
       {gan10 && <TranGan10 g={gan10} />}
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}

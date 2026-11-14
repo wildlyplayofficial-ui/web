@@ -67,7 +67,7 @@ export function cauHaiDoiGhi(h: Pick<HangDuDoan, "haiDoiGhi" | "du">): string | 
 const haiSo = (x: number) => x.toFixed(2);
 
 /** Một đoạn tóm tắt sinh từ số của trận (cho người đọc lướt + máy tìm kiếm trích). */
-export function cauTomTat(h: HangDuDoan, danhDau = false): string {
+export function cauTomTat(h: HangDuDoan, danhDau = false, chuyenGia?: string): string {
   const so = danhDau ? T : (x: number) => x.toFixed(2);
   const gio = gioChu(h.gio);
   const luc = `${gio ? `lúc ${gio} ` : ""}${thuVN(h.ngay).replace(/^Thứ/, "thứ").replace(/^Chủ Nhật/, "Chủ nhật")} ${ngayThang(h.ngay)}`;
@@ -75,7 +75,7 @@ export function cauTomTat(h: HangDuDoan, danhDau = false): string {
   const thang = cauThang(h);
   const cau = [
     thang
-      ? `banhbong.net dự đoán ${thang} ở ${h.giai}, trận đá ${luc}${noi}.`
+      ? `${chuyenGia ? `Chuyên gia ${chuyenGia}` : "banhbong.net"} dự đoán ${thang} ở ${h.giai}, trận đá ${luc}${noi}.`
       : `${h.nha} gặp ${h.khach} ở ${h.giai}, trận đá ${luc}${noi}.`,
   ];
   if (h.mot) cau.push(`Tỷ lệ 1·X·2 ${h.sapDa ? "đang là" : "trước trận là"} ${h.mot.map(so).join(" · ")}.`);
