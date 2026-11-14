@@ -18,6 +18,8 @@ const hang = JSON.parse(fs.readFileSync(RA, "utf8"));
 const KHOA = ["HH", "HD", "HA", "DH", "DD", "DA", "AH", "AD", "AA"];
 const htftOk = (h) => h && KHOA.every((k) => Number.isFinite(h[k]) && h[k] > 1);
 const cap = (d) => Array.isArray(d) && d.length === 2 && d.every((x) => Number.isInteger(x) && x >= 1 && x <= 10);
+const MUI = ["len", "ngang", "xuong"];
+const bo3 = (a) => (Array.isArray(a) && a.length === 3 ? a.map((x) => (MUI.includes(x) ? x : null)) : null);
 const diemOk = (d) => d && cap(d.n) && cap(d.k);
 const khoa = (ngay, nha, khach) => `${ngay}|${nha}|${khach}`;
 const pz = new Map(nguon.map((p) => [khoa(p.ngay, p.nha, p.khach), p]));
@@ -64,6 +66,9 @@ for (const d of hang) {
   if (diemOk(p.diem)) {
     d.diem = { n: p.diem.n, k: p.diem.k, loai: p.diem.loai === "san" ? "san" : "chung" };
     if (cap(p.diem.c)) d.diem.c = p.diem.c; // Overall Form [nhà, khách]
+    // Mũi tên xu hướng [Overall, Scoring, Defence] mỗi đội; chỉ giữ khi đúng khuôn, ô lạ thành null
+    const xn = bo3(p.diem.xh?.n), xk = bo3(p.diem.xh?.k);
+    if (xn && xk && (xn.some(Boolean) || xk.some(Boolean))) d.diem.xh = { n: xn, k: xk };
     ghepDiem++;
   }
   lamMoiKeo(d, p);
