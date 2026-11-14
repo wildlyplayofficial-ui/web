@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HangDuDoan } from "./du-doan-hang";
+import { giaiTuSlug } from "./du-doan-loc";
 import { duongTipGiai, giaiCoTip, tipGiai } from "./tip-giai";
 
 const tran = (slug: string, o: Partial<HangDuDoan> = {}) =>
@@ -21,6 +22,20 @@ describe("tipGiai", () => {
     const hang = [tran("a", { taiXiu: "Tài 2.5", ngay: "2026-11-21" }), tran("b", { taiXiu: "Tài 2.5", ngay: "2026-11-13" })];
     expect(tipGiai(hang, LL, "tai-xiu", "2026-11-14", khong)).toEqual([]);
     expect(tipGiai(hang, LL, "tai-xiu", "2026-11-15", khong).length).toBe(1);
+  });
+  it("có now thì bỏ trận đã bắt đầu", () => {
+    const hang = [
+      tran("sớm", { taiXiu: "Tài 2.5", kickoffUtc: "2026-11-15T01:00:00Z" }),
+      tran("muộn", { taiXiu: "Tài 2.5", kickoffUtc: "2026-11-15T12:00:00Z" }),
+    ];
+    const now = Date.parse("2026-11-15T06:00:00Z");
+    expect(tipGiai(hang, LL, "tai-xiu", "2026-11-14", khong, now)[0].ds.map((d) => d.h.slug)).toEqual(["muộn"]);
+  });
+  it("slug nations-league chỉ khớp UEFA, không khớp CONCACAF", () => {
+    const k = giaiTuSlug("nations-league")!.khop;
+    expect(k.test("Nations League")).toBe(true);
+    expect(k.test("UEFA Nations League")).toBe(true);
+    expect(k.test("CONCACAF Nations League")).toBe(false);
   });
   it("trận không có tip loại này thì không tính", () => {
     expect(tipGiai([tran("a")], LL, "ty-so", "2026-11-14", khong)).toEqual([]);

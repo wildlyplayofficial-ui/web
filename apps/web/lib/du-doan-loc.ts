@@ -64,7 +64,7 @@ export const GIAI_TRANG: readonly GiaiTrang[] = [
   { slug: "bundesliga", ten: "Bundesliga", khop: /^(germany )?bundesliga$/i, bxh: "bundesliga" },
   { slug: "ligue-1", ten: "Ligue 1", khop: /^(france )?ligue 1$/i, bxh: "ligue-1" },
   { slug: "cup-c1", ten: "Cúp C1 châu Âu", khop: /champions league|cúp c1/i, bxh: "champions-league" },
-  { slug: "nations-league", ten: "Nations League", khop: /nations league/i, bxh: null },
+  { slug: "nations-league", ten: "Nations League", khop: /^(uefa )?nations league/i, bxh: null },
 ];
 
 export const giaiTuSlug = (slug: string): GiaiTrang | null => GIAI_TRANG.find((g) => g.slug === slug) ?? null;
