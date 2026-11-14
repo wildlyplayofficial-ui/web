@@ -10,6 +10,7 @@ import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { CHU_DE, tenXienChuDe, xienChuDeTheoNgay, type MoTaChuDe, type XienChuDeNgay } from "@/lib/xien-chu-de";
 import { ChuTy } from "@/components/ty-le";
 import { T } from "@/lib/ty-le";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /**
  * Kèo xiên theo chủ đề /keo-xien/{xien-over-2-5 | xien-under-2-5 | xien-hai-doi-ghi-ban | xien-doi-nha-thang |
@@ -32,6 +33,8 @@ export function metaChuDe(c: MoTaChuDe, lang: Lang): Metadata {
     title,
     description,
     alternates: buildAlternates(duongDanChuDe(c), lang),
+    // 14/11 gọn sitemap (Peter chốt): trang khuôn, thôi mời Google — noindex,follow, rút khỏi sitemap.
+    robots: NOINDEX_FOLLOW,
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,

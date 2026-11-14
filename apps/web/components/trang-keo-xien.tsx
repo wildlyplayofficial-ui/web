@@ -12,6 +12,7 @@ import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { cacXienNgay, tenLoaiXien, type XienNgay } from "@/lib/xien";
 import { ChuTy } from "@/components/ty-le";
 import { T } from "@/lib/ty-le";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /**
  * Trang kèo xiên /keo-xien (Peter 12/11: tách khỏi dự đoán, "làm theo PredictZ" — trang
@@ -38,6 +39,8 @@ export function metaKeoXien(ngay: string, homNay: string, lang: Lang): Metadata 
     title,
     description,
     alternates: buildAlternates(duongDanXien(ngay, homNay), lang),
+    // 14/11 gọn sitemap (Peter chốt): trang khuôn, thôi mời Google — noindex,follow, rút khỏi sitemap.
+    robots: NOINDEX_FOLLOW,
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,

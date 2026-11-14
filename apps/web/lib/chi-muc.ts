@@ -108,7 +108,44 @@ export function tranDuocIndex(h: { slug: string; giai: string; nha: string; khac
   );
 }
 
-/** Nhóm sitemap con (12/11): /sitemap/{id}.xml, mỗi nhóm một dòng riêng trong Search Console.
+/**
+ * GỌN SITEMAP (Peter chốt 14/11/2026): GSC hiện từ 754 (tháng 8) còn 8 (tháng 11), Google
+ * "đã thu thập/phát hiện – chưa lập chỉ mục" gần hết site. Thôi đẻ trang theo khuôn; sitemap
+ * từ 202 URL rút còn ~60 trang đáng index. Trang khuôn mỏng rút khỏi sitemap thì đặt
+ * NOINDEX_FOLLOW; trang có nội dung thật rút khỏi sitemap thì vẫn index (chỉ thôi mời).
+ * Không xoá route, không 404 trang nào.
+ */
+export const NOINDEX_FOLLOW = { index: false, follow: true } as const;
+
+/** Guide đủ dài, không phải biến thể từng mức tỷ lệ (keo-0-5, keo-goc-8-5…) — chỉ các guide này index + vào sitemap.
+ *  Guide có tiêu đề dùng chữ cấm (luật Over/Under 14/11) không vào danh sách. */
+const GUIDE_GIU_INDEX = new Set([
+  "vi-sao-ty-le-keo-khac-nhau-giua-cac-nguon",
+  "how-to-read-betting-odds",
+  "what-is-asian-handicap",
+]);
+export const guideDuocIndex = (slug: string): boolean => GUIDE_GIU_INDEX.has(slug);
+
+/** Hub /doi/{slug}: chỉ hub Việt Nam đủ nội dung (~950 chữ); hub CLB chỉ là danh sách link (~270–410 chữ, đo 14/11). */
+const DOI_GIU_INDEX = new Set(["vietnam"]);
+export const doiDuocIndex = (slug: string): boolean => DOI_GIU_INDEX.has(slug);
+
+/** Trang giải (/competitions/{slug}) vào sitemap: giải lớn + World Cup. */
+export const GIAI_BXH_SITEMAP = new Set(["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1", "champions-league", "world-cup-2026"]);
+
+/** Trang dự đoán theo giải (/du-doan/{giai}) vào sitemap: 5 giải lớn + Cúp C1. */
+export const GIAI_DU_DOAN_SITEMAP = new Set(["ngoai-hang-anh", "la-liga", "serie-a", "bundesliga", "ligue-1", "cup-c1"]);
+
+/** Trang trận /du-doan/{slug} chỉ vào sitemap khi đá trong N ngày tới (giờ VN, tính cả hôm nay). */
+export const SO_NGAY_TRAN_SITEMAP = 3;
+
+/** Bài blog vào sitemap: bỏ lịch "cuối tuần" (qua tuần là cũ) và ASEAN Cup 2026 (đá xong 5/10). Bài vẫn index. */
+export const blogVaoSitemap = (slug: string): boolean => !slug.includes("cuoi-tuan") && !slug.includes("asean-cup-2026");
+
+/** Bài /analysis vào sitemap: chỉ nhóm "xem … ở đâu". Bài lịch/mấy giờ vẫn index theo analysisDuocIndex. */
+export const analysisVaoSitemap = (slug: string): boolean => /^xem-.*-o-dau/.test(slug);
+
+/** Nhóm sitemap con (12/11):/sitemap/{id}.xml, mỗi nhóm một dòng riêng trong Search Console.
  *  Mục lục /sitemap.xml liệt kê các nhóm này — xem app/sitemap.xml/route.ts. */
 export const NHOM_SITEMAP = ["static", "blog", "analysis", "news", "du-doan"] as const;
 export type NhomSitemap = (typeof NHOM_SITEMAP)[number];

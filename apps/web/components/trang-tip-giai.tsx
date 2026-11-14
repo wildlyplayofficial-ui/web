@@ -12,6 +12,7 @@ import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demTran, duongTipGiai, giaiCoTip, SO_NGAY, tipGiai, type NgayTip } from "@/lib/tip-giai";
 import type { LoaiTip } from "@/lib/tip-ngay";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /**
  * Ba loại trang tip theo giải: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
@@ -60,7 +61,8 @@ export async function metaTipGiai(loai: LoaiTip, slug: string, lang: Lang): Prom
     title,
     description,
     alternates: buildAlternates(duongTipGiai(loai, r.g), lang),
-    ...(so === 0 ? { robots: { index: false, follow: true } } : {}),
+    // 14/11 gọn sitemap (Peter chốt): trang khuôn, thôi mời Google — noindex,follow, rút khỏi sitemap.
+    robots: NOINDEX_FOLLOW,
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,

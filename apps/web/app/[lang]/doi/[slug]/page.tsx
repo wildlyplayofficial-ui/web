@@ -9,6 +9,7 @@ import type { AnalysisArticle } from "@/lib/types";
 import { getTeamHub, TEAM_HUBS } from "@/lib/teams";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
+import { doiDuocIndex } from "@/lib/chi-muc";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -88,7 +89,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: L.about(team.name),
     description: L.sub(team.name),
     alternates: buildAlternates(`/doi/${slug}`, lang),
-    robots: { index: dense, follow: true },
+    // 14/11: hub CLB chỉ là danh sách link (mỏng) → noindex; chỉ hub trong doiDuocIndex còn index.
+    robots: { index: dense && doiDuocIndex(slug), follow: true },
     openGraph: {
       locale: "vi_VN",
       title: `${L.about(team.name)} | banhbong.net`,

@@ -13,6 +13,7 @@ import { dongTuan, logo, slugTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { tenDoiViet } from "@/lib/ten-viet";
 import { conMoi, kqCuaDoi, ngayNgan, type TranGanDay } from "@/lib/tran-so-lieu";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /**
  * /chuoi-dang-chu-y (Peter gật 14/11): đội nào đang có chuỗi thắng · bất bại · chưa thắng · thua, Over · Under ·
@@ -70,6 +71,8 @@ export function metaChuoi(homNay: string, soDoi: number, lang: Lang): Metadata {
     title,
     description,
     alternates: buildAlternates(DUONG, lang),
+    // 14/11 gọn sitemap (Peter chốt): trang khuôn, thôi mời Google — noindex,follow, rút khỏi sitemap.
+    robots: NOINDEX_FOLLOW,
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,

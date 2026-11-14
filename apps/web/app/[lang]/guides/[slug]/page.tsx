@@ -10,6 +10,7 @@ import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } fro
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 import { biaUrl, biaKhongChuUrl, SO_DO_VI } from "@/lib/bia-guide";
+import { guideDuocIndex, NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 export const revalidate = 300;
 
@@ -58,7 +59,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     // Bản VI của 6 guide nặng thuật ngữ cá cược → noindex để không lộ trên search VN.
     // 5 guide còn lại + mọi ngôn ngữ khác index bình thường. (Nick chốt danh sách 4/8)
-    robots: isViBlockedGuide(lang, slug) ? { index: false, follow: true } : undefined,
+    // 14/11 gọn sitemap: guide biến thể từng mức tỷ lệ (mỏng) → noindex; chỉ guideDuocIndex còn index.
+    robots: isViBlockedGuide(lang, slug) || !guideDuocIndex(slug) ? NOINDEX_FOLLOW : undefined,
     alternates: { canonical, languages },
     openGraph: {
       locale: "vi_VN",

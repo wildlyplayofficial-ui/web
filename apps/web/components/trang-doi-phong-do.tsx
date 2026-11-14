@@ -9,6 +9,7 @@ import { lechNgay } from "@/lib/du-doan-loc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { phongDoChungTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
 /** Trang "Đội phong độ tốt nhất" (Peter duyệt mục G, 14/11): đội có trận trong 7 ngày tới, xếp theo phong độ chung. */
 
@@ -28,7 +29,8 @@ export function metaDoiPhongDo(so: number, lang: Lang): Metadata {
     title,
     description,
     alternates: buildAlternates(DUONG, lang),
-    ...(so === 0 ? { robots: { index: false, follow: true } } : {}),
+    // 14/11 gọn sitemap (Peter chốt): trang khuôn, thôi mời Google — noindex,follow, rút khỏi sitemap.
+    robots: NOINDEX_FOLLOW,
     openGraph: { locale: "vi_VN", title: `${title} | banhbong.net`, description, images: [{ url: `/api/og/editorial?title=${encodeURIComponent(TIEU_DE)}&v=${OG_VERSION}`, width: 1200, height: 630 }] },
   };
 }
