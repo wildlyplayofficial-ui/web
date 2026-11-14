@@ -29,7 +29,7 @@ function Doi({ ten, logo }: { ten: string; logo: string | null }) {
 }
 
 /** Ô lớn đầu trang: giải, hai đội, tỷ số dự đoán, giờ đá; đá xong thêm tỷ số thật + ĐÚNG/SAI. */
-export function TranHero({ h, lang, tacGia }: { h: HangDuDoan; lang: Lang; /** Byline bài nhận định, nếu trận có bài. */ tacGia: string | null }) {
+export function TranHero({ h, lang, tacGia, linkBai }: { h: HangDuDoan; lang: Lang; /** Byline bài nhận định, nếu trận có bài. */ tacGia: string | null; /** Bài nằm ngay trang thì trỏ neo (#nhan-dinh) thay cho /analysis. */ linkBai?: string }) {
   const t = getDict(lang).duDoan;
   const chieu = chieuCua(h.du);
   const ketLuan = chieu === null ? null : chieu === 1 ? t.draw : t.teamWins.replace("{team}", chieu === 0 ? h.nha : h.khach);
@@ -74,7 +74,7 @@ export function TranHero({ h, lang, tacGia }: { h: HangDuDoan; lang: Lang; /** B
       )}
       {h.coBai && (
         <Link
-          href={withLang(`/analysis/${h.slug}`, lang)}
+          href={linkBai ?? withLang(`/analysis/${h.slug}`, lang)}
           className="mt-4 flex min-h-12 items-center justify-center rounded-lg bg-brand px-4 font-display text-[15px] font-bold text-bg transition-colors hover:bg-brand-hover"
         >
           Đọc nhận định{tacGia ? ` của ${tacGia}` : ""} →

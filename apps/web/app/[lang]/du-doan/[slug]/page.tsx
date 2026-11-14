@@ -68,7 +68,6 @@ export default async function TrangTran({ params }: Props) {
   const h = timTran(hang, slug);
   if (!h) notFound();
   const bai = muc.find((m) => m.bai.slug === slug)?.bai ?? null;
-  const tacGia = bai?.byline ?? null;
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
   const keoPhu = keoPhuTuan(slug);
@@ -99,13 +98,10 @@ export default async function TrangTran({ params }: Props) {
         <span className="hidden text-ink sm:inline">{cap}</span>
       </nav>
       <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[30px]">{tieuDeTran(h)}</h1>
-      <p className="mt-1 text-[13px] text-muted">
-        Dự đoán bởi chuyên gia{" "}
-        <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
-      </p>
-      <TranHero h={h} lang={lang} tacGia={tacGia} />
+      {/* Peter 14/11: tên tác giả chỉ ghi 1 chỗ ở cuối trang; bài nằm ngay trang này thì nút nhảy xuống bài. */}
+      <TranHero h={h} lang={lang} tacGia={null} linkBai={bai?.body ? "#nhan-dinh" : undefined} />
       <TranBaO h={h} lang={lang} />
-      <p className="mt-4 text-[15px] leading-relaxed sm:text-base"><ChuTy text={cauTomTat(h, true, cg.ten)} /></p>
+      <p className="mt-4 text-[15px] leading-relaxed sm:text-base"><ChuTy text={cauTomTat(h, true)} /></p>
       <TranPhongDo h={h} lang={lang} />
       {gan10 && <TranGan10 g={gan10} />}
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}
@@ -115,10 +111,15 @@ export default async function TrangTran({ params }: Props) {
       {/* 14/11: trận có bài nhận định viết tay thì mang luôn thân bài — trang trận là bản chính
           (canonical), bản /analysis/{slug} trỏ canonical về đây. Trận tệp tuần không có bài. */}
       {bai?.body && (
-        <article className="prose-md mt-8 border-t border-line pt-6">
+        <article id="nhan-dinh" className="prose-md mt-8 scroll-mt-20 border-t border-line pt-6">
           <ThanBaiMd body={bai.body} />
         </article>
       )}
+      <p className="mt-6 border-t border-line pt-4 text-[14px] text-muted">
+        Tác giả:{" "}
+        <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
+        {" · "}phụ trách {cg.phuTrach}
+      </p>
 
       {lienQuan.ds.length > 0 && (
         <section className="mt-8">
