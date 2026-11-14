@@ -4,8 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
-import { TranHtftDiem } from "@/components/tran-htft";
-import { TranKeo3 } from "@/components/tran-keo3";
+import { Diem } from "@/components/tran-htft";
 import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranSoLieu } from "@/components/tran-so-lieu";
 import { metaLoc, TrangLoc } from "@/components/trang-du-doan-loc";
@@ -15,7 +14,7 @@ import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gi
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
-import { htftDiemTuan, keo3Tuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { htftDiemTuan, soLieuTuan } from "@/lib/du-doan-tuan";
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { ChuTy } from "@/components/ty-le";
@@ -69,7 +68,6 @@ export default async function TrangTran({ params }: Props) {
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
   const htftDiem = htftDiemTuan(slug);
-  const keo3 = keo3Tuan(slug);
   const lucLuong = lucLuongCua(slug);
   const cap = `${h.nha} vs ${h.khach}`;
   const cg = chuyenGiaCua(h);
@@ -102,7 +100,9 @@ export default async function TrangTran({ params }: Props) {
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}
       {/* Peter 14/11 "thấy hơi dư": bỏ bảng 10 trận gộp (thẻ từng đội phía dưới đã có) và 3 thẻ
           Hai đội ghi bàn · Over/Under 2.5 · Tỷ số chính xác (đã có ở khung trên cùng). */}
-      {htftDiem ? <TranHtftDiem k={htftDiem}>{keo3 && <TranKeo3 k={keo3} />}</TranHtftDiem> : keo3 && <TranKeo3 k={keo3} />}
+      {/* Peter 14/11 "A. Bỏ đi": bỏ 4 thẻ kèo phụ (Hiệp 1/Cả trận · Hòa hoàn tiền · Kết quả + hai đội ghi bàn ·
+          Kết quả + Over/Under), chỉ giữ hộp điểm tấn công/phòng ngự. */}
+      {htftDiem && <Diem k={htftDiem} />}
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
       {/* 14/11: trận có bài nhận định viết tay thì mang luôn thân bài — trang trận là bản chính
           (canonical), bản /analysis/{slug} trỏ canonical về đây. Trận tệp tuần không có bài. */}
@@ -114,7 +114,6 @@ export default async function TrangTran({ params }: Props) {
       <p className="mt-6 border-t border-line pt-4 text-[14px] text-muted">
         Tác giả:{" "}
         <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
-        {" · "}phụ trách {cg.phuTrach}
       </p>
 
       {lienQuan.ds.length > 0 && (
