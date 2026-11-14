@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { isFeatureEnabled } from "@/lib/data";
-import { fetchCompetitionTable } from "@/lib/standings";
+import { fetchCompetitionTable, type StandingTeam } from "@/lib/standings";
 import { getCompetitionForm, getKnockoutRounds, getStandingsCompetitions } from "@/lib/standings-extra";
 import { GroupTableWithTabs } from "@/components/standings-tabs";
 import { LeagueTable } from "@/components/standings-league";
@@ -67,6 +67,25 @@ function capNhatVN(): string {
   return `${p.hour}:${p.minute} ${p.day}/${p.month}/${p.year}`;
 }
 
+/**
+ * Một câu tóm tắt bảng (bản VI) cho đoạn mở đầu + meta description: đội đầu bảng,
+ * khoảng cách với đội nhì, nhóm cuối bảng. Chỉ dùng cho bảng phẳng một nhóm
+ * (Ngoại hạng Anh, La Liga…); bảng chia nhóm hoặc chưa đá trận nào → null.
+ */
+function tomTatBang(rows: StandingTeam[], compName: string): string | null {
+  if (rows.length < 4 || new Set(rows.map((r) => r.groupName).filter(Boolean)).size > 1) return null;
+  const bang = rows.slice().sort((a, b) => a.rank - b.rank);
+  const [nhat, nhi, ba] = bang;
+  const vong = Math.max(...bang.map((r) => r.played));
+  if (vong === 0) return null;
+  const cach = nhat.points - nhi.points;
+  const dau = cach === 0
+    ? `${nhat.name} và ${nhi.name} cùng ${nhat.points} điểm ở hai vị trí đầu`
+    : `${nhat.name} dẫn đầu với ${nhat.points} điểm, hơn ${nhi.name} ${cach} điểm`;
+  const cuoi = bang[bang.length - 1];
+  return `Bảng xếp hạng ${compName} sau ${vong} vòng: ${dau}, ${ba.name} thứ ba (${ba.points} điểm); ${cuoi.name} đứng cuối với ${cuoi.points} điểm. Kèm lịch thi đấu giờ Việt Nam, phong độ 5 trận và dự đoán tỷ số từng trận.`;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang: rawLang, slug } = await params;
   const lang = resolveLang(rawLang);
@@ -76,10 +95,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Tên bản địa hoá: bản VI dùng "Ngoại hạng Anh"/"Cúp C1" để bắt cầu tìm kiếm VN.
   const compName = localizedCompetitionName(slug, comp.name, lang);
-  const title = dict.standings.titleFor.replace("{name}", compName);
-  const description = dict.standings.descriptionFor
+  // Bản VI (14/11): GSC — trang đứng hạng 73, "đã thu thập nhưng chưa lập chỉ mục".
+  // Tiêu đề mang mùa + "lịch thi đấu & dự đoán"; mô tả nêu đội đầu bảng thật
+  // (bảng đã đệm 1 giờ trong fetchCompetitionTable) để mỗi giải một mô tả riêng.
+  const title = lang === "vi"
+    ? `${dict.standings.titleFor.replace("{name}", compName)}${comp.season ? ` ${comp.season}` : ""}, lịch thi đấu & dự đoán`
+    : dict.standings.titleFor.replace("{name}", compName);
+  const goc = dict.standings.descriptionFor
     .replace("{name}", compName)
     .replace("{season}", comp.season ?? "");
+  const bangMeta = lang === "vi" ? await fetchCompetitionTable(comp.livescoreId).catch(() => []) : [];
+  const description = tomTatBang(bangMeta, compName) ?? goc;
   return {
     title,
     description,
@@ -163,6 +189,7 @@ export default async function StandingSlugPage({ params }: Props) {
   }
 
   const sortedRows = rows.slice().sort((a, b) => a.rank - b.rank);
+  const tomTat = !isWorldCup && !hasGroups ? tomTatBang(sortedRows, compName) : null;
 
   // Chỉ hiện tab sân nhà / sân khách khi cộng hai bảng ra đúng bảng tổng ở mọi đội.
   const tenDoi = sortedRows.map((r) => r.name);
@@ -218,6 +245,20 @@ export default async function StandingSlugPage({ params }: Props) {
         {dict.standings.hubIntro && (
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted">
             {dict.standings.hubIntro.replace("{name}", compName)}
+          </p>
+        )}
+        {/* 14/11: đoạn mở đầu có số thật từ chính bảng bên dưới (đầu bảng, cách biệt,
+            cuối bảng) — trước đó đoạn intro giống hệt nhau ở mọi giải, chỉ đổi tên. */}
+        {lang === "vi" && tomTat && (
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-ink">
+            {tomTat}{" "}
+            <Link href={withLang(`/competitions/${slug}/fixtures`, lang)} className="text-brand hover:underline">
+              {`Lịch thi đấu ${compName} theo giờ Việt Nam`}
+            </Link>
+            {" · "}
+            <Link href={withLang(`/competitions/${slug}/form`, lang)} className="text-brand hover:underline">
+              {`Phong độ các đội`}
+            </Link>
           </p>
         )}
       </section>
