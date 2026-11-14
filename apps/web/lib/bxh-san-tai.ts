@@ -22,25 +22,33 @@ async function tranCuaGiaiImpl(livescoreId: number, tu: string, den: string): Pr
   if (!key || !secret) return [];
   const ra: TranDaDa[] = [];
   const thay = new Set<string>();
-  try {
-    for (let p = 1; p <= TRANG_TOI_DA; p++) {
+  type Trang = { success?: boolean; data?: { match?: TranGoc[]; total_pages?: number } };
+  const lay = async (p: number): Promise<Trang | null> => {
+    try {
       const res = await lsFetch(`${GOC}?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${tu}&to=${den}&page=${p}`, { cache: "no-store" });
-      if (!res.ok) break;
-      const j = (await res.json()) as { success?: boolean; data?: { match?: TranGoc[]; total_pages?: number } };
-      if (!j.success) break;
-      for (const g of j.data?.match ?? []) {
-        const t = doiTran(g);
-        if (!t) continue;
-        const khoa = `${t.home}|${t.away}|${t.kickoff}`;
-        if (thay.has(khoa)) continue;
-        thay.add(khoa);
-        ra.push({ home: t.home, away: t.away, kq: t.kq });
-      }
-      if (p >= (j.data?.total_pages ?? 1)) break;
+      if (!res.ok) return null;
+      const j = (await res.json()) as Trang;
+      return j.success ? j : null;
+    } catch {
+      return null;
     }
-  } catch {
-    /* giữ phần đã lấy */
-  }
+  };
+  const them = (j: Trang | null) => {
+    for (const g of j?.data?.match ?? []) {
+      const t = doiTran(g);
+      if (!t) continue;
+      const khoa = `${t.home}|${t.away}|${t.kickoff}`;
+      if (thay.has(khoa)) continue;
+      thay.add(khoa);
+      ra.push({ home: t.home, away: t.away, kq: t.kq });
+    }
+  };
+  // Trang 1 trước để biết tổng số trang, các trang còn lại gọi SONG SONG (tuần tự dễ vượt hạn giờ lúc dựng nguội).
+  const dau = await lay(1);
+  them(dau);
+  const tong = Math.min(dau?.data?.total_pages ?? 1, TRANG_TOI_DA);
+  const con = await Promise.all(Array.from({ length: Math.max(0, tong - 1) }, (_, i) => lay(i + 2)));
+  con.forEach(them);
   // Rỗng = coi như lỗi (không lưu cache); chỗ gọi .catch(() => []).
   if (ra.length === 0) throw new Error(`lịch sử giải ${livescoreId}: rỗng`);
   return ra;
