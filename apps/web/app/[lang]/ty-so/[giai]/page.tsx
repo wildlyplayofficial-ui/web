@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { metaTipGiai, TrangTipGiai } from "@/components/trang-tip-giai";
 import { resolveLang } from "@/lib/i18n";
 
-/** Tip theo giải, 7 ngày tới. Slug giải lấy từ GIAI_TRANG; slug lạ trả 404. */
+/** Tip theo giải, 10 ngày tới. Slug giải lấy từ GIAI_TRANG; slug lạ trả 404. */
 export const revalidate = 300;
 
 type Props = { params: Promise<{ lang: string; giai: string }> };

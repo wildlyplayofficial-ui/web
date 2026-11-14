@@ -174,7 +174,7 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     ...(xepDoiPhongDo(hang, homNay, lechNgay(homNay, 6), phongDoChungTuan).length > 0 ? ["/doi-phong-do-tot-nhat"] : []),
     ...ngaySau.filter((n) => cacXienNgay(hang.filter((h) => h.ngay === n), keoPhuTuan).length > 0).map((n) => duongDanNgay(n, homNay).replace("/du-doan", "/keo-xien")),
     ...GIAI_TRANG.map((g) => `/du-doan/${g.slug}`),
-    // Tip theo giải (14/11): chỉ nộp giải + loại có ít nhất một trận trong 7 ngày tới.
+    // Tip theo giải (14/11): chỉ nộp giải + loại có ít nhất một trận trong 10 ngày tới.
     ...giaiCoTip(hang, homNay, keoPhuTuan, undefined, Date.now()).map((x) => duongTipGiai(x.loai, x.giai)),
     ...ngaySau.map((n) => duongDanNgay(n, homNay)),
   ].map((p) => ({ url: `${BASE}${p}`, changeFrequency: "daily" as const, priority: 0.6, alternates: alternates(p) }));
