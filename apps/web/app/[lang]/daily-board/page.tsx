@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
-import { Suspense } from "react";
-import { DailyLineStrip } from "@/components/daily-line-strip";
 import { LiveCommentaryStrip } from "@/components/live-commentary-strip";
 import { MatchesWidget } from "@/components/matches-widget";
 import { PickCard } from "@/components/pick-card";
@@ -116,11 +114,6 @@ export default async function DailyBoard({ params }: Props) {
           </p>
         )}
       </section>
-
-      {/* Daily Line strip */}
-      <Suspense fallback={null}>
-        <DailyLineStrip lang={lang} />
-      </Suspense>
 
       {/* Live commentary snippet */}
       <LiveCommentaryStrip
