@@ -7,9 +7,9 @@ import { ngayVN } from "@/lib/du-doan-hang";
 import { lechNgay } from "@/lib/ket-qua";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { ngayThang, thuVN } from "@/lib/du-doan-tran";
-import { keoPhuTuan } from "@/lib/du-doan-tuan";
+import { keoPhuTuan, keoThangTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
-import { demNhom, dongTipNgay, type DongTip, type LoaiTip } from "@/lib/tip-ngay";
+import { demNhom, dongTipNgay, type DongTip, type LoaiTipNgay } from "@/lib/tip-ngay";
 import { Ty } from "@/components/ty-le";
 
 /**
@@ -29,7 +29,7 @@ interface CauHinh {
   moDau: string;
 }
 
-export const CAU_HINH: Record<LoaiTip, CauHinh> = {
+export const CAU_HINH: Record<LoaiTipNgay, CauHinh> = {
   "tai-xiu": {
     duong: "/tai-xiu-hom-nay",
     ten: "Tài xỉu",
@@ -46,6 +46,14 @@ export const CAU_HINH: Record<LoaiTip, CauHinh> = {
     cotTip: "Hai đội ghi bàn",
     moDau: "Mỗi đội ghi ít nhất một bàn trong 90 phút là Có; một đội trắng bàn là Không.",
   },
+  "thang-hai-doi-ghi-ban": {
+    duong: "/ca-2-doi-ghi-ban-thang-hom-nay",
+    ten: "Cả 2 đội ghi bàn + thắng",
+    tieuDe: "Cả 2 đội ghi bàn + thắng hôm nay",
+    mota: (n, ngay) => `Cả 2 đội ghi bàn và thắng hôm nay ${ngay}: ${n} trận, mỗi trận chọn nhà thắng hoặc khách thắng kèm việc cả hai đội cùng ghi bàn, có tỷ lệ và chuỗi 5 trận gần nhất. Giờ Việt Nam.`,
+    cotTip: "Thắng + hai đội ghi bàn",
+    moDau: "Một cược gộp hai điều kiện: đội được chọn thắng trong 90 phút và cả hai đội đều ghi ít nhất một bàn.",
+  },
   "ty-so": {
     duong: "/ty-so-hom-nay",
     ten: "Tỷ số",
@@ -56,14 +64,14 @@ export const CAU_HINH: Record<LoaiTip, CauHinh> = {
   },
 };
 
-export const LOAI_TIP = Object.keys(CAU_HINH) as LoaiTip[];
+export const LOAI_TIP = Object.keys(CAU_HINH) as LoaiTipNgay[];
 
 export type KyNgay = "hom-nay" | "ngay-mai";
 
 /** Cụm chữ theo ngày: bản "hôm nay" viết sẵn, bản "ngày mai" đổi cụm đó (Peter duyệt mục E, 14/11). */
 const chuNgay = (s: string, ky: KyNgay) => (ky === "hom-nay" ? s : s.replace(/hôm nay/gi, (m) => (m[0] === "H" ? "Ngày mai" : "ngày mai")).replace(/-hom-nay/g, "-ngay-mai"));
-export const duongTip = (loai: LoaiTip, ky: KyNgay) => chuNgay(CAU_HINH[loai].duong, ky);
-export const tieuDeTip = (loai: LoaiTip, ky: KyNgay) => chuNgay(CAU_HINH[loai].tieuDe, ky);
+export const duongTip = (loai: LoaiTipNgay, ky: KyNgay) => chuNgay(CAU_HINH[loai].duong, ky);
+export const tieuDeTip = (loai: LoaiTipNgay, ky: KyNgay) => chuNgay(CAU_HINH[loai].tieuDe, ky);
 
 /** Ngày (giờ VN) của trang: hôm nay hoặc ngày mai. */
 export const ngayCuaKy = (ky: KyNgay, bayGio = Date.now()) => {
@@ -72,15 +80,15 @@ export const ngayCuaKy = (ky: KyNgay, bayGio = Date.now()) => {
 };
 
 /** Các dòng của loại tip trong ngày `ky` (giờ VN). */
-export async function tipNgay(loai: LoaiTip, ky: KyNgay): Promise<{ homNay: string; ds: DongTip[] }> {
+export async function tipNgay(loai: LoaiTipNgay, ky: KyNgay): Promise<{ homNay: string; ds: DongTip[] }> {
   const homNay = ngayCuaKy(ky);
   const { hang } = await taiDuDoan();
-  return { homNay, ds: dongTipNgay(hang, homNay, loai, keoPhuTuan) };
+  return { homNay, ds: dongTipNgay(hang, homNay, loai, loai === "thang-hai-doi-ghi-ban" ? keoThangTuan : keoPhuTuan) };
 }
 
-export const tipHomNay = (loai: LoaiTip) => tipNgay(loai, "hom-nay");
+export const tipHomNay = (loai: LoaiTipNgay) => tipNgay(loai, "hom-nay");
 
-export function metaTipNgay(loai: LoaiTip, homNay: string, soTran: number, lang: Lang, ky: KyNgay = "hom-nay"): Metadata {
+export function metaTipNgay(loai: LoaiTipNgay, homNay: string, soTran: number, lang: Lang, ky: KyNgay = "hom-nay"): Metadata {
   const c = CAU_HINH[loai];
   const ngay = ngayThang(homNay);
   const title = `${tieuDeTip(loai, ky)} ${ngay}${soTran > 0 ? `: dự đoán ${soTran} trận` : ""}`;
@@ -121,9 +129,9 @@ function Chuoi({ c, ten, ky }: { c: boolean[] | null; ten: string; ky: [string, 
   );
 }
 
-const KY: Record<LoaiTip, [string, string]> = { "tai-xiu": ["T", "X"], "hai-doi-ghi-ban": ["✓", "✗"], "ty-so": ["", ""] };
+const KY: Record<LoaiTipNgay, [string, string]> = { "tai-xiu": ["T", "X"], "hai-doi-ghi-ban": ["✓", "✗"], "thang-hai-doi-ghi-ban": ["✓", "✗"], "ty-so": ["", ""] };
 
-export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTip; lang: Lang }) {
+export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTipNgay; lang: Lang }) {
   const { h } = d;
   const coChuoi = loai !== "ty-so" && (d.chuoiNha || d.chuoiKhach);
   return (
@@ -169,7 +177,7 @@ export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTip; lang
   );
 }
 
-const KE_BEN: Record<LoaiTip, ReadonlyArray<{ hoi: string; dap: string }>> = {
+const KE_BEN: Record<LoaiTipNgay, ReadonlyArray<{ hoi: string; dap: string }>> = {
   "tai-xiu": [
     { hoi: "Tài xỉu 2.5 bàn là gì?", dap: "Chọn tổng số bàn thắng của cả hai đội trong 90 phút: Tài là từ 3 bàn trở lên, Xỉu là 2 bàn trở xuống. Mốc 2.5 không có trường hợp hoà nên luôn ra một bên." },
     { hoi: "Chuỗi T và X dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng chữ T là trận có từ 3 bàn trở lên, ô viền chữ X là trận ít hơn. Trận cũ nhất bên trái, mới nhất bên phải." },
@@ -180,13 +188,18 @@ const KE_BEN: Record<LoaiTip, ReadonlyArray<{ hoi: string; dap: string }>> = {
     { hoi: "Chuỗi ✓ và ✗ dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng dấu ✓ là trận cả hai đội cùng ghi bàn, ô viền dấu ✗ là trận có đội trắng bàn. Trận cũ nhất bên trái, mới nhất bên phải." },
     { hoi: "Bàn thắng phản lưới có tính không?", dap: "Có. Bàn phản lưới được tính cho đội hưởng bàn thắng, nên đội đó vẫn được coi là đã ghi bàn." },
   ],
+  "thang-hai-doi-ghi-ban": [
+    { hoi: "Cả 2 đội ghi bàn + thắng nghĩa là gì?", dap: "Hai điều kiện phải cùng đúng trong 90 phút: đội được chọn thắng chung cuộc và cả hai đội đều ghi ít nhất một bàn. Ví dụ 2-1 cho đội nhà là đúng, 1-0 hay 3-0 là sai." },
+    { hoi: "Vì sao mỗi trận chỉ nêu một cửa?", dap: "Mỗi trận trang chọn cửa thắng có tỷ lệ thấp hơn trong hai cửa nhà thắng hoặc khách thắng, vì tỷ lệ thấp hơn nghĩa là cửa được đánh giá dễ xảy ra hơn. Bấm vào trận để xem đủ các cửa còn lại." },
+    { hoi: "Chuỗi ✓ và ✗ dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng dấu ✓ là trận cả hai đội cùng ghi bàn, ô viền dấu ✗ là trận có đội trắng bàn. Trận cũ nhất bên trái, mới nhất bên phải." },
+  ],
   "ty-so": [
     { hoi: "Tỷ số dự đoán lấy từ đâu?", dap: "Mỗi trận có một tỷ số chính xác từ nguồn dự đoán của trang, kèm tỷ lệ của đúng tỷ số đó. Bấm vào trận để xem thêm phong độ, đối đầu và các số liệu khác." },
     { hoi: "Vì sao tỷ lệ tỷ số chính xác cao?", dap: "Một trận có rất nhiều tỷ số có thể xảy ra, đoán trúng đúng một tỷ số khó hơn nhiều so với đoán đội thắng, nên tỷ lệ thường từ 6 đến 15 hoặc hơn." },
   ],
 };
 
-export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai: LoaiTip; homNay: string; ds: DongTip[]; lang: Lang; ky?: KyNgay }) {
+export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai: LoaiTipNgay; homNay: string; ds: DongTip[]; lang: Lang; ky?: KyNgay }) {
   const c = CAU_HINH[loai];
   const ngay = ngayThang(homNay);
   const dem = demNhom(ds);
@@ -251,7 +264,7 @@ export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai:
           return (
             <section key={ten} className="mt-5">
               <h2 className="flex items-baseline gap-2 border-b border-line pb-2 font-display text-[19px] font-bold leading-snug sm:text-[22px]">
-                {ten} {ky === "hom-nay" ? "hôm nay" : "ngày mai"}
+                {loai === "thang-hai-doi-ghi-ban" ? `${ten} + cả 2 đội ghi bàn` : `${ten} ${ky === "hom-nay" ? "hôm nay" : "ngày mai"}`}
                 <span className="text-[13px] font-normal text-muted">{trong.length} trận</span>
               </h2>
               <ul>

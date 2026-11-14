@@ -29,6 +29,7 @@ export function Footer() {
         { href: "/keo-xien", label: dict.nav.parlay },
         { href: "/tai-xiu-hom-nay", label: "Tài xỉu hôm nay" },
         { href: "/ca-2-doi-ghi-ban-hom-nay", label: "Cả 2 đội ghi bàn" },
+        { href: "/ca-2-doi-ghi-ban-thang-hom-nay", label: "Cả 2 đội ghi bàn + thắng" },
         { href: "/ty-so-hom-nay", label: "Tỷ số hôm nay" },
         { href: "/tai-xiu-ngay-mai", label: "Tài xỉu ngày mai" },
         { href: "/ca-2-doi-ghi-ban-ngay-mai", label: "Cả 2 đội ghi bàn ngày mai" },

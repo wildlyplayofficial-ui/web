@@ -11,7 +11,8 @@ import { xepDoiPhongDo } from "@/lib/doi-phong-do";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { duongTipGiai, giaiCoTip } from "@/lib/tip-giai";
 import { ngayVN } from "@/lib/du-doan-hang";
-import { keoPhuTuan, phongDoChungTuan } from "@/lib/du-doan-tuan";
+import { keoPhuTuan, keoThangTuan, phongDoChungTuan } from "@/lib/du-doan-tuan";
+import { dongTipNgay } from "@/lib/tip-ngay";
 import { cacXienNgay } from "@/lib/xien";
 import { CHU_DE, xienChuDeTheoNgay } from "@/lib/xien-chu-de";
 import { duDoanCua } from "@/lib/du-doan-nguon";
@@ -160,6 +161,9 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     "/ty-so-hom-nay",
     // Bản ngày mai: chỉ nộp khi ngày mai có trận (trang rỗng là noindex).
     ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/tai-xiu-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
+    // Cả 2 đội ghi bàn + thắng: mỗi ngày chỉ nộp khi có ít nhất một trận đủ số liệu (15/11).
+    ...(dongTipNgay(hang, homNay, "thang-hai-doi-ghi-ban", keoThangTuan).length > 0 ? ["/ca-2-doi-ghi-ban-thang-hom-nay"] : []),
+    ...(dongTipNgay(hang, lechNgay(homNay, 1), "thang-hai-doi-ghi-ban", keoThangTuan).length > 0 ? ["/ca-2-doi-ghi-ban-thang-ngay-mai"] : []),
     "/chuoi-dang-chu-y",
     // Đội phong độ tốt nhất: chỉ nộp khi có ít nhất một đội đủ số liệu (trang rỗng là noindex).
     ...(xepDoiPhongDo(hang, homNay, lechNgay(homNay, 6), phongDoChungTuan).length > 0 ? ["/doi-phong-do-tot-nhat"] : []),
