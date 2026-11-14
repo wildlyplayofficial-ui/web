@@ -1,6 +1,6 @@
 /**
  * Nạp các trận đã đá của MỘT giải (livescore matches/history.json, có phân trang)
- * để dựng bảng sân nhà / sân khách. Lỗi/quá hạn → trả phần đã lấy được; chốt khớp bảng tổng nằm ở khopBangTong.
+ * để dựng bảng sân nhà / sân khách. Thiếu bất kỳ trang nào → NÉM LỖI (không để cache giữ bản dở); chốt khớp bảng tổng nằm ở khopBangTong.
  */
 import { unstable_cache } from "next/cache";
 import { lsFetch } from "./ls-fetch";
@@ -8,7 +8,8 @@ import { doiTran, type TranGoc } from "./ket-qua-ls";
 import type { TranDaDa } from "./bxh-san";
 
 const GOC = "https://livescore-api.com/api-client/matches/history.json";
-const TRANG_TOI_DA = 6;
+// Một mùa châu Âu giữa chừng ~200-300 trận; dư để cuối mùa không bị cắt (cắt = bảng sân lệch bảng tổng).
+const TRANG_TOI_DA = 14;
 
 /** Mùa châu Âu bắt đầu quanh tháng 8: lấy từ 1/7 gần nhất. */
 export function dauMua(nay: Date): string {
@@ -23,7 +24,7 @@ async function tranCuaGiaiImpl(livescoreId: number, tu: string, den: string): Pr
   const ra: TranDaDa[] = [];
   const thay = new Set<string>();
   type Trang = { success?: boolean; data?: { match?: TranGoc[]; total_pages?: number } };
-  const lay = async (p: number): Promise<Trang | null> => {
+  const layMot = async (p: number): Promise<Trang | null> => {
     try {
       const res = await lsFetch(`${GOC}?competition_id=${livescoreId}&key=${key}&secret=${secret}&from=${tu}&to=${den}&page=${p}`, { cache: "no-store" });
       if (!res.ok) return null;
@@ -33,6 +34,8 @@ async function tranCuaGiaiImpl(livescoreId: number, tu: string, den: string): Pr
       return null;
     }
   };
+  // Thử lại 1 lần: lỗi/quá hạn thoáng qua là nguyên nhân bảng sân nhà/khách chớp "Chưa có dữ liệu".
+  const lay = async (p: number): Promise<Trang | null> => (await layMot(p)) ?? (await layMot(p));
   const them = (j: Trang | null) => {
     for (const g of j?.data?.match ?? []) {
       const t = doiTran(g);
@@ -45,11 +48,14 @@ async function tranCuaGiaiImpl(livescoreId: number, tu: string, den: string): Pr
   };
   // Trang 1 trước để biết tổng số trang, các trang còn lại gọi SONG SONG (tuần tự dễ vượt hạn giờ lúc dựng nguội).
   const dau = await lay(1);
+  if (!dau) throw new Error(`lịch sử giải ${livescoreId}: trang 1 lỗi`);
   them(dau);
-  const tong = Math.min(dau?.data?.total_pages ?? 1, TRANG_TOI_DA);
+  const tong = dau.data?.total_pages ?? 1;
+  if (tong > TRANG_TOI_DA) throw new Error(`lịch sử giải ${livescoreId}: ${tong} trang, quá trần ${TRANG_TOI_DA}`);
   const con = await Promise.all(Array.from({ length: Math.max(0, tong - 1) }, (_, i) => lay(i + 2)));
+  // THIẾU trang nào cũng NÉM LỖI: trả phần dở thì unstable_cache lưu 1 giờ và bảng sân lệch bảng tổng cả giờ.
+  if (con.some((j) => j === null)) throw new Error(`lịch sử giải ${livescoreId}: thiếu trang`);
   con.forEach(them);
-  // Rỗng = coi như lỗi (không lưu cache); chỗ gọi .catch(() => []).
   if (ra.length === 0) throw new Error(`lịch sử giải ${livescoreId}: rỗng`);
   return ra;
 }
