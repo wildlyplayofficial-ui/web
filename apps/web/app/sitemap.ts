@@ -9,7 +9,8 @@ import { newsDuocIndex, analysisDuocIndex, tranDuocIndex, NHOM_SITEMAP, type Nho
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { xepDoiPhongDo } from "@/lib/doi-phong-do";
 import { duongDanNgay, GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
-import { duongTipGiai, giaiCoTip } from "@/lib/tip-giai";
+import { duongTipGiai, giaiCoTip, GOC_TIP_GIAI } from "@/lib/tip-giai";
+import { dongTipNgay, type LoaiTip } from "@/lib/tip-ngay";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { keoPhuTuan, phongDoChungTuan } from "@/lib/du-doan-tuan";
 import { cacXienNgay } from "@/lib/xien";
@@ -160,6 +161,10 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     "/ty-so-hom-nay",
     // Bản ngày mai: chỉ nộp khi ngày mai có trận (trang rỗng là noindex).
     ...(hang.some((h) => h.ngay === lechNgay(homNay, 1)) ? ["/tai-xiu-ngay-mai", "/ca-2-doi-ghi-ban-ngay-mai", "/ty-so-ngay-mai"] : []),
+    // Tip theo ngày cụ thể (3 ngày sau ngày mai, mục I 14/11): chỉ nộp ngày + loại có ít nhất một dòng tip.
+    ...([2, 3, 4] as const).flatMap((i) =>
+      (Object.keys(GOC_TIP_GIAI) as LoaiTip[]).flatMap((l) => (dongTipNgay(hang, lechNgay(homNay, i), l, keoPhuTuan).length > 0 ? [`${GOC_TIP_GIAI[l]}/ngay/${lechNgay(homNay, i)}`] : [])),
+    ),
     "/chuoi-dang-chu-y",
     // Đội phong độ tốt nhất: chỉ nộp khi có ít nhất một đội đủ số liệu (trang rỗng là noindex).
     ...(xepDoiPhongDo(hang, homNay, lechNgay(homNay, 6), phongDoChungTuan).length > 0 ? ["/doi-phong-do-tot-nhat"] : []),

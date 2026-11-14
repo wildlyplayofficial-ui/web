@@ -10,6 +10,7 @@ import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demNhom, dongTipNgay, type DongTip, type LoaiTip } from "@/lib/tip-ngay";
+import { ChonNgayTip } from "@/components/chon-ngay-tip";
 import { Ty } from "@/components/ty-le";
 
 /**
@@ -58,17 +59,26 @@ export const CAU_HINH: Record<LoaiTip, CauHinh> = {
 
 export const LOAI_TIP = Object.keys(CAU_HINH) as LoaiTip[];
 
-export type KyNgay = "hom-nay" | "ngay-mai";
+/** Kỳ của trang: hôm nay, ngày mai, hoặc một ngày cụ thể YYYY-MM-DD (3 ngày kế sau ngày mai, mục I 14/11). */
+export type KyNgay = "hom-nay" | "ngay-mai" | `${number}-${number}-${number}`;
 
-/** Cụm chữ theo ngày: bản "hôm nay" viết sẵn, bản "ngày mai" đổi cụm đó (Peter duyệt mục E, 14/11). */
-const chuNgay = (s: string, ky: KyNgay) => (ky === "hom-nay" ? s : s.replace(/hôm nay/gi, (m) => (m[0] === "H" ? "Ngày mai" : "ngày mai")).replace(/-hom-nay/g, "-ngay-mai"));
-export const duongTip = (loai: LoaiTip, ky: KyNgay) => chuNgay(CAU_HINH[loai].duong, ky);
+/** Cụm chữ theo kỳ: "hôm nay" / "ngày mai" / "Thứ Hai". */
+export const nhanKy = (ky: KyNgay) => (ky === "hom-nay" ? "hôm nay" : ky === "ngay-mai" ? "ngày mai" : thuVN(ky));
+const hoa = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+/** Bản "hôm nay" viết sẵn, các kỳ khác đổi cụm đó (Peter duyệt mục E, 14/11). */
+const chuNgay = (s: string, ky: KyNgay) => (ky === "hom-nay" ? s : s.replace(/hôm nay/gi, (m) => (m[0] === "H" ? hoa(nhanKy(ky)) : nhanKy(ky))));
+/** Hôm nay / ngày mai giữ đường cũ; ngày khác: /tai-xiu/ngay/2026-11-17. */
+export const duongTip = (loai: LoaiTip, ky: KyNgay) => {
+  const d = CAU_HINH[loai].duong;
+  return ky === "hom-nay" ? d : ky === "ngay-mai" ? d.replace("-hom-nay", "-ngay-mai") : `${d.replace("-hom-nay", "")}/ngay/${ky}`;
+};
 export const tieuDeTip = (loai: LoaiTip, ky: KyNgay) => chuNgay(CAU_HINH[loai].tieuDe, ky);
 
-/** Ngày (giờ VN) của trang: hôm nay hoặc ngày mai. */
+/** Ngày (giờ VN) của trang. */
 export const ngayCuaKy = (ky: KyNgay, bayGio = Date.now()) => {
   const homNay = ngayVN(bayGio);
-  return ky === "hom-nay" ? homNay : lechNgay(homNay, 1);
+  return ky === "hom-nay" ? homNay : ky === "ngay-mai" ? lechNgay(homNay, 1) : ky;
 };
 
 /** Các dòng của loại tip trong ngày `ky` (giờ VN). */
@@ -89,7 +99,7 @@ export function metaTipNgay(loai: LoaiTip, homNay: string, soTran: number, lang:
     title,
     description,
     alternates: buildAlternates(duongTip(loai, ky), lang),
-    ...(ky === "ngay-mai" && soTran === 0 ? { robots: { index: false, follow: true } } : {}),
+    ...(ky !== "hom-nay" && soTran === 0 ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       locale: "vi_VN",
       title: `${title} | banhbong.net`,
@@ -203,30 +213,19 @@ export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai:
         <span aria-hidden>›</span>
         <Link href={withLang("/du-doan", lang)} className={MANH}>Dự đoán</Link>
         <span aria-hidden>›</span>
-        <span className="text-ink">{c.ten} {ky === "hom-nay" ? "hôm nay" : "ngày mai"}</span>
+        <span className="text-ink">{c.ten} {nhanKy(ky)}</span>
       </nav>
 
       <h1 className="mt-2 font-display text-[22px] font-bold leading-tight sm:text-[30px]">
-        {tieuDeTip(loai, ky)}, {thuVN(homNay)} {ngay}
+        {tieuDeTip(loai, ky)}{ky === "hom-nay" || ky === "ngay-mai" ? `, ${thuVN(homNay)}` : ""} {ngay}
       </h1>
       <p className="mt-1.5 text-[15px] leading-relaxed">
         {ds.length > 0
           ? `${ds.length} trận ở ${soGiai} giải, giờ Việt Nam. ${c.moDau}`
-          : `${ky === "hom-nay" ? "Hôm nay" : "Ngày mai"} chưa có trận nào có tip ${c.ten.toLowerCase()}. Dữ liệu cập nhật theo từng ngày, bạn có thể xem dự đoán các ngày khác ở trang Dự đoán.`}
+          : `${hoa(nhanKy(ky))} chưa có trận nào có tip ${c.ten.toLowerCase()}. Dữ liệu cập nhật theo từng ngày, bạn có thể xem dự đoán các ngày khác ở trang Dự đoán.`}
       </p>
 
-      <nav aria-label="Chọn ngày" className="mt-3 flex gap-2">
-        {(["hom-nay", "ngay-mai"] as const).map((k) => (
-          <Link
-            key={k}
-            href={withLang(duongTip(loai, k), lang)}
-            aria-current={k === ky ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 text-sm font-semibold ${k === ky ? "border-brand text-brand" : "border-line text-muted hover:text-ink"}`}
-          >
-            {c.ten} {k === "hom-nay" ? "hôm nay" : "ngày mai"}
-          </Link>
-        ))}
-      </nav>
+      <ChonNgayTip loai={loai} ky={ky} lang={lang} />
 
       <nav aria-label="Dự đoán theo loại kèo" className="mt-2 flex flex-wrap gap-2">
         {khac.map((l) => (
@@ -251,7 +250,7 @@ export function TrangTipNgay({ loai, homNay, ds, lang, ky = "hom-nay" }: { loai:
           return (
             <section key={ten} className="mt-5">
               <h2 className="flex items-baseline gap-2 border-b border-line pb-2 font-display text-[19px] font-bold leading-snug sm:text-[22px]">
-                {ten} {ky === "hom-nay" ? "hôm nay" : "ngày mai"}
+                {ten} {nhanKy(ky)}
                 <span className="text-[13px] font-normal text-muted">{trong.length} trận</span>
               </h2>
               <ul>

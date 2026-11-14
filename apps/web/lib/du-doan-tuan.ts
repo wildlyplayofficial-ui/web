@@ -66,6 +66,13 @@ const TEN_LOGO: Record<string, string> = {
 };
 export const logo = (ten: string) => teamBadge(TEN_LOGO[ten] ?? ten);
 
+/**
+ * Trùng tên khác CLB: bảng logo khớp theo tên đã rút "FC", nên "Liverpool FC" của Uruguay (Montevideo) dính
+ * huy hiệu Liverpool nước Anh. Giải nằm trong danh sách này thì KHÔNG tra theo tên (để trống, hiện chữ viết tắt).
+ */
+const TRUNG_TEN: ReadonlyArray<{ ten: string; giai: RegExp }> = [{ ten: "Liverpool FC", giai: /^Uruguay\b/ }];
+export const logoTheoGiai = (ten: string, giai: string) => (TRUNG_TEN.some((x) => x.ten === ten && x.giai.test(giai)) ? null : logo(ten));
+
 const KQ_ANH: Record<string, KQ> = { W: "T", D: "H", L: "B" };
 const docForm = (s: string): KQ[] | null => {
   const kq = [...s].map((c) => KQ_ANH[c]).filter(Boolean);
@@ -123,8 +130,8 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       gio: d.gioUtc ? gioVN(d.gioUtc) : "--:--",
       nha: d.nha,
       khach: d.khach,
-      logoNha: logo(d.nha),
-      logoKhach: logo(d.khach),
+      logoNha: logoTheoGiai(d.nha, d.giai),
+      logoKhach: logoTheoGiai(d.khach, d.giai),
       anhNha: null,
       anhKhach: null,
       creditAnh: null,
