@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { HtftDiem } from "@/lib/du-doan-tuan";
-import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docDiemChung, docHtft, KHOA_HTFT, xacSuatTheoHang } from "@/lib/tran-htft";
+import { cauDiem, cauHtft, cuaNoiNhat, DIEM_TOI_DA, docDiem, docDiemChung, docHtft, docXuHuong, KHOA_HTFT, xacSuatTheoHang, type XuHuong } from "@/lib/tran-htft";
 import { tenDoiViet } from "@/lib/ten-viet";
 import { ChuTy, Ty } from "@/components/ty-le";
 
@@ -62,7 +62,13 @@ function Cham({ v }: { v: number }) {
   );
 }
 
-function DongDiem({ ten, v, chung }: { ten: string; v: [number, number]; chung: number | null }) {
+const MUI: Record<XuHuong, { k: string; cls: string; nhan: string }> = {
+  len: { k: "▲", cls: "text-brand", nhan: "đang lên" },
+  ngang: { k: "▶", cls: "text-muted", nhan: "đi ngang" },
+  xuong: { k: "▼", cls: "text-loss", nhan: "đang xuống" },
+};
+
+function DongDiem({ ten, v, chung, xh }: { ten: string; v: [number, number]; chung: number | null; xh: (XuHuong | null)[] }) {
   return (
     <div className="py-2.5">
       <p className="truncate text-sm font-semibold">{ten}</p>
@@ -74,11 +80,18 @@ function DongDiem({ ten, v, chung }: { ten: string; v: [number, number]; chung: 
             <span className="w-[72px] shrink-0 leading-tight text-muted">{nhan}</span>
             <Cham v={x} />
             <b className="font-display tabular-nums">{x}/{DIEM_TOI_DA}</b>
+            {xh[i] ? <span role="img" aria-label={`Xu hướng ${MUI[xh[i]!].nhan}`} title={`Xu hướng ${MUI[xh[i]!].nhan}`} className={`text-[10px] leading-none ${MUI[xh[i]!].cls}`}>{MUI[xh[i]!].k}</span> : null}
           </p>
         );
       })}
     </div>
   );
+}
+
+/** Theo thứ tự hàng hiển thị: Tấn công, Phòng ngự, Phong độ chung. */
+function xhDoi(k: HtftDiem, doi: "n" | "k"): (XuHuong | null)[] {
+  const x = k.diem?.xh;
+  return [docXuHuong(x, doi, 1), docXuHuong(x, doi, 2), docXuHuong(x, doi, 0)];
 }
 
 function Diem({ k }: { k: HtftDiem }) {
@@ -91,8 +104,8 @@ function Diem({ k }: { k: HtftDiem }) {
     <section className={O}>
       <h2 className={NHAN}>Điểm tấn công / phòng ngự</h2>
       <div className="mt-1 max-w-[560px] divide-y divide-line">
-        <DongDiem ten={nha} v={n} chung={docDiemChung(k.diem?.c, 0)} />
-        <DongDiem ten={khach} v={kh} chung={docDiemChung(k.diem?.c, 1)} />
+        <DongDiem ten={nha} v={n} chung={docDiemChung(k.diem?.c, 0)} xh={xhDoi(k, "n")} />
+        <DongDiem ten={khach} v={kh} chung={docDiemChung(k.diem?.c, 1)} xh={xhDoi(k, "k")} />
       </div>
       <p className="max-w-[560px] border-t border-line pt-2 text-[13px] leading-relaxed text-muted">
         {cauDiem(nha, k.diem?.n)} {cauDiem(khach, k.diem?.k)}{" "}

@@ -1,6 +1,6 @@
 // Chạy như lib/du-doan.test.ts (mượn vitest của apps/worker).
 import { describe, expect, it } from "vitest";
-import { cauDiem, cauHtft, cuaNoiNhat, docDiem, docHtft, KHOA_HTFT, nhanCua, xacSuatTheoHang } from "./tran-htft";
+import { cauDiem, cauHtft, cuaNoiNhat, docDiem, docHtft, docXuHuong, KHOA_HTFT, nhanCua, xacSuatTheoHang } from "./tran-htft";
 
 const ODDS = { HH: 2.45, DH: 4.15, AH: 30, DD: 4.85, HD: 19, AD: 19, AA: 11, DA: 12.5, HA: 54 };
 
@@ -60,5 +60,18 @@ describe("điểm tấn công / phòng ngự", () => {
     expect(docDiem([3])).toBeNull();
     expect(docDiem(undefined)).toBeNull();
     expect(cauDiem("X", [2.5, 3])).toBeNull();
+  });
+});
+
+describe("docXuHuong", () => {
+  const xh = { n: ["len", "ngang", "xuong"], k: [null, "la", "len"] };
+  it("đọc đúng thứ tự Overall, Scoring, Defence", () => {
+    expect(docXuHuong(xh, "n", 0)).toBe("len");
+    expect(docXuHuong(xh, "n", 2)).toBe("xuong");
+  });
+  it("ô null, giá trị lạ hoặc thiếu khoá thì không hiện", () => {
+    expect(docXuHuong(xh, "k", 0)).toBeNull();
+    expect(docXuHuong(xh, "k", 1)).toBeNull();
+    expect(docXuHuong(undefined, "n", 0)).toBeNull();
   });
 });

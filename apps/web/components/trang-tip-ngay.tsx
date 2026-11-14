@@ -195,13 +195,13 @@ const KE_BEN: Record<LoaiTipNgay, ReadonlyArray<{ hoi: string; dap: string }>> =
   ],
   "hai-doi-ghi-ban": [
     { hoi: "Cả 2 đội ghi bàn nghĩa là gì?", dap: "Mỗi đội ghi ít nhất một bàn trong 90 phút thì kết quả là Có. Chỉ cần một đội không ghi được bàn nào là Không, bất kể trận kết thúc ra sao." },
-    { hoi: "Chuỗi ✓ và ✗ dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng dấu ✓ là trận cả hai đội cùng ghi bàn, ô viền dấu ✗ là trận có đội trắng bàn. Trận cũ nhất bên trái, mới nhất bên phải." },
+    { hoi: "Chuỗi ✓ và ✗ ở hàng phụ của mỗi đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng dấu ✓ là trận cả hai đội cùng ghi bàn, ô viền dấu ✗ là trận có đội trắng bàn. Trận cũ nhất bên trái, mới nhất bên phải." },
     { hoi: "Bàn thắng phản lưới có tính không?", dap: "Có. Bàn phản lưới được tính cho đội hưởng bàn thắng, nên đội đó vẫn được coi là đã ghi bàn." },
   ],
   "thang-hai-doi-ghi-ban": [
     { hoi: "Cả 2 đội ghi bàn + thắng nghĩa là gì?", dap: "Hai điều kiện phải cùng đúng trong 90 phút: đội được chọn thắng chung cuộc và cả hai đội đều ghi ít nhất một bàn. Ví dụ 2-1 cho đội nhà là đúng, 1-0 hay 3-0 là sai." },
     { hoi: "Vì sao mỗi trận chỉ nêu một cửa?", dap: "Mỗi trận trang chọn cửa thắng có tỷ lệ thấp hơn trong hai cửa nhà thắng hoặc khách thắng, vì tỷ lệ thấp hơn nghĩa là cửa được đánh giá dễ xảy ra hơn. Bấm vào trận để xem đủ các cửa còn lại." },
-    { hoi: "Chuỗi ✓ và ✗ dưới tên đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng dấu ✓ là trận cả hai đội cùng ghi bàn, ô viền dấu ✗ là trận có đội trắng bàn. Trận cũ nhất bên trái, mới nhất bên phải." },
+    { hoi: "Chuỗi ✓ và ✗ ở hàng phụ của mỗi đội là gì?", dap: "Là 5 trận gần nhất của từng đội: ô sáng dấu ✓ là trận cả hai đội cùng ghi bàn, ô viền dấu ✗ là trận có đội trắng bàn. Trận cũ nhất bên trái, mới nhất bên phải." },
   ],
   "ty-so": [
     { hoi: "Tỷ số dự đoán lấy từ đâu?", dap: "Mỗi trận có một tỷ số chính xác từ nguồn dự đoán của trang, kèm tỷ lệ của đúng tỷ số đó. Bấm vào trận để xem thêm phong độ, đối đầu và các số liệu khác." },
