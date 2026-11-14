@@ -4,7 +4,6 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { HtmlLang } from "@/components/html-lang";
 import { LiveTicker } from "@/components/live-ticker";
-import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { COMPETITION_LOGOS } from "@/lib/competition-logos";
 import { PUBLIC_LANGS, type Lang } from "@/lib/i18n";
@@ -84,7 +83,6 @@ export default async function LangLayout({
         <Footer />
       </Suspense>
       <Suspense fallback={null}>
-        <PwaInstallPrompt />
       </Suspense>
     </>
   );
