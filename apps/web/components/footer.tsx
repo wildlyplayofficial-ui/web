@@ -7,34 +7,73 @@ import { trackTgFollowClick } from "@/lib/analytics";
 import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 import { BrandMark } from "./brand-mark";
 
+type FooterLink = { href: string; label: string };
+
 export function Footer() {
   const params = useParams<{ lang: string }>();
   const lang = resolveLang(params.lang);
   const dict = getDict(lang);
 
-  const links: ReadonlyArray<{ href: string; label: string }> = [
-    // Peter 11/11: bỏ Bảng Dự Đoán, Thành Tích, Minh Bạch, Học Hỏi; Blog + Giới Thiệu chỉ ở đây.
-    { href: "/du-doan", label: dict.nav.predictions },
-    { href: "/ket-qua", label: dict.nav.results },
-    { href: "/matches", label: dict.nav.matches },
-    { href: "/competitions", label: dict.nav.standings },
-    { href: "/news", label: dict.nav.news },
-    // Blog phải có mặt Ở ĐÂY chứ không chỉ trong menu thả xuống ở đầu trang: menu đó
-    // nằm trong component client, không có trong HTML máy chủ trả về, nên Google
-    // không thấy đường nào bò vào /blog. Đo 30/8: trang chủ có /learn, /guides,
-    // /calculators (đều từ chân trang này) nhưng KHÔNG có /blog lần nào.
-    { href: "/blog", label: dict.nav.blog },
-    { href: "/analysis", label: dict.nav.analysis },
-    { href: "/guides", label: dict.nav.guides },
-    { href: "/calculators", label: dict.nav.calculators },
-    { href: "/about", label: dict.nav.about },
-    { href: "/responsible-play", label: dict.nav.responsiblePlay },
+  // 14/11/2026 Peter: "không gỡ mà nên gom, để index toàn trang" — chân trang chia
+  // nhóm, dẫn tới mọi mục công khai. Đây là đường link nội bộ duy nhất có trong HTML
+  // máy chủ trả về (menu thả xuống ở đầu trang là client) nên Google bò theo đường này
+  // (đo 30/8: /blog chỉ được thấy khi có ở chân trang). Peter 11/11 đã bỏ Bảng Dự Đoán,
+  // Thành Tích, Minh Bạch, Học Hỏi khỏi chân trang — giữ nguyên. Hub đội ghi tay (khớp
+  // TEAM_HUBS trong lib/teams.ts) để không kéo bảng logo vào bundle client.
+  const groups: ReadonlyArray<{ title: string; links: ReadonlyArray<FooterLink> }> = [
+    {
+      title: "Dự đoán & kèo",
+      links: [
+        { href: "/du-doan", label: dict.nav.predictions },
+        { href: "/keo-xien", label: dict.nav.parlay },
+        { href: "/ket-qua", label: dict.nav.results },
+        { href: "/matches", label: dict.nav.matches },
+      ],
+    },
+    {
+      title: "Bài viết",
+      links: [
+        { href: "/news", label: dict.nav.news },
+        { href: "/analysis", label: dict.nav.analysis },
+        { href: "/blog", label: dict.nav.blog },
+        { href: "/guides", label: dict.nav.guides },
+      ],
+    },
+    {
+      title: "Giải & đội",
+      links: [
+        { href: "/competitions", label: dict.nav.standings },
+        { href: "/doi/man-united", label: "Manchester United" },
+        { href: "/doi/arsenal", label: "Arsenal" },
+        { href: "/doi/chelsea", label: "Chelsea" },
+        { href: "/doi/man-city", label: "Manchester City" },
+        { href: "/doi/vietnam", label: "Việt Nam" },
+      ],
+    },
+    {
+      title: "Công cụ & dữ liệu",
+      links: [
+        { href: "/calculators", label: dict.nav.calculators },
+        { href: "/stats", label: dict.nav.stats },
+        { href: "/archive", label: dict.nav.archive },
+      ],
+    },
+    {
+      title: "Về banhbong",
+      links: [
+        { href: "/about", label: dict.nav.about },
+        { href: "/tac-gia/pete-nguyen", label: "Tác giả" },
+        { href: "/responsible-play", label: dict.nav.responsiblePlay },
+      ],
+    },
   ];
+
+  const linkClass = "text-sm text-muted transition-colors hover:text-brand";
 
   return (
     <footer className="mt-16 border-t border-line py-12">
-      <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-6 px-5 text-center">
-        <div>
+      <div className="mx-auto flex max-w-[1100px] flex-col gap-8 px-5">
+        <div className="text-center">
           <span className="inline-flex items-center justify-center gap-2 font-display text-xl font-bold">
             <BrandMark size={22} />
             <span>
@@ -44,28 +83,39 @@ export function Footer() {
           </span>
           <p className="mt-2 text-sm text-muted">{dict.footerDisclaimer}</p>
         </div>
-        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={withLang(link.href, lang)}
-              className="text-sm text-muted transition-colors hover:text-brand"
-            >
-              {link.label}
-            </Link>
+        <nav className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+          {groups.map((g) => (
+            <div key={g.title}>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink">{g.title}</p>
+              <ul className="flex flex-col gap-2">
+                {g.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={withLang(link.href, lang)} className={linkClass}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                {g.title === "Về banhbong" && (
+                  <li>
+                    <a
+                      href="https://t.me/banhbongnet"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={linkClass}
+                      onClick={trackTgFollowClick}
+                    >
+                      Telegram
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </div>
           ))}
-          <a
-            href="https://t.me/banhbongnet"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted transition-colors hover:text-brand"
-            onClick={trackTgFollowClick}
-          >
-            Telegram
-          </a>
         </nav>
-        <p className="text-xs text-muted">© 2026 banhbong.net. All rights reserved.</p>
-        <p className="text-xs text-muted/60">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
+        <div className="text-center">
+          <p className="text-xs text-muted">© 2026 banhbong.net. All rights reserved.</p>
+          <p className="mt-2 text-xs text-muted/60">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
+        </div>
       </div>
     </footer>
   );
