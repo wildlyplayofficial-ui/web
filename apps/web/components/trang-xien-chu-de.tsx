@@ -8,6 +8,8 @@ import { taiDuDoan } from "@/lib/du-doan-tai";
 import { keoPhuTuan } from "@/lib/du-doan-tuan";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { CHU_DE, tenXienChuDe, xienChuDeTheoNgay, type MoTaChuDe, type XienChuDeNgay } from "@/lib/xien-chu-de";
+import { ChuTy } from "@/components/ty-le";
+import { T } from "@/lib/ty-le";
 
 /**
  * Kèo xiên theo chủ đề /keo-xien/{xien-tai-2-5 | xien-xiu-2-5 | xien-hai-doi-ghi-ban | xien-doi-nha-thang |
@@ -112,7 +114,7 @@ export function TrangXienChuDe({ c, homNay, ds, lang }: { c: MoTaChuDe; homNay: 
         <h2 className={H2}>Cách tính tỷ lệ</h2>
         <p className="mt-3 text-[15px] leading-relaxed">
           Tỷ lệ gộp bằng tích tỷ lệ từng trận.{" "}
-          {vd ? `Ví dụ xiên đầu tiên trên trang: ${vd.chan.map((x) => x.gia.toFixed(2)).join(" × ")} = ${vd.tong.toFixed(2)}.` : "Ví dụ ba trận có tỷ lệ 1.30, 1.50 và 1.60 thì tỷ lệ gộp là 1.30 × 1.50 × 1.60 = 3.12."}{" "}
+          {<ChuTy text={vd ? `Ví dụ xiên đầu tiên trên trang: ${vd.chan.map((c) => T(c.gia)).join(" × ")} = ${T(vd.tong)}.` : `Ví dụ ba trận có tỷ lệ ${T(1.3)}, ${T(1.5)} và ${T(1.6)} thì tỷ lệ gộp là ${T(1.3)} × ${T(1.5)} × ${T(1.6)} = ${T(3.12)}.`} />}{" "}
           Sai một trận là hỏng cả xiên, nên xiên càng nhiều chân càng khó đúng hết.
         </p>
         <p className="mt-4 text-xs text-muted">Tỷ lệ chỉ để tham khảo và có thể đổi trước giờ bóng lăn. Nội dung mang tính giải trí.</p>

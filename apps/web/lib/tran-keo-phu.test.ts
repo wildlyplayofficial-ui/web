@@ -39,7 +39,7 @@ describe("cauChuoi — câu tiếng Việt cho khối hai đội ghi bàn / tài
 
 describe("cauTySo — tỷ số chính xác", () => {
   it("đọc tip kiểu PredictZ thành câu có tỷ lệ", () => {
-    expect(cauTySo("Draw 2-2", [12])).toBe("Tỷ số dự đoán: 2-2 · tỷ lệ 12.00");
+    expect(cauTySo("Draw 2-2", [12])).toBe("Tỷ số dự đoán: 2-2 · tỷ lệ ⟦12.00⟧");
   });
   it("không có tỷ lệ thì bỏ vế tỷ lệ", () => {
     expect(cauTySo("Home 2-1", [])).toBe("Tỷ số dự đoán: 2-1");
