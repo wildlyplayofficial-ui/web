@@ -64,7 +64,7 @@ function Cham({ v }: { v: number }) {
 
 const MUI: Record<XuHuong, { k: string; cls: string; nhan: string }> = {
   len: { k: "▲", cls: "text-brand", nhan: "đang lên" },
-  ngang: { k: "▶", cls: "text-muted", nhan: "đi ngang" },
+  ngang: { k: "–", cls: "text-muted", nhan: "đi ngang" },
   xuong: { k: "▼", cls: "text-loss", nhan: "đang xuống" },
 };
 
