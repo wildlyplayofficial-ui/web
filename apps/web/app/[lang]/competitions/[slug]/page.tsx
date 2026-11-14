@@ -37,14 +37,12 @@ type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
-// Prerender active competition slugs at build so the first visit is instant
-// (ISR keeps them fresh via `revalidate`). Feature-flagged/inactive slugs stay
-// on-demand — `dynamicParams` is left at its default (true) for this segment.
+// KHÔNG dựng sẵn lúc build (trước đây có): đo 14/11 mỗi lần deploy, 5 trang BXH giải châu Âu
+// hiện "Chưa có dữ liệu bảng xếp hạng" suốt ~1 giờ vì bản dựng sẵn lúc build không lấy được
+// bảng từ nhà cung cấp rồi bị ISR giữ nguyên tới lần làm mới đầu tiên. Dựng ở lượt truy cập đầu
+// (có đủ khoá) rồi ISR giữ 1 giờ — lượt đầu chậm hơn, nhưng không bao giờ cache trang rỗng từ build.
 export async function generateStaticParams() {
-  const competitions = await getStandingsCompetitions().catch(() => []);
-  return competitions
-    .filter((c) => c.status === "active" && c.slug)
-    .map((c) => ({ slug: c.slug }));
+  return [];
 }
 
 async function resolveCompetition(slug: string) {
