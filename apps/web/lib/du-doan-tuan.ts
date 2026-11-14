@@ -11,6 +11,7 @@ import { teamBadge } from "./team-badges";
 import { tenDoiViet, tenGiaiViet } from "./ten-viet";
 import { bxConMoi, conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu";
 import type { ThiTruongPhu } from "./tran-keo-phu";
+import { docDiem, docHtft, type DiemDoi, type HtFt } from "./tran-htft";
 
 export interface DongTuan extends SoLieuTran {
   ngay: string;
@@ -35,6 +36,10 @@ export interface DongTuan extends SoLieuTran {
   pBtts?: ThiTruongPhu;
   pOu?: ThiTruongPhu;
   pCs?: ThiTruongPhu;
+  /** Tỷ lệ Hiệp 1 / Cả trận, khoá "hiệp 1 + cả trận" (H nhà · D hòa · A khách, vd DH): đủ 9 ô hoặc không ghi. */
+  htft?: HtFt;
+  /** Điểm phong độ [tấn công, phòng ngự], thang 1–10, của đội nhà (n) và đội khách (k). */
+  diem?: DiemDoi;
   /** Slug bài nhận định của cùng trận (trận ĐTQG nguồn tuần không có): số liệu tệp gắn vào trang bài. */
   bai?: string;
 }
@@ -164,6 +169,17 @@ export function keoPhuTuan(slug: string): KeoPhu | null {
   const d = timDong(slug);
   if (!d || !(d.pBtts || d.pOu || d.pCs)) return null;
   return { nha: d.nha, khach: d.khach, pBtts: d.pBtts, pOu: d.pOu, pCs: d.pCs };
+}
+
+export type HtftDiem = Pick<DongTuan, "nha" | "khach" | "htft" | "diem">;
+
+/** Hiệp 1 / Cả trận + điểm tấn công / phòng ngự của một trận tệp tuần; không có số hợp lệ nào → null. */
+export function htftDiemTuan(slug: string): HtftDiem | null {
+  const d = timDong(slug);
+  if (!d) return null;
+  const htft = docHtft(d.htft) ? d.htft : undefined;
+  const diem = docDiem(d.diem?.n) && docDiem(d.diem?.k) ? d.diem : undefined;
+  return htft || diem ? { nha: d.nha, khach: d.khach, htft, diem } : null;
 }
 
 /** Các dòng tệp tuần hiện tại. */
