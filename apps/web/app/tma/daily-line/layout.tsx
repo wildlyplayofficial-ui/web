@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Daily Line | banhbong.net",
+  title: "Daily Line", // layout gốc đã gắn "| banhbong.net" qua template
   description: "Pick Over or Under on today's combined goal line. Free prediction game.",
   robots: { index: false, follow: false },
 };

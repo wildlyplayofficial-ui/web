@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
-import { S } from "@/lib/goalline/strings";
+import { getDailyLineDict } from "@/lib/goalline/strings";
 import { DailyLineNav } from "./components/daily-line-nav";
+
+// Site chỉ còn tiếng Việt (25/8) — tiêu đề/mô tả lấy bộ chữ VI, không lấy `S` (tiếng Anh).
+const VI = getDailyLineDict("vi");
 
 export const metadata: Metadata = {
   title: {
-    default: `${S.BRAND} — ${S.TAGLINE}`,
-    template: `%s | ${S.BRAND}`,
+    default: `${VI.BRAND} — ${VI.TAGLINE}`,
+    template: `%s | ${VI.BRAND}`,
   },
   description:
-    "Daily Line — a daily Over/Under prediction game on aggregate football goals. Pick your side, climb the leaderboard. Entertainment only.",
+    "Daily Line — trò chơi dự đoán Tài/Xỉu tổng bàn thắng bóng đá mỗi ngày. Chọn phe, leo bảng xếp hạng. Chỉ để giải trí.",
   openGraph: {
     locale: "vi_VN",
     images: [{ url: `/api/og/daily-line?v=${OG_VERSION}`, width: 1200, height: 630 }],

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { resolveLang, type Lang } from "@/lib/i18n";
+import { buildAlternates, resolveLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
@@ -94,6 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: copy[lang].title,
     description: copy[lang].intro.slice(0, 160),
+    alternates: buildAlternates("/responsible-play", lang),
     openGraph: { locale: "vi_VN", title: `${copy[lang].title} | banhbong.net`, images: [{ url: "/og-home.png", width: 1200, height: 630 }] },
   };
 }

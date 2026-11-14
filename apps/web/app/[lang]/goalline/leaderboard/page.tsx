@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { getSupabase } from "@/lib/goalline/supabase";
-import { S, getDailyLineDict } from "@/lib/goalline/strings";
-import { resolveLang } from "@/lib/i18n";
+import { getDailyLineDict } from "@/lib/goalline/strings";
+import { buildAlternates, resolveLang } from "@/lib/i18n";
 import { LeaderboardTabs } from "./leaderboard-tabs";
 
 export const metadata: Metadata = {
-  title: S.LEADERBOARD_TITLE,
+  title: getDailyLineDict("vi").LEADERBOARD_TITLE,
+  alternates: buildAlternates("/daily-line/leaderboard"),
 };
 
 export const revalidate = 120;

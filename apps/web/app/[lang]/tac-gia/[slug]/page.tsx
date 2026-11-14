@@ -23,14 +23,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang(rawLang);
   const a = authorBySlug(slug);
   if (!a) return { title: "Not found" };
-  const title = `${a.name} — ${a.role} | banhbong.net`;
+  const title = `${a.name} — ${a.role}`;
   return {
+    // Không tự gắn "| banhbong.net": layout gốc đã có template `%s | ${SITE_NAME}`.
     title,
     description: a.bio,
     alternates: { canonical: withLang(a.path, lang) },
     openGraph: {
       locale: "vi_VN",
-      title,
+      title: `${title} | banhbong.net`,
       description: a.bio,
       type: "profile",
       images: [{ url: `/api/og/editorial?title=${encodeURIComponent(a.name)}&subtitle=${encodeURIComponent(a.role)}&v=${OG_VERSION}`, width: 1200, height: 630 }],

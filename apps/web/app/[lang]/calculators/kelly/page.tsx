@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
-    title: `${dict.calculators.kelly} | banhbong.net`,
+    title: dict.calculators.kelly,
     description: dict.calculators.kellyDesc,
     alternates: buildAlternates("/calculators/kelly", lang),
     openGraph: {

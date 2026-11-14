@@ -22,6 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: dict.transparency.title,
     description: dict.transparency.subtitle,
     alternates: { canonical },
+    // Peter chốt 13/11: thành tích/minh bạch dự đoán chỉ là số NỘI BỘ — trang vẫn sống, không mời index.
+    robots: { index: false, follow: true },
     openGraph: {
       locale: "vi_VN",
       title: `${dict.transparency.title} | banhbong.net`,
