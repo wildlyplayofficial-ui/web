@@ -72,8 +72,8 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
         {/* Peter 14/11 "sợ ng ta nhìn lộn": ghi rõ đây là dự đoán, viền đứt để khác ô kết quả. */}
         {h.du && <p className="mb-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-muted">{t.predicted}</p>}
         <span
-          className={`inline-block min-w-[50px] rounded-md border-2 border-dashed px-2 py-px font-display text-base font-bold tabular-nums lg:min-w-[58px] lg:px-3 lg:text-lg ${
-            h.du ? "border-brand text-brand" : "border-line text-muted"
+          className={`inline-block min-w-[50px] rounded-md px-2 py-px font-display text-base font-bold tabular-nums lg:min-w-[58px] lg:px-3 lg:text-lg ${
+            h.du ? "bg-brand/15 text-brand" : "bg-line/40 text-muted"
           }`}
         >
           {h.du ? `${h.du[0]}-${h.du[1]}` : "?"}
