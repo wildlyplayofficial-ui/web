@@ -18,10 +18,10 @@ describe("tipGiai", () => {
     const r = tipGiai(hang, LL, "tai-xiu", "2026-11-14", khong);
     expect(r.map((x) => [x.ngay, x.ds.map((d) => d.h.slug)])).toEqual([["2026-11-15", ["a"]], ["2026-11-17", ["b"]]]);
   });
-  it("quá 7 ngày hoặc trước hôm nay thì bỏ", () => {
-    const hang = [tran("a", { taiXiu: "Over 2.5", ngay: "2026-11-21" }), tran("b", { taiXiu: "Over 2.5", ngay: "2026-11-13" })];
+  it("quá 10 ngày hoặc trước hôm nay thì bỏ", () => {
+    const hang = [tran("a", { taiXiu: "Over 2.5", ngay: "2026-11-25" }), tran("b", { taiXiu: "Over 2.5", ngay: "2026-11-13" })];
     expect(tipGiai(hang, LL, "tai-xiu", "2026-11-14", khong)).toEqual([]);
-    expect(tipGiai(hang, LL, "tai-xiu", "2026-11-15", khong).length).toBe(1);
+    expect(tipGiai(hang, LL, "tai-xiu", "2026-11-16", khong).length).toBe(1);
   });
   it("có now thì bỏ trận đã bắt đầu", () => {
     const hang = [

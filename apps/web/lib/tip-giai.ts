@@ -1,6 +1,6 @@
 /**
  * Tip theo GIẢI (Peter giao 14/11, học PredictZ "Over 2.5 Premier League"): mỗi giải lớn có ba trang
- * Over/Under / cả 2 đội ghi bàn / tỷ số cho 7 ngày tới. Chỉ lọc + gom dòng sẵn có của tip-ngay, không tính thêm.
+ * Over/Under / cả 2 đội ghi bàn / tỷ số cho 10 ngày tới (đủ phủ vòng kế tiếp lúc giải nghỉ). Chỉ lọc + gom dòng sẵn có của tip-ngay, không tính thêm.
  * Hàm THUẦN, import TƯƠNG ĐỐI để vitest chạy không cần alias.
  */
 import type { HangDuDoan } from "./du-doan-hang";
@@ -8,7 +8,7 @@ import { GIAI_TRANG, lechNgay, type GiaiTrang } from "./du-doan-loc";
 import { dongTipNgay, type DongTip, type KeoPhuTip, type LoaiTip } from "./tip-ngay";
 
 /** Số ngày tính từ hôm nay (gồm hôm nay). */
-export const SO_NGAY = 7;
+export const SO_NGAY = 10;
 
 /** Đường dẫn gốc của từng loại: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}. */
 export const GOC_TIP_GIAI: Record<LoaiTip, string> = {
@@ -33,7 +33,7 @@ export function tipGiai(
   keoPhu: (slug: string) => KeoPhuTip | null | undefined,
   now?: number,
 ): NgayTip[] {
-  // `now` (ms): bỏ trận đã bắt đầu/đã đá xong, để tiêu đề "7 ngày tới" đúng. Không truyền thì không lọc.
+  // `now` (ms): bỏ trận đã bắt đầu/đã đá xong, để tiêu đề "10 ngày tới" đúng. Không truyền thì không lọc.
   const cua = hang.filter((h) => g.khop.test(h.giai) && (now === undefined || Date.parse(h.kickoffUtc) > now));
   return Array.from({ length: SO_NGAY }, (_, i) => lechNgay(homNay, i))
     .map((ngay) => ({ ngay, ds: dongTipNgay(cua, ngay, loai, keoPhu) }))
@@ -42,7 +42,7 @@ export function tipGiai(
 
 export const demTran = (ngay: readonly NgayTip[]) => ngay.reduce((n, x) => n + x.ds.length, 0);
 
-/** Các (giải, loại) có ít nhất một trận trong 7 ngày: dùng cho sitemap + khối liên kết ở trang giải. */
+/** Các (giải, loại) có ít nhất một trận trong SO_NGAY ngày: dùng cho sitemap + khối liên kết ở trang giải. */
 export function giaiCoTip(
   hang: readonly HangDuDoan[],
   homNay: string,

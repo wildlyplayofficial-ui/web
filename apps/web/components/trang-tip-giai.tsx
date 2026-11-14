@@ -16,26 +16,26 @@ import type { LoaiTip } from "@/lib/tip-ngay";
 /**
  * Ba loại trang tip theo giải: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
  * Mỗi trận một dòng (logo hai đội, giờ, tip + tỷ lệ), link sang /du-doan/{slug}. Không đúng/sai, không tên nhà cái.
- * Giải không có trận nào trong 7 ngày: trang vẫn mở nhưng noindex và không vào sitemap.
+ * Giải không có trận nào trong 10 ngày: trang vẫn mở nhưng noindex và không vào sitemap.
  */
 
 const CH: Record<LoaiTip, { ten: string; tieuDe: (g: string) => string; mota: (g: string, n: number) => string; moDau: string }> = {
   "tai-xiu": {
     ten: "Over/Under",
     tieuDe: (g) => `Over/Under 2.5 ${g}`,
-    mota: (g, n) => `Over/Under 2.5 ${g} 7 ngày tới: ${n} trận có dự đoán Over hoặc Under 2.5, kèm tỷ lệ và số trận Over trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
+    mota: (g, n) => `Over/Under 2.5 ${g} 10 ngày tới: ${n} trận có dự đoán Over hoặc Under 2.5, kèm tỷ lệ và số trận Over trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
     moDau: "Mốc 2.5 bàn: tổng bàn thắng của cả hai đội từ 3 trở lên là Over, từ 2 trở xuống là Under.",
   },
   "hai-doi-ghi-ban": {
     ten: "Cả 2 đội ghi bàn",
     tieuDe: (g) => `Cả 2 đội ghi bàn ${g}`,
-    mota: (g, n) => `Cả 2 đội ghi bàn ${g} 7 ngày tới: ${n} trận có dự đoán Có hoặc Không, kèm tỷ lệ và số trận cả hai đội cùng ghi bàn trong 5 trận gần nhất. Giờ Việt Nam.`,
+    mota: (g, n) => `Cả 2 đội ghi bàn ${g} 10 ngày tới: ${n} trận có dự đoán Có hoặc Không, kèm tỷ lệ và số trận cả hai đội cùng ghi bàn trong 5 trận gần nhất. Giờ Việt Nam.`,
     moDau: "Mỗi đội ghi ít nhất một bàn trong 90 phút là Có; một đội trắng bàn là Không.",
   },
   "ty-so": {
     ten: "Tỷ số",
     tieuDe: (g) => `Tỷ số dự đoán ${g}`,
-    mota: (g, n) => `Tỷ số dự đoán ${g} 7 ngày tới: ${n} trận, mỗi trận một tỷ số chính xác kèm tỷ lệ. Giờ Việt Nam, bấm trận để xem phong độ và số liệu chi tiết.`,
+    mota: (g, n) => `Tỷ số dự đoán ${g} 10 ngày tới: ${n} trận, mỗi trận một tỷ số chính xác kèm tỷ lệ. Giờ Việt Nam, bấm trận để xem phong độ và số liệu chi tiết.`,
     moDau: "Tỷ số chính xác là cửa khó nhất nên tỷ lệ thường cao; mỗi trận trang chỉ nêu một tỷ số.",
   },
 };
@@ -137,7 +137,7 @@ export async function TrangTipGiai({ loai, slug, lang }: { loai: LoaiTip; slug: 
 }
 
 
-/** Khối liên kết ở trang giải /competitions/{slug}: các tip 7 ngày tới của giải đó (chỉ loại có trận; không có gì thì ẩn cả khối). */
+/** Khối liên kết ở trang giải /competitions/{slug}: các tip 10 ngày tới của giải đó (chỉ loại có trận; không có gì thì ẩn cả khối). */
 export async function KhoiTipGiai({ bxh, lang }: { bxh: string; lang: Lang }) {
   const g = GIAI_TRANG.find((x) => x.bxh === bxh);
   if (!g) return null;
@@ -147,7 +147,7 @@ export async function KhoiTipGiai({ bxh, lang }: { bxh: string; lang: Lang }) {
   if (co.length === 0) return null;
   return (
     <section className="mt-8" aria-labelledby="tip-giai">
-      <h2 id="tip-giai" className="font-display text-lg font-bold">Dự đoán {g.ten} 7 ngày tới</h2>
+      <h2 id="tip-giai" className="font-display text-lg font-bold">Dự đoán {g.ten} {SO_NGAY} ngày tới</h2>
       <div className="mt-3 flex flex-wrap gap-2">
         <Link href={withLang(`/du-doan/${g.slug}`, lang)} className={CHIP}>Dự đoán {g.ten} vòng tới</Link>
         {co.map((x) => (
