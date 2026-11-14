@@ -122,7 +122,7 @@ function Chuoi({ c, ten, ky }: { c: boolean[] | null; ten: string; ky: [string, 
 
 const KY: Record<LoaiTip, [string, string]> = { "tai-xiu": ["T", "X"], "hai-doi-ghi-ban": ["✓", "✗"], "ty-so": ["", ""] };
 
-function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTip; lang: Lang }) {
+export function DongTipTran({ d, loai, lang }: { d: DongTip; loai: LoaiTip; lang: Lang }) {
   const { h } = d;
   const coChuoi = loai !== "ty-so" && (d.chuoiNha || d.chuoiKhach);
   return (

@@ -17,6 +17,7 @@ import { cungGiai } from "@/lib/giai-cua-bai";
 import { laBaiTru } from "@/lib/chi-muc";
 import { khopBangTong, tinhBxhSan, tinhBxhTong } from "@/lib/bxh-san";
 import { tranCuaGiai } from "@/lib/bxh-san-tai";
+import { KhoiTipGiai } from "@/components/trang-tip-giai";
 
 // 10 phút (trước 3600): bản dựng lúc build có thể rỗng nếu nhà cung cấp chập chờn, phải tự lành nhanh.
 export const revalidate = 600;
@@ -345,6 +346,7 @@ export default async function StandingSlugPage({ params }: Props) {
           </p>
         </section>
       )}
+      {showQualification && <KhoiTipGiai bxh={slug} lang={lang} />}
       {/* Peter 11/11: tin + bài trụ xuống cuối trang, BXH lên trước. */}
       <div className="mt-12">
       <CompetitionNews articles={compArticles} lang={lang} title={dict.news.title} />
