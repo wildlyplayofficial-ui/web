@@ -82,6 +82,28 @@ export default async function TrangTran({ params }: Props) {
         ]}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", ...suKienTran(h, SITE_URL, true), author: nguoiChuyenGia(cg, SITE_URL) }) }} />
+      {/* Peter 14/11: trận có bài nhận định thì khai thêm Article (tác giả · ngày đăng · ngày sửa) cho Google và AI. */}
+      {bai?.body && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLd({
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: metaTran(h).tieuDe,
+              description: metaTran(h).moTa,
+              url: `${SITE_URL}/du-doan/${slug}`,
+              mainEntityOfPage: `${SITE_URL}/du-doan/${slug}`,
+              image: `${SITE_URL}/api/og/editorial?title=${encodeURIComponent(cap)}&v=${OG_VERSION}`,
+              datePublished: bai.published_at,
+              dateModified: bai.updated_at ?? bai.published_at,
+              inLanguage: "vi-VN",
+              author: nguoiChuyenGia(cg, SITE_URL),
+              publisher: { "@type": "Organization", name: "banhbong.net", url: SITE_URL, logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon-512x512.png` } },
+            }),
+          }}
+        />
+      )}
       <nav aria-label="Đường dẫn" className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted">
         <Link href={withLang("/", lang)} className={MANH}>Trang chủ</Link>
         <span aria-hidden>›</span>
