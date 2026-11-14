@@ -30,6 +30,7 @@ import { cacTranChon, type NhomNgay } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
 import { suKienTran } from "@/lib/du-doan-schema";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
+import { ThanBaiMd } from "@/components/than-bai-md";
 
 export const revalidate = 300;
 
@@ -89,8 +90,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Ưu tiên mô tả viết tay; không có thì mới cắt 160 ký tự đầu body — cách cắt
     // này hay đứt giữa từ nên chỉ dùng làm phương án dự phòng.
     const description = desk.meta_description?.trim() || moTaTuBody(desk.body);
-    const canonical = `${BASE}${withLang(`/analysis/${slug}`, lang)}`;
-    const alternates = buildAlternates(`/analysis/${slug}`, lang);
+    // Bài dự đoán một trận có trang riêng /du-doan/{slug} mang CẢ thân bài (14/11) —
+    // hai URL cùng nội dung thì canonical về trang dự đoán (trang đó mới nằm trong sitemap).
+    const duong = laBaiDuDoan(desk) && duDoanCua(desk) ? `/du-doan/${slug}` : `/analysis/${slug}`;
+    const canonical = `${BASE}${withLang(duong, lang)}`;
+    const alternates = buildAlternates(duong, lang);
     // og:image: prefer the article's hero_image (the real thumbnail) when set,
     // else fall back to the branded Desk card. hero_image may be absolute
     // (Supabase/Wikimedia) or site-relative (/images/…).
@@ -337,34 +341,7 @@ function DeskArticleView({
       <hr className="my-6 border-line" />
 
       <div className="prose-md mt-8">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            table: ({ children }) => (
-              <div className="table-wrap"><table>{children}</table></div>
-            ),
-            // Hai loại ảnh khác nhau trong thân bài, đừng gộp làm một:
-            //  · LOGO ĐỘI chèn trong ô bảng lịch — phải nhỏ và có sẵn kích thước,
-            //    không thì bảng vài chục dòng logo nhảy layout khi tải xong.
-            //  · HÌNH MINH HOẠ (bảng lịch, sơ đồ bảng đấu) — phải hiện hết chiều ngang.
-            // Trước 2/9/2026 mã ép CỨNG mọi ảnh 20x20, nên chèn hình minh hoạ vào
-            // bài là ra một chấm 20px — không ai thấy. Phân biệt bằng NƠI CHỨA:
-            // hình minh hoạ nằm ở kho blog-images, logo đội thì không.
-            img: ({ src, alt }) => {
-              const url = typeof src === "string" ? src : "";
-              const laHinhMinhHoa = url.includes("/blog-images/");
-              return laHinhMinhHoa ? (
-                <img src={url} alt={alt ?? ""} loading="lazy" decoding="async"
-                     className="my-6 h-auto w-full rounded-card" />
-              ) : (
-                <img src={url} alt={alt ?? ""} loading="lazy" decoding="async"
-                     width={20} height={20} />
-              );
-            },
-          }}
-        >
-          {article.body.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
-        </ReactMarkdown>
+        <ThanBaiMd body={article.body} />
       </div>
 
       {/* Linked pick funnel-card (spec section 2C): link TO the pick, not embed record */}

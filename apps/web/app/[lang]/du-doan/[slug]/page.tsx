@@ -21,6 +21,7 @@ import { ganNhatTuan, htftDiemTuan, keo3Tuan, keoPhuTuan, soLieuTuan } from "@/l
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { ChuTy } from "@/components/ty-le";
+import { ThanBaiMd } from "@/components/than-bai-md";
 
 /**
  * Trang riêng một trận (thiết kế lại 10/11): /du-doan/{slug}. Trận nào trong bảng dự đoán
@@ -66,7 +67,8 @@ export default async function TrangTran({ params }: Props) {
   const { muc, hang } = await taiDuDoan();
   const h = timTran(hang, slug);
   if (!h) notFound();
-  const tacGia = muc.find((m) => m.bai.slug === slug)?.bai.byline ?? null;
+  const bai = muc.find((m) => m.bai.slug === slug)?.bai ?? null;
+  const tacGia = bai?.byline ?? null;
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
   const keoPhu = keoPhuTuan(slug);
@@ -110,6 +112,13 @@ export default async function TrangTran({ params }: Props) {
       {keoPhu && <TranKeoPhu k={keoPhu} />}
       {htftDiem ? <TranHtftDiem k={htftDiem}>{keo3 && <TranKeo3 k={keo3} />}</TranHtftDiem> : keo3 && <TranKeo3 k={keo3} />}
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
+      {/* 14/11: trận có bài nhận định viết tay thì mang luôn thân bài — trang trận là bản chính
+          (canonical), bản /analysis/{slug} trỏ canonical về đây. Trận tệp tuần không có bài. */}
+      {bai?.body && (
+        <article className="prose-md mt-8 border-t border-line pt-6">
+          <ThanBaiMd body={bai.body} />
+        </article>
+      )}
 
       {lienQuan.ds.length > 0 && (
         <section className="mt-8">
