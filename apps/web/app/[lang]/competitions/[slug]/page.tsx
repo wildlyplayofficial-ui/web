@@ -131,7 +131,7 @@ export default async function StandingSlugPage({ params }: Props) {
     // mới" vẫn chỉ xét 30 bài mới nhất như cũ; khối "trang trụ" xét hết.
     getAnalysisArticles(undefined, 300),
     // Bảng sân nhà / sân khách tính từ các trận đã đá (chỉ giải châu Âu, bảng phẳng).
-    showQualification ? tranCuaGiai(comp.livescoreId).catch(() => []) : Promise.resolve([]),
+    showQualification ? tranCuaGiai(comp.livescoreId).catch(() => tranCuaGiai(comp.livescoreId)).catch(() => []) : Promise.resolve([]),
   ]);
 
   // Khớp bài ↔ giải theo cột league tự do: xem lib/giai-cua-bai.ts.
