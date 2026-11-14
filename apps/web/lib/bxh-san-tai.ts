@@ -8,7 +8,7 @@ import { doiTran, type TranGoc } from "./ket-qua-ls";
 import type { TranDaDa } from "./bxh-san";
 
 const GOC = "https://livescore-api.com/api-client/matches/history.json";
-const TRANG_TOI_DA = 8;
+const TRANG_TOI_DA = 6;
 
 /** Mùa châu Âu bắt đầu quanh tháng 8: lấy từ 1/7 gần nhất. */
 export function dauMua(nay: Date): string {
