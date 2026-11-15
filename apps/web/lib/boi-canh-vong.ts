@@ -2,12 +2,23 @@ import type { StandingTeam } from "./standings";
 
 type Cap = { homeName: string; awayName: string };
 
-const chuan = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
+// Lịch và BXH Livescore ghi tên lệch nhau (16/11: "Bayern Munich" ↔ "Bayern München", "SSC Napoli" ↔ "Napoli").
+const DOI_TEN: Record<string, string> = { munchen: "munich", rasenballsport: "rb" };
+const BO = new Set(["fc", "ssc", "as", "ac", "sc", "cf", "afc", "club", "cp", "sv", "vfb", "vfl", "1"]);
+const tu = (s: string): string[] =>
+  s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ø/g, "o")
+      .split(/[^a-z0-9]+/).filter((w) => w && !BO.has(w)).map((w) => DOI_TEN[w] ?? w);
 
-/** Tra hạng một đội trong bảng (cùng nguồn Livescore nên so tên đã chuẩn hoá là đủ). */
+/** Tra hạng một đội: khớp nguyên tên đã chuẩn hoá, không thì khớp khi bộ chữ tên này chứa trọn tên kia. */
 export function hangCua(bang: StandingTeam[], ten: string): StandingTeam | undefined {
-  const k = chuan(ten);
-  return bang.find((r) => chuan(r.name) === k);
+  const k = tu(ten);
+  if (k.length === 0) return undefined;
+  const chua = (a: string[], b: string[]) => b.every((w) => a.includes(w));
+  return bang.find((r) => tu(r.name).join(" ") === k.join(" "))
+    ?? bang.find((r) => {
+      const t = tu(r.name);
+      return t.length > 0 && (chua(t, k) || chua(k, t));
+    });
 }
 
 /**

@@ -24,6 +24,13 @@ describe("boiCanhVongToi", () => {
   it("không khớp đội nào thì trả null", () => {
     expect(boiCanhVongToi([{ homeName: "Ajax", awayName: "Celtic" }], bang, "C1")).toBeNull();
   });
+  it("hangCua khớp tên lệch giữa lịch và BXH", () => {
+    const b = [doi(4, "Bayern München", 9), doi(6, "Napoli", 8), doi(7, "Paris Saint-Germain", 8)];
+    expect(hangCua(b, "Bayern Munich")?.rank).toBe(4);
+    expect(hangCua(b, "SSC Napoli")?.rank).toBe(6);
+    expect(hangCua(b, "Paris Saint Germain")?.rank).toBe(7);
+    expect(hangCua(b, "Real Madrid")).toBeUndefined();
+  });
   it("hangCua bỏ qua hoa thường và dấu", () => {
     expect(hangCua(bang, "real madrid")?.rank).toBe(9);
   });
