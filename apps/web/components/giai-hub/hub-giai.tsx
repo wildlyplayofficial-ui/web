@@ -13,7 +13,6 @@ import { DuDoanTheoNgay } from "./du-doan-ngay";
 import { FaqHub, type CauHoiHub } from "./faq";
 import { KetQuaVong } from "./ket-qua";
 import { Khoi } from "./khoi";
-import { LichKhoDe } from "./lich-kho";
 import { LucLuong } from "./luc-luong";
 import { ThongKeCauThu } from "./thong-ke";
 
@@ -39,7 +38,7 @@ interface Props {
   trangTru: AnalysisArticle[];
 }
 
-const LINK_KHAC = "flex min-h-11 items-center rounded-card border border-line bg-card px-4 text-sm font-semibold transition-colors hover:bg-card-hover";
+const LINK_KHAC = "inline-flex min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold transition-colors hover:border-brand hover:text-brand";
 
 function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {
   const ds: CauHoiHub[] = [];
@@ -91,9 +90,19 @@ export function HubGiai(p: Props) {
         <p className="mt-2 text-sm text-muted">
           {[`Mùa ${mua}`, data.vongXong ? `cập nhật sau vòng ${data.vongXong}` : null, "giờ Việt Nam"].filter(Boolean).join(" · ")}
         </p>
+        {/* Peter 15/11 "cái này để lên trên / kiểu 2 option khác cho user chọn". */}
+        <nav aria-label={`Dự đoán khác ${compName}`} className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted">Dự đoán khác:</span>
+          <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={LINK_KHAC}>
+            Over/Under 2.5
+          </Link>
+          <Link href={withLang(duongTipGiai("hai-doi-ghi-ban", giai), lang)} className={LINK_KHAC}>
+            Cả 2 đội ghi bàn
+          </Link>
+        </nav>
       </header>
 
-      {/* Peter 15/11: 1 cột, BXH lên trước rồi mới tới thống kê cầu thủ/xG. */}
+      {/* Peter 15/11: 1 cột, BXH → thống kê cầu thủ → kết quả vòng. */}
       <div className="space-y-10">
         <Khoi id="du-doan" tieuDe={`Lịch thi đấu & dự đoán vòng ${data.vongToi ?? ""}`.trim()}>
           <DuDoanTheoNgay
@@ -105,14 +114,14 @@ export function HubGiai(p: Props) {
         <Khoi id="bang-xep-hang" tieuDe={`Bảng xếp hạng ${compName} ${mua}`}>
           {bang}
         </Khoi>
+        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
+          <ThongKeCauThu top={data.top} logo={data.logo} />
+        </Khoi>
         {data.ketQua.length > 0 && (
           <Khoi id="ket-qua" tieuDe={`Kết quả ${compName} vòng ${data.vongXong}`}>
             <KetQuaVong ds={data.ketQua} logo={data.logo} />
           </Khoi>
         )}
-        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
-          <ThongKeCauThu top={data.top} logo={data.logo} />
-        </Khoi>
         {data.vang.length > 0 && (
           <Khoi
             id="luc-luong"
@@ -122,37 +131,12 @@ export function HubGiai(p: Props) {
             <LucLuong data={data} />
           </Khoi>
         )}
-        {data.lichKho && data.lichKho.hang.length > 0 && (
-          <Khoi
-            id="lich-kho-de"
-            tieuDe="Lịch khó/dễ 5 vòng tới"
-            phu={`Vòng ${data.lichKho.vong[0]}–${data.lichKho.vong[data.lichKho.vong.length - 1]} · độ khó theo ${data.nguon} · xếp từ lịch dễ nhất`}
-          >
-            <LichKhoDe lich={data.lichKho} />
-          </Khoi>
-        )}
+        {/* Peter 15/11 "bỏ lịch fantasy ra đi": gỡ khối Lịch khó/dễ (độ khó FPL). */}
         {(bai.length > 0 || trangTru.length > 0) && (
           <Khoi id="bai-moi" tieuDe={`Bài mới về ${compName}`}>
             <BaiMoi bai={bai} trangTru={trangTru} lang={lang} />
           </Khoi>
         )}
-      </div>
-
-      <div className="mt-10">
-        <Khoi id="du-doan-khac" tieuDe={`Dự đoán khác ${compName}`}>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            <li>
-              <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={LINK_KHAC}>
-                {`Over/Under 2.5 ${compName}: trận nào từ 3 bàn trở lên`}
-              </Link>
-            </li>
-            <li>
-              <Link href={withLang(duongTipGiai("hai-doi-ghi-ban", giai), lang)} className={LINK_KHAC}>
-                {`Cả 2 đội ghi bàn ${compName}: trận nào 2 đội cùng có bàn`}
-              </Link>
-            </li>
-          </ul>
-        </Khoi>
       </div>
 
       {hoiDap.length > 0 && (
