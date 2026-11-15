@@ -18,6 +18,7 @@ export function isPlaceholderTeam(name: string): boolean {
 
 import { log } from './log';
 import { NGON_NGU } from './ngon-ngu';
+import { scrubTaiXiu } from './vi-lexicon';
 
 export const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 // 4-language articles (~3500 tokens) need well over 20s — the 12/6 Canada preview
@@ -138,7 +139,7 @@ export const CLV_RULE =
  *  MỌI prompt sinh section tiếng Việt (recap, preview, analysis, post-mortem, no-play,
  *  watching-news) để không generator nào lọt "kèo". Section TH/EN/ES không áp ràng buộc này. */
 export const VI_LEXICON_RULE =
-  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài/xỉu", "đưa ra nhận định" — kể cả ở tiêu đề. (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)\n' +
+  '- VIETNAMESE LEXICON (bản VI phải hợp pháp thị trường VN — Route A, 28/7): trong section tiếng Việt, dùng "nhận định" (nội dung phân tích), "dự đoán" (lựa chọn có kết quả cụ thể), "phân tích", "chọn trận"; TUYỆT ĐỐI KHÔNG dùng "kèo", "nhà cái", "cá cược", "cá độ", "đặt cược", "lô đề", "soi kèo", "gỡ thua", "tài xỉu", "tài/xỉu", "Tài 2.5", "Xỉu 2.5", "đưa ra nhận định" — kể cả ở tiêu đề. Mốc bàn thắng viết "Over 2.5" / "Under 2.5", thị trường gọi "Over/Under" — TUYỆT ĐỐI KHÔNG viết "Tài"/"Xỉu" và KHÔNG dịch thành "Trên/Dưới". (Section Thái/Anh/Tây Ban Nha không áp ràng buộc này.)\n' +
   '- TÊN NHÂN VẬT BẢN VI (Nick chốt 21/8, đổi Admin → Chú Tám Banh theo Peter 15/9): trong section tiếng Việt gọi Curator là "Chú Tám Banh" và Scout là "Trợ lý AI" — TUYỆT ĐỐI KHÔNG để nguyên chữ "Curator", "Admin" hay "Scout" trong bản VI. (Section EN/TH/ES giữ nguyên tên gốc.)';
 
 /** Giọng Chú Tám Banh — CHỈ áp cho section tiếng Việt. Người rành bóng đá nói thẳng,
@@ -309,7 +310,8 @@ export async function callClaude(
       log.warn(`${context}: unexpected Anthropic response shape`, JSON.stringify(data).slice(0, 400));
       return null;
     }
-    return text.trim();
+    // Chốt chặn tài/xỉu → Over/Under (Peter 14/11) — mọi writer đi qua đây trước khi lưu.
+    return scrubTaiXiu(text.trim());
   } catch (err) {
     log.warn(`${context}: generation failed:`, err);
     return null;
