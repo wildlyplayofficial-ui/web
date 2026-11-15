@@ -12,7 +12,7 @@ import { ScrollRow } from "@/components/scroll-row";
  * đã tải sẵn, không gọi thêm CSDL.
  */
 
-type Bai = { slug: string; title: string };
+type Bai = { slug: string; title: string; href?: string };
 type The = { href: string; nhan: string; ten: string };
 
 const SO_BAI = 4;
@@ -20,7 +20,7 @@ const SO_BAI = 4;
 export function DaiDuDoanGiai({ lang, baiMoi, blogMoi }: { lang: Lang; baiMoi: Bai[]; blogMoi: Bai[] }) {
   const the: The[] = [
     ...GIAI_TRANG.map((g) => ({ href: `/du-doan/${g.slug}`, nhan: "Dự đoán", ten: `Dự đoán ${g.ten}` })),
-    ...baiMoi.slice(0, SO_BAI).map((b) => ({ href: `/analysis/${b.slug}`, nhan: "Phân tích", ten: b.title })),
+    ...baiMoi.slice(0, SO_BAI).map((b) => ({ href: b.href ?? `/analysis/${b.slug}`, nhan: "Phân tích", ten: b.title })),
     ...blogMoi.slice(0, SO_BAI).map((b) => ({ href: `/blog/${b.slug}`, nhan: "Blog", ten: b.title })),
   ];
   if (the.length === 0) return null;

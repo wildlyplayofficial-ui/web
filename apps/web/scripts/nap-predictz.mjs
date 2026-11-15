@@ -90,6 +90,20 @@ for (const d of hang.filter((x) => x.kq)) {
 const soMoi = [...soMap.values()].sort((a, b) => a.ngay.localeCompare(b.ngay));
 fs.writeFileSync(SO, `[\n${soMoi.map((d) => JSON.stringify(d)).join(",\n")}\n]\n`);
 
+// Kho trận đã đá (Peter 15/11): 5 giải lớn + C1 có kết quả → data/du-doan-luu-tru.json, KHÔNG bao giờ xoá —
+// trang trận rời tệp tuần vẫn sống thành trang kết quả. Chỉ giữ trường trang kết quả cần; số liệu trận +
+// highlight do scripts/nap-highlight.mjs bù sau (giữ nguyên khi nạp lại).
+const GIAI_LUU = new Set(["England Premier League", "Spain La Liga", "Italy Serie A", "Germany Bundesliga", "France Ligue 1", "UEFA Champions League"]);
+const LT = path.join(path.dirname(RA), "du-doan-luu-tru.json");
+const lt0 = fs.existsSync(LT) ? JSON.parse(fs.readFileSync(LT, "utf8")) : [];
+const ltMap = new Map(lt0.map((d) => [khoa(d.ngay, d.nha, d.khach), d]));
+for (const d of hang.filter((x) => x.kq && GIAI_LUU.has(x.giai))) {
+  const c = ltMap.get(khoa(d.ngay, d.nha, d.khach)) ?? {};
+  ltMap.set(khoa(d.ngay, d.nha, d.khach), { ...c, ngay: d.ngay, gioUtc: d.gioUtc ?? c.gioUtc ?? null, giai: d.giai, nha: d.nha, khach: d.khach, kq: d.kq });
+}
+const ltMoi = [...ltMap.values()].sort((a, b) => a.ngay.localeCompare(b.ngay));
+fs.writeFileSync(LT, `[\n${ltMoi.map((d) => JSON.stringify(d)).join(",\n")}\n]\n`);
+
 // Ghép giờ đá cho trận chưa có giờ.
 const LK = process.env.LIVESCORE_API_KEY || "";
 const LS = process.env.LIVESCORE_API_SECRET || "";
@@ -146,4 +160,5 @@ fs.writeFileSync(RA, `[\n${hang.map((d) => JSON.stringify(d)).join(",\n")}\n]\n`
 in1(`giu ngay cu: ${giu.length} | tep moi: ${moi.tran.length} | tong: ${hang.length}`);
 in1(`co so lieu tran: ${hang.filter((d) => SO_LIEU.some((k) => coGiaTri(d[k]))).length}`);
 in1(`so thanh tich: ${soMoi.length} tran`);
+in1(`kho tran da da: ${ltMoi.length} tran`);
 in1(`ket qua gan: ${soKq} | gio ghep moi: ${ghep} | con thieu gio: ${hang.filter((d) => !d.gioUtc).length}`);

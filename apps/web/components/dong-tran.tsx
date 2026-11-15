@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DoiLogo } from "@/components/doi-logo";
+import { tranDuocIndex } from "@/lib/chi-muc";
 import { Keo1X2, PhongDoNho } from "@/components/phong-do-dong";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
@@ -32,9 +33,9 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
   return (
     <Link
       href={withLang(`/du-doan/${h.slug}`, lang)}
-      // 15/11: trang trận tệp tuần (`tuan-…`) đủ số liệu thì được index (lib/chi-muc.ts) → link thường.
-      // Chỉ trang dưới ngưỡng (noindex) mới nofollow để Google khỏi tốn công bò; người đọc vẫn bấm được.
-      rel={h.slug.startsWith("tuan-") && h.mong !== false ? "nofollow" : undefined}
+      // 15/11: trang trận được index (5 giải lớn + C1, đủ số liệu — lib/chi-muc.ts) → link thường.
+      // Trang noindex thì nofollow để Google khỏi tốn công bò; người đọc vẫn bấm được.
+      rel={tranDuocIndex(h) ? undefined : "nofollow"}
       className={`grid min-h-[68px] grid-cols-[44px_minmax(0,1fr)_auto_12px] items-center gap-x-2.5 border-b border-line/60 px-0.5 py-2.5 transition-colors hover:bg-card-hover lg:min-h-[60px] lg:gap-x-3 lg:px-1.5 ${
         hienGiai ? "lg:grid-cols-[150px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px]" : "lg:grid-cols-[58px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px]"
       } ${h.coBai ? "bg-brand/[.06] pl-2 shadow-[inset_3px_0_var(--color-brand)]" : ""}`}

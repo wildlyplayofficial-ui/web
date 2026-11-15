@@ -33,8 +33,9 @@ async function HeaderWithData() {
   return <Header competitions={competitions} />;
 }
 
-// Only match known languages — reject unknown params like /tma, /api, etc.
-export const dynamicParams = false;
+// 15/11: bỏ dynamicParams = false — cờ này của layout đè xuống mọi trang con, làm trang trận/bài
+// dựng theo yêu cầu (ISR, slug không biết trước lúc build) trả 404. Ngôn ngữ lạ vẫn bị chặn: proxy.ts
+// chỉ cho qua /vi|en|th|es (đường không tiền tố viết lại sang /vi), và notFound() bên dưới.
 
 export default async function LangLayout({
   children,

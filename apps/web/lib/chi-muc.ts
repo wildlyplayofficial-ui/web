@@ -89,24 +89,24 @@ export function analysisDuocIndex(slug: string, ngayDang?: string | null): boole
 }
 
 /**
- * Trang trận /du-doan/{slug} (Peter chốt 10/11/2026): trận nào cũng có trang riêng.
- * Bài tay `nhan-dinh-…`: chỉ mời Google vào GIẢI LỚN + TRẬN ĐỘI TUYỂN + mọi trận có VIỆT NAM,
- * còn lại noindex,follow và không vào sitemap. Trang tệp tuần `tuan-…`: xem trong hàm. Thêm/bớt giải: SỬA BA DÒNG DƯỚI ĐÂY.
- * Tên giải so trên tên đang hiển thị (tên Việt nếu có, không thì tên gốc).
+ * GIẢI ĐƯỢC INDEX trang trận /du-doan/{slug} (Peter chốt 15/11/2026): CHỈ 5 giải lớn + Cúp C1.
+ * Giải khác: trang vẫn sống cho người đọc nhưng noindex,follow + không vào sitemap + link nofollow.
+ * MUỐN INDEX MỌI GIẢI: đổi hằng này thành /./ — mọi nơi (robots, sitemap, rel link) đọc từ đây.
+ * So trên tên đang hiển thị (tên Việt qua tenGiaiViet, không thì tên gốc PredictZ); khớp cả câu
+ * nên "VĐQG Brazil" (Brazil Serie A), "Algeria Ligue 1", Copa del Rey… không lọt.
  */
-const GIAI_LON_INDEX = /^(ngoại hạng anh|premier league|la ?liga|serie a|bundesliga|ligue 1|v-?league( 1)?|(uefa )?(champions|europa|conference) league)$/i;
-const GIAI_DOI_TUYEN_INDEX = /nations league|world cup|\beuro\b|asian cup|asean cup|aff cup|copa am[eé]rica|giao hữu|friendl|vòng loại|qualif/i;
-const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
+export const GIAI_INDEX_TRAN =
+  /^((england )?premier league|ngoại hạng anh|(spain )?la ?liga|(italy )?serie a|(germany )?bundesliga|(france )?ligue 1|(uefa )?champions league|cúp c1)$/i;
 
-export function tranDuocIndex(h: { slug: string; giai: string; nha: string; khach: string; mong?: boolean }): boolean {
-  // 15/11 (Peter chốt: MỌI trận có dự đoán đều có trang đầy đủ cho Google): trang trận dựng từ
-  // TỆP TUẦN (slug `tuan-…`) được index ở mọi giải, miễn đủ số liệu để viết bài nhận định
-  // (`mong === false`, ngưỡng ở lib/tran-nhan-dinh-so.ts: có tỷ số dự đoán + phong độ hai đội
-  // hoặc đối đầu). Trang dưới ngưỡng vẫn noindex,follow + không nộp sitemap như luật 12/11.
-  if (h.slug.startsWith("tuan-")) return h.mong === false;
-  return (
-    GIAI_LON_INDEX.test(h.giai) || GIAI_DOI_TUYEN_INDEX.test(h.giai) || DOI_VIET_NAM.test(h.nha) || DOI_VIET_NAM.test(h.khach)
-  );
+/**
+ * Trang trận được index khi: giải nằm trong GIAI_INDEX_TRAN VÀ đủ dữ liệu.
+ * - Trang tệp tuần `tuan-…`: đủ số liệu viết nhận định (`mong === false`, ngưỡng ở
+ *   lib/tran-nhan-dinh-so.ts: có tỷ số dự đoán + phong độ hai đội hoặc đối đầu).
+ * - Bài tay `nhan-dinh-…`: luôn có thân bài nên chỉ xét giải.
+ */
+export function tranDuocIndex(h: { slug: string; giai: string; mong?: boolean }): boolean {
+  if (!GIAI_INDEX_TRAN.test(h.giai.trim())) return false;
+  return h.slug.startsWith("tuan-") ? h.mong === false : true;
 }
 
 /**

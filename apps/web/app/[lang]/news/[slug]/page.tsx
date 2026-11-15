@@ -17,6 +17,12 @@ import { LocalKickoffTime } from "@/components/local-kickoff-time";
 import { locales } from "@/lib/format";
 import { buildAlternates, getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 
+// ISR (15/11): force-static để fetch no-store bên trong không kéo trang về dựng động mỗi lượt.
+export const dynamic = "force-static";
+// Không dựng sẵn slug nào lúc build: trang dựng lần đầu khi có người vào rồi giữ theo revalidate.
+export async function generateStaticParams() {
+  return [];
+}
 export const revalidate = 300;
 
 const BASE = "https://www.banhbong.net";
