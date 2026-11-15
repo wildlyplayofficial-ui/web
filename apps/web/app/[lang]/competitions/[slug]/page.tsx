@@ -14,10 +14,12 @@ import { CompetitionNews } from "@/components/competition-news";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
 import { COMPETITION_LOGOS, localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
-import { laBaiTru } from "@/lib/chi-muc";
+import { giaiBxhDuocIndex, laBaiTru, NOINDEX_FOLLOW } from "@/lib/chi-muc";
 import { khopBangTong, tinhBxhSan, tinhBxhTong } from "@/lib/bxh-san";
 import { tranCuaGiai } from "@/lib/bxh-san-tai";
 import { KhoiTipGiai } from "@/components/trang-tip-giai";
+import { DuDoanVongToi } from "@/components/giai-du-doan-vong-toi";
+import { tomTatBanThang } from "@/lib/bxh-ban-thang";
 import { HubGiai } from "@/components/giai-hub/hub-giai";
 import { duDoanTheoNgay, hubCuaGiai, muaGiai } from "@/lib/giai-hub";
 import { taiDuDoan } from "@/lib/du-doan-tai";
@@ -132,10 +134,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const goc = dict.standings.descriptionFor
     .replace("{name}", compName)
     .replace("{season}", comp.season ?? "");
-  const bangMeta = lang === "vi" ? await fetchCompetitionTable(comp.livescoreId).catch(() => []) : [];
-  const description = tomTatBang(bangMeta, compName) ?? goc;
+  const bangMeta = await fetchCompetitionTable(comp.livescoreId).catch(() => []);
+  const description = (lang === "vi" ? tomTatBang(bangMeta, compName) : null) ?? goc;
   return {
     title,
+    ...(giaiBxhDuocIndex(slug, bangMeta.length) ? {} : { robots: NOINDEX_FOLLOW }),
     description,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
@@ -218,6 +221,7 @@ export default async function StandingSlugPage({ params }: Props) {
 
   const sortedRows = rows.slice().sort((a, b) => a.rank - b.rank);
   const tomTat = !isWorldCup && !hasGroups ? tomTatBang(sortedRows, compName) : null;
+  const banThang = lang === "vi" && !isWorldCup ? tomTatBanThang(sortedRows, compName) : null;
 
   // Chỉ hiện tab sân nhà / sân khách khi cộng hai bảng ra đúng bảng tổng ở mọi đội.
   const tenDoi = sortedRows.map((r) => r.name);
@@ -457,12 +461,15 @@ export default async function StandingSlugPage({ params }: Props) {
           />
           {/* Mốc tươi mới: description hứa "cập nhật trực tiếp" mà trên trang không
               có dấu hiệu nào. Trang dựng lại mỗi giờ (revalidate = 3600). */}
+          {banThang && <p className="mt-4 text-sm leading-relaxed text-ink">{banThang}</p>}
           <p className="mt-3 text-xs text-muted">
             {`Cập nhật ${capNhatVN()} (giờ Việt Nam)`}
           </p>
         </section>
       )}
-      {showQualification && <KhoiTipGiai bxh={slug} lang={lang} />}
+      {/* 16/11: khối tip tự ẩn khi giải không có trang dự đoán — mở cho mọi giải (Cúp C1 trước đây không có link nào). */}
+      <KhoiTipGiai bxh={slug} lang={lang} />
+      <DuDoanVongToi bxh={slug} lang={lang} />
       {/* Peter 11/11: tin + bài trụ xuống cuối trang, BXH lên trước. */}
       <div className="mt-12">
       <CompetitionNews articles={compArticles} lang={lang} title={dict.news.title} />
