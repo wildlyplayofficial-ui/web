@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 import Link from "next/link";
 import { LiveCommentaryStrip } from "@/components/live-commentary-strip";
 import { MatchesWidget } from "@/components/matches-widget";
@@ -32,6 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
+    // 16/11 dọn trang mỏng (mục tiêu Google): /daily-board ~120 chữ, ngày nghỉ thì trống → noindex,follow, link vẫn được theo.
+    robots: NOINDEX_FOLLOW,
     title: dict.board.title,
     description: dict.board.seoDescription,
     alternates: buildAlternates("/daily-board", lang),
