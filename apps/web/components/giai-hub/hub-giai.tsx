@@ -13,7 +13,6 @@ import { DuDoanTheoNgay } from "./du-doan-ngay";
 import { FaqHub, type CauHoiHub } from "./faq";
 import { KetQuaVong } from "./ket-qua";
 import { Khoi } from "./khoi";
-import { LichKhoDe } from "./lich-kho";
 import { LucLuong } from "./luc-luong";
 import { ThongKeCauThu } from "./thong-ke";
 
@@ -122,15 +121,7 @@ export function HubGiai(p: Props) {
             <LucLuong data={data} />
           </Khoi>
         )}
-        {data.lichKho && data.lichKho.hang.length > 0 && (
-          <Khoi
-            id="lich-kho-de"
-            tieuDe="Lịch khó/dễ 5 vòng tới"
-            phu={`Vòng ${data.lichKho.vong[0]}–${data.lichKho.vong[data.lichKho.vong.length - 1]} · độ khó theo ${data.nguon} · xếp từ lịch dễ nhất`}
-          >
-            <LichKhoDe lich={data.lichKho} />
-          </Khoi>
-        )}
+        {/* Peter 15/11 "bỏ lịch fantasy ra đi": gỡ khối Lịch khó/dễ (độ khó FPL). */}
         {(bai.length > 0 || trangTru.length > 0) && (
           <Khoi id="bai-moi" tieuDe={`Bài mới về ${compName}`}>
             <BaiMoi bai={bai} trangTru={trangTru} lang={lang} />
