@@ -5,7 +5,7 @@ import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import type { NgayDuDoan } from "@/lib/giai-hub";
 import { withLang, type Lang } from "@/lib/i18n";
 import type { KQ } from "@/lib/phong-do";
-import { teamBadge } from "@/lib/team-badges";
+import { badgeNho, teamBadge } from "@/lib/team-badges";
 
 const MAU_KQ: Record<KQ, string> = { T: "bg-brand text-bg", H: "bg-warning text-bg", B: "bg-loss text-white" };
 const TEN_KQ: Record<KQ, string> = { T: "thắng", H: "hoà", B: "thua" };
@@ -29,7 +29,7 @@ function DongDoi({ ten, logo, f }: { ten: string; logo: string | null; f: KQ[] |
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
-        <DoiLogo src={teamBadge(ten) ?? logo} ten={ten} size={22} />
+        <DoiLogo src={badgeNho(teamBadge(ten) ?? logo)} ten={ten} size={22} />
         <span className="min-w-0 break-words text-[15px] font-semibold leading-snug">{ten}</span>
       </div>
       <div className="mt-1 pl-[30px]">

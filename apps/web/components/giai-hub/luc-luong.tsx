@@ -2,8 +2,8 @@ import type { DoiVang, HubGiaiData, LoaiVang } from "@/lib/giai-hub";
 import { LogoDoi } from "./khoi";
 
 const THE: Record<LoaiVang, [string, string]> = {
-  i: ["Chấn thương", "bg-loss-dim text-loss"],
-  s: ["Treo giò", "bg-loss-dim text-loss"],
+  i: ["Chấn thương", "bg-loss-dim text-ink ring-1 ring-inset ring-loss/60"],
+  s: ["Treo giò", "bg-loss-dim text-ink ring-1 ring-inset ring-loss/60"],
   d: ["Bỏ ngỏ", "bg-warning-dim text-warning"],
 };
 const SO_DOI_DAU = 6;
@@ -14,7 +14,7 @@ function Doi({ d, mo, logo }: { d: DoiVang; mo: boolean; logo?: Record<string, s
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2.5 px-3 py-2 [&::-webkit-details-marker]:hidden">
         <LogoDoi ten={d.doi} du={logo} />
         <h3 className="min-w-0 flex-1 break-words text-[15px] font-semibold">{d.doi}</h3>
-        <span className="rounded-full bg-loss-dim px-2.5 py-0.5 text-[13px] font-bold text-loss">{`${d.ds.length} vắng`}</span>
+        <span className="rounded-full bg-loss-dim px-2.5 py-0.5 text-[13px] font-bold text-ink ring-1 ring-inset ring-loss/60">{`${d.ds.length} vắng`}</span>
         <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-180">▾</span>
       </summary>
       <ul className="divide-y divide-line border-t border-line">

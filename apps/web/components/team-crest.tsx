@@ -6,11 +6,11 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { teamBadge } from "@/lib/team-badges";
+import { badgeNho, teamBadge } from "@/lib/team-badges";
 import { teamFlag } from "@/lib/flags";
 
 export function TeamCrest({ name }: { name: string }) {
-  const badge = teamBadge(name);
+  const badge = badgeNho(teamBadge(name));
   if (badge) {
     return (
       <img

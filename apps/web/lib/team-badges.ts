@@ -102,6 +102,10 @@ const LOGO_DOI_TUYEN: Record<string, string> = {
   "thailand u23": "https://flagcdn.com/w160/th.png",
 };
 
+/** Logo TheSportsDB gốc 100–200KB/tấm; chỗ hiện ≤ 50px (BXH 20px, hub ≤ 28px) lấy bản /tiny 100x100 (~14KB). */
+export const badgeNho = (src: string | null): string | null =>
+  src && /thesportsdb\.com\/.*\.png$/.test(src) ? `${src}/tiny` : src;
+
 export function teamBadge(name: string): string | null {
   const doiTuyen = LOGO_DOI_TUYEN[name.trim().toLowerCase()];
   if (doiTuyen) return doiTuyen;

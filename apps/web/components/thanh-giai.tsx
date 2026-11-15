@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { withLang, type Lang } from "@/lib/i18n";
 
 /** Thanh thứ hai của header (Peter duyệt mẫu 15/11): ngày + 5 giải lớn, mọi trang đều thấy. */
@@ -14,9 +17,16 @@ const MUC: { nhan: string; href: string }[] = [
 
 export function ThanhGiai({ lang, barePath }: { lang: Lang; barePath: string }) {
   const dang = (href: string) => barePath === href || (href.startsWith("/competitions/") && barePath.startsWith(`${href}/`));
+  const ds = useRef<HTMLUListElement>(null);
+  // Điện thoại: chip giải đang xem (Serie A, Ligue 1) nằm ngoài khung → cuộn ngang thanh cho thấy, không cuộn trang.
+  useEffect(() => {
+    const ul = ds.current;
+    const on = ul?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (ul && on && on.offsetLeft + on.offsetWidth > ul.clientWidth) ul.scrollLeft = on.offsetLeft - (ul.clientWidth - on.offsetWidth) / 2;
+  }, [barePath]);
   return (
     <nav aria-label="Giải đấu" className="border-b border-line bg-card">
-      <ul className="mx-auto flex max-w-[1240px] gap-2 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] sm:px-5">
+      <ul ref={ds} className="relative mx-auto flex max-w-[1240px] gap-2 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] sm:px-5">
         {MUC.map((m) => {
           const on = dang(m.href);
           return (
