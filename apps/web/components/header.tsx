@@ -147,7 +147,7 @@ function NavDropdown({
   );
 }
 
-export function Header({ competitions = [] }: { competitions?: NavCompetition[] }) {
+export function Header(_props: { competitions?: NavCompetition[] }) {
   const pathname = usePathname();
   const params = useParams<{ lang: string }>();
   const lang = resolveLang(params.lang);
@@ -165,11 +165,7 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     { label: nav.predictions, href: "/du-doan", moi: true },
     { label: nav.parlay, href: "/keo-xien" },
     { label: nav.results, href: "/ket-qua" },
-    {
-      label: nav.matches,
-      // Peter 15/11 "bỏ phần trận đấu chúng ta": menu chỉ còn danh sách giải.
-      items: [...competitions],
-    },
+    // Peter 15/11 "bỏ lun em": gỡ hẳn menu Trận Đấu (giải đã có ở thanh giải bên dưới).
     { label: nav.news, href: "/news" },
   ];
 
