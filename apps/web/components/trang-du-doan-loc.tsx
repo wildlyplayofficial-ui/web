@@ -15,6 +15,8 @@ import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { teamBadge } from "@/lib/team-badges";
 import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
+import { fetchCompetitionTable } from "@/lib/standings";
+import { boiCanhVongToi, hangCua } from "@/lib/boi-canh-vong";
 
 /**
  * Trang dự đoán theo NGÀY (/du-doan/ngay-mai, /du-doan/thu-bay…) và theo GIẢI (/du-doan/ngoai-hang-anh…),
@@ -74,6 +76,12 @@ async function LichVongToi({ g, homNay }: { g: GiaiTrang; homNay: string }) {
   // Vòng tới ≈ các trận trong 4 ngày kể từ trận sắp đá đầu tiên.
   const dau = sap[0]?.ngay;
   const vong = dau ? sap.filter((m) => Date.parse(m.ngay) - Date.parse(dau) <= 3 * 86_400_000) : [];
+  const bang = comp && vong.length > 0 ? await fetchCompetitionTable(comp.livescoreId).catch(() => []) : [];
+  const boiCanh = boiCanhVongToi(vong, bang, g.ten);
+  const hang = (ten: string) => {
+    const r = hangCua(bang, ten);
+    return r ? <span className="shrink-0 text-xs text-muted">{`#${r.rank}`}</span> : null;
+  };
   return (
     <section className="mt-4 rounded-card border border-line bg-card p-4">
       <p className="text-[15px]">
@@ -81,15 +89,16 @@ async function LichVongToi({ g, homNay }: { g: GiaiTrang; homNay: string }) {
           ? `${g.ten} chưa có trận trong mấy ngày tới. Vòng tới bắt đầu ${thuVN(dau)} ${ngayThang(dau)}; dự đoán từng trận lên trước giờ bóng lăn.`
           : `${g.ten} chưa có trận trong mấy ngày tới; dự đoán lên trước giờ bóng lăn.`}
       </p>
+      {boiCanh && <p className="mt-2 text-[15px] leading-relaxed">{boiCanh}</p>}
       {vong.length > 0 && (
         <ul className="mt-3 divide-y divide-line/60">
           {vong.map((m) => (
             <li key={m.id} className="grid grid-cols-[92px_minmax(0,1fr)] items-center gap-x-3 py-2 text-sm">
               <span className="tabular-nums text-muted">{thuVN(m.ngay).replace("Thứ ", "T").replace("Chủ Nhật", "CN")} {ngayThang(m.ngay)}{m.gio === "--:--" ? "" : ` · ${m.gio}`}</span>
               <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="flex min-w-0 items-center gap-1.5"><DoiLogo src={teamBadge(m.homeName)} ten={m.homeName} size={20} /><span className="truncate font-semibold">{m.homeName}</span></span>
+                <span className="flex min-w-0 items-center gap-1.5"><DoiLogo src={teamBadge(m.homeName)} ten={m.homeName} size={20} /><span className="truncate font-semibold">{m.homeName}</span>{hang(m.homeName)}</span>
                 <span className="text-muted">vs</span>
-                <span className="flex min-w-0 items-center gap-1.5"><DoiLogo src={teamBadge(m.awayName)} ten={m.awayName} size={20} /><span className="truncate font-semibold">{m.awayName}</span></span>
+                <span className="flex min-w-0 items-center gap-1.5"><DoiLogo src={teamBadge(m.awayName)} ten={m.awayName} size={20} /><span className="truncate font-semibold">{m.awayName}</span>{hang(m.awayName)}</span>
               </span>
             </li>
           ))}
