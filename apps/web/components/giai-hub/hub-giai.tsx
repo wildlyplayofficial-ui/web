@@ -106,7 +106,7 @@ export function HubGiai(p: Props) {
         </p>
         {/* Peter 15/11 "cái này để lên trên / kiểu 2 option khác cho user chọn". */}
         <nav aria-label={`Dự đoán khác ${compName}`} className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted">Dự đoán khác:</span>
+          <span className="w-full text-sm text-muted sm:w-auto">Dự đoán khác:</span>
           <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={LINK_KHAC}>
             Over/Under 2.5
           </Link>
