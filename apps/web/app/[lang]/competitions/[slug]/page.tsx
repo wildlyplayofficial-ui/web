@@ -134,8 +134,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const goc = dict.standings.descriptionFor
     .replace("{name}", compName)
     .replace("{season}", comp.season ?? "");
-  // Lỗi nguồn (null) KHÔNG được biến thành noindex: chỉ bảng trả rỗng thật mới tính là trang trống.
-  const bangLoi = await fetchCompetitionTable(comp.livescoreId).catch(() => null);
+  const bangLoi = await fetchCompetitionTable(comp.livescoreId)
+    // Nguồn NÉM cả khi bảng rỗng (": rỗng") — rỗng thật thì noindex, lỗi mạng thì giữ index.
+    .catch((e: unknown) => (e instanceof Error && e.message.endsWith(": rỗng") ? [] : null));
   const bangMeta = bangLoi ?? [];
   const description = (lang === "vi" ? tomTatBang(bangMeta, compName) : null) ?? goc;
   return {
