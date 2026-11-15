@@ -24,7 +24,7 @@ export function ThongKeCauThu({ top, logo }: { top: HubGiaiData["top"]; logo?: R
   const co = NHAN.filter(([k]) => top[k].length > 0);
   return (
     <div>
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Chọn bảng thống kê">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Chọn bảng thống kê">
         {co.map(([k, nhan]) => (
           <button
             key={k}

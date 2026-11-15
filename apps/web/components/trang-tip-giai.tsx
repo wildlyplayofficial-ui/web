@@ -13,6 +13,7 @@ import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demTran, duongTipGiai, giaiCoTip, SO_NGAY, tipGiai, type NgayTip } from "@/lib/tip-giai";
 import type { LoaiTip } from "@/lib/tip-ngay";
 import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
+import { hubCuaGiai } from "@/lib/giai-hub";
 
 /**
  * Ba loại trang tip theo giải: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
@@ -20,28 +21,34 @@ import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
  * Giải không có trận nào trong 10 ngày: trang vẫn mở nhưng noindex và không vào sitemap.
  */
 
-const CH: Record<LoaiTip, { ten: string; tieuDe: (g: string) => string; mota: (g: string, n: number) => string; moDau: string }> = {
+const CH: Record<LoaiTip, { ten: string; tieuDe: (g: string) => string; mota: (g: string, n: number, k: string) => string; moDau: string }> = {
   "tai-xiu": {
     ten: "Over/Under",
     tieuDe: (g) => `Over/Under 2.5 ${g}`,
-    mota: (g, n) => `Over/Under 2.5 ${g} 10 ngày tới: ${n} trận có dự đoán Over hoặc Under 2.5, kèm tỷ lệ và số trận Over trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
+    mota: (g, n, k) => `Over/Under 2.5 ${g} ${k}: ${n} trận có dự đoán Over hoặc Under 2.5, kèm tỷ lệ và số trận Over trong 5 trận gần nhất của từng đội. Giờ Việt Nam.`,
     moDau: "Mốc 2.5 bàn: tổng bàn thắng của cả hai đội từ 3 trở lên là Over, từ 2 trở xuống là Under.",
   },
   "hai-doi-ghi-ban": {
     ten: "Cả 2 đội ghi bàn",
     tieuDe: (g) => `Cả 2 đội ghi bàn ${g}`,
-    mota: (g, n) => `Cả 2 đội ghi bàn ${g} 10 ngày tới: ${n} trận có dự đoán Có hoặc Không, kèm tỷ lệ và số trận cả hai đội cùng ghi bàn trong 5 trận gần nhất. Giờ Việt Nam.`,
+    mota: (g, n, k) => `Cả 2 đội ghi bàn ${g} ${k}: ${n} trận có dự đoán Có hoặc Không, kèm tỷ lệ và số trận cả hai đội cùng ghi bàn trong 5 trận gần nhất. Giờ Việt Nam.`,
     moDau: "Mỗi đội ghi ít nhất một bàn trong 90 phút là Có; một đội trắng bàn là Không.",
   },
   "ty-so": {
     ten: "Tỷ số",
     tieuDe: (g) => `Tỷ số dự đoán ${g}`,
-    mota: (g, n) => `Tỷ số dự đoán ${g} 10 ngày tới: ${n} trận, mỗi trận một tỷ số chính xác kèm tỷ lệ. Giờ Việt Nam, bấm trận để xem phong độ và số liệu chi tiết.`,
+    mota: (g, n, k) => `Tỷ số dự đoán ${g} ${k}: ${n} trận, mỗi trận một tỷ số chính xác kèm tỷ lệ. Giờ Việt Nam, bấm trận để xem phong độ và số liệu chi tiết.`,
     moDau: "Tỷ số chính xác là cửa khó nhất nên tỷ lệ thường cao; mỗi trận trang chỉ nêu một tỷ số.",
   },
 };
 
 export const LOAI_GIAI = Object.keys(CH) as LoaiTip[];
+
+/** Giải có trang giải (5 giải lớn): ghi "vòng N" cho khớp trang giải (Peter 15/11); giải khác giữ "10 ngày tới". */
+function khoang(g: { bxh?: string | null }): string {
+  const vong = g.bxh ? hubCuaGiai(g.bxh)?.data.vongToi : null;
+  return vong ? `vòng ${vong}` : `${SO_NGAY} ngày tới`;
+}
 
 async function nap(loai: LoaiTip, slug: string) {
   const g = giaiTuSlug(slug);
@@ -56,7 +63,7 @@ export async function metaTipGiai(loai: LoaiTip, slug: string, lang: Lang): Prom
   if (!r) return {};
   const so = demTran(r.ngay);
   const title = `${CH[loai].tieuDe(r.g.ten)}${so > 0 ? `: dự đoán ${so} trận` : ""}`;
-  const description = CH[loai].mota(r.g.ten, so);
+  const description = CH[loai].mota(r.g.ten, so, khoang(r.g));
   return {
     title,
     description,
@@ -100,6 +107,7 @@ export async function TrangTipGiai({ loai, slug, lang }: { loai: LoaiTip; slug: 
   const so = demTran(ngay);
   const c = CH[loai];
   const khac = LOAI_GIAI.filter((l) => l !== loai);
+  const k = khoang(g);
 
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
@@ -114,11 +122,11 @@ export async function TrangTipGiai({ loai, slug, lang }: { loai: LoaiTip; slug: 
         <span className="text-ink">{c.ten}</span>
       </nav>
 
-      <h1 className="mt-2 font-display text-[22px] font-bold leading-tight sm:text-[30px]">{c.tieuDe(g.ten)}, {SO_NGAY} ngày tới</h1>
+      <h1 className="mt-2 font-display text-[22px] font-bold leading-tight sm:text-[30px]">{c.tieuDe(g.ten)} {k}</h1>
       <p className="mt-1.5 text-[15px] leading-relaxed">
         {so > 0
-          ? `${so} trận ${g.ten} trong ${SO_NGAY} ngày tới, giờ Việt Nam. ${c.moDau}`
-          : `${g.ten} chưa có trận nào có tip ${c.ten.toLowerCase()} trong ${SO_NGAY} ngày tới. Bạn có thể xem lịch và dự đoán đầy đủ của giải ở trang giải.`}
+          ? `${so} trận ${g.ten} ${k}, giờ Việt Nam. ${c.moDau}`
+          : `${g.ten} chưa có trận nào có tip ${c.ten.toLowerCase()} ${k}. Bạn có thể xem lịch và dự đoán đầy đủ của giải ở trang giải.`}
       </p>
 
       <nav aria-label={`Tip khác của ${g.ten}`} className="mt-3 flex flex-wrap gap-2">
