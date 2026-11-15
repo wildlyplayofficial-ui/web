@@ -11,7 +11,17 @@ export function dongDanDau(rows: readonly StandingTeam[]): string | null {
   if (bang.size > 1) return null;
   const dau = rows.reduce((a, b) => (b.rank < a.rank ? b : a));
   if (!dau.name || dau.played <= 0) return null;
-  return `${dau.name} dẫn đầu với ${dau.points} điểm sau ${dau.played} trận.`;
+  const cau = [`${dau.name} dẫn đầu với ${dau.points} điểm sau ${dau.played} trận.`];
+  // 16/11 làm dày /competitions (187 chữ): thêm đội nhì + khoảng cách, và bàn mỗi trận — đều từ bảng.
+  const nhi = rows.filter((r) => r !== dau).reduce<StandingTeam | null>((a, b) => (!a || b.rank < a.rank ? b : a), null);
+  if (nhi && nhi.name) {
+    const cach = dau.points - nhi.points;
+    cau.push(cach > 0 ? `${nhi.name} xếp nhì, kém ${cach} điểm.` : `${nhi.name} xếp nhì, bằng điểm.`);
+  }
+  const tongTran = rows.reduce((t, r) => t + r.played, 0) / 2;
+  const tongBan = rows.reduce((t, r) => t + r.goals_for, 0);
+  if (tongTran > 0 && tongBan > 0) cau.push(`Trung bình ${(tongBan / tongTran).toFixed(1).replace(".", ",")} bàn mỗi trận.`);
+  return cau.join(" ");
 }
 
 /** Slug trang dự đoán (/du-doan/{slug}) ứng với slug trang giải, nếu giải có trang dự đoán. */

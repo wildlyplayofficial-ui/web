@@ -9,7 +9,12 @@ const doi = (rank: number, name: string, points: number, played: number, groupNa
 
 describe("dongDanDau", () => {
   it("lấy đội hạng 1 kèm điểm và số trận", () => {
-    expect(dongDanDau([doi(2, "Chelsea", 25, 12), doi(1, "Arsenal", 28, 12)])).toBe("Arsenal dẫn đầu với 28 điểm sau 12 trận.");
+    expect(dongDanDau([doi(2, "Chelsea", 25, 12), doi(1, "Arsenal", 28, 12)])).toBe("Arsenal dẫn đầu với 28 điểm sau 12 trận. Chelsea xếp nhì, kém 3 điểm.");
+  });
+  it("có bàn thắng thì thêm bàn mỗi trận", () => {
+    const a = { ...doi(1, "A", 6, 2), goals_for: 5 };
+    const b = { ...doi(2, "B", 6, 2), goals_for: 3 };
+    expect(dongDanDau([a, b])).toBe("A dẫn đầu với 6 điểm sau 2 trận. B xếp nhì, bằng điểm. Trung bình 4,0 bàn mỗi trận.");
   });
   it("bảng rỗng thì không có dòng nào", () => {
     expect(dongDanDau([])).toBeNull();
