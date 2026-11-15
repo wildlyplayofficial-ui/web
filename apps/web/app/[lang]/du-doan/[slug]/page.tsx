@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { DocThemTran } from "@/components/doc-them-tran";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
 import { Diem } from "@/components/tran-htft";
@@ -137,6 +138,8 @@ export default async function TrangTran({ params }: Props) {
         Tác giả:{" "}
         <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>
       </p>
+
+      <DocThemTran h={h} lang={lang} />
 
       {lienQuan.ds.length > 0 && (
         <section className="mt-8">

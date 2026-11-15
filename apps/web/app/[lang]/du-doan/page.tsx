@@ -3,9 +3,11 @@ import Link from "next/link";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { cauHoiDuDoan, faqSchema, jsonLd, metaDuDoan, suKienTran, type CauHoi } from "@/lib/du-doan-schema";
 import { getBaiDuDoan } from "@/lib/du-doan";
+import { getBlogs } from "@/lib/data";
 import { cacTranChon } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
-import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
+import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
+import type { Post } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN } from "@/lib/du-doan-hang";
@@ -50,9 +52,45 @@ function HoiNhanh({ ds }: { ds: CauHoi[] }) {
   );
 }
 
+/**
+ * 15/11 (soi chỉ mục): Google bò /du-doan 11/11 rồi bỏ, không lập chỉ mục — trang gần như chỉ là
+ * bảng trận đổi mỗi ngày. Thêm một đoạn giới thiệu cố định + link sang vài bài blog mới nhất.
+ */
+function GioiThieu({ blogs, lang }: { blogs: Post[]; lang: Lang }) {
+  return (
+    <section aria-labelledby="ve-du-doan" className="mt-10 px-2.5 text-[15px] leading-relaxed">
+      <h2 id="ve-du-doan" className="font-display text-2xl font-bold">Dự đoán bóng đá trên banhbong</h2>
+      <p className="mt-3">
+        Trang dự đoán của banhbong gom các trận sắp đá trong ngày và ngày mai, từ Ngoại hạng Anh, La Liga, Serie A,
+        Bundesliga, Ligue 1, Cúp C1 tới các trận đội tuyển quốc gia. Mỗi trận có tỷ số dự đoán, phong độ 5 trận gần
+        nhất của hai đội và giờ đá theo giờ Việt Nam. Bảng được cập nhật mỗi ngày, trước giờ bóng lăn.
+      </p>
+      <p className="mt-3">
+        Cách đọc nhanh: cột 1·X·2 cho biết khả năng đội nhà thắng (1), hòa (X) hay đội khách thắng (2). BTTS là cả hai
+        đội cùng ghi bàn: &ldquo;Có&rdquo; nghĩa là hai bên đều dự kiến có bàn, &ldquo;Không&rdquo; là ít nhất một đội không ghi được.
+        Over/Under 2.5 nói về tổng số bàn cả trận: Over là từ 3 bàn trở lên, Under là 2 bàn trở xuống.
+      </p>
+      <p className="mt-3">
+        Dự đoán chỉ là nhận định dựa trên số liệu và phong độ, bóng đá luôn có bất ngờ. Bấm vào từng trận để xem
+        đội hình, lực lượng, đối đầu và bài nhận định chi tiết nếu có. Muốn đọc thêm về lịch thi đấu, bảng xếp hạng và
+        câu chuyện quanh các trận lớn, xem các bài blog mới nhất bên dưới.
+      </p>
+      {blogs.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {blogs.map((b) => (
+            <li key={b.slug}>
+              <Link href={withLang(`/blog/${b.slug}`, lang)} className="inline-flex min-h-11 items-center text-brand hover:underline">{b.title}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
-  const [{ hang }, baiChon] = await Promise.all([taiDuDoan(), getBaiDuDoan()]);
+  const [{ hang }, baiChon, blogs] = await Promise.all([taiDuDoan(), getBaiDuDoan(), getBlogs(lang)]);
   const hoi = cauHoiDuDoan(hang);
   // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
@@ -88,6 +126,8 @@ export default async function DuDoanHub({ params }: Props) {
       <div className="mt-6 px-2.5">
         <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
       </div>
+
+      <GioiThieu blogs={blogs.slice(0, 4)} lang={lang} />
 
       {/* Peter 11/11: bỏ danh sách bài Chú Tám Banh theo giải khỏi trang dự đoán. */}
       <div className="px-2.5">
