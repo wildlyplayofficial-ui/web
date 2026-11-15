@@ -126,7 +126,7 @@ async function nhomNews(): Promise<MetadataRoute.Sitemap> {
 
 async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   // Trang riêng từng trận /du-doan/{slug} (10/11): CHỈ nộp trận được mời index — khớp
-  // robots ở trang trận (tranDuocIndex: giải lớn/đội tuyển/Việt Nam, bỏ trang khuôn `tuan-…`).
+  // robots ở trang trận (tranDuocIndex: bài tay giải lớn/đội tuyển/Việt Nam; trang `tuan-…` đủ số liệu, 15/11).
   // 14/11 gọn sitemap (Peter chốt): chỉ trận đá trong SO_NGAY_TRAN_SITEMAP ngày tới (giờ VN,
   // tính cả hôm nay); trận đã qua hoặc còn xa vẫn sống, vẫn theo robots cũ, chỉ thôi mời.
   const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));

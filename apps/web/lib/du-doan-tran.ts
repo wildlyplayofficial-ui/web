@@ -34,10 +34,10 @@ export function ngayTabDuDoan(homNay: string, coDuLieu: ReadonlySet<string>): { 
 
 type Tran = Pick<HangDuDoan, "nha" | "khach" | "ngay" | "gio">;
 
-/** H1 trang trận: "Dự đoán Anh vs Croatia, 02h45 ngày 13/11". */
+/** H1 trang trận: "Nhận định, dự đoán Anh vs Croatia, 02h45 ngày 13/11" (15/11: khớp tiêu đề thẻ title). */
 export function tieuDeTran(h: Tran): string {
   const gio = gioChu(h.gio);
-  return `Dự đoán ${h.nha} vs ${h.khach}, ${gio ? `${gio} ` : ""}ngày ${ngayThang(h.ngay)}`;
+  return `Nhận định, dự đoán ${h.nha} vs ${h.khach}, ${gio ? `${gio} ` : ""}ngày ${ngayThang(h.ngay)}`;
 }
 
 /** "Anh thắng Croatia 3-0" / "Tây Ban Nha thắng CH Séc 2-0" (bàn đội thắng trước) / "Armenia hòa Síp 1-1". */
@@ -82,8 +82,8 @@ export function cauTomTat(h: HangDuDoan, danhDau = false): string {
   const kem = [h.taiXiu, cauHaiDoiGhi(h)].filter(Boolean);
   if (kem.length > 0) cau.push(`Dự đoán kèm theo: ${kem.join(", ")}.`);
   if (h.that) {
-    const cham = h.dung === null ? "" : h.dungTySo ? ", dự đoán trúng tỷ số" : h.dung ? ", dự đoán đúng kết quả" : ", dự đoán sai";
-    cau.push(`Kết quả: ${h.nha} ${h.that[0]}-${h.that[1]} ${h.khach}${cham}.`);
+    // Peter 15/11: chỉ nêu tỷ số kết quả, không chấm dự đoán đúng/sai công khai.
+    cau.push(`Kết quả: ${h.nha} ${h.that[0]}-${h.that[1]} ${h.khach}.`);
   }
   return cau.join(" ");
 }

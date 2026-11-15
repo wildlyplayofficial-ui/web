@@ -18,11 +18,11 @@ describe("tiêu đề + meta trang trận", () => {
   });
 
   it("h1 trang trận có giờ và ngày", () => {
-    expect(tieuDeTran(ANH)).toBe("Dự đoán Anh vs Croatia, 02h45 ngày 13/11");
+    expect(tieuDeTran(ANH)).toBe("Nhận định, dự đoán Anh vs Croatia, 02h45 ngày 13/11");
   });
 
   it("trận chưa ghép được giờ thì h1 bỏ giờ", () => {
-    expect(tieuDeTran({ ...ANH, gio: "--:--" })).toBe("Dự đoán Anh vs Croatia, ngày 13/11");
+    expect(tieuDeTran({ ...ANH, gio: "--:--" })).toBe("Nhận định, dự đoán Anh vs Croatia, ngày 13/11");
   });
 
   it("title + description lấy từ số của trận", () => {
@@ -58,7 +58,7 @@ describe("câu chữ sinh từ số", () => {
 
   it("đá xong thì thêm kết quả + chấm đúng/sai", () => {
     const xong = tran("x", { sapDa: false, that: [2, 0], dung: true, dungTySo: false, mot: null, taiXiu: null, haiDoiGhi: null });
-    expect(cauTomTat(xong)).toContain("Kết quả: Anh 2-0 Croatia, dự đoán đúng kết quả.");
+    expect(cauTomTat(xong)).toContain("Kết quả: Anh 2-0 Croatia.");
   });
 });
 
@@ -93,8 +93,16 @@ describe("tranDuocIndex", () => {
     expect(tranDuocIndex({ slug: "nhan-dinh-a-vs-b-12-11-2026", giai, nha, khach })).toBe(mong);
   });
 
-  it("trang từ tệp tuần (tuan-…) không index dù giải lớn", () => {
+  it("trang tệp tuần (tuan-…) thiếu số liệu không index dù giải lớn", () => {
+    expect(tranDuocIndex({ slug: "tuan-2026-11-12-england-croatia", giai: "Nations League", nha: "Anh", khach: "Croatia", mong: true })).toBe(false);
+  });
+
+  it("trang tệp tuần chưa xét ngưỡng thì không index", () => {
     expect(tranDuocIndex({ slug: "tuan-2026-11-12-england-croatia", giai: "Nations League", nha: "Anh", khach: "Croatia" })).toBe(false);
+  });
+
+  it("trang tệp tuần đủ số liệu được index ở mọi giải", () => {
+    expect(tranDuocIndex({ slug: "tuan-2026-11-12-arezzo-pisa", giai: "Serie C Ý", nha: "Arezzo", khach: "Pisa", mong: false })).toBe(true);
   });
 });
 

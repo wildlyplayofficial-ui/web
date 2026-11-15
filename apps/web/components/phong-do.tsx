@@ -35,22 +35,19 @@ export function OTySoDuDoan({
   );
 }
 
-/** Ô tỷ số THẬT cạnh ô dự đoán (kiểu ô RESULT của PredictZ): viền xanh khi đúng
- *  kết quả, đỏ khi sai. */
+/** Ô tỷ số THẬT cạnh ô dự đoán (kiểu ô RESULT của PredictZ). Màu trung tính: Peter 15/11
+ *  "gỡ chữ đúng/sai đi" — không tô xanh/đỏ theo dự đoán đúng hay sai. */
 export function OKetQua({
   that,
-  dung,
   nhan,
   className = "",
 }: {
   that: readonly [number, number];
-  dung: boolean | null;
   nhan: string;
   className?: string;
 }) {
-  const mau = dung === null ? "border-line text-ink" : dung ? "border-brand text-brand" : "border-loss text-loss";
   return (
-    <span className={`rounded-md border-2 bg-card px-2 py-1 text-center font-display font-bold tabular-nums ${mau} ${className}`}>
+    <span className={`rounded-md border-2 bg-card px-2 py-1 text-center font-display font-bold tabular-nums border-line text-ink ${className}`}>
       {nhan} {that[0]}-{that[1]}
     </span>
   );

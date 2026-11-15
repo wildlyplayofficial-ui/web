@@ -7,6 +7,7 @@ import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
 import { Diem } from "@/components/tran-htft";
 import { TranLucLuong } from "@/components/tran-luc-luong";
+import { TranNhanDinh } from "@/components/tran-nhan-dinh";
 import { TranSoLieu } from "@/components/tran-so-lieu";
 import { metaLoc, TrangLoc } from "@/components/trang-du-doan-loc";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
@@ -15,7 +16,9 @@ import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gi
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
-import { htftDiemTuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { capNhatTuan, dauVaoNhanDinh, htftDiemTuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { nhanDinhTran } from "@/lib/tran-nhan-dinh";
+import { tenDoiViet } from "@/lib/ten-viet";
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { ChuTy } from "@/components/ty-le";
@@ -23,8 +26,9 @@ import { ThanBaiMd } from "@/components/than-bai-md";
 
 /**
  * Trang riêng một trận (thiết kế lại 10/11): /du-doan/{slug}. Trận nào trong bảng dự đoán
- * cũng có trang; chỉ trận qua `tranDuocIndex` (giải lớn · đội tuyển · có Việt Nam) mới mời
- * Google lập chỉ mục + vào sitemap, còn lại noindex,follow. Trang sống chừng nào trận còn
+ * cũng có trang; chỉ trận qua `tranDuocIndex` mới mời Google lập chỉ mục + vào sitemap (bài tay:
+ * giải lớn · đội tuyển · có Việt Nam; trận tệp tuần: đủ số liệu để có bài nhận định sinh từ số,
+ * 15/11), còn lại noindex,follow. Trang sống chừng nào trận còn
  * trong dữ liệu (bài dự đoán hoặc tệp tuần); hết thì 404.
  */
 export const revalidate = 300;
@@ -72,6 +76,11 @@ export default async function TrangTran({ params }: Props) {
   const lucLuong = lucLuongCua(slug);
   const cap = `${h.nha} vs ${h.khach}`;
   const cg = chuyenGiaCua(h);
+  // 15/11: trận tệp tuần không có bài tay thì viết bài nhận định từ số của chính trận đó.
+  const dauVao = bai?.body ? null : dauVaoNhanDinh(h);
+  const nhanDinh = dauVao ? nhanDinhTran(dauVao, tenDoiViet) : [];
+  const { tieuDe, moTa } = metaTran(h);
+  const ngaySua = bai?.body ? (bai.updated_at ?? bai.published_at) : capNhatTuan(slug);
 
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
@@ -84,20 +93,21 @@ export default async function TrangTran({ params }: Props) {
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", ...suKienTran(h, SITE_URL, true), author: nguoiChuyenGia(cg, SITE_URL) }) }} />
       {/* Peter 14/11: trận có bài nhận định thì khai thêm Article (tác giả · ngày đăng · ngày sửa) cho Google và AI. */}
-      {bai?.body && (
+      {(bai?.body || (nhanDinh.length > 0 && tranDuocIndex(h))) && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: jsonLd({
               "@context": "https://schema.org",
               "@type": "Article",
-              headline: metaTran(h).tieuDe,
-              description: metaTran(h).moTa,
+              headline: tieuDe,
+              description: moTa,
               url: `${SITE_URL}/du-doan/${slug}`,
               mainEntityOfPage: `${SITE_URL}/du-doan/${slug}`,
               image: `${SITE_URL}/api/og/editorial?title=${encodeURIComponent(cap)}&v=${OG_VERSION}`,
-              datePublished: bai.published_at,
-              dateModified: bai.updated_at ?? bai.published_at,
+              // Trận tệp tuần không có ngày đăng thật → chỉ khai ngày sửa (lúc tỷ lệ được làm mới), không bịa ngày đăng.
+              ...(bai?.body ? { datePublished: bai.published_at } : {}),
+              ...(ngaySua ? { dateModified: ngaySua } : {}),
               inLanguage: "vi-VN",
               author: nguoiChuyenGia(cg, SITE_URL),
               publisher: { "@type": "Organization", name: "banhbong.net", url: SITE_URL, logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon-512x512.png` } },
@@ -134,6 +144,7 @@ export default async function TrangTran({ params }: Props) {
           <ThanBaiMd body={bai.body} />
         </article>
       )}
+      {dauVao && <TranNhanDinh cap={cap} muc={nhanDinh} />}
       <p className="mt-6 border-t border-line pt-4 text-[14px] text-muted">
         Tác giả:{" "}
         <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>

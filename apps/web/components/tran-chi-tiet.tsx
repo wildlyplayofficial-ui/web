@@ -28,7 +28,7 @@ function Doi({ ten, logo }: { ten: string; logo: string | null }) {
   );
 }
 
-/** Ô lớn đầu trang: giải, hai đội, tỷ số dự đoán, giờ đá; đá xong thêm tỷ số thật + ĐÚNG/SAI. */
+/** Ô lớn đầu trang: giải, hai đội, tỷ số dự đoán, giờ đá; đá xong thêm tỷ số thật (15/11: không chấm đúng/sai công khai). */
 export function TranHero({ h, lang, tacGia, linkBai }: { h: HangDuDoan; lang: Lang; /** Byline bài nhận định, nếu trận có bài. */ tacGia: string | null; /** Bài nằm ngay trang thì trỏ neo (#nhan-dinh) thay cho /analysis. */ linkBai?: string }) {
   const t = getDict(lang).duDoan;
   const chieu = chieuCua(h.du);
@@ -37,7 +37,6 @@ export function TranHero({ h, lang, tacGia, linkBai }: { h: HangDuDoan; lang: La
   const luc = [`${thuVN(h.ngay)} ${d}/${m}/${y}`, /^\d/.test(h.gio) ? `${h.gio} giờ Việt Nam` : null, h.san].filter(Boolean).join(" · ");
   // Kênh xem chỉ hiện khi trận chưa đá và giải có trong bảng kênh (không đoán).
   const kenh = h.sapDa && !h.that ? kenhTheoTenViet(h.giai) : null;
-  const cham = h.dung === null ? null : h.dungTySo ? t.exactScore : h.dung ? t.correct : t.wrong;
   return (
     <section className="mt-4 rounded-card border border-brand/50 bg-brand/[.06] px-3 py-5 text-center lg:px-8 lg:py-7">
       <p className="text-xs font-semibold uppercase tracking-[.12em] text-brand">Dự đoán tỷ số · {h.giai}</p>
@@ -65,11 +64,6 @@ export function TranHero({ h, lang, tacGia, linkBai }: { h: HangDuDoan; lang: La
       {h.that && (
         <p className="mt-4 border-t border-line pt-4 text-[15px]">
           Kết quả: <b className="font-display text-lg tabular-nums">{h.nha} {h.that[0]}-{h.that[1]} {h.khach}</b>
-          {cham && (
-            <span className={`ml-2.5 inline-block rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase ${h.dung ? "border-brand text-brand" : "border-loss text-loss"}`}>
-              {cham}
-            </span>
-          )}
         </p>
       )}
       {h.coBai && (

@@ -32,9 +32,9 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
   return (
     <Link
       href={withLang(`/du-doan/${h.slug}`, lang)}
-      // 15/11: trang trận dựng từ tệp tuần (`tuan-…`) là noindex — /du-doan dồn 99/111 link vào
-      // đó, Google tốn công bò trang không lập chỉ mục. Người đọc vẫn bấm được, chỉ báo Google khỏi theo.
-      rel={h.slug.startsWith("tuan-") ? "nofollow" : undefined}
+      // 15/11: trang trận tệp tuần (`tuan-…`) đủ số liệu thì được index (lib/chi-muc.ts) → link thường.
+      // Chỉ trang dưới ngưỡng (noindex) mới nofollow để Google khỏi tốn công bò; người đọc vẫn bấm được.
+      rel={h.slug.startsWith("tuan-") && h.mong !== false ? "nofollow" : undefined}
       className={`grid min-h-[68px] grid-cols-[44px_minmax(0,1fr)_auto_12px] items-center gap-x-2.5 border-b border-line/60 px-0.5 py-2.5 transition-colors hover:bg-card-hover lg:min-h-[60px] lg:gap-x-3 lg:px-1.5 ${
         hienGiai ? "lg:grid-cols-[150px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px]" : "lg:grid-cols-[58px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px]"
       } ${h.coBai ? "bg-brand/[.06] pl-2 shadow-[inset_3px_0_var(--color-brand)]" : ""}`}
@@ -82,9 +82,9 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
           {h.du ? `${h.du[0]}-${h.du[1]}` : "?"}
         </span>
         {h.that ? (
-          <p className={`mt-0.5 whitespace-nowrap text-xs ${h.dung === null ? "text-muted" : h.dung ? "text-brand" : "text-loss"}`}>
+          // Peter 15/11 "gỡ chữ đúng/sai đi": chỉ hiện tỷ số kết quả, màu trung tính, không chấm đúng/sai.
+          <p className="mt-0.5 whitespace-nowrap text-xs text-muted">
             {t.result} {h.that[0]}-{h.that[1]}
-            {h.dung !== null && ` · ${h.dung ? t.correct : t.wrong}`}
           </p>
         ) : (
           chieu !== null && (
