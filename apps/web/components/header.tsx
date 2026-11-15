@@ -167,11 +167,8 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
     { label: nav.results, href: "/ket-qua" },
     {
       label: nav.matches,
-      items: [
-        { name: nav.allMatches, href: "/matches", logo_url: "/icons/icon-192x192.png" },
-        ...(competitions.length > 0 ? [{ divider: true } as const] : []),
-        ...competitions,
-      ],
+      // Peter 15/11 "bỏ phần trận đấu chúng ta": menu chỉ còn danh sách giải.
+      items: [...competitions],
     },
     { label: nav.news, href: "/news" },
   ];
