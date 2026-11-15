@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
+import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -14,6 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
   return {
+    // 16/11 dọn trang mỏng (mục tiêu Google): /learn chỉ ~180 chữ (trang mục lục công cụ) → noindex,follow, link vẫn được theo.
+    robots: NOINDEX_FOLLOW,
     title: dict.nav.learn,
     description: dict.guides.subtitle,
     alternates: buildAlternates("/learn", lang),
