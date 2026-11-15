@@ -17,6 +17,7 @@ import { teamBadge } from "@/lib/team-badges";
 import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { boiCanhVongToi, hangCua } from "@/lib/boi-canh-vong";
+import { tomTatBanThang } from "@/lib/bxh-ban-thang";
 
 /**
  * Trang dự đoán theo NGÀY (/du-doan/ngay-mai, /du-doan/thu-bay…) và theo GIẢI (/du-doan/ngoai-hang-anh…),
@@ -78,6 +79,7 @@ async function LichVongToi({ g, homNay }: { g: GiaiTrang; homNay: string }) {
   const vong = dau ? sap.filter((m) => Date.parse(m.ngay) - Date.parse(dau) <= 3 * 86_400_000) : [];
   const bang = comp && vong.length > 0 ? await fetchCompetitionTable(comp.livescoreId).catch(() => []) : [];
   const boiCanh = boiCanhVongToi(vong, bang, g.ten);
+  const banThang = tomTatBanThang(bang, g.ten);
   const hang = (ten: string) => {
     const r = hangCua(bang, ten);
     return r ? <span className="shrink-0 text-xs text-muted">{`#${r.rank}`}</span> : null;
@@ -90,6 +92,7 @@ async function LichVongToi({ g, homNay }: { g: GiaiTrang; homNay: string }) {
           : `${g.ten} chưa có trận trong mấy ngày tới; dự đoán lên trước giờ bóng lăn.`}
       </p>
       {boiCanh && <p className="mt-2 text-[15px] leading-relaxed">{boiCanh}</p>}
+      {banThang && <p className="mt-2 text-[15px] leading-relaxed">{banThang}</p>}
       {vong.length > 0 && (
         <ul className="mt-3 divide-y divide-line/60">
           {vong.map((m) => (
@@ -113,7 +116,13 @@ async function BoiCanhGiai({ g, ds }: { g: GiaiTrang; ds: HangDuDoan[] }) {
   const comp = g.bxh ? (await getStandingsCompetitions().catch(() => [])).find((c) => c.slug === g.bxh) : null;
   const bang = comp ? await fetchCompetitionTable(comp.livescoreId).catch(() => []) : [];
   const boiCanh = boiCanhVongToi(ds.map((h) => ({ homeName: h.nha, awayName: h.khach })), bang, g.ten);
-  return boiCanh ? <p className="mt-2 text-[15px] leading-relaxed">{boiCanh}</p> : null;
+  const banThang = tomTatBanThang(bang, g.ten);
+  return (
+    <>
+      {boiCanh && <p className="mt-2 text-[15px] leading-relaxed">{boiCanh}</p>}
+      {banThang && <p className="mt-2 text-[15px] leading-relaxed">{banThang}</p>}
+    </>
+  );
 }
 
 const MANH = "inline-flex min-h-11 items-center hover:text-ink";
