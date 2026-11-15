@@ -4,6 +4,8 @@ import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { fetchCompetitionTable } from "@/lib/standings";
+import { dongDanDau, duDoanCuaGiai } from "@/lib/giai-dan-dau";
 
 export const revalidate = 3600;
 
@@ -40,6 +42,11 @@ export default async function CompetitionsHub({ params }: Props) {
   const dict = getDict(lang);
   const competitions = await getStandingsCompetitions().catch(() => []);
   const active = competitions.filter((c) => c.status === "active" && c.slug);
+  // 16/11: trang chỉ còn ~62 chữ. Mỗi giải thêm 1 dòng đội đầu bảng (số thật từ BXH, đã đệm 1 giờ);
+  // lỗi hoặc bảng rỗng → không hiện gì.
+  const danDau = lang === "vi"
+    ? await Promise.all(active.map((c) => fetchCompetitionTable(c.livescoreId).then(dongDanDau).catch(() => null)))
+    : active.map(() => null);
 
   return (
     <div className="mx-auto max-w-[800px] px-5 pb-12">
@@ -47,6 +54,13 @@ export default async function CompetitionsHub({ params }: Props) {
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.standings.title}</h1>
         <p className="mt-3 text-muted">{dict.standings.subtitle}</p>
+        {lang === "vi" && (
+          <p className="mx-auto mt-4 max-w-[600px] text-sm leading-relaxed text-ink">
+            {"Mỗi giải có bảng xếp hạng, lịch thi đấu và phong độ 5 trận gần nhất, cập nhật mỗi giờ. Tỷ số dự đoán và Over/Under từng trận nằm ở trang "}
+            <Link href={withLang("/du-doan", lang)} className="font-semibold text-brand hover:underline">dự đoán bóng đá hôm nay</Link>
+            {", chia theo giải."}
+          </p>
+        )}
       </section>
 
       {active.length === 0 ? (
@@ -55,11 +69,12 @@ export default async function CompetitionsHub({ params }: Props) {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {active.map((comp) => {
+          {active.map((comp, i) => {
             const colors = COMP_COLORS[comp.slug] ?? DEFAULT_COLORS;
+            const dd = lang === "vi" ? duDoanCuaGiai(comp.slug) : null;
             return (
+              <div key={comp.id}>
               <Link
-                key={comp.id}
                 href={withLang(`/competitions/${comp.slug}`, lang)}
                 className={`group flex items-center justify-between rounded-card border ${colors.border} ${colors.bg} p-6 transition-colors hover:border-brand/60`}
               >
@@ -75,6 +90,17 @@ export default async function CompetitionsHub({ params }: Props) {
                   {dict.nav.standings} &rarr;
                 </span>
               </Link>
+              {(danDau[i] || dd) && (
+                <p className="mt-2 px-1 text-sm leading-relaxed text-muted">
+                  {danDau[i] && <span className="text-ink">{danDau[i]} </span>}
+                  {dd && (
+                    <Link href={withLang(`/du-doan/${dd.slug}`, lang)} className="font-semibold text-brand hover:underline">
+                      {`Dự đoán ${dd.ten}`}
+                    </Link>
+                  )}
+                </p>
+              )}
+              </div>
             );
           })}
         </div>
