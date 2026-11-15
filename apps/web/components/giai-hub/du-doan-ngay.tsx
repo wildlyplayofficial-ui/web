@@ -61,8 +61,6 @@ function TheTran({ h, lang, nl }: { h: HangDuDoan; lang: Lang; nl: NguonLogo }) 
         <DongDoi ten={h.khach} logo={logoHub(h.khach, h.logoKhach, nl.ungVien, nl.du)} f={h.formKhach} />
         <p className="text-[13px] text-muted">
           <b className="text-ink tabular-nums">{h.gio}</b>
-          {h.taiXiu && <> · {h.taiXiu}</>}
-          {h.haiDoiGhi !== null && <> · Cả 2 đội ghi bàn: {h.haiDoiGhi ? "Có" : "Không"}</>}
         </p>
       </div>
       <div className="flex flex-col items-center justify-center rounded-lg bg-bg/60 px-1 text-center">

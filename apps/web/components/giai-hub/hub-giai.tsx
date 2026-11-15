@@ -39,7 +39,7 @@ interface Props {
   trangTru: AnalysisArticle[];
 }
 
-const TAB = "inline-flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-center text-sm font-semibold leading-tight";
+const LINK_KHAC = "flex min-h-11 items-center rounded-card border border-line bg-card px-4 text-sm font-semibold transition-colors hover:bg-card-hover";
 
 function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {
   const ds: CauHoiHub[] = [];
@@ -91,11 +91,6 @@ export function HubGiai(p: Props) {
         <p className="mt-2 text-sm text-muted">
           {[`Mùa ${mua}`, data.vongXong ? `cập nhật sau vòng ${data.vongXong}` : null, "giờ Việt Nam"].filter(Boolean).join(" · ")}
         </p>
-        <nav aria-label="Loại dự đoán" className="mt-4 flex gap-1 rounded-xl border border-line bg-card p-1">
-          <span aria-current="page" className={`${TAB} bg-brand text-bg`}>Tỷ số</span>
-          <Link href={withLang(duongTipGiai("hai-doi-ghi-ban", giai), lang)} className={`${TAB} text-muted hover:text-ink`}>Cả 2 đội ghi bàn</Link>
-          <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={`${TAB} text-muted hover:text-ink`}>Over/Under 2.5</Link>
-        </nav>
       </header>
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
@@ -145,6 +140,23 @@ export function HubGiai(p: Props) {
             </Khoi>
           )}
         </div>
+      </div>
+
+      <div className="mt-10">
+        <Khoi id="du-doan-khac" tieuDe={`Dự đoán khác ${compName}`}>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            <li>
+              <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={LINK_KHAC}>
+                {`Over/Under 2.5 ${compName}: trận nào từ 3 bàn trở lên`}
+              </Link>
+            </li>
+            <li>
+              <Link href={withLang(duongTipGiai("hai-doi-ghi-ban", giai), lang)} className={LINK_KHAC}>
+                {`Cả 2 đội ghi bàn ${compName}: trận nào 2 đội cùng có bàn`}
+              </Link>
+            </li>
+          </ul>
+        </Khoi>
       </div>
 
       {hoiDap.length > 0 && (
