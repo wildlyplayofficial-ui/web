@@ -76,6 +76,30 @@ export function tranCuaGiai(hang: readonly HangDuDoan[], g: GiaiTrang, homNay: s
     .sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
 }
 
+/**
+ * Đoạn chữ tóm tắt trang giải, viết từ chính số liệu các trận đang hiện (không có số nào bịa):
+ * số trận, ngày đá, chia thắng/hoà/thua theo tỷ số dự đoán, số trận Over, bàn trung bình.
+ * Trận chưa chốt tỷ số (du = null) chỉ tính vào tổng số trận.
+ */
+export function tomTatGiai(ds: readonly HangDuDoan[], ten: string): string | null {
+  if (ds.length === 0) return null;
+  const ngay = [...new Set(ds.map((h) => h.ngay))];
+  const dau = ngayThang(ngay[0]);
+  const cuoi = ngayThang(ngay[ngay.length - 1]);
+  const khung = ngay.length === 1 ? `ngày ${dau}` : `${ngay.length} ngày từ ${dau} đến ${cuoi}`;
+  const mo = `${ten} có ${ds.length} trận sắp đá trong ${khung} (giờ Việt Nam).`;
+  const co = ds.filter((h): h is HangDuDoan & { du: [number, number] } => h.du !== null);
+  if (co.length === 0) return `${mo} Tỷ số dự đoán sẽ lên trước giờ bóng lăn.`;
+  const nha = co.filter((h) => h.du[0] > h.du[1]).length;
+  const hoa = co.filter((h) => h.du[0] === h.du[1]).length;
+  const khach = co.length - nha - hoa;
+  const bang = (co.reduce((t, h) => t + h.du[0] + h.du[1], 0) / co.length).toFixed(1).replace(".", ",");
+  const coMoc = co.filter((h) => h.taiXiu !== null);
+  const over = coMoc.filter((h) => /^over/i.test(h.taiXiu ?? "")).length;
+  const overCau = coMoc.length > 0 ? ` ${over}/${coMoc.length} trận được dự đoán Over.` : "";
+  return `${mo} Trong ${co.length} trận đã chốt tỷ số: ${nha} chủ nhà thắng, ${hoa} hoà, ${khach} khách thắng; trung bình ${bang} bàn mỗi trận.${overCau}`;
+}
+
 export function metaGiai(g: GiaiTrang): { tieuDe: string; moTa: string } {
   return {
     tieuDe: `Dự đoán ${g.ten} vòng tới`,

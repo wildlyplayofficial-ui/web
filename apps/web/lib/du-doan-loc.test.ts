@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { duongDanNgay, GIAI_TRANG, giaiTuSlug, ngayTuSlug, tenNgay, tranCuaGiai } from "./du-doan-loc";
+import { duongDanNgay, GIAI_TRANG, giaiTuSlug, ngayTuSlug, tenNgay, tomTatGiai, tranCuaGiai } from "./du-doan-loc";
 import type { HangDuDoan } from "./du-doan-hang";
 
 // 11/11/2026 là Thứ Tư.
@@ -50,5 +50,20 @@ describe("giải có trang riêng", () => {
       HOM_NAY,
     );
     expect(ds.map((x) => x.slug)).toEqual(["a", "b"]);
+  });
+});
+
+describe("tomTatGiai", () => {
+  const t = (ngay: string, du: [number, number] | null, taiXiu: string | null) => ({ ngay, du, taiXiu }) as HangDuDoan;
+  it("không có trận thì không viết gì", () => expect(tomTatGiai([], "La Liga")).toBeNull());
+  it("đếm thắng/hoà/thua, bàn trung bình, Over từ đúng số liệu", () => {
+    const s = tomTatGiai([t("2026-11-21", [2, 0], "Over 2.5"), t("2026-11-21", [1, 1], "Under 2.5"), t("2026-11-22", [0, 3], "Over 2.5"), t("2026-11-22", null, null)], "La Liga")!;
+    expect(s).toContain("4 trận sắp đá trong 2 ngày từ 21/11 đến 22/11");
+    expect(s).toContain("1 chủ nhà thắng, 1 hoà, 1 khách thắng");
+    expect(s).toContain("trung bình 2,3 bàn");
+    expect(s).toContain("2/3 trận được dự đoán Over");
+  });
+  it("chưa chốt tỷ số trận nào thì chỉ nói lịch", () => {
+    expect(tomTatGiai([t("2026-11-21", null, null)], "Serie A")).toContain("1 trận sắp đá trong ngày 21/11");
   });
 });
