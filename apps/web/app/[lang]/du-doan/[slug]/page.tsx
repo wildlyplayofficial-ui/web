@@ -9,6 +9,8 @@ import { tenKetQua, TranKetQua } from "@/components/tran-ket-qua";
 import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranNhanDinh } from "@/components/tran-nhan-dinh";
 import { TranSoLieu } from "@/components/tran-so-lieu";
+import { TranXg } from "@/components/tran-xg";
+import { TranXgChuoi } from "@/components/tran-xg-chuoi";
 import { metaLoc, TrangLoc } from "@/components/trang-du-doan-loc";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { tranDuocIndex } from "@/lib/chi-muc";
@@ -172,6 +174,9 @@ export default async function TrangTran({ params }: Props) {
           Hai đội ghi bàn · Over/Under 2.5 · Tỷ số chính xác (đã có ở khung trên cùng). */}
       {/* Peter 14/11 "A. Bỏ đi": bỏ 4 thẻ kèo phụ. Peter 15/11 "A đi em": bỏ luôn hộp điểm tấn công/phòng ngự
           (thang 1-10 khó tin: Liverpool hạng 4 mà tấn công 2/10). */}
+      {/* Peter 15/11: khung xG số FotMob 5 trận gần nhất + biểu đồ xG lên xuống 10 trận (top 5 giải). */}
+      <TranXg slug={slug} nha={tenDoiViet(h.nha)} khach={tenDoiViet(h.khach)} logo={[h.logoNha, h.logoKhach]} />
+      <TranXgChuoi slug={slug} nha={tenDoiViet(h.nha)} khach={tenDoiViet(h.khach)} />
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
       {/* 14/11: trận có bài nhận định viết tay thì mang luôn thân bài — trang trận là bản chính
           (canonical), bản /analysis/{slug} trỏ canonical về đây. Trận tệp tuần không có bài. */}

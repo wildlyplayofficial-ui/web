@@ -80,10 +80,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function buildSportsEventSchema(pick: Awaited<ReturnType<typeof getPick>>) {
   if (!pick) return null;
   const statusMap: Record<string, string> = {
+    // won/lost/push = trận đã đá xong, không phải dời lịch. schema.org không có trạng thái "đã kết thúc"
+    // nên giữ EventScheduled (trận diễn ra đúng lịch) thay vì EventRescheduled sai nghĩa.
     published: "EventScheduled",
-    won: "EventRescheduled",
-    lost: "EventRescheduled",
-    push: "EventRescheduled",
+    won: "EventScheduled",
+    lost: "EventScheduled",
+    push: "EventScheduled",
     void: "EventCancelled",
   };
   return {
