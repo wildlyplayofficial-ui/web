@@ -163,7 +163,7 @@ export function Header(_props: { competitions?: NavCompetition[] }) {
     // Peter 11/11: menu trên chỉ 4 mục; Blog, Phân Tích, Giới Thiệu xuống chân trang.
     // Bỏ Chú Tám chọn, Thành Tích, Kèo (trang vẫn sống, chỉ gỡ khỏi menu).
     { label: nav.predictions, href: "/du-doan", moi: true },
-    { label: nav.parlay, href: "/keo-xien" },
+    // Peter 15/11 "kèo xiên cất xuống đi": Kèo Xiên chỉ còn ở chân trang.
     { label: nav.results, href: "/ket-qua" },
     // Peter 15/11 "bỏ lun em": gỡ hẳn menu Trận Đấu (giải đã có ở thanh giải bên dưới).
     { label: nav.news, href: "/news" },
