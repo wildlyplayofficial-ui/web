@@ -52,7 +52,8 @@ const dong = (t) => ({
   fn: t.f_nha ?? "",
   fk: t.f_khach ?? "",
   o: Array.isArray(t.keo) ? t.keo : [],
-  gioUtc: gioCu.get(khoa(t.ngay, t.nha, t.khach)) ?? null,
+  // gio_utc: tệp máy (keo.py → doi_jane.py) có sẵn giờ PredictZ; tệp Jane không có thì ghép lịch livescore bên dưới.
+  gioUtc: gioCu.get(khoa(t.ngay, t.nha, t.khach)) ?? t.gio_utc ?? null,
   btts: t.btts?.tip ? (/yes/i.test(t.btts.tip) ? "Có" : "Không") : undefined,
   tx: t.ou?.tip ? (/over/i.test(t.ou.tip) ? "Over 2.5" : "Under 2.5") : undefined,
   // Khối phụ trang trận: tip + tỷ lệ + chuỗi 5 trận (h5/a5). cs chỉ ~1/10 trận có.
