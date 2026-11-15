@@ -50,6 +50,10 @@ const TEN_KHAC: Record<string, string> = {
   "athletic bilbao": "Athletic Club",
   "stade rennais": "Rennes",
   "stade brest 29": "Stade Brestois 29",
+  // Tên FotMob (hub giải 15/11).
+  "brest": "Stade Brestois 29",
+  "internazionale": "Inter",
+  "deportivo a coruna": "Deportivo de A Coruña",
   "malaga": "Málaga",
   // Tệp dự đoán tuần ghi tên ngắn của CLB Anh/Đức hạng dưới.
   "aldershot": "Aldershot Town",
@@ -97,6 +101,10 @@ const LOGO_DOI_TUYEN: Record<string, string> = {
   "vietnam u23": "https://flagcdn.com/w160/vn.png",
   "thailand u23": "https://flagcdn.com/w160/th.png",
 };
+
+/** Logo TheSportsDB gốc 100–200KB/tấm; chỗ hiện ≤ 50px (BXH 20px, hub ≤ 28px) lấy bản /tiny 100x100 (~14KB). */
+export const badgeNho = (src: string | null): string | null =>
+  src && /thesportsdb\.com\/.*\.png$/.test(src) ? `${src}/tiny` : src;
 
 export function teamBadge(name: string): string | null {
   const doiTuyen = LOGO_DOI_TUYEN[name.trim().toLowerCase()];

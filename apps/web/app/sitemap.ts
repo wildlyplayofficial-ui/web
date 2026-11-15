@@ -11,6 +11,7 @@ import { GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
+import { hubCuaGiai } from "@/lib/giai-hub";
 
 /** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8).
  *
@@ -248,7 +249,9 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
     .filter((_, i) => visible[i])
     .map((c) => ({
       url: `${BASE}/competitions/${c.slug}`,
-      // Không khai lastmod: bảng điểm đổi theo trận, không có cột ngày sửa thật.
+      // lastmod chỉ khai cho hub 5 giải lớn: data/giai-hub.json có giờ máy cập nhật thật (capNhat).
+      // Giải khác không có cột ngày sửa thật nên không khai.
+      ...(hubCuaGiai(c.slug) ? { lastModified: hubCuaGiai(c.slug)!.data.capNhat } : {}),
       changeFrequency: "daily" as const,
       priority: 0.7,
       alternates: alternates(`/competitions/${c.slug}`),
