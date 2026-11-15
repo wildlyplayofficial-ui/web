@@ -92,7 +92,7 @@ export function HubGiai(p: Props) {
         </p>
       </header>
 
-      {/* Peter 15/11: 1 cột, BXH lên trước rồi mới tới thống kê cầu thủ/xG. */}
+      {/* Peter 15/11: 1 cột, BXH → thống kê cầu thủ → kết quả vòng. */}
       <div className="space-y-10">
         <Khoi id="du-doan" tieuDe={`Lịch thi đấu & dự đoán vòng ${data.vongToi ?? ""}`.trim()}>
           <DuDoanTheoNgay
@@ -104,14 +104,14 @@ export function HubGiai(p: Props) {
         <Khoi id="bang-xep-hang" tieuDe={`Bảng xếp hạng ${compName} ${mua}`}>
           {bang}
         </Khoi>
+        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
+          <ThongKeCauThu top={data.top} logo={data.logo} />
+        </Khoi>
         {data.ketQua.length > 0 && (
           <Khoi id="ket-qua" tieuDe={`Kết quả ${compName} vòng ${data.vongXong}`}>
             <KetQuaVong ds={data.ketQua} logo={data.logo} />
           </Khoi>
         )}
-        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
-          <ThongKeCauThu top={data.top} logo={data.logo} />
-        </Khoi>
         {data.vang.length > 0 && (
           <Khoi
             id="luc-luong"
