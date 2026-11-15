@@ -67,15 +67,7 @@ function Dong({ h, lang, hienTyLe }: { h: HangDuDoan; lang: Lang; hienTyLe: bool
           <span className="flex shrink-0 flex-col items-center gap-1">
             <OTySoDuDoan du={h.du} chu={{ home: t.homeShort, draw: t.draw, away: t.awayShort }} className="min-w-[84px] text-sm" />
             {h.that && (
-              <>
-                <OKetQua that={h.that} dung={h.dung} nhan={t.result} className="min-w-[84px] text-sm" />
-                {h.dung !== null && (
-                  <span className={`text-[11px] font-bold ${h.dung ? "text-brand" : "text-loss"}`}>
-                    {h.dung ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
-                    {h.dungTySo && <span className="block text-center font-semibold">{t.exactScore}</span>}
-                  </span>
-                )}
-              </>
+              <OKetQua that={h.that} nhan={t.result} className="min-w-[84px] text-sm" />
             )}
           </span>
         </span>

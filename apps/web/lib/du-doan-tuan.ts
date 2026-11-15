@@ -13,6 +13,8 @@ import { bxConMoi, conMoi, phongDoTuTran, type SoLieuTran } from "./tran-so-lieu
 import type { ThiTruongPhu } from "./tran-keo-phu";
 import { docDnb, docKqBtts, docKqOu } from "./tran-keo3";
 import { docDiem, docHtft, type DiemDoi, type HtFt } from "./tran-htft";
+import { duDuLieuIndex } from "./tran-nhan-dinh-so";
+import type { DauVaoNhanDinh } from "./tran-nhan-dinh";
 
 export interface DongTuan extends SoLieuTran {
   ngay: string;
@@ -154,6 +156,7 @@ export function hangTuan(daCo: readonly HangDuDoan[], daDa: readonly TranDaDa[],
       taiXiu: chuanOU(d.tx),
       haiDoiGhi: d.btts ? d.btts === "Có" : null,
       nhan: [],
+      mong: !duDuLieuIndex(d),
     };
     // Nhãn tính trên tên gốc; hiển thị + JSON-LD dùng tên Việt (người Việt tìm bằng tên Việt).
     return [{ ...h, nhan: nhanTran(h), giai: tenGiaiViet(d.giai), nha: tenDoiViet(d.nha), khach: tenDoiViet(d.khach) }];
@@ -236,6 +239,17 @@ export function keo3Tuan(slug: string): Keo3Tuan | null {
   const pKqOu = docKqOu(d.pKqOu) ? d.pKqOu : undefined;
   return pDnb || pKqBtts || pKqOu ? { nha: d.nha, khach: d.khach, pDnb, pKqBtts, pKqOu } : null;
 }
+
+/** Đầu vào bài nhận định sinh từ số (lib/tran-nhan-dinh.ts) cho trang trận tệp tuần `h`; không có dòng → null. */
+export function dauVaoNhanDinh(h: HangDuDoan): DauVaoNhanDinh | null {
+  const d = DONG.find((x) => slugTuan(x) === h.slug);
+  if (!d) return null;
+  const { slug, nha, khach, du, mot, taiXiu, haiDoiGhi } = h;
+  return { slug, nha, khach, du, mot, taiXiu, haiDoiGhi, nhaGoc: d.nha, khachGoc: d.khach, so: soLieuTuan(slug), pOu: d.pOu, pBtts: d.pBtts, pCs: d.pCs, htft: d.htft };
+}
+
+/** Lúc tỷ lệ của trận được làm mới gần nhất (ISO) — ngày sửa cho JSON-LD Article; tệp không ghi → null. */
+export const capNhatTuan = (slug: string): string | null => DONG.find((x) => slugTuan(x) === slug)?.oCapNhat ?? null;
 
 /** Các dòng tệp tuần hiện tại. */
 export const dongTuan = (): readonly DongTuan[] => DONG;

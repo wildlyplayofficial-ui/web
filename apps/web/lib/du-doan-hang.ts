@@ -56,6 +56,8 @@ export interface HangDuDoan {
   /** Dự đoán cả hai đội ghi bàn; null = nguồn không ghi. */
   haiDoiGhi: boolean | null;
   nhan: NhanTran[];
+  /** Chỉ dòng tệp tuần: true = trang trận thiếu số liệu (dưới ngưỡng duDuLieuIndex) → noindex + link nofollow. */
+  mong?: boolean;
 }
 
 const LECH_TOI_DA = 36 * 3_600_000;

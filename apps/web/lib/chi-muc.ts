@@ -89,20 +89,21 @@ export function analysisDuocIndex(slug: string, ngayDang?: string | null): boole
 }
 
 /**
- * Trang trận /du-doan/{slug} (Peter chốt 10/11/2026): trận nào cũng có trang riêng,
- * nhưng chỉ mời Google vào GIẢI LỚN + TRẬN ĐỘI TUYỂN + mọi trận có VIỆT NAM. Trận còn
- * lại noindex,follow và không vào sitemap. Thêm/bớt giải: SỬA BA DÒNG DƯỚI ĐÂY.
+ * Trang trận /du-doan/{slug} (Peter chốt 10/11/2026): trận nào cũng có trang riêng.
+ * Bài tay `nhan-dinh-…`: chỉ mời Google vào GIẢI LỚN + TRẬN ĐỘI TUYỂN + mọi trận có VIỆT NAM,
+ * còn lại noindex,follow và không vào sitemap. Trang tệp tuần `tuan-…`: xem trong hàm. Thêm/bớt giải: SỬA BA DÒNG DƯỚI ĐÂY.
  * Tên giải so trên tên đang hiển thị (tên Việt nếu có, không thì tên gốc).
  */
 const GIAI_LON_INDEX = /^(ngoại hạng anh|premier league|la ?liga|serie a|bundesliga|ligue 1|v-?league( 1)?|(uefa )?(champions|europa|conference) league)$/i;
 const GIAI_DOI_TUYEN_INDEX = /nations league|world cup|\beuro\b|asian cup|asean cup|aff cup|copa am[eé]rica|giao hữu|friendl|vòng loại|qualif/i;
 const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
 
-export function tranDuocIndex(h: { slug: string; giai: string; nha: string; khach: string }): boolean {
-  // 12/11: trang trận dựng từ TỆP TUẦN (slug `tuan-…`, xem lib/du-doan-tuan.ts) là trang
-  // khuôn mỏng, không có bài — noindex,follow + không nộp sitemap. Chỉ bài tay
-  // `nhan-dinh-…` mới xét giải/đội như dưới.
-  if (h.slug.startsWith("tuan-")) return false;
+export function tranDuocIndex(h: { slug: string; giai: string; nha: string; khach: string; mong?: boolean }): boolean {
+  // 15/11 (Peter chốt: MỌI trận có dự đoán đều có trang đầy đủ cho Google): trang trận dựng từ
+  // TỆP TUẦN (slug `tuan-…`) được index ở mọi giải, miễn đủ số liệu để viết bài nhận định
+  // (`mong === false`, ngưỡng ở lib/tran-nhan-dinh-so.ts: có tỷ số dự đoán + phong độ hai đội
+  // hoặc đối đầu). Trang dưới ngưỡng vẫn noindex,follow + không nộp sitemap như luật 12/11.
+  if (h.slug.startsWith("tuan-")) return h.mong === false;
   return (
     GIAI_LON_INDEX.test(h.giai) || GIAI_DOI_TUYEN_INDEX.test(h.giai) || DOI_VIET_NAM.test(h.nha) || DOI_VIET_NAM.test(h.khach)
   );
