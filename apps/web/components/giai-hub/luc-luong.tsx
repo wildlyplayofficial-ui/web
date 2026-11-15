@@ -30,7 +30,7 @@ function Doi({ d, mo, logo }: { d: DoiVang; mo: boolean; logo?: Record<string, s
   );
 }
 
-/** Danh sách gọn: mỗi dòng một cầu thủ/đội (sắp treo giò, đá phạt đền — chỉ Ngoại hạng Anh). */
+/** Danh sách gọn: mỗi dòng một cầu thủ/đội (sắp treo giò — chỉ Ngoại hạng Anh). */
 function DanhSachGon({ tieuDe, ds, logo }: { tieuDe: string; ds: { doi: string; ten: string; ghiChu?: string }[]; logo?: Record<string, string> }) {
   return (
     <div className="mt-5">
@@ -75,9 +75,6 @@ export function LucLuong({ data }: { data: HubGiaiData }) {
       )}
       {data.sapTreo && data.sapTreo.length > 0 && (
         <DanhSachGon tieuDe="Sắp bị treo giò" ds={data.sapTreo} logo={data.logo} />
-      )}
-      {data.phatDen && data.phatDen.length > 0 && (
-        <DanhSachGon tieuDe="Người đá phạt đền số 1" ds={data.phatDen} logo={data.logo} />
       )}
     </div>
   );

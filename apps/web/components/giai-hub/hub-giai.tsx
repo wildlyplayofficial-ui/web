@@ -85,7 +85,7 @@ export function HubGiai(p: Props) {
     itemListElement: tran.map((h, i) => ({ "@type": "ListItem", position: i + 1, item: suKienTran(h, SITE_URL, true) })),
   };
   return (
-    <div className="mx-auto max-w-[1100px] px-4 pb-12 sm:px-5">
+    <div className="mx-auto max-w-[860px] px-4 pb-12 sm:px-5">
       <header className="pt-6 pb-4">
         <h1 className="font-display text-[26px] font-bold leading-tight sm:text-3xl">{`Lịch thi đấu, kết quả, dự đoán ${compName} ${mua}`}</h1>
         <p className="mt-2 text-sm text-muted">
@@ -93,53 +93,49 @@ export function HubGiai(p: Props) {
         </p>
       </header>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-        <div className="min-w-0 space-y-10">
-          <Khoi id="du-doan" tieuDe={`Lịch thi đấu & dự đoán vòng ${data.vongToi ?? ""}`.trim()}>
-            <DuDoanTheoNgay
-              ngay={ngay}
-              lang={lang}
-              nl={{ ungVien: [...p.tenBang, ...data.ketQua.flatMap((k) => [k.nha, k.khach]), ...data.vang.map((v) => v.doi), ...Object.keys(data.logo ?? {})], du: data.logo }}
-            />
+      {/* Peter 15/11: 1 cột, BXH lên trước rồi mới tới thống kê cầu thủ/xG. */}
+      <div className="space-y-10">
+        <Khoi id="du-doan" tieuDe={`Lịch thi đấu & dự đoán vòng ${data.vongToi ?? ""}`.trim()}>
+          <DuDoanTheoNgay
+            ngay={ngay}
+            lang={lang}
+            nl={{ ungVien: [...p.tenBang, ...data.ketQua.flatMap((k) => [k.nha, k.khach]), ...data.vang.map((v) => v.doi), ...Object.keys(data.logo ?? {})], du: data.logo }}
+          />
+        </Khoi>
+        <Khoi id="bang-xep-hang" tieuDe={`Bảng xếp hạng ${compName} ${mua}`}>
+          {bang}
+        </Khoi>
+        {data.ketQua.length > 0 && (
+          <Khoi id="ket-qua" tieuDe={`Kết quả ${compName} vòng ${data.vongXong}`}>
+            <KetQuaVong ds={data.ketQua} logo={data.logo} />
           </Khoi>
-          {data.ketQua.length > 0 && (
-            <Khoi id="ket-qua" tieuDe={`Kết quả ${compName} vòng ${data.vongXong}`}>
-              <KetQuaVong ds={data.ketQua} logo={data.logo} />
-            </Khoi>
-          )}
-          <Khoi id="bang-xep-hang" tieuDe={`Bảng xếp hạng ${compName} ${mua}`}>
-            {bang}
+        )}
+        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
+          <ThongKeCauThu top={data.top} logo={data.logo} />
+        </Khoi>
+        {data.vang.length > 0 && (
+          <Khoi
+            id="luc-luong"
+            tieuDe={data.coTreoGio ? "Lực lượng: chấn thương & treo giò" : "Chấn thương"}
+            phu={`${soVang} cầu thủ có thể vắng${data.vongToi ? ` ở vòng ${data.vongToi}` : ""}`}
+          >
+            <LucLuong data={data} />
           </Khoi>
-          {data.lichKho && data.lichKho.hang.length > 0 && (
-            <Khoi
-              id="lich-kho-de"
-              tieuDe="Lịch khó/dễ 5 vòng tới"
-              phu={`Vòng ${data.lichKho.vong[0]}–${data.lichKho.vong[data.lichKho.vong.length - 1]} · độ khó theo ${data.nguon} · xếp từ lịch dễ nhất`}
-            >
-              <LichKhoDe lich={data.lichKho} />
-            </Khoi>
-          )}
-        </div>
-
-        <div className="min-w-0 space-y-10">
-          <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
-            <ThongKeCauThu top={data.top} logo={data.logo} />
+        )}
+        {data.lichKho && data.lichKho.hang.length > 0 && (
+          <Khoi
+            id="lich-kho-de"
+            tieuDe="Lịch khó/dễ 5 vòng tới"
+            phu={`Vòng ${data.lichKho.vong[0]}–${data.lichKho.vong[data.lichKho.vong.length - 1]} · độ khó theo ${data.nguon} · xếp từ lịch dễ nhất`}
+          >
+            <LichKhoDe lich={data.lichKho} />
           </Khoi>
-          {data.vang.length > 0 && (
-            <Khoi
-              id="luc-luong"
-              tieuDe={data.coTreoGio ? "Lực lượng: chấn thương & treo giò" : "Chấn thương"}
-              phu={`${soVang} cầu thủ có thể vắng${data.vongToi ? ` ở vòng ${data.vongToi}` : ""}`}
-            >
-              <LucLuong data={data} />
-            </Khoi>
-          )}
-          {(bai.length > 0 || trangTru.length > 0) && (
-            <Khoi id="bai-moi" tieuDe={`Bài mới về ${compName}`}>
-              <BaiMoi bai={bai} trangTru={trangTru} lang={lang} />
-            </Khoi>
-          )}
-        </div>
+        )}
+        {(bai.length > 0 || trangTru.length > 0) && (
+          <Khoi id="bai-moi" tieuDe={`Bài mới về ${compName}`}>
+            <BaiMoi bai={bai} trangTru={trangTru} lang={lang} />
+          </Khoi>
+        )}
       </div>
 
       <div className="mt-10">
