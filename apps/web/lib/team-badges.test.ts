@@ -47,3 +47,12 @@ describe("chuanLogo — link www.thesportsdb.com đã chết, chuyển sang r2",
     expect(teamBadge("Chelsea")).toMatch(/^https:\/\/r2\.thesportsdb\.com\//);
   });
 });
+
+describe("teamBadge — tên ngắn PredictZ ở vòng kế 5 giải lớn (15/11: 21/96 đội hiện chữ cái thay logo)", () => {
+  it("có logo cho mọi tên đã từng thiếu", () => {
+    const ten = ["Man City", "Man Utd", "Tottenham", "Newcastle", "Brighton", "Leeds", "Coventry", "Ipswich", "Hull",
+      "PSG", "Brestois", "Inter Milan", "Venezia", "Bayern Munich", "FC Koln", "Hamburg", "Mainz", "Paderborn",
+      "Elversberg", "Deportivo La Coruna", "Racing Santander"];
+    expect(ten.filter((t) => !teamBadge(t))).toEqual([]);
+  });
+});
