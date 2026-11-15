@@ -26,6 +26,7 @@ export const SAME_AS = [
  * buộc edge cache + Facebook/Telegram lấy thẻ mới (v3: sửa lệch trái, Nick 25/8;
  * v4: recap OG bỏ ảnh Haaland, Nick+Peter 13/9;
  * v5: thẻ recap chuyển sang khuôn KẾT QUẢ có logo 2 đội, Peter 13/9;
- * v6: chân thẻ analysis in tên tác giả thay "Banh Bóng Desk (AI)", Peter 15/9).
+ * v6: chân thẻ analysis in tên tác giả thay "Banh Bóng Desk (AI)", Peter 15/9;
+ * v8: ảnh guide + thẻ /api/og/guide bỏ chữ "tài xỉu" → Over/Under, Peter 14/11).
  */
-export const OG_VERSION = 7;
+export const OG_VERSION = 8;

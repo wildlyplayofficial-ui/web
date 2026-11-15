@@ -2,7 +2,7 @@ import { OG_VERSION } from "@/lib/brand";
 import type { Lang } from "@/lib/i18n";
 
 /**
- * Bìa vẽ tay cho cụm guide tài xỉu/kèo tiếng Việt. Thẻ sinh runtime (/api/og/guide)
+ * Bìa vẽ tay cho cụm guide Over/Under/kèo tiếng Việt. Thẻ sinh runtime (/api/og/guide)
  * chỉ có tiêu đề; mấy bài này cần MỐC SỐ trên bìa, mà mốc phải đúng bài — bìa của
  * bài 2.25 mà khoe 2.5 là chỉ vào bài hàng xóm. Nên số vẽ sẵn theo từng slug, không
  * sinh động. Chữ trên bìa là tiếng Việt → chỉ dùng cho lang "vi".
