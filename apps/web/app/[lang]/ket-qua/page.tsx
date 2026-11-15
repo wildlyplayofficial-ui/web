@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { BxhBen, type BangBxh } from "@/components/bxh-ben";
 import { KetQuaLoc } from "@/components/ket-qua-loc";
+import { KetQuaHoiDap, KetQuaMoDau } from "@/components/ket-qua-seo";
 import { OG_VERSION } from "@/lib/brand";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { dongTuan } from "@/lib/du-doan-tuan";
@@ -34,7 +35,8 @@ const MO_TA =
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   return {
-    title: TIEU_DE,
+    // Tiêu đề kèm ngày như PredictZ "Football Results Today - Tuesday, March 24th" (Peter 15/11 "xem predictz").
+    title: `Kết quả bóng đá ${nhanNgay(lechNgay(homNayVN(), -1), homNayVN()).toLowerCase()}, tỷ số mới nhất`,
     description: MO_TA,
     // ?ngay=… dồn về một trang chuẩn.
     alternates: buildAlternates("/ket-qua", lang),
@@ -101,9 +103,14 @@ export default async function KetQua({ params, searchParams }: Props) {
       <div className="grid items-start gap-7 min-[900px]:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[28px]">{tieuDeNgay(ngay ?? lechNgay(homNay, -1), homNay)}</h1>
-          <p className="mt-1.5 text-sm text-muted">
-            Tỷ số các trận banhbong.net đã dự đoán, giờ Việt Nam. Bấm trận để xem chi tiết.
-          </p>
+          {/* Peter 15/11: có tỷ số thì thay dòng phụ bằng đoạn mở đầu có số thật (SEO/GEO). */}
+          {ngay && nhom.length > 0 ? (
+            <KetQuaMoDau ngay={ngay} homNay={homNay} nhom={nhom} />
+          ) : (
+            <p className="mt-1.5 text-sm text-muted">
+              Tỷ số các trận banhbong.net đã dự đoán, giờ Việt Nam. Bấm trận để xem chi tiết.
+            </p>
+          )}
           {ngays.length > 0 && (
             <nav aria-label="Chọn ngày" className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
               {ngays.map((k) => (
@@ -140,6 +147,7 @@ export default async function KetQua({ params, searchParams }: Props) {
               </Link>
             </p>
           )}
+          {ngay && nhom.length > 0 && <KetQuaHoiDap ngay={ngay} homNay={homNay} ngays={ngays} nhom={nhom} />}
         </div>
         <BxhBen bang={bang} />
       </div>

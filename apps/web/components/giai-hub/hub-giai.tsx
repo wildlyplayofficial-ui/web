@@ -75,7 +75,7 @@ function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {
   if (vua) {
     ds.push({
       hoi: `Ai đang dẫn đầu danh sách ghi bàn ${compName}?`,
-      dap: `${vua.ten} (${vua.doi}) với ${vua.gt} bàn${data.vongXong ? ` sau vòng ${data.vongXong}` : ""}, theo số liệu ${data.nguon}.`,
+      dap: `${vua.ten} (${vua.doi}) với ${vua.gt} bàn${data.vongXong ? ` sau vòng ${data.vongXong}` : ""}.`,
     });
   }
   return ds;
@@ -132,7 +132,8 @@ export function HubGiai(p: Props) {
           )}
           {bang}
         </Khoi>
-        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
+        {/* Peter 15/11 "khỏi ghi nguồn chỗ fantasy giùm cái dư qá": bỏ dòng nguồn. */}
+        <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={data.vongXong ? `Sau vòng ${data.vongXong}` : undefined}>
           <ThongKeCauThu top={data.top} logo={data.logo} />
         </Khoi>
         {data.ketQua.length > 0 && (
