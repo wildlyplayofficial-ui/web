@@ -134,6 +134,16 @@ export const doiDuocIndex = (slug: string): boolean => DOI_GIU_INDEX.has(slug);
 /** Trang giải (/competitions/{slug}) vào sitemap: giải lớn + World Cup. */
 export const GIAI_BXH_SITEMAP = new Set(["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1", "champions-league", "world-cup-2026"]);
 
+/** 5 giải lớn tự dựng bảng từ trận đã đá khi nguồn trả rỗng, nên luôn có nội dung. */
+const GIAI_BXH_TU_DUNG = new Set(["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1"]);
+/**
+ * Trang giải /competitions/{slug} được index khi có bảng xếp hạng thật (16/11: World Cup 2026 đã
+ * xong, nguồn trả rỗng, trang chỉ còn ~54 chữ "Chưa có dữ liệu" mà vẫn index + nằm trong sitemap).
+ * Không có bảng → noindex,follow + rút khỏi sitemap.
+ */
+export const giaiBxhDuocIndex = (slug: string, soDongBang: number): boolean =>
+  GIAI_BXH_TU_DUNG.has(slug) || soDongBang > 0;
+
 /** Trang dự đoán theo giải (/du-doan/{giai}) vào sitemap: 5 giải lớn + Cúp C1. */
 export const GIAI_DU_DOAN_SITEMAP = new Set(["ngoai-hang-anh", "la-liga", "serie-a", "bundesliga", "ligue-1", "cup-c1"]);
 

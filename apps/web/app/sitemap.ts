@@ -5,7 +5,7 @@ import { getAllGuideSlugs, getSettledPicks, isFeatureEnabled, getAllBlogSlugs } 
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
-import { analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, GIAI_DU_DOAN_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
+import { giaiBxhDuocIndex, analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, GIAI_DU_DOAN_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { ngayVN } from "@/lib/du-doan-hang";
@@ -13,6 +13,7 @@ import { timTran } from "@/lib/du-doan-tran";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { hubCuaGiai } from "@/lib/giai-hub";
+import { fetchCompetitionTable } from "@/lib/standings";
 import { tepXgDoi } from "@/lib/xg-doi";
 
 /** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8).
@@ -233,13 +234,13 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
   const lon = competitions.filter((c) => c.slug && GIAI_BXH_SITEMAP.has(c.slug));
   const visible = await Promise.all(
     lon.map(async (c) => {
-      if (c.status === "active") return true;
       // Lỗi Supabase thì coi như tắt: thà thiếu một URL còn hơn hỏng cả sitemap.
-      try {
-        return await isFeatureEnabled(`standings_${c.slug.replace(/-/g, "_")}`);
-      } catch {
-        return false;
-      }
+      const song = c.status === "active" ||
+        (await isFeatureEnabled(`standings_${c.slug.replace(/-/g, "_")}`).catch(() => false));
+      if (!song) return false;
+      // 16/11: giải không có bảng thật (World Cup 2026 đã xong) → trang noindex, không mời vào sitemap.
+      const bang = await fetchCompetitionTable(c.livescoreId).catch(() => null);
+      return bang === null || giaiBxhDuocIndex(c.slug, bang.length);
     }),
   );
   const standingsRoutes: MetadataRoute.Sitemap = lon

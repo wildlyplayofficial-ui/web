@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GIAI_INDEX_TRAN, tranDuocIndex } from "./chi-muc";
+import { GIAI_INDEX_TRAN, giaiBxhDuocIndex, tranDuocIndex } from "./chi-muc";
 import { tenGiaiViet } from "./ten-viet";
 
 const tuan = (giai: string, mong = false) => ({ slug: "tuan-2026-11-21-mancity-fulham", giai, mong });
@@ -35,4 +35,13 @@ describe("tranDuocIndex — chỉ 5 giải lớn + C1 (15/11)", () => {
   it("hằng số là một regex duy nhất — đổi thành /./ là mở mọi giải", () => {
     expect(GIAI_INDEX_TRAN).toBeInstanceOf(RegExp);
   });
+});
+
+describe("giaiBxhDuocIndex", () => {
+  it("giải không có bảng thật (World Cup 2026 đã xong) thì noindex", () => {
+    expect(giaiBxhDuocIndex("world-cup-2026", 0)).toBe(false);
+    expect(giaiBxhDuocIndex("champions-league", 0)).toBe(false);
+  });
+  it("có bảng thì index", () => expect(giaiBxhDuocIndex("champions-league", 36)).toBe(true));
+  it("5 giải lớn luôn index vì tự dựng bảng từ trận đã đá", () => expect(giaiBxhDuocIndex("la-liga", 0)).toBe(true));
 });
