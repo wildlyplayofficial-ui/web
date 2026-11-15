@@ -17,7 +17,7 @@ import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
 import { capNhatTuan, dauVaoNhanDinh, htftDiemTuan, soLieuTuan } from "@/lib/du-doan-tuan";
-import { nhanDinhTran, tomTatDuDoan } from "@/lib/tran-nhan-dinh";
+import { nhanDinhTran } from "@/lib/tran-nhan-dinh";
 import { tenDoiViet } from "@/lib/ten-viet";
 import { lucLuongCua } from "@/lib/luc-luong";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
@@ -144,7 +144,7 @@ export default async function TrangTran({ params }: Props) {
           <ThanBaiMd body={bai.body} />
         </article>
       )}
-      {dauVao && <TranNhanDinh cap={cap} muc={nhanDinh} tomTat={tomTatDuDoan(dauVao)} />}
+      {dauVao && <TranNhanDinh cap={cap} muc={nhanDinh} />}
       <p className="mt-6 border-t border-line pt-4 text-[14px] text-muted">
         Tác giả:{" "}
         <Link href={withLang(duongDanChuyenGia(cg), lang)} className="font-semibold text-ink hover:text-brand hover:underline">{cg.ten}</Link>

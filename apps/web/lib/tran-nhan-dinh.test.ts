@@ -1,6 +1,6 @@
 // Bài nhận định sinh từ số + ngưỡng index của trang trận tệp tuần.
 import { describe, expect, it } from "vitest";
-import { nhanDinhTran, tomTatDuDoan, type DauVaoNhanDinh } from "./tran-nhan-dinh";
+import { nhanDinhTran, type DauVaoNhanDinh } from "./tran-nhan-dinh";
 import { duDuLieuIndex, soDoi, xacSuat1X2 } from "./tran-nhan-dinh-so";
 import type { TranGanDay } from "./tran-so-lieu";
 
@@ -72,8 +72,5 @@ describe("bài nhận định sinh từ số", () => {
     const vao = { ...VAO, so: { gn: GN, gk: GN.map((t) => ({ ...t, nha: t.nha === "Alpha FC" ? "Beta" : t.nha, khach: t.khach === "Alpha FC" ? "Beta" : t.khach })) } };
     const [a, b] = nhanDinhTran(vao, (x) => x).filter((m) => m.tieuDe.startsWith("Phong độ")).map((m) => m.doan.split(". ")[0].replace(/Alpha|Beta/g, "X"));
     expect(a).not.toBe(b);
-  });
-  it("bảng tóm tắt lấy tỷ lệ đúng cửa đã chọn", () => {
-    expect(tomTatDuDoan(VAO).map((d) => d.tyLe)).toEqual([1.5, null, 1.7, null]);
   });
 });

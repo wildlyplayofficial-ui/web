@@ -176,27 +176,3 @@ export function nhanDinhTran(v: DauVaoNhanDinh, tenDoi: (goc: string) => string)
   ];
   return muc.flatMap(([tieuDe, doan]) => (doan ? [{ tieuDe, doan }] : []));
 }
-
-export interface DongTomTat { nhan: string; chon: string; tyLe: number | null }
-
-/** Bảng tóm tắt mọi dự đoán của trận: kết quả, tỷ số, Over/Under, hai đội ghi bàn, Hiệp 1 / Cả trận. */
-export function tomTatDuDoan(v: DauVaoNhanDinh): DongTomTat[] {
-  const ds: DongTomTat[] = [];
-  if (v.du) {
-    const chieu = v.du[0] > v.du[1] ? 0 : v.du[0] === v.du[1] ? 1 : 2;
-    ds.push({ nhan: "Kết quả (1·X·2)", chon: [`${v.nha} thắng`, "Hòa", `${v.khach} thắng`][chieu], tyLe: v.mot?.[chieu] ?? null });
-    ds.push({ nhan: "Tỷ số chính xác", chon: `${v.du[0]}-${v.du[1]}`, tyLe: tyLeTySoDu(v) });
-  }
-  if (v.taiXiu) {
-    const tl = haiTyLe(v.pOu);
-    ds.push({ nhan: "Over/Under", chon: v.taiXiu, tyLe: tl ? tl[/^over/i.test(v.taiXiu) ? 0 : 1] : null });
-  }
-  if (v.haiDoiGhi !== null) {
-    const tl = haiTyLe(v.pBtts);
-    ds.push({ nhan: "Cả hai đội ghi bàn", chon: v.haiDoiGhi ? "Có" : "Không", tyLe: tl ? tl[v.haiDoiGhi ? 0 : 1] : null });
-  }
-  const htft = docHtft(v.htft);
-  const khoa = v.htft ? cuaNoiNhat(v.htft) : null;
-  if (htft && khoa) ds.push({ nhan: "Hiệp 1 / Cả trận", chon: nhanCua(khoa, v.nha, v.khach), tyLe: htft[KHOA_HTFT.indexOf(khoa)] });
-  return ds;
-}
