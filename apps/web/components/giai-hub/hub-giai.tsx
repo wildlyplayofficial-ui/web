@@ -38,7 +38,7 @@ interface Props {
   trangTru: AnalysisArticle[];
 }
 
-const LINK_KHAC = "flex min-h-11 items-center rounded-card border border-line bg-card px-4 text-sm font-semibold transition-colors hover:bg-card-hover";
+const LINK_KHAC = "inline-flex min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold transition-colors hover:border-brand hover:text-brand";
 
 function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {
   const ds: CauHoiHub[] = [];
@@ -90,6 +90,16 @@ export function HubGiai(p: Props) {
         <p className="mt-2 text-sm text-muted">
           {[`Mùa ${mua}`, data.vongXong ? `cập nhật sau vòng ${data.vongXong}` : null, "giờ Việt Nam"].filter(Boolean).join(" · ")}
         </p>
+        {/* Peter 15/11 "cái này để lên trên / kiểu 2 option khác cho user chọn". */}
+        <nav aria-label={`Dự đoán khác ${compName}`} className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted">Dự đoán khác:</span>
+          <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={LINK_KHAC}>
+            Over/Under 2.5
+          </Link>
+          <Link href={withLang(duongTipGiai("hai-doi-ghi-ban", giai), lang)} className={LINK_KHAC}>
+            Cả 2 đội ghi bàn
+          </Link>
+        </nav>
       </header>
 
       {/* Peter 15/11: 1 cột, BXH → thống kê cầu thủ → kết quả vòng. */}
@@ -127,23 +137,6 @@ export function HubGiai(p: Props) {
             <BaiMoi bai={bai} trangTru={trangTru} lang={lang} />
           </Khoi>
         )}
-      </div>
-
-      <div className="mt-10">
-        <Khoi id="du-doan-khac" tieuDe={`Dự đoán khác ${compName}`}>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            <li>
-              <Link href={withLang(duongTipGiai("tai-xiu", giai), lang)} className={LINK_KHAC}>
-                {`Over/Under 2.5 ${compName}: trận nào từ 3 bàn trở lên`}
-              </Link>
-            </li>
-            <li>
-              <Link href={withLang(duongTipGiai("hai-doi-ghi-ban", giai), lang)} className={LINK_KHAC}>
-                {`Cả 2 đội ghi bàn ${compName}: trận nào 2 đội cùng có bàn`}
-              </Link>
-            </li>
-          </ul>
-        </Khoi>
       </div>
 
       {hoiDap.length > 0 && (
