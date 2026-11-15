@@ -35,7 +35,8 @@ const MO_TA =
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   return {
-    title: TIEU_DE,
+    // Tiêu đề kèm ngày như PredictZ "Football Results Today - Tuesday, March 24th" (Peter 15/11 "xem predictz").
+    title: `Kết quả bóng đá ${nhanNgay(lechNgay(homNayVN(), -1), homNayVN()).toLowerCase()}, tỷ số mới nhất`,
     description: MO_TA,
     // ?ngay=… dồn về một trang chuẩn.
     alternates: buildAlternates("/ket-qua", lang),
