@@ -25,7 +25,7 @@ const ANCHORS: Record<string, { anchor: string; badge: string }> = {
   "what-makes-a-good-tipster": { anchor: "Record  ·  CLV  ·  Reasoning  ·  Transparency", badge: "GUIDE" },
   "no-play-discipline": { anchor: "Evaluated  →  No edge found  →  PASS", badge: "GUIDE" },
   "responsible-play-guide": { anchor: "Set limits  ·  Never chase  ·  Stay in control", badge: "GUIDE" },
-  "tai-xiu-la-gi-cach-doc-keo-over-under": { anchor: "Tài 2.5  ·  Xỉu 2.5  ·  mốc 3.0 hoà kèo", badge: "GUIDE" },
+  "tai-xiu-la-gi-cach-doc-keo-over-under": { anchor: "Over 2.5  ·  Under 2.5  ·  mốc 3.0 hoà kèo", badge: "GUIDE" },
   "vi-sao-ty-le-keo-khac-nhau-giua-cac-nguon": { anchor: "Bet365 1.90  ·  Pinnacle 1.95  →  vì sao lệch", badge: "GUIDE" },
   // Calculators
   "de-vig": { anchor: "Home 1.85  ·  Away 2.05  →  True: 52.6% / 47.4%", badge: "CALCULATOR" },

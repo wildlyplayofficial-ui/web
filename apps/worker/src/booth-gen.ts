@@ -6,6 +6,7 @@
  */
 import type { BoothEventType } from './booth-detector';
 import { log } from './log';
+import { scrubTaiXiu } from './vi-lexicon';
 
 interface BoothLine { who: 'sonny' | 'cole'; text: string; }
 
@@ -303,7 +304,8 @@ export async function generateBoothExchange(
 
   return {
     lines_en: linesEn,
-    lines_vi: linesVi,
+    // Chốt chặn tài/xỉu → Over/Under (Peter 14/11) — booth không đi qua callClaude.
+    lines_vi: linesVi?.map((l) => ({ ...l, text: scrubTaiXiu(l.text) })) ?? null,
     lines_th: linesTh,
     lines_es: linesEs,
     lead_voice: leadVoice,
