@@ -108,6 +108,14 @@ async function LichVongToi({ g, homNay }: { g: GiaiTrang; homNay: string }) {
   );
 }
 
+/** Giải đang có trận: đoạn bối cảnh BXH cho các cặp sắp đá (16/11: /du-doan/la-liga… chỉ ~400 chữ). */
+async function BoiCanhGiai({ g, ds }: { g: GiaiTrang; ds: HangDuDoan[] }) {
+  const comp = g.bxh ? (await getStandingsCompetitions().catch(() => [])).find((c) => c.slug === g.bxh) : null;
+  const bang = comp ? await fetchCompetitionTable(comp.livescoreId).catch(() => []) : [];
+  const boiCanh = boiCanhVongToi(ds.map((h) => ({ homeName: h.nha, awayName: h.khach })), bang, g.ten);
+  return boiCanh ? <p className="mt-2 text-[15px] leading-relaxed">{boiCanh}</p> : null;
+}
+
 const MANH = "inline-flex min-h-11 items-center hover:text-ink";
 
 async function TrangGiai({ g, lang }: { g: GiaiTrang; lang: Lang }) {
@@ -137,6 +145,7 @@ async function TrangGiai({ g, lang }: { g: GiaiTrang; lang: Lang }) {
         )}
       </p>
       {tomTat && <p className="mt-3 text-[15px] leading-relaxed">{tomTat}</p>}
+      {ds.length > 0 && <BoiCanhGiai g={g} ds={ds} />}
       {ds.length === 0 ? (
         <LichVongToi g={g} homNay={homNay} />
       ) : (
