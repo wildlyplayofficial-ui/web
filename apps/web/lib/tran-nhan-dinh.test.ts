@@ -16,7 +16,7 @@ const DONG = { ngay: "2026-11-15", nha: "Alpha FC", khach: "Beta", du: "Home 2-0
 const VAO: DauVaoNhanDinh = {
   slug: "tuan-2026-11-15-alpha-beta", nha: "Alpha", khach: "Beta", nhaGoc: "Alpha FC", khachGoc: "Beta",
   du: [2, 0], mot: [1.5, 4, 6], taiXiu: "Under 2.5", haiDoiGhi: false, so: { gn: GN, gk: GK, h2h: H2H },
-  pOu: { tip: "Under 2.5", keo: [2.1, 1.7], h5: [], a5: [] },
+  pOu: { tip: "Under 2.5", keo: [2.1, 1.7], h5: [], a5: [] }, daDa: false,
 };
 
 describe("ngưỡng index trang trận tệp tuần", () => {
@@ -59,6 +59,19 @@ describe("bài nhận định sinh từ số", () => {
   });
   it("thiếu hết số liệu thì chỉ còn đoạn chốt", () => {
     expect(nhanDinhTran({ ...VAO, so: null }, (x) => x).map((m) => m.tieuDe)).toEqual(["Dự đoán tỷ số Alpha vs Beta"]);
+  });
+  it("trận đã đá thì tỷ lệ nói ở thì trước trận, không 'đang là/đang có'", () => {
+    const chu = nhanDinhTran({ ...VAO, daDa: true }, (x) => x).map((m) => m.doan).join(" ");
+    expect(chu).not.toMatch(/đang là|đang có tỷ lệ|Tỷ lệ hiện tại/);
+    expect(chu).toMatch(/trước trận/);
+  });
+  it("đoạn chốt không nhắc lại dãy số 1·X·2 (đã có ở đoạn mở trang)", () => {
+    expect(bai.map((m) => m.doan).join(" ")).not.toContain("1.50 · 4.00");
+  });
+  it("hai đội cùng mức phong độ không mở đoạn bằng cùng một câu", () => {
+    const vao = { ...VAO, so: { gn: GN, gk: GN.map((t) => ({ ...t, nha: t.nha === "Alpha FC" ? "Beta" : t.nha, khach: t.khach === "Alpha FC" ? "Beta" : t.khach })) } };
+    const [a, b] = nhanDinhTran(vao, (x) => x).filter((m) => m.tieuDe.startsWith("Phong độ")).map((m) => m.doan.split(". ")[0].replace(/Alpha|Beta/g, "X"));
+    expect(a).not.toBe(b);
   });
   it("bảng tóm tắt lấy tỷ lệ đúng cửa đã chọn", () => {
     expect(tomTatDuDoan(VAO).map((d) => d.tyLe)).toEqual([1.5, null, 1.7, null]);

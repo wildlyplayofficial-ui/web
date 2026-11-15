@@ -3,7 +3,7 @@
  * Câu chọn theo TÌNH HUỐNG của số liệu (đang cao / khá / thất thường / sa sút; công mạnh, thủ yếu,
  * sân nhà là điểm tựa…), không phải một khuôn thay tên. Hàm THUẦN, import TƯƠNG ĐỐI.
  */
-import { chon, type SoDoi } from "./tran-nhan-dinh-so";
+import type { SoDoi } from "./tran-nhan-dinh-so";
 import { ngayNgan, type ThanhTich } from "./tran-so-lieu";
 
 const tb = (x: number, n: number) => (x / n).toFixed(1);
@@ -15,13 +15,23 @@ export function cauTHB(s: ThanhTich): string {
   return [...co, khong].filter(Boolean).join(", ");
 }
 
-type Muc = "cao" | "kha" | "thatThuong" | "kem";
+type Muc = "cao" | "khaTot" | "kha" | "thatThuong" | "kem";
+// 15/11: tách "khaTot" (≥1,7 điểm/trận, vd 19/30) — câu "không nổi bật" không được dùng cho đội đang tốt.
 const mucPhongDo = (s: SoDoi): Muc => {
   const d = s.diem / s.tran;
-  return d >= 2 ? "cao" : d >= 1.4 ? "kha" : d >= 0.9 ? "thatThuong" : "kem";
+  return d >= 2 ? "cao" : d >= 1.7 ? "khaTot" : d >= 1.4 ? "kha" : d >= 0.9 ? "thatThuong" : "kem";
 };
 
-function cauMo(ten: string, s: SoDoi, khoa: string): string {
+/** Mẫu câu đã dùng ở đoạn của đội kia trên CÙNG trang → đoạn này chọn mẫu khác. */
+export interface MauDaDung { muc: Muc; mo: number; moi: number }
+
+/** Chỉ số mẫu theo khoá; trùng `tranh` thì lùi sang mẫu kế. */
+function chiSo(n: number, khoa: string, tranh?: number): number {
+  const i = [...khoa].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % n;
+  return i === tranh ? (i + 1) % n : i;
+}
+
+function cauMo(ten: string, s: SoDoi, khoa: string, tranh?: MauDaDung): [string, number] {
   const thb = cauTHB(s);
   const n = s.tran;
   const mau: Record<Muc, string[]> = {
@@ -29,6 +39,11 @@ function cauMo(ten: string, s: SoDoi, khoa: string): string {
       `${ten} đang có phong độ cao: ${n} trận gần nhất ${thb}.`,
       `${ten} bước vào trận này với sự tự tin, ${n} trận vừa qua họ ${thb}.`,
       `Kết quả gần đây của ${ten} rất tốt: ${thb} sau ${n} trận, giành ${s.diem}/${n * 3} điểm.`,
+    ],
+    khaTot: [
+      `Phong độ của ${ten} khá tốt: ${n} trận gần nhất ${thb}.`,
+      `${ten} đang chơi chắc chắn, ${n} trận gần đây ${thb}, giành ${s.diem}/${n * 3} điểm.`,
+      `${ten} giành ${s.diem}/${n * 3} điểm trong ${n} trận gần nhất (${thb}), một thành tích tốt.`,
     ],
     kha: [
       `Phong độ của ${ten} ở mức khá: ${n} trận gần nhất ${thb}.`,
@@ -46,7 +61,9 @@ function cauMo(ten: string, s: SoDoi, khoa: string): string {
       `${ten} chỉ giành ${s.diem}/${n * 3} điểm trong ${n} trận gần nhất (${thb}).`,
     ],
   };
-  return chon(mau[mucPhongDo(s)], `${khoa}-mo`);
+  const muc = mucPhongDo(s);
+  const i = chiSo(mau[muc].length, `${khoa}-mo`, tranh?.muc === muc ? tranh.mo : undefined);
+  return [mau[muc][i], i];
 }
 
 function cauBan(ten: string, s: SoDoi): string {
@@ -81,23 +98,30 @@ function cauChuoi(s: SoDoi): string | null {
   return c.loai === "chuaThua" ? `Chuỗi bất bại hiện tại kéo dài ${c.so} trận.` : `Họ đã ${c.so} trận liên tiếp chưa biết thắng.`;
 }
 
-function cauMoiNhat(ten: string, s: SoDoi, tenDoi: (goc: string) => string, khoa: string): string {
+function cauMoiNhat(ten: string, s: SoDoi, tenDoi: (goc: string) => string, khoa: string, tranh?: number): [string, number] {
   const m = s.moi;
   const dong = m.kq === "T" ? "thắng" : m.kq === "H" ? "hòa" : "thua";
   const noi = m.sanNha ? "trên sân nhà" : "trên sân khách";
   const kq = `${dong} ${tenDoi(m.doiThu)} ${m.ghi}-${m.thung} ${noi}`;
-  return chon(
-    [
-      `Trận gần nhất (${ngayNgan(m.ngay)}), ${ten} ${kq}.`,
-      `Lần ra sân gần nhất hôm ${ngayNgan(m.ngay)}, họ ${kq}.`,
-      `Hôm ${ngayNgan(m.ngay)}, ${ten} ${kq} ở trận gần nhất.`,
-    ],
-    `${khoa}-moi`,
-  );
+  const mau = [
+    `Trận gần nhất (${ngayNgan(m.ngay)}), ${ten} ${kq}.`,
+    `Lần ra sân gần nhất hôm ${ngayNgan(m.ngay)}, họ ${kq}.`,
+    `Hôm ${ngayNgan(m.ngay)}, ${ten} ${kq} ở trận gần nhất.`,
+  ];
+  const i = chiSo(mau.length, `${khoa}-moi`, tranh);
+  return [mau[i], i];
 }
 
-/** Đoạn phong độ một đội. `tenDoi` đổi tên gốc của đối thủ sang tên hiển thị. */
-export function doanDoi(ten: string, s: SoDoi, vai: "nha" | "khach", tenDoi: (goc: string) => string, khoa: string): string {
+/**
+ * Đoạn phong độ một đội. `tenDoi` đổi tên gốc của đối thủ sang tên hiển thị. `tranh` = mẫu đoạn
+ * của đội kia trên cùng trang (để hai đoạn không mở/kết bằng cùng một câu). Trả thêm mẫu đã dùng.
+ */
+export function doanDoi(
+  ten: string, s: SoDoi, vai: "nha" | "khach", tenDoi: (goc: string) => string, khoa: string, tranh?: MauDaDung,
+): { doan: string; mau: MauDaDung } {
   const sach = s.sach / s.tran >= 0.4 ? `Có ${s.sach}/${s.tran} trận họ giữ sạch lưới.` : null;
-  return [cauMo(ten, s, khoa), cauBan(ten, s), cauSan(s, vai), cauChuoi(s), sach, cauMoiNhat(ten, s, tenDoi, khoa)].filter(Boolean).join(" ");
+  const [mo, iMo] = cauMo(ten, s, khoa, tranh);
+  const [moi, iMoi] = cauMoiNhat(ten, s, tenDoi, khoa, tranh?.moi);
+  const doan = [mo, cauBan(ten, s), cauSan(s, vai), cauChuoi(s), sach, moi].filter(Boolean).join(" ");
+  return { doan, mau: { muc: mucPhongDo(s), mo: iMo, moi: iMoi } };
 }

@@ -30,6 +30,8 @@ export interface DauVaoNhanDinh {
   pBtts?: ThiTruongPhu;
   pCs?: ThiTruongPhu;
   htft?: HtFt;
+  /** Đã qua giờ bóng lăn → nói tỷ lệ ở thì "trước trận", không "đang là". */
+  daDa: boolean;
 }
 
 export interface MucNhanDinh { tieuDe: string; doan: string }
@@ -105,7 +107,7 @@ function doanBanThang(v: DauVaoNhanDinh, n: SoDoi | null, k: SoDoi | null): stri
             : `Số liệu không nghiêng hẳn về bên nào, dự đoán chọn ${v.taiXiu}.`,
     );
     const tl = haiTyLe(v.pOu);
-    if (tl) cau.push(`Tỷ lệ hiện tại: Over ${moc} là ${T(tl[0])}, Under ${moc} là ${T(tl[1])}.`);
+    if (tl) cau.push(`Tỷ lệ ${v.daDa ? "trước trận" : "hiện tại"}: Over ${moc} là ${T(tl[0])}, Under ${moc} là ${T(tl[1])}.`);
   }
   if (v.haiDoiGhi !== null) {
     cau.push(`Cả hai đội cùng ghi bàn ở ${n.cungGhi}/${n.tran} trận gần nhất của ${v.nha} và ${k.cungGhi}/${k.tran} trận của ${v.khach}.`);
@@ -146,14 +148,15 @@ function doanChot(v: DauVaoNhanDinh, n: SoDoi | null, k: SoDoi | null): string |
   if (v.mot && xs) {
     const cua = [`${v.nha} thắng`, "hòa", `${v.khach} thắng`];
     const thap = v.mot.indexOf(Math.min(...v.mot));
-    cau.push(`Tỷ lệ 1·X·2 đang là ${v.mot.map(T).join(" · ")}, quy ra khoảng ${xs[0]}% ${v.nha} thắng, ${xs[1]}% hòa, ${xs[2]}% ${v.khach} thắng.`);
+    // Dãy số 1·X·2 đã nêu ở đoạn mở trang (cauTomTat) → ở đây chỉ quy ra phần trăm, không nhắc lại số.
+    cau.push(`Quy từ tỷ lệ 1·X·2 ${v.daDa ? "trước trận" : "hiện tại"}, khả năng là khoảng ${xs[0]}% ${v.nha} thắng, ${xs[1]}% hòa, ${xs[2]}% ${v.khach} thắng.`);
     cau.push(thap === chieu ? "Dự đoán trùng với cửa có tỷ lệ thấp nhất." : `Dự đoán không trùng với cửa có tỷ lệ thấp nhất (${cua[thap]}), nên rủi ro cao hơn.`);
   }
   const tyLeTySo = tyLeTySoDu(v);
-  if (tyLeTySo) cau.push(`Tỷ số ${v.du[0]}-${v.du[1]} đang có tỷ lệ ${T(tyLeTySo)}.`);
+  if (tyLeTySo) cau.push(`Tỷ số ${v.du[0]}-${v.du[1]} ${v.daDa ? "trước trận có" : "đang có"} tỷ lệ ${T(tyLeTySo)}.`);
   const ds = docHtft(v.htft);
   const khoa = v.htft ? cuaNoiNhat(v.htft) : null;
-  if (ds && khoa) cau.push(`Ở cửa Hiệp 1 / Cả trận, tỷ lệ thấp nhất là "${nhanCua(khoa, v.nha, v.khach)}" (${T(ds[KHOA_HTFT.indexOf(khoa)])}).`);
+  if (ds && khoa) cau.push(`Ở cửa Hiệp 1 / Cả trận, tỷ lệ thấp nhất${v.daDa ? " trước trận" : ""} là "${nhanCua(khoa, v.nha, v.khach)}" (${T(ds[KHOA_HTFT.indexOf(khoa)])}).`);
   return cau.filter(Boolean).join(" ");
 }
 
@@ -161,10 +164,12 @@ function doanChot(v: DauVaoNhanDinh, n: SoDoi | null, k: SoDoi | null): string |
 export function nhanDinhTran(v: DauVaoNhanDinh, tenDoi: (goc: string) => string): MucNhanDinh[] {
   const n = soDoi(v.so?.gn, v.nhaGoc, "nha");
   const k = soDoi(v.so?.gk, v.khachGoc, "khach");
+  const dn = n ? doanDoi(v.nha, n, "nha", tenDoi, `${v.slug}-n`) : null;
+  const dk = k ? doanDoi(v.khach, k, "khach", tenDoi, `${v.slug}-k`, dn?.mau) : null;
   const muc: [string, string | null][] = [
     ["Vị trí trên bảng xếp hạng", doanBangXep(v)],
-    [`Phong độ ${v.nha}`, n ? doanDoi(v.nha, n, "nha", tenDoi, `${v.slug}-n`) : null],
-    [`Phong độ ${v.khach}`, k ? doanDoi(v.khach, k, "khach", tenDoi, `${v.slug}-k`) : null],
+    [`Phong độ ${v.nha}`, dn?.doan ?? null],
+    [`Phong độ ${v.khach}`, dk?.doan ?? null],
     [`Lịch sử đối đầu ${v.nha} vs ${v.khach}`, doanDoiDau(v)],
     ["Over/Under và khả năng hai đội cùng ghi bàn", doanBanThang(v, n, k)],
     [`Dự đoán tỷ số ${v.nha} vs ${v.khach}`, doanChot(v, n, k)],

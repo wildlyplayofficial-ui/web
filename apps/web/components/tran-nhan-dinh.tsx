@@ -5,6 +5,8 @@ import { ChuTy, Ty } from "@/components/ty-le";
  * Bài nhận định sinh từ số của trang trận tệp tuần (15/11): bảng tóm tắt mọi dự đoán rồi các
  * đoạn phân tích (lib/tran-nhan-dinh.ts). Không có đoạn nào → không vẽ gì.
  */
+const XUONG_DONG = { whiteSpace: "normal", overflowWrap: "anywhere" } as const;
+
 export function TranNhanDinh({ cap, muc, tomTat }: { cap: string; muc: readonly MucNhanDinh[]; tomTat: readonly DongTomTat[] }) {
   if (muc.length === 0) return null;
   return (
@@ -23,8 +25,9 @@ export function TranNhanDinh({ cap, muc, tomTat }: { cap: string; muc: readonly 
             <tbody>
               {tomTat.map((d) => (
                 <tr key={d.nhan}>
-                  <th scope="row">{d.nhan}</th>
-                  <td>{d.chon}</td>
+                  {/* .prose-md đặt nowrap cho th/td → ô dài bị cắt trên điện thoại; bảng này cho xuống dòng. */}
+                  <th scope="row" style={XUONG_DONG}>{d.nhan}</th>
+                  <td style={XUONG_DONG}>{d.chon}</td>
                   <td>{d.tyLe ? <Ty v={d.tyLe} /> : "—"}</td>
                 </tr>
               ))}

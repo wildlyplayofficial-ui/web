@@ -245,7 +245,7 @@ export function dauVaoNhanDinh(h: HangDuDoan): DauVaoNhanDinh | null {
   const d = DONG.find((x) => slugTuan(x) === h.slug);
   if (!d) return null;
   const { slug, nha, khach, du, mot, taiXiu, haiDoiGhi } = h;
-  return { slug, nha, khach, du, mot, taiXiu, haiDoiGhi, nhaGoc: d.nha, khachGoc: d.khach, so: soLieuTuan(slug), pOu: d.pOu, pBtts: d.pBtts, pCs: d.pCs, htft: d.htft };
+  return { slug, nha, khach, du, mot, taiXiu, haiDoiGhi, nhaGoc: d.nha, khachGoc: d.khach, so: soLieuTuan(slug), pOu: d.pOu, pBtts: d.pBtts, pCs: d.pCs, htft: d.htft, daDa: !h.sapDa };
 }
 
 /** Lúc tỷ lệ của trận được làm mới gần nhất (ISO) — ngày sửa cho JSON-LD Article; tệp không ghi → null. */
