@@ -134,11 +134,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const goc = dict.standings.descriptionFor
     .replace("{name}", compName)
     .replace("{season}", comp.season ?? "");
-  const bangMeta = await fetchCompetitionTable(comp.livescoreId).catch(() => []);
+  // Lỗi nguồn (null) KHÔNG được biến thành noindex: chỉ bảng trả rỗng thật mới tính là trang trống.
+  const bangLoi = await fetchCompetitionTable(comp.livescoreId).catch(() => null);
+  const bangMeta = bangLoi ?? [];
   const description = (lang === "vi" ? tomTatBang(bangMeta, compName) : null) ?? goc;
   return {
     title,
-    ...(giaiBxhDuocIndex(slug, bangMeta.length) ? {} : { robots: NOINDEX_FOLLOW }),
+    ...(bangLoi === null || giaiBxhDuocIndex(slug, bangLoi.length) ? {} : { robots: NOINDEX_FOLLOW }),
     description,
     alternates: buildAlternates(`/competitions/${slug}`, lang),
     openGraph: {
