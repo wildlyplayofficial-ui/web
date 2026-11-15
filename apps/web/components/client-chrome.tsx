@@ -28,5 +28,5 @@ export function ClientChrome() {
   }, [laQuanTri]);
 
   if (laQuanTri) return null;
-  return <GoogleAnalytics gaId="G-HM4G87BT3Q" />;
+  return <GoogleAnalytics gaId="G-HWL6N7E1GT" />;
 }
