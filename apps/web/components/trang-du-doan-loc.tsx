@@ -6,7 +6,7 @@ import { DongTran } from "@/components/dong-tran";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ChuThichPhongDo, DauCotKeo } from "@/components/phong-do-dong";
 import { OG_VERSION, SITE_URL } from "@/lib/brand";
-import { giaiTuSlug, metaGiai, metaNgay, ngayTuSlug, duongDanNgay, tranCuaGiai, type GiaiTrang } from "@/lib/du-doan-loc";
+import { giaiTuSlug, metaGiai, metaNgay, ngayTuSlug, duongDanNgay, tomTatGiai, tranCuaGiai, type GiaiTrang } from "@/lib/du-doan-loc";
 import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
@@ -104,6 +104,7 @@ const MANH = "inline-flex min-h-11 items-center hover:text-ink";
 async function TrangGiai({ g, lang }: { g: GiaiTrang; lang: Lang }) {
   const homNay = ngayVN(Date.now());
   const ds = tranCuaGiai((await taiDuDoan()).hang, g, homNay);
+  const tomTat = tomTatGiai(ds, g.ten);
   const theoNgay = [...new Set(ds.map((h) => h.ngay))].map((n) => [n, ds.filter((h) => h.ngay === n)] as const);
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
@@ -126,6 +127,7 @@ async function TrangGiai({ g, lang }: { g: GiaiTrang; lang: Lang }) {
           </>
         )}
       </p>
+      {tomTat && <p className="mt-3 text-[15px] leading-relaxed">{tomTat}</p>}
       {ds.length === 0 ? (
         <LichVongToi g={g} homNay={homNay} />
       ) : (
