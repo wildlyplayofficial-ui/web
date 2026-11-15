@@ -4,6 +4,8 @@ import { getAllNewsItemSlugs } from "@/lib/news";
 import { LOAI_BAI_MAY_DE } from "@/lib/bai-may-de";
 import { newsDuocIndex, analysisDuocIndex } from "@/lib/chi-muc";
 import { SITE_URL, SITE_NAME } from "@/lib/brand";
+import { taiDuDoan } from "@/lib/du-doan-tai";
+import { timTran } from "@/lib/du-doan-tran";
 
 /**
  * GET /news-sitemap.xml — Google News sitemap for recent articles.
@@ -17,15 +19,19 @@ import { SITE_URL, SITE_NAME } from "@/lib/brand";
 
 const BASE = SITE_URL;
 
-export const dynamic = "force-dynamic";
-export const revalidate = 3600;
+// 15/11: ISR 60 giây thay force-dynamic (giữ đúng nhịp CDN 60 giây đã chốt 16/9 ở Cache-Control dưới).
+export const revalidate = 60;
 
 export async function GET(): Promise<Response> {
-  const [posts, deskArticles, newsItems] = await Promise.all([
+  const [posts, deskArticles, newsItems, { hang }] = await Promise.all([
     getAllPostSlugs(),
     getAllAnalysisArticleSlugs(),
     getAllNewsItemSlugs(),
+    taiDuDoan().catch(() => ({ hang: [] })),
   ]);
+  // 15/11: bài nhận định đã có trang trận /du-doan/{slug} — bản /blog 301, bản /analysis chuyển hẳn sang đó,
+  // nên không nộp hai đường cũ (sitemap chỉ chứa URL cuối, đúng canonical).
+  const daDoi = (slug: string) => !!timTran(hang, slug);
 
   // Google News: only articles from last 48 hours
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
@@ -35,11 +41,11 @@ export async function GET(): Promise<Response> {
     // mà nộp URL noindex cho Google News là tự chuốc lỗi. Đây là chỗ RÒ thứ hai của
     // cùng một lỗi — sửa sitemap.ts mà quên file này thì bài rác vẫn được khai.
     ...posts
-      .filter((p) => !LOAI_BAI_MAY_DE.has(p.type))
+      .filter((p) => !LOAI_BAI_MAY_DE.has(p.type) && !daDoi(p.slug))
       // Bài blog canonical về /blog/{slug} — nộp cho Google News URL không phải
       // bản chính là tự đưa hai tín hiệu chỏi nhau.
       .map((p) => ({ path: p.type === "blog" ? "blog" : "analysis", slug: p.slug, title: p.title, updated: p.updated })),
-    ...deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated)).map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
+    ...deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated) && !daDoi(a.slug)).map((a) => ({ path: "analysis", slug: a.slug, title: a.title, updated: a.updated })),
     // news_items live at /news/, not /analysis/. Use the real headline (not the
     // slug) so Google News shows a proper title, not "romero roi tottenham...".
     ...newsItems.filter((n) => newsDuocIndex(n.slug, n.updated, n.soChu)).map((n) => ({ path: "news", slug: n.slug, title: n.title, updated: n.updated })),

@@ -22,6 +22,8 @@ import { localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
 import { laBaiDuDoan } from "@/lib/du-doan-cham";
 import { duDoanCua } from "@/lib/du-doan-nguon";
+import { taiDuDoan } from "@/lib/du-doan-tai";
+import { timTran } from "@/lib/du-doan-tran";
 import type { TranDaDa } from "@/lib/phong-do";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { dungHang } from "@/lib/du-doan-hang";
@@ -32,6 +34,12 @@ import { suKienTran } from "@/lib/du-doan-schema";
 import { ODuDoanTran } from "@/components/o-du-doan-tran";
 import { ThanBaiMd } from "@/components/than-bai-md";
 
+// ISR (15/11): force-static để fetch no-store bên trong không kéo trang về dựng động mỗi lượt.
+export const dynamic = "force-static";
+// Không dựng sẵn slug nào lúc build: trang dựng lần đầu khi có người vào rồi giữ theo revalidate.
+export async function generateStaticParams() {
+  return [];
+}
 export const revalidate = 300;
 
 const BASE = SITE_URL;
@@ -388,6 +396,8 @@ export default async function AnalysisArticlePage({ params }: Props) {
   const { slug, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);
   const dict = getDict(lang);
+  // 15/11: bài nhận định đã có trang trận /du-doan/{slug} (bản chính) → chuyển hẳn, không giữ bản trùng.
+  if (slug.startsWith("nhan-dinh-") && timTran((await taiDuDoan()).hang, slug)) permanentRedirect(withLang(`/du-doan/${slug}`, lang));
 
   // Try Desk article first
   const deskArticle = await getAnalysisArticleBySlug(slug);

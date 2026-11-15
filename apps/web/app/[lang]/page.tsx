@@ -125,6 +125,11 @@ export default async function Home({ params }: Props) {
   const hangBai = gopTuan(dungHang(mucDuDoan, picks, oddsMatches, daDa));
   // Nguyên bảng dự đoán (bài + tệp tuần) lên trang chủ — Peter 10/11.
   const hangDuDoan = [...hangBai, ...hangTuan(hangBai, daDaTuan, Date.now())];
+  // 15/11: bài nhận định đã có trang trận /du-doan/{slug} → link thẳng sang đó (bản /analysis chuyển hẳn,
+  // bản /blog 301), không bắt Google đi qua bước chuyển. Blog trùng thì bỏ khỏi khối blog.
+  const daDoi = new Set(hangDuDoan.map((h) => h.slug));
+  const duongBai = (slug: string) => (daDoi.has(slug) ? `/du-doan/${slug}` : `/analysis/${slug}`);
+  const blogConLai = blogs.filter((b) => !daDoi.has(b.slug));
   const railMatches = railTran(hangDuDoan, bayGioMs(), tySoTuLS(canTraTySo(dongTuan()), lsKq));
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
   // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
@@ -153,7 +158,7 @@ export default async function Home({ params }: Props) {
       published_at: a.published_at,
       hero: a.hero_image ?? `/api/og/analysis/${a.slug}?locale=${lang}&v=${OG_VERSION}`,
       excerpt: a.meta_description || analysisExcerpt(a.body),
-      href: withLang(`/analysis/${a.slug}`, lang),
+      href: withLang(duongBai(a.slug), lang),
       nhan: a.kind === "recap" ? dict.analysis.tabs.recap : dict.analysis.tabs.analysis,
     })),
     ...recapPosts.map((p): RecapCard => ({
@@ -169,7 +174,7 @@ export default async function Home({ params }: Props) {
       // Recap posts thường không có meta_description → rơi về tóm tắt lấy từ đầu
       // thân bài (Nick 13/9: thẻ nổi bật thiếu phần tóm tắt dưới tiêu đề).
       excerpt: p.meta_description || analysisExcerpt(p.body_md),
-      href: withLang(`/analysis/${p.slug}`, lang),
+      href: withLang(duongBai(p.slug), lang),
       nhan: dict.analysis.tabs.recap,
     })),
     ...newsItems.map((n): RecapCard => ({
@@ -302,7 +307,7 @@ export default async function Home({ params }: Props) {
       {/* 3b. Dải dự đoán theo giải + bài mới (12/11) — THAY dải trận cũ (HomeNextMatches)
           vốn đẩy 11 link /match/{slug} mỏng, tự noindex ra trang chủ. Cùng khung cuộn
           ngang full chiều rộng như cũ (Nick 17/8: "kéo dài ra"). */}
-      <DaiDuDoanGiai lang={lang} baiMoi={articles} blogMoi={blogs} />
+      <DaiDuDoanGiai lang={lang} baiMoi={articles.map((a) => ({ ...a, href: duongBai(a.slug) }))} blogMoi={blogConLai} />
 
       {/* 3a-bis. Banner Kèo — Nick 2/9: chuyển XUỐNG đây, ngay dưới bài nổi bật và
           tin mới nhất. Trước nó nằm sát dưới băng Dự đoán và đẩy bài viết xuống dưới
@@ -381,7 +386,7 @@ export default async function Home({ params }: Props) {
                       {predictions.map((a) => (
                         <li key={a.slug}>
                           <Link
-                            href={withLang(`/analysis/${a.slug}`, lang)}
+                            href={withLang(duongBai(a.slug), lang)}
                             prefetch={false}
                             className="group flex flex-col gap-1 py-2.5"
                           >
@@ -452,7 +457,7 @@ export default async function Home({ params }: Props) {
       <KhoiTrangTru
         lang={lang}
         trangLich={trangLich}
-        blogs={blogs}
+        blogs={blogConLai}
         giai={competitions.filter((c) => c.status === "active" && c.slug)}
       />
 

@@ -83,9 +83,10 @@ describe("tìm trận + trận liên quan", () => {
 
 describe("tranDuocIndex", () => {
   it.each([
-    ["Nations League", "Anh", "Croatia", true],
+    // 15/11: chỉ 5 giải lớn + C1 được index (GIAI_INDEX_TRAN) — đội tuyển, giao hữu U23 thôi index.
+    ["Nations League", "Anh", "Croatia", false],
     ["Ngoại hạng Anh", "Arsenal", "Chelsea", true],
-    ["Gia Lai VTV Cup 2026", "U23 Việt Nam", "U23 Thái Lan", true],
+    ["Gia Lai VTV Cup 2026", "U23 Việt Nam", "U23 Thái Lan", false],
     ["Hạng 6 Anh miền Bắc", "Darlington", "Oxford City", false],
     ["VĐQG Bắc Ireland", "Larne", "Linfield", false],
     ["Serie C Ý", "Arezzo", "Pisa", false],
@@ -101,8 +102,8 @@ describe("tranDuocIndex", () => {
     expect(tranDuocIndex({ slug: "tuan-2026-11-12-england-croatia", giai: "Nations League", nha: "Anh", khach: "Croatia" })).toBe(false);
   });
 
-  it("trang tệp tuần đủ số liệu được index ở mọi giải", () => {
-    expect(tranDuocIndex({ slug: "tuan-2026-11-12-arezzo-pisa", giai: "Serie C Ý", nha: "Arezzo", khach: "Pisa", mong: false })).toBe(true);
+  it("trang tệp tuần đủ số liệu nhưng ngoài 5 giải lớn + C1 thì không index (15/11)", () => {
+    expect(tranDuocIndex({ slug: "tuan-2026-11-12-arezzo-pisa", giai: "Serie C Ý", nha: "Arezzo", khach: "Pisa", mong: false })).toBe(false);
   });
 });
 

@@ -9,6 +9,7 @@ import { analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, gu
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
 import { ngayVN } from "@/lib/du-doan-hang";
+import { timTran } from "@/lib/du-doan-tran";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { hubCuaGiai } from "@/lib/giai-hub";
@@ -28,14 +29,10 @@ import { hubCuaGiai } from "@/lib/giai-hub";
  *  chỉ mục gần hết. Thôi nộp trang khuôn; 202 URL rút còn ~60 trang đáng index (luật nằm
  *  trong lib/chi-muc.ts). Trang khuôn mỏng rút ra thì tự noindex,follow ở metadata. */
 
-export const dynamic = "force-dynamic";
+// 15/11: bỏ force-dynamic — sitemap dựng lại tối đa mỗi giờ (ISR), không dựng mỗi lượt bò.
 export const revalidate = 3600;
 
 const BASE = SITE_URL;
-// Chỉ còn tiếng Việt (Nick + Peter chốt 23/8) — không khai hreflang cho ngôn ngữ
-// đã bỏ, nếu không Google vẫn bò /en /th /es rồi ăn 301 vô ích.
-const LANGS = ["vi"] as const;
-
 // 9/11/2026: bỏ mốc cứng VI_REPOSITION (28/7) cho trang tĩnh/trang giải. Ngày giả
 // đứng yên 3 tháng làm Google thôi tin lastmod. Giờ trang mục lục lấy ngày của bài
 // mới nhất bên trong; trang không có nguồn ngày thật thì KHÔNG khai lastmod.
@@ -70,15 +67,7 @@ function lastmodBaiDuDoan(slug: string, modified: string): Date {
   return safeLastMod(xong);
 }
 
-/** Build alternates map for hreflang in sitemap — path-based URLs. */
-function alternates(path: string): MetadataRoute.Sitemap[number]["alternates"] {
-  const clean = path === "/" ? "" : path;
-  return {
-    languages: Object.fromEntries(
-      LANGS.map((l) => [l, l === "vi" ? `${BASE}${clean || "/"}` : `${BASE}/${l}${clean}`]),
-    ),
-  };
-}
+// 15/11: bỏ hreflang trong sitemap — site chỉ còn tiếng Việt, khai hreflang="vi" trỏ về chính nó là thừa.
 
 export async function generateSitemaps(): Promise<{ id: NhomSitemap }[]> {
   return NHOM_SITEMAP.map((id) => ({ id }));
@@ -95,26 +84,26 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 
 async function nhomBlog(): Promise<MetadataRoute.Sitemap> {
   // 14/11 gọn sitemap: bỏ lịch cuối tuần đã qua + ASEAN Cup 2026 đã xong (bài vẫn index).
-  const blogs = await getAllBlogSlugs();
-  return blogs.filter((b) => blogVaoSitemap(b.slug)).map((b) => ({
+  // 15/11: bỏ bài đã dời sang trang trận /du-doan/{slug} (/blog/{slug} 301 sang đó) — sitemap chỉ chứa URL cuối.
+  const [blogs, { hang }] = await Promise.all([getAllBlogSlugs(), taiDuDoan().catch(() => ({ hang: [] }))]);
+  return blogs.filter((b) => blogVaoSitemap(b.slug) && !timTran(hang, b.slug)).map((b) => ({
     url: `${BASE}/blog/${b.slug}`,
     lastModified: safeLastMod(b.updated),
     changeFrequency: "monthly" as const,
     priority: 0.6,
-    alternates: alternates(`/blog/${b.slug}`),
   }));
 }
 
 // Dọn chỉ mục 9/11 (Peter chốt): chỉ nộp bài được mời index — khớp robots ở trang bài.
 // 14/11 gọn sitemap: chỉ nộp nhóm "xem … ở đâu"; bài lịch/mấy giờ/nhận định vẫn index nhưng thôi mời.
 async function nhomAnalysis(): Promise<MetadataRoute.Sitemap> {
-  const deskArticles = await getAllAnalysisArticleSlugs();
-  return deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated) && analysisVaoSitemap(a.slug)).map((a) => ({
+  // 15/11: bỏ bài có trang trận /du-doan/{slug} (/analysis/nhan-dinh-… chuyển hẳn sang đó).
+  const [deskArticles, { hang }] = await Promise.all([getAllAnalysisArticleSlugs(), taiDuDoan().catch(() => ({ hang: [] }))]);
+  return deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated) && analysisVaoSitemap(a.slug) && !timTran(hang, a.slug)).map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
     lastModified: lastmodBaiDuDoan(a.slug, a.modified),
     changeFrequency: "weekly",
     priority: 0.7,
-    alternates: alternates(`/analysis/${a.slug}`),
   }));
 }
 
@@ -127,7 +116,7 @@ async function nhomNews(): Promise<MetadataRoute.Sitemap> {
 
 async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   // Trang riêng từng trận /du-doan/{slug} (10/11): CHỈ nộp trận được mời index — khớp
-  // robots ở trang trận (tranDuocIndex: bài tay giải lớn/đội tuyển/Việt Nam; trang `tuan-…` đủ số liệu, 15/11).
+  // robots ở trang trận (tranDuocIndex: chỉ 5 giải lớn + C1, trang `tuan-…` phải đủ số liệu — 15/11).
   // 14/11 gọn sitemap (Peter chốt): chỉ trận đá trong SO_NGAY_TRAN_SITEMAP ngày tới (giờ VN,
   // tính cả hôm nay); trận đã qua hoặc còn xa vẫn sống, vẫn theo robots cũ, chỉ thôi mời.
   const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
@@ -140,7 +129,6 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
       ...(h.sapDa ? {} : { lastModified: safeLastMod(Date.parse(h.kickoffUtc) + 2 * 3_600_000) }),
       changeFrequency: "daily" as const,
       priority: 0.6,
-      alternates: alternates(`/du-doan/${h.slug}`),
     }));
 
   // Trang dự đoán theo giải: chỉ 5 giải lớn + Cúp C1. Trang khuôn (kèo xiên, tip theo
@@ -150,7 +138,6 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
     url: `${BASE}/du-doan/${g.slug}`,
     changeFrequency: "daily" as const,
     priority: 0.6,
-    alternates: alternates(`/du-doan/${g.slug}`),
   }));
 
   return [...tranRoutes, ...giaiRoutes];
@@ -178,7 +165,6 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
           lastModified: safeLastMod(newest),
           changeFrequency: "daily" as const,
           priority: 0.7,
-          alternates: alternates(`/doi/${t.slug}`),
         };
       }),
     )
@@ -202,13 +188,13 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
   // /calculators/*, /responsible-play. Trước đó đã rút: /keo, /play/*, /daily-line (301),
   // /track-record + /transparency (noindex).
   const staticRoutes: MetadataRoute.Sitemap = ([
-    { url: BASE, changeFrequency: "daily", priority: 1, alternates: alternates("/") },
-    { url: `${BASE}/du-doan`, changeFrequency: "daily", priority: 0.8, alternates: alternates("/du-doan") },
-    { url: `${BASE}/blog`, changeFrequency: "daily", priority: 0.8, alternates: alternates("/blog") },
-    { url: `${BASE}/competitions`, changeFrequency: "daily", priority: 0.7, alternates: alternates("/competitions") },
-    { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.8, alternates: alternates("/about") },
+    { url: BASE, changeFrequency: "daily", priority: 1 },
+    { url: `${BASE}/du-doan`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE}/blog`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE}/competitions`, changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.8 },
     // Hồ sơ tác giả (Peter chốt 15/9) — byline mọi bài trỏ về đây.
-    { url: `${BASE}/tac-gia/pete-nguyen`, changeFrequency: "weekly", priority: 0.6, alternates: alternates("/tac-gia/pete-nguyen") },
+    { url: `${BASE}/tac-gia/pete-nguyen`, changeFrequency: "weekly", priority: 0.6 },
   ] as MetadataRoute.Sitemap).map((r) => {
     const lm = LASTMOD[r.url.slice(BASE.length)];
     return lm ? { ...r, lastModified: lm } : r;
@@ -226,7 +212,6 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
       lastModified: safeLastMod(g.updated),
       changeFrequency: "monthly",
       priority: 0.7,
-      alternates: alternates(`/guides/${g.slug}`),
     }));
 
   // Trang giải: sitemap phải soi ĐÚNG điều kiện sống của trang giải — xem
@@ -254,7 +239,6 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
       ...(hubCuaGiai(c.slug) ? { lastModified: hubCuaGiai(c.slug)!.data.capNhat } : {}),
       changeFrequency: "daily" as const,
       priority: 0.7,
-      alternates: alternates(`/competitions/${c.slug}`),
     }));
 
   return [...staticRoutes, ...hubRoutes, ...guideRoutes, ...standingsRoutes];

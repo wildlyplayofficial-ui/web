@@ -5,6 +5,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DocThemTran } from "@/components/doc-them-tran";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
+import { tenKetQua, TranKetQua } from "@/components/tran-ket-qua";
 import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranNhanDinh } from "@/components/tran-nhan-dinh";
 import { TranSoLieu } from "@/components/tran-so-lieu";
@@ -13,6 +14,7 @@ import { OG_VERSION, SITE_URL } from "@/lib/brand";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gia";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
+import { ketQuaDuocIndex, timLuuTru } from "@/lib/du-doan-luu-tru";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { GIAI_TRANG } from "@/lib/du-doan-loc";
 import { hubCuaGiai } from "@/lib/giai-hub";
@@ -30,8 +32,16 @@ import { ThanBaiMd } from "@/components/than-bai-md";
  * cũng có trang; chỉ trận qua `tranDuocIndex` mới mời Google lập chỉ mục + vào sitemap (bài tay:
  * giải lớn · đội tuyển · có Việt Nam; trận tệp tuần: đủ số liệu để có bài nhận định sinh từ số,
  * 15/11), còn lại noindex,follow. Trang sống chừng nào trận còn
- * trong dữ liệu (bài dự đoán hoặc tệp tuần); hết thì 404.
+ * trong dữ liệu (bài dự đoán hoặc tệp tuần); hết thì 404 — TRỪ trận 5 giải lớn + C1 đã đá: lấy từ kho
+ * lưu trữ (lib/du-doan-luu-tru.ts) thành trang kết quả, không 404 (15/11).
+ * ISR (15/11): force-static để lời gọi fetch no-store bên trong không kéo cả trang về dựng động;
+ * trang dựng lần đầu khi có người vào rồi giữ 300 giây.
  */
+export const dynamic = "force-static";
+// Không dựng sẵn slug nào lúc build: trang dựng lần đầu khi có người vào rồi giữ theo revalidate.
+export async function generateStaticParams() {
+  return [];
+}
 export const revalidate = 300;
 
 type Props = { params: Promise<{ lang: string; slug: string }> };
@@ -41,6 +51,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Trang theo ngày / theo giải (Peter 11/11) dùng chung route.
   const loc = await metaLoc(slug, resolveLang(l));
   if (loc) return loc;
+  const lt = timLuuTru(slug);
+  if (lt) {
+    const ten = tenKetQua(lt);
+    const tieuDe = `Kết quả ${ten.nha} ${lt.kq[0]}-${lt.kq[1]} ${ten.khach}, ${ten.giai}`;
+    const moTa = `${ten.nha} ${lt.kq[0]}-${lt.kq[1]} ${ten.khach} (${ten.giai}, ${lt.ngay.split("-").reverse().join("/")}): tỷ số, số liệu trận đấu${lt.hl ? ", video highlight" : ""}.`;
+    return {
+      title: tieuDe,
+      description: moTa,
+      alternates: buildAlternates(`/du-doan/${slug}`, resolveLang(l)),
+      ...(ketQuaDuocIndex(lt) ? {} : { robots: { index: false, follow: true } }),
+      openGraph: { locale: "vi_VN", title: `${tieuDe} | banhbong.net`, description: moTa },
+    };
+  }
   const h = timTran((await taiDuDoan()).hang, slug);
   if (!h) return {};
   const { tieuDe, moTa } = metaTran(h);
@@ -68,6 +91,17 @@ export default async function TrangTran({ params }: Props) {
   const loc = TrangLoc({ slug, lang });
   if (loc) return loc;
   const { muc, hang } = await taiDuDoan();
+  const lt = timLuuTru(slug);
+  if (lt) {
+    const ten = tenKetQua(lt);
+    return (
+      <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
+        <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: "Dự đoán", url: "/du-doan" }, { name: `${ten.nha} vs ${ten.khach}`, url: `/du-doan/${slug}` }]} />
+        <h1 className="font-display text-[22px] font-bold leading-tight sm:text-[30px]">Kết quả {ten.nha} vs {ten.khach}</h1>
+        <TranKetQua t={lt} hang={hang} lang={lang} />
+      </div>
+    );
+  }
   const h = timTran(hang, slug);
   if (!h) notFound();
   const bai = muc.find((m) => m.bai.slug === slug)?.bai ?? null;

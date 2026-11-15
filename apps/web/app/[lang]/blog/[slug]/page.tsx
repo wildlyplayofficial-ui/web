@@ -16,6 +16,12 @@ import { buildFAQPage } from "@/lib/jsonld";
 import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
+// ISR (15/11): force-static để fetch no-store bên trong không kéo trang về dựng động mỗi lượt.
+export const dynamic = "force-static";
+// Không dựng sẵn slug nào lúc build: trang dựng lần đầu khi có người vào rồi giữ theo revalidate.
+export async function generateStaticParams() {
+  return [];
+}
 export const revalidate = 300;
 
 const BASE = "https://www.banhbong.net";
