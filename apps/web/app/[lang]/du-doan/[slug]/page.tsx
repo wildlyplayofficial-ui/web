@@ -5,7 +5,6 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DocThemTran } from "@/components/doc-them-tran";
 import { DongTran } from "@/components/dong-tran";
 import { TranBaO, TranHero, TranPhongDo } from "@/components/tran-chi-tiet";
-import { Diem } from "@/components/tran-htft";
 import { TranLucLuong } from "@/components/tran-luc-luong";
 import { TranNhanDinh } from "@/components/tran-nhan-dinh";
 import { TranSoLieu } from "@/components/tran-so-lieu";
@@ -16,7 +15,7 @@ import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gi
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
-import { capNhatTuan, dauVaoNhanDinh, htftDiemTuan, soLieuTuan } from "@/lib/du-doan-tuan";
+import { capNhatTuan, dauVaoNhanDinh, soLieuTuan } from "@/lib/du-doan-tuan";
 import { nhanDinhTran } from "@/lib/tran-nhan-dinh";
 import { tenDoiViet } from "@/lib/ten-viet";
 import { lucLuongCua } from "@/lib/luc-luong";
@@ -72,7 +71,6 @@ export default async function TrangTran({ params }: Props) {
   const bai = muc.find((m) => m.bai.slug === slug)?.bai ?? null;
   const lienQuan = tranLienQuan(hang, h);
   const soLieu = soLieuTuan(slug);
-  const htftDiem = htftDiemTuan(slug);
   const lucLuong = lucLuongCua(slug);
   const cap = `${h.nha} vs ${h.khach}`;
   const cg = chuyenGiaCua(h);
@@ -133,9 +131,8 @@ export default async function TrangTran({ params }: Props) {
       {lucLuong && <TranLucLuong l={lucLuong} nha={h.nha} khach={h.khach} />}
       {/* Peter 14/11 "thấy hơi dư": bỏ bảng 10 trận gộp (thẻ từng đội phía dưới đã có) và 3 thẻ
           Hai đội ghi bàn · Over/Under 2.5 · Tỷ số chính xác (đã có ở khung trên cùng). */}
-      {/* Peter 14/11 "A. Bỏ đi": bỏ 4 thẻ kèo phụ (Hiệp 1/Cả trận · Hòa hoàn tiền · Kết quả + hai đội ghi bàn ·
-          Kết quả + Over/Under), chỉ giữ hộp điểm tấn công/phòng ngự. */}
-      {htftDiem && <Diem k={htftDiem} />}
+      {/* Peter 14/11 "A. Bỏ đi": bỏ 4 thẻ kèo phụ. Peter 15/11 "A đi em": bỏ luôn hộp điểm tấn công/phòng ngự
+          (thang 1-10 khó tin: Liverpool hạng 4 mà tấn công 2/10). */}
       {soLieu && <TranSoLieu so={soLieu} logo={[h.logoNha, h.logoKhach]} />}
       {/* 14/11: trận có bài nhận định viết tay thì mang luôn thân bài — trang trận là bản chính
           (canonical), bản /analysis/{slug} trỏ canonical về đây. Trận tệp tuần không có bài. */}
