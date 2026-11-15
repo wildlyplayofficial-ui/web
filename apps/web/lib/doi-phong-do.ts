@@ -20,7 +20,7 @@ export interface DongPhongDo {
   tran: { slug: string; ngay: string; gio: string; doiThu: string; san: "nha" | "khach" };
 }
 
-const diemKQ = (kq: readonly KQ[]) => kq.reduce((a, k) => a + (k === "T" ? 3 : k === "H" ? 1 : 0), 0);
+export const diemKQ = (kq: readonly KQ[]) => kq.reduce((a, k) => a + (k === "T" ? 3 : k === "H" ? 1 : 0), 0);
 
 /** `hang` đã xếp theo giờ đá; đội lấy trận ĐẦU TIÊN trong [tu, den] có đủ điểm chung, 5 trận gần nhất và logo thật. */
 export function xepDoiPhongDo(

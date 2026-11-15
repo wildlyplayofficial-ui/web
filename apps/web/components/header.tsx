@@ -160,12 +160,12 @@ export function Header(_props: { competitions?: NavCompetition[] }) {
 
   const nav = dict.nav;
   const clusters: NavCluster[] = [
-    // Peter 11/11: menu trên chỉ 4 mục; Blog, Phân Tích, Giới Thiệu xuống chân trang.
-    // Bỏ Chú Tám chọn, Thành Tích, Kèo (trang vẫn sống, chỉ gỡ khỏi menu).
+    // Peter 15/11: menu trên đúng 5 mục — Dự Đoán · Kết Quả · Thông Số · Form · Tin Tức.
+    // Blog, Phân Tích, Giới Thiệu ở chân trang; Kèo Xiên ("cất xuống đi") chỉ còn ở chân trang, Trận Đấu gỡ hẳn.
     { label: nav.predictions, href: "/du-doan", moi: true },
-    // Peter 15/11 "kèo xiên cất xuống đi": Kèo Xiên chỉ còn ở chân trang.
     { label: nav.results, href: "/ket-qua" },
-    // Peter 15/11 "bỏ lun em": gỡ hẳn menu Trận Đấu (giải đã có ở thanh giải bên dưới).
+    { label: "Thông Số", href: "/thong-so" },
+    { label: "Form", href: "/form" },
     { label: nav.news, href: "/news" },
   ];
 

@@ -13,6 +13,7 @@ import { timTran } from "@/lib/du-doan-tran";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { hubCuaGiai } from "@/lib/giai-hub";
+import { tepXgDoi } from "@/lib/xg-doi";
 
 /** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8).
  *
@@ -200,6 +201,17 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
     return lm ? { ...r, lastModified: lm } : r;
   });
 
+  // /thong-so + /form (15/11): trang số liệu theo đội từ data/xg-doi.json — lastmod = ngày máy kéo FotMob.
+  const xgDoi = tepXgDoi();
+  const soLieuRoutes: MetadataRoute.Sitemap = ["/thong-so", "/form"].flatMap((goc) =>
+    [goc, ...xgDoi.giai.map((g) => `${goc}/${g.slug}`)].map((u) => ({
+      url: `${BASE}${u}`,
+      lastModified: safeLastMod(xgDoi.capNhat),
+      changeFrequency: "daily" as const,
+      priority: u === goc ? 0.8 : 0.7,
+    })),
+  );
+
   // /match/* RÚT hết khỏi sitemap 14/11: trang trận có bài chỉ ~200 chữ (bài thật nằm ở
   // /analysis, /blog) — trang tự noindex,follow (xem match/[slug]/page.tsx).
 
@@ -241,5 +253,5 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [...staticRoutes, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...soLieuRoutes, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
 }
