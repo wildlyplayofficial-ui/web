@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { DoiLogo } from "@/components/doi-logo";
-import { OKetQua, OPhongDo, OTySoDuDoan } from "@/components/phong-do";
+import { OPhongDo, OTySoDuDoan } from "@/components/phong-do";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
 import { Ty } from "@/components/ty-le";
@@ -66,9 +66,6 @@ function Dong({ h, lang, hienTyLe }: { h: HangDuDoan; lang: Lang; hienTyLe: bool
           )}
           <span className="flex shrink-0 flex-col items-center gap-1">
             <OTySoDuDoan du={h.du} chu={{ home: t.homeShort, draw: t.draw, away: t.awayShort }} className="min-w-[84px] text-sm" />
-            {h.that && (
-              <OKetQua that={h.that} nhan={t.result} className="min-w-[84px] text-sm" />
-            )}
           </span>
         </span>
         {hienTyLe && (

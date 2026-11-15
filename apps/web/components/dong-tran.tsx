@@ -82,18 +82,12 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
         >
           {h.du ? `${h.du[0]}-${h.du[1]}` : "?"}
         </span>
-        {h.that ? (
-          // Peter 15/11 "gỡ chữ đúng/sai đi": chỉ hiện tỷ số kết quả, màu trung tính, không chấm đúng/sai.
-          <p className="mt-0.5 whitespace-nowrap text-xs text-muted">
-            {t.result} {h.that[0]}-{h.that[1]}
+        {/* Peter 15/11 "đã dự đoán còn ghi kq là sao": danh sách dự đoán không hiện kết quả. */}
+        {chieu !== null && (
+          <p className="mt-0.5 text-xs text-muted">
+            <span className="lg:hidden">{chuNgan}</span>
+            <span className="hidden truncate lg:block">{chuDai}</span>
           </p>
-        ) : (
-          chieu !== null && (
-            <p className="mt-0.5 text-xs text-muted">
-              <span className="lg:hidden">{chuNgan}</span>
-              <span className="hidden truncate lg:block">{chuDai}</span>
-            </p>
-          )
         )}
       </div>
       <div className="hidden lg:col-start-5 lg:row-start-1 lg:flex lg:gap-1" aria-label={h.mot ? "1·X·2" : undefined}>
