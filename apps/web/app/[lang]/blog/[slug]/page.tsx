@@ -15,6 +15,7 @@ import { locales } from "@/lib/format";
 import { buildFAQPage } from "@/lib/jsonld";
 import { buildAlternates, getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 
 // ISR (15/11): force-static để fetch no-store bên trong không kéo trang về dựng động mỗi lượt.
 export const dynamic = "force-static";
@@ -181,6 +182,8 @@ export default async function GuidePage({ params }: Props) {
           {post.body_md.replace(/^\s*[-*]{3,}\s*\n/gm, "")}
         </ReactMarkdown>
       </div>
+
+      <KhoiLinkDuDoan chu={`${post.title} ${slug}`} lang={lang} />
 
       {/* A4: Internal-linking hub→spoke */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
