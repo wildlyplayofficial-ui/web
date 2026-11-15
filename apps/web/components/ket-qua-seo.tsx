@@ -16,37 +16,33 @@ interface Props {
 
 const tySo = (t: TranKetQua) => `${t.nha} ${t.kq[0]}-${t.kq[1]} ${t.khach}`;
 
-/** Đoạn mở đầu: ngày, số trận, số giải, giải nhiều trận nhất + 1 tỷ số mẫu. */
+/** Đoạn mở đầu: số trận + các giải, viết như người nói (Peter 15/11 "e viết kì qá"). */
 export function KetQuaMoDau({ ngay, homNay, nhom }: Omit<Props, "ngays">) {
   const soTran = nhom.reduce((n, [, ds]) => n + ds.length, 0);
-  const [giaiDau, dsDau] = nhom[0];
   return (
     <p className="mt-2 text-[15px] leading-relaxed text-ink">
-      {`Kết quả bóng đá ${nhanNgay(ngay, homNay).toLowerCase()}: ${soTran} trận thuộc ${nhom.length} giải, giờ Việt Nam. `}
-      {nhom.length > 1
-        ? `Nhiều trận nhất là ${giaiDau} (${dsDau.length} trận), ví dụ ${tySo(dsDau[0])}. `
-        : `Tất cả thuộc ${giaiDau}, ví dụ ${tySo(dsDau[0])}. `}
-      Mỗi tỷ số bên dưới là link tới trang riêng của trận trên banhbong.net, có kết quả cùng dự đoán và số liệu trước trận.
+      {`Tỷ số ${soTran} trận ${nhanNgay(ngay, homNay).toLowerCase()} (giờ Việt Nam), gồm ${dsGiai(nhom)}. `}
+      Bấm vào trận để xem nhận định và dự đoán banhbong đưa ra trước trận.
     </p>
   );
 }
 
-function cauHoi({ ngay, homNay, ngays, nhom }: Props): CauHoiHub[] {
-  const nhan = nhanNgay(ngay, homNay).toLowerCase();
-  const soTran = nhom.reduce((n, [, ds]) => n + ds.length, 0);
-  const giai = nhom.slice(0, 3).map(([g]) => g).join(", ");
+const dsGiai = (nhom: Props["nhom"]) =>
+  nhom.slice(0, 3).map(([g]) => g).join(", ") + (nhom.length > 3 ? "…" : "");
+
+function cauHoi({ homNay, ngays }: Props): CauHoiHub[] {
   return [
     {
       hoi: "Xem kết quả bóng đá hôm qua ở đâu?",
-      dap: `Trên banhbong.net/ket-qua. Ngày ${nhan} có ${soTran} trận, gom theo giải (${giai}${nhom.length > 3 ? "…" : ""}), giờ Việt Nam. Bấm vào tỷ số để mở trang riêng của trận.`,
+      dap: "Ngay trên trang này của banhbong.net. Kết quả xếp theo giải, giờ Việt Nam, cập nhật mỗi sáng. Bấm vào trận để mở trang chi tiết.",
     },
     {
       hoi: "Xem kết quả một trận cụ thể ở đâu?",
-      dap: "Mỗi trận có một trang riêng trên banhbong.net, tiêu đề dạng \"Kết quả đội nhà tỷ số đội khách\". Trang ghi tỷ số cuối cùng cùng dự đoán và số liệu trước trận. Từ trang Kết Quả, bấm vào tỷ số là tới.",
+      dap: "Bấm vào trận trong danh sách. Mỗi trận có trang riêng: tỷ số, nhận định, dự đoán trước trận và phong độ hai đội.",
     },
     {
       hoi: "Kết quả bóng đá cập nhật lúc nào?",
-      dap: `Tỷ số cập nhật mỗi sáng theo giờ Việt Nam, gồm các trận đêm qua và rạng sáng nay. Trang giữ ${ngays.length} ngày gần nhất có kết quả: ${ngays.map((k) => nhanNgay(k, homNay)).join(", ")}.`,
+      dap: `Mỗi sáng, gồm các trận tối qua và rạng sáng nay theo giờ Việt Nam. Bấm tab ngày ở đầu trang để xem lại: ${ngays.map((k) => nhanNgay(k, homNay)).join(", ")}.`,
     },
   ];
 }
