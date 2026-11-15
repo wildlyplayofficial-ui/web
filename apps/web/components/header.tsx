@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { getDict, LANGS, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { ThemeToggle } from "./theme-toggle";
 import { BrandMark } from "./brand-mark";
+import { ThanhGiai } from "./thanh-giai";
 import { WORDMARK_A, WORDMARK_B } from "@/lib/brand";
 
 interface NavCompetition {
@@ -176,72 +177,76 @@ export function Header({ competitions = [] }: { competitions?: NavCompetition[] 
   ];
 
 
+  // Thanh giải nằm NGOÀI header dính: cuộn đi theo trang, không chiếm thêm ~56px màn điện thoại.
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-8 px-5">
-        <Link href={withLang("/", lang)} className="flex items-center gap-2 font-display text-2xl font-bold">
-          <BrandMark size={28} />
-          <span>
-            <span className="text-ink">{WORDMARK_A}</span>
-            <span className="text-brand">{WORDMARK_B}</span>
-          </span>
-        </Link>
+    <>
+      <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-8 px-5">
+          <Link href={withLang("/", lang)} className="flex items-center gap-2 font-display text-2xl font-bold">
+            <BrandMark size={28} />
+            <span>
+              <span className="text-ink">{WORDMARK_A}</span>
+              <span className="text-brand">{WORDMARK_B}</span>
+            </span>
+          </Link>
 
-        <button
-          type="button"
-          aria-label="Toggle menu"
-          aria-expanded={open}
-          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] xl:hidden"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="h-0.5 w-6 rounded bg-ink" />
-          <span className="h-0.5 w-6 rounded bg-ink" />
-          <span className="h-0.5 w-6 rounded bg-ink" />
-        </button>
+          <button
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={open}
+            className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] xl:hidden"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className="h-0.5 w-6 rounded bg-ink" />
+            <span className="h-0.5 w-6 rounded bg-ink" />
+            <span className="h-0.5 w-6 rounded bg-ink" />
+          </button>
 
-        <nav
-          className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 xl:static xl:flex xl:flex-row xl:items-center xl:gap-6 xl:border-0 xl:p-0`}
-        >
-          <ul className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-1">
-            {clusters.map((cluster) => {
-              if ("href" in cluster) {
+          <nav
+            className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 xl:static xl:flex xl:flex-row xl:items-center xl:gap-6 xl:border-0 xl:p-0`}
+          >
+            <ul className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-1">
+              {clusters.map((cluster) => {
+                if ("href" in cluster) {
+                  return (
+                    <li key={cluster.href}>
+                      <Link
+                        href={withLang(cluster.href, lang)}
+                        onClick={() => setOpen(false)}
+                        aria-current={isActive(cluster.href) ? "page" : undefined}
+                        className={`inline-block whitespace-nowrap ${KHUNG} ${isActive(cluster.href) ? KHUNG_ON : KHUNG_OFF}`}
+                      >
+                        {cluster.label}
+                        {cluster.moi && (
+                          <span className="ml-1.5 rounded bg-brand px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-bg">
+                            {nav.newTag}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                }
+                const active = cluster.items.some((it) => "href" in it && isActive(it.href));
                 return (
-                  <li key={cluster.href}>
-                    <Link
-                      href={withLang(cluster.href, lang)}
-                      onClick={() => setOpen(false)}
-                      aria-current={isActive(cluster.href) ? "page" : undefined}
-                      className={`inline-block whitespace-nowrap ${KHUNG} ${isActive(cluster.href) ? KHUNG_ON : KHUNG_OFF}`}
-                    >
-                      {cluster.label}
-                      {cluster.moi && (
-                        <span className="ml-1.5 rounded bg-brand px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-bg">
-                          {nav.newTag}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
+                  <NavDropdown
+                    key={cluster.label}
+                    label={cluster.label}
+                    active={active}
+                    items={cluster.items}
+                    lang={lang}
+                    onNavigate={() => setOpen(false)}
+                    accent={"accent" in cluster && cluster.accent}
+                  />
                 );
-              }
-              const active = cluster.items.some((it) => "href" in it && isActive(it.href));
-              return (
-                <NavDropdown
-                  key={cluster.label}
-                  label={cluster.label}
-                  active={active}
-                  items={cluster.items}
-                  lang={lang}
-                  onNavigate={() => setOpen(false)}
-                  accent={"accent" in cluster && cluster.accent}
-                />
-              );
-            })}
-          </ul>
-          <div className="flex items-center gap-2">
-            <ThemeToggle onToggle={() => setOpen(false)} />
-          </div>
-        </nav>
-      </div>
-    </header>
+              })}
+            </ul>
+            <div className="flex items-center gap-2">
+              <ThemeToggle onToggle={() => setOpen(false)} />
+            </div>
+          </nav>
+        </div>
+      </header>
+      <ThanhGiai lang={lang} barePath={barePath} />
+    </>
   );
 }

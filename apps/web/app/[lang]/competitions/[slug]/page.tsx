@@ -18,6 +18,10 @@ import { laBaiTru } from "@/lib/chi-muc";
 import { khopBangTong, tinhBxhSan, tinhBxhTong } from "@/lib/bxh-san";
 import { tranCuaGiai } from "@/lib/bxh-san-tai";
 import { KhoiTipGiai } from "@/components/trang-tip-giai";
+import { HubGiai } from "@/components/giai-hub/hub-giai";
+import { duDoanTheoNgay, hubCuaGiai, muaGiai } from "@/lib/giai-hub";
+import { taiDuDoan } from "@/lib/du-doan-tai";
+import { homNayVN } from "@/lib/ket-qua";
 
 // 10 phút (trước 3600): bản dựng lúc build có thể rỗng nếu nhà cung cấp chập chờn, phải tự lành nhanh.
 export const revalidate = 600;
@@ -98,6 +102,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Bản VI (14/11): GSC — trang đứng hạng 73, "đã thu thập nhưng chưa lập chỉ mục".
   // Tiêu đề mang mùa + "lịch thi đấu & dự đoán"; mô tả nêu đội đầu bảng thật
   // (bảng đã đệm 1 giờ trong fetchCompetitionTable) để mỗi giải một mô tả riêng.
+  // Hub 5 giải lớn (Peter 15/11, theo Google Trends VN: "lịch thi đấu", "kết quả" được tìm nhiều hơn "dự đoán").
+  const hub = lang === "vi" ? hubCuaGiai(slug) : null;
+  if (hub) {
+    const mua = muaGiai();
+    const bang = await fetchCompetitionTable(comp.livescoreId).catch(() => []);
+    const dau = bang.slice().sort((a, b) => a.rank - b.rank)[0];
+    const tieuDe = `Lịch thi đấu, kết quả, bảng xếp hạng ${compName} ${mua} | banhbong`;
+    const moTa = [
+      `Lịch thi đấu ${compName}${hub.data.vongToi ? ` vòng ${hub.data.vongToi}` : ""} giờ Việt Nam, kết quả${hub.data.vongXong ? ` vòng ${hub.data.vongXong}` : ""} và bảng xếp hạng ${compName} ${mua}`,
+      dau && dau.played > 0 ? `: ${dau.name} dẫn đầu với ${dau.points} điểm.` : ".",
+      " Kèm dự đoán tỷ số, chấn thương, top ghi bàn.",
+    ].join("");
+    return {
+      title: { absolute: tieuDe },
+      description: moTa,
+      alternates: buildAlternates(`/competitions/${slug}`, lang),
+      openGraph: {
+        locale: "vi_VN",
+        title: tieuDe,
+        description: moTa,
+        images: [{ url: `/api/og/editorial?title=${encodeURIComponent(compName)}&subtitle=${encodeURIComponent("Lịch thi đấu, kết quả, bảng xếp hạng")}&color=${encodeURIComponent(LEAGUE_COLORS[slug] ?? "")}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      },
+    };
+  }
   const title = lang === "vi"
     ? `${dict.standings.titleFor.replace("{name}", compName)}${comp.season ? ` ${comp.season}` : ""}, lịch thi đấu & dự đoán`
     : dict.standings.titleFor.replace("{name}", compName);
@@ -197,6 +225,52 @@ export default async function StandingSlugPage({ params }: Props) {
   const sanKhach = tinhBxhSan(tranDaDa, "khach", tenDoi);
   const coSan = !hasGroups && khopBangTong(sortedRows, sanNha, sanKhach);
   const tabLabels = lang === "vi" ? { all: "Tất cả", home: "Sân nhà", away: "Sân khách" } : undefined;
+
+  // Hub 5 giải lớn (Peter duyệt mẫu 15/11): bản VI, bảng phẳng. Giải khác giữ trang cũ bên dưới.
+  const hub = lang === "vi" && showQualification && !hasGroups ? hubCuaGiai(slug) : null;
+  if (hub) {
+    const { hang } = await taiDuDoan();
+    const [nhat, nhi] = sortedRows;
+    return (
+      <>
+        <BreadcrumbJsonLd
+          items={[
+            { name: "Trang chủ", url: "/" },
+            { name: dict.standings.title, url: "/competitions" },
+            { name: compName, url: `/competitions/${slug}` },
+          ]}
+        />
+        <HubGiai
+          lang={lang}
+          compName={compName}
+          mua={muaGiai()}
+          giai={hub.giai}
+          data={hub.data}
+          ngay={duDoanTheoNgay(hang, hub.giai, homNayVN())}
+          dauBang={nhat && nhi && nhat.played > 0 ? { nhat: { ten: nhat.name, diem: nhat.points }, nhi: { ten: nhi.name, diem: nhi.points }, vong: Math.max(...sortedRows.map((r) => r.played)) } : null}
+          bai={baiCuaGiai.filter((a) => !laBaiTru(a.slug)).slice(0, 4)}
+          trangTru={baiCuaGiai.filter((a) => laBaiTru(a.slug))}
+          bang={
+            sortedRows.length > 0 ? (
+              <>
+                <LeagueTable
+                  teams={sortedRows}
+                  labels={dict.standings}
+                  showQualification={showQualification}
+                  sanNha={coSan ? sanNha : undefined}
+                  sanKhach={coSan ? sanKhach : undefined}
+                  tabLabels={tabLabels}
+                />
+                <p className="mt-3 text-[13px] text-muted">{`Cập nhật ${capNhatVN()} (giờ Việt Nam)`}</p>
+              </>
+            ) : (
+              <p className="rounded-card border border-line bg-card p-4 text-sm text-muted">{dict.standings.empty}</p>
+            )
+          }
+        />
+      </>
+    );
+  }
 
   // Fully finished rounds drop below the group tables (Nick's request 3/7)
   // so the bracket up top only shows rounds still in play/upcoming. Keep

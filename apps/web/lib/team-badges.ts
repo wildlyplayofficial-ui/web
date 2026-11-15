@@ -50,6 +50,10 @@ const TEN_KHAC: Record<string, string> = {
   "athletic bilbao": "Athletic Club",
   "stade rennais": "Rennes",
   "stade brest 29": "Stade Brestois 29",
+  // Tên FotMob (hub giải 15/11).
+  "brest": "Stade Brestois 29",
+  "internazionale": "Inter",
+  "deportivo a coruna": "Deportivo de A Coruña",
   "malaga": "Málaga",
   // Tệp dự đoán tuần ghi tên ngắn của CLB Anh/Đức hạng dưới.
   "aldershot": "Aldershot Town",

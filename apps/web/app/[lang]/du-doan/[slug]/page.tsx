@@ -14,6 +14,8 @@ import { tranDuocIndex } from "@/lib/chi-muc";
 import { chuyenGiaCua, duongDanChuyenGia, nguoiChuyenGia } from "@/lib/chuyen-gia";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { GIAI_TRANG } from "@/lib/du-doan-loc";
+import { hubCuaGiai } from "@/lib/giai-hub";
 import { cauTomTat, metaTran, tieuDeTran, timTran, tranLienQuan } from "@/lib/du-doan-tran";
 import { capNhatTuan, dauVaoNhanDinh, soLieuTuan } from "@/lib/du-doan-tuan";
 import { nhanDinhTran } from "@/lib/tran-nhan-dinh";
@@ -79,6 +81,9 @@ export default async function TrangTran({ params }: Props) {
   const nhanDinh = dauVao ? nhanDinhTran(dauVao, tenDoiViet) : [];
   const { tieuDe, moTa } = metaTran(h);
   const ngaySua = bai?.body ? (bai.updated_at ?? bai.published_at) : capNhatTuan(slug);
+  // Trận 5 giải lớn: tên giải trên đường dẫn trỏ về hub /competitions/{slug} (lịch, kết quả, BXH).
+  const bxhGiai = GIAI_TRANG.find((g) => g.khop.test(h.giai))?.bxh;
+  const hubGiai = bxhGiai && hubCuaGiai(bxhGiai) ? `/competitions/${bxhGiai}` : null;
 
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
@@ -118,7 +123,7 @@ export default async function TrangTran({ params }: Props) {
         <span aria-hidden>›</span>
         <Link href={withLang("/du-doan", lang)} className={MANH}>Dự đoán</Link>
         <span aria-hidden>›</span>
-        <span>{h.giai}</span>
+        {hubGiai ? <Link href={withLang(hubGiai, lang)} className={MANH}>{h.giai}</Link> : <span>{h.giai}</span>}
         <span aria-hidden className="hidden sm:inline">›</span>
         <span className="hidden text-ink sm:inline">{cap}</span>
       </nav>
