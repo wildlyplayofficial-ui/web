@@ -239,7 +239,8 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
         (await isFeatureEnabled(`standings_${c.slug.replace(/-/g, "_")}`).catch(() => false));
       if (!song) return false;
       // 16/11: giải không có bảng thật (World Cup 2026 đã xong) → trang noindex, không mời vào sitemap.
-      const bang = await fetchCompetitionTable(c.livescoreId).catch(() => null);
+      const bang = await fetchCompetitionTable(c.livescoreId)
+        .catch((e: unknown) => (e instanceof Error && e.message.endsWith(": rỗng") ? [] : null));
       return bang === null || giaiBxhDuocIndex(c.slug, bang.length);
     }),
   );
