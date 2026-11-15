@@ -5,6 +5,7 @@ import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import type { GiaiTrang } from "@/lib/du-doan-loc";
 import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import type { HubGiaiData, NgayDuDoan } from "@/lib/giai-hub";
+import { gioiThieuGiai } from "@/lib/gioi-thieu-giai";
 import { withLang, type Lang } from "@/lib/i18n";
 import { duongTipGiai } from "@/lib/tip-giai";
 import type { AnalysisArticle } from "@/lib/types";
@@ -39,6 +40,14 @@ interface Props {
 }
 
 const LINK_KHAC = "inline-flex min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold transition-colors hover:border-brand hover:text-brand";
+
+function cauDauBang(compName: string, mua: string, d: DauBang): string {
+  const cach = d.nhat.diem - d.nhi.diem;
+  const dau = cach === 0
+    ? `${d.nhat.ten} và ${d.nhi.ten} cùng có ${d.nhat.diem} điểm ở hai vị trí đầu bảng`
+    : `${d.nhat.ten} đang dẫn đầu ${compName} với ${d.nhat.diem} điểm, hơn ${d.nhi.ten} ${cach} điểm`;
+  return `Bảng xếp hạng ${compName} mùa ${mua} cập nhật sau vòng ${d.vong}: ${dau}. Bảng dưới có đủ các đội, xem riêng thành tích sân nhà và sân khách.`;
+}
 
 function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {
   const ds: CauHoiHub[] = [];
@@ -77,6 +86,7 @@ export function HubGiai(p: Props) {
   const soVang = data.vang.reduce((n, d) => n + d.ds.length, 0);
   const tran = ngay.flatMap((d) => d.ds);
   const hoiDap = cauHoi(p);
+  const gt = gioiThieuGiai(giai.slug, compName);
   const suKien = tran.length > 0 && {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -89,6 +99,10 @@ export function HubGiai(p: Props) {
         <h1 className="font-display text-[26px] font-bold leading-tight sm:text-3xl">{`Lịch thi đấu, kết quả, dự đoán ${compName} ${mua}`}</h1>
         <p className="mt-2 text-sm text-muted">
           {[`Mùa ${mua}`, data.vongXong ? `cập nhật sau vòng ${data.vongXong}` : null, "giờ Việt Nam"].filter(Boolean).join(" · ")}
+        </p>
+        {/* Peter 15/11: đoạn giới thiệu cho SEO/GEO kiểu PredictZ, chỉ ghi điều mình làm thật. */}
+        <p className="mt-3 text-[15px] leading-relaxed text-ink">
+          {gt.mo(mua, data.vongToi ?? null, tran.length)}
         </p>
         {/* Peter 15/11 "cái này để lên trên / kiểu 2 option khác cho user chọn". */}
         <nav aria-label={`Dự đoán khác ${compName}`} className="mt-4 flex flex-wrap items-center gap-2">
@@ -111,7 +125,11 @@ export function HubGiai(p: Props) {
             nl={{ ungVien: [...p.tenBang, ...data.ketQua.flatMap((k) => [k.nha, k.khach]), ...data.vang.map((v) => v.doi), ...Object.keys(data.logo ?? {})], du: data.logo }}
           />
         </Khoi>
-        <Khoi id="bang-xep-hang" tieuDe={`Bảng xếp hạng ${compName} ${mua}`}>
+        {/* Peter 15/11: câu hỏi nhiều người tìm, kiểu "Who Is Top Of The Premier League?" của PredictZ. */}
+        <Khoi id="bang-xep-hang" tieuDe={gt.hoiDauBang(mua)}>
+          {p.dauBang && (
+            <p className="mb-3 text-[15px] leading-relaxed text-ink">{cauDauBang(compName, mua, p.dauBang)}</p>
+          )}
           {bang}
         </Khoi>
         <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={`Nguồn: ${data.nguon}${data.vongXong ? ` · sau vòng ${data.vongXong}` : ""}`}>
