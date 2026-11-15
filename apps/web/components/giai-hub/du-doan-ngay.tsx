@@ -2,10 +2,9 @@ import Link from "next/link";
 import { DoiLogo } from "@/components/doi-logo";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { ngayThang, thuVN } from "@/lib/du-doan-tran";
-import type { NgayDuDoan } from "@/lib/giai-hub";
+import { logoHub, type NgayDuDoan } from "@/lib/giai-hub";
 import { withLang, type Lang } from "@/lib/i18n";
 import type { KQ } from "@/lib/phong-do";
-import { badgeNho, teamBadge } from "@/lib/team-badges";
 
 const MAU_KQ: Record<KQ, string> = { T: "bg-brand text-bg", H: "bg-warning text-bg", B: "bg-loss text-white" };
 const TEN_KQ: Record<KQ, string> = { T: "thắng", H: "hoà", B: "thua" };
@@ -29,7 +28,7 @@ function DongDoi({ ten, logo, f }: { ten: string; logo: string | null; f: KQ[] |
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
-        <DoiLogo src={badgeNho(teamBadge(ten) ?? logo)} ten={ten} size={22} />
+        <DoiLogo src={logo} ten={ten} size={22} />
         <span className="min-w-0 break-words text-[15px] font-semibold leading-snug">{ten}</span>
       </div>
       <div className="mt-1 pl-[30px]">
@@ -46,7 +45,10 @@ function KetLuan({ du }: { du: [number, number] }) {
   return <span className="text-warning">Hoà</span>;
 }
 
-function TheTran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
+/** ungVien: tên đầy đủ của giải (BXH, kết quả, FotMob) để khớp tên ngắn của tệp dự đoán ra logo. */
+export type NguonLogo = { ungVien: readonly string[]; du?: Record<string, string> };
+
+function TheTran({ h, lang, nl }: { h: HangDuDoan; lang: Lang; nl: NguonLogo }) {
   const du = h.du as [number, number];
   return (
     <Link
@@ -55,8 +57,8 @@ function TheTran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
       className="grid grid-cols-[minmax(0,1fr)_84px] gap-3 rounded-card border border-line bg-card p-3.5 transition-colors hover:bg-card-hover"
     >
       <div className="min-w-0 space-y-2">
-        <DongDoi ten={h.nha} logo={h.logoNha} f={h.formNha} />
-        <DongDoi ten={h.khach} logo={h.logoKhach} f={h.formKhach} />
+        <DongDoi ten={h.nha} logo={logoHub(h.nha, h.logoNha, nl.ungVien, nl.du)} f={h.formNha} />
+        <DongDoi ten={h.khach} logo={logoHub(h.khach, h.logoKhach, nl.ungVien, nl.du)} f={h.formKhach} />
         <p className="text-[13px] text-muted">
           <b className="text-ink tabular-nums">{h.gio}</b>
           {h.taiXiu && <> · {h.taiXiu}</>}
@@ -73,7 +75,7 @@ function TheTran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
   );
 }
 
-export function DuDoanTheoNgay({ ngay, lang }: { ngay: NgayDuDoan[]; lang: Lang }) {
+export function DuDoanTheoNgay({ ngay, lang, nl }: { ngay: NgayDuDoan[]; lang: Lang; nl: NguonLogo }) {
   if (ngay.length === 0) {
     return <p className="rounded-card border border-line bg-card p-4 text-sm text-muted">Chưa có dự đoán cho vòng tới. Trang cập nhật khi có lịch và số liệu mới.</p>;
   }
@@ -87,7 +89,7 @@ export function DuDoanTheoNgay({ ngay, lang }: { ngay: NgayDuDoan[]; lang: Lang 
           </h3>
           <div className="space-y-2.5">
             {d.ds.map((h) => (
-              <TheTran key={h.slug} h={h} lang={lang} />
+              <TheTran key={h.slug} h={h} lang={lang} nl={nl} />
             ))}
           </div>
         </section>

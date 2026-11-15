@@ -1,6 +1,7 @@
 import DATA from "../data/giai-hub.json";
 import type { HangDuDoan } from "./du-doan-hang";
 import { GIAI_TRANG, tranCuaGiai, type GiaiTrang } from "./du-doan-loc";
+import { badgeNho, teamBadge } from "./team-badges";
 
 /**
  * Dữ liệu hub 5 giải lớn (/competitions/{slug}) — Peter duyệt mẫu 15/11 ("đc á").
@@ -89,4 +90,43 @@ export function duDoanTheoNgay(hang: readonly HangDuDoan[], g: GiaiTrang, homNay
     nhom.set(h.ngay, [...(nhom.get(h.ngay) ?? []), h]);
   }
   return [...nhom.entries()].map(([ngay, ds]) => ({ ngay, ds }));
+}
+
+const tachChu = (s: string): string[] =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\butd\b/g, "united")
+    .replace(/\bnott'?m\b/g, "nottingham")
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+/**
+ * Tên ngắn của tệp dự đoán ("Man City", "Leeds", "Ipswich") → tên đầy đủ trong danh sách ứng viên
+ * ("Manchester City", "Leeds United", "Ipswich Town"): mỗi chữ của tên ngắn là đầu một chữ của tên
+ * dài, đúng thứ tự. Chỉ nhận khi khớp đúng MỘT ứng viên (tránh "Man" ra cả Man City lẫn Man Utd).
+ */
+export function tenDayDu(ten: string, ungVien: readonly string[]): string | null {
+  const a = tachChu(ten);
+  if (a.length === 0) return null;
+  const khop = [...new Set(ungVien)].filter((u) => {
+    const b = tachChu(u);
+    let j = 0;
+    for (const chu of a) {
+      while (j < b.length && !b[j].startsWith(chu)) j++;
+      if (j === b.length) return false;
+      j++;
+    }
+    return true;
+  });
+  return khop.length === 1 ? khop[0] : null;
+}
+
+/** Logo đội ở hub: bảng logo web → logo nguồn → logo của tên đầy đủ (BXH/kết quả/FotMob) → null (chữ cái). */
+export function logoHub(ten: string, logoNguon: string | null, ungVien: readonly string[], du?: Record<string, string>): string | null {
+  const truc = badgeNho(teamBadge(ten) ?? logoNguon) ?? du?.[ten];
+  if (truc) return truc;
+  const day = tenDayDu(ten, ungVien);
+  return day ? (badgeNho(teamBadge(day)) ?? du?.[day] ?? null) : null;
 }

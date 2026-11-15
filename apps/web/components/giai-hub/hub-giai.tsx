@@ -33,6 +33,8 @@ interface Props {
   /** Bảng xếp hạng đầy đủ (LeagueTable + tab sân nhà/khách) dựng sẵn ở trang. */
   bang: ReactNode;
   dauBang: DauBang | null;
+  /** Tên đội trong BXH — để khớp tên ngắn của tệp dự đoán ("Man City") ra logo. */
+  tenBang: string[];
   bai: AnalysisArticle[];
   trangTru: AnalysisArticle[];
 }
@@ -99,7 +101,11 @@ export function HubGiai(p: Props) {
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
         <div className="min-w-0 space-y-10">
           <Khoi id="du-doan" tieuDe={`Lịch thi đấu & dự đoán vòng ${data.vongToi ?? ""}`.trim()}>
-            <DuDoanTheoNgay ngay={ngay} lang={lang} />
+            <DuDoanTheoNgay
+              ngay={ngay}
+              lang={lang}
+              nl={{ ungVien: [...p.tenBang, ...data.ketQua.flatMap((k) => [k.nha, k.khach]), ...data.vang.map((v) => v.doi), ...Object.keys(data.logo ?? {})], du: data.logo }}
+            />
           </Khoi>
           {data.ketQua.length > 0 && (
             <Khoi id="ket-qua" tieuDe={`Kết quả ${compName} vòng ${data.vongXong}`}>

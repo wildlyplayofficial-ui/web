@@ -248,6 +248,7 @@ export default async function StandingSlugPage({ params }: Props) {
           data={hub.data}
           ngay={duDoanTheoNgay(hang, hub.giai, homNayVN())}
           dauBang={nhat && nhi && nhat.played > 0 ? { nhat: { ten: nhat.name, diem: nhat.points }, nhi: { ten: nhi.name, diem: nhi.points }, vong: Math.max(...sortedRows.map((r) => r.played)) } : null}
+          tenBang={sortedRows.map((r) => r.name)}
           bai={baiCuaGiai.filter((a) => !laBaiTru(a.slug)).slice(0, 4)}
           trangTru={baiCuaGiai.filter((a) => laBaiTru(a.slug))}
           bang={
