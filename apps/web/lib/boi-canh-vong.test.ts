@@ -30,6 +30,9 @@ describe("boiCanhVongToi", () => {
     expect(hangCua(b, "SSC Napoli")?.rank).toBe(6);
     expect(hangCua(b, "Paris Saint Germain")?.rank).toBe(7);
     expect(hangCua(b, "Real Madrid")).toBeUndefined();
+    const c = [doi(25, "Bodo/Glimt", 4), doi(34, "Slavia Praha", 2)];
+    expect(hangCua(c, "Bodoe/Glimt")?.rank).toBe(25);
+    expect(hangCua(c, "Slavia Prague")?.rank).toBe(34);
   });
   it("hangCua bỏ qua hoa thường và dấu", () => {
     expect(hangCua(bang, "real madrid")?.rank).toBe(9);

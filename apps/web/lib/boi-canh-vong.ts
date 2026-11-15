@@ -3,7 +3,7 @@ import type { StandingTeam } from "./standings";
 type Cap = { homeName: string; awayName: string };
 
 // Lịch và BXH Livescore ghi tên lệch nhau (16/11: "Bayern Munich" ↔ "Bayern München", "SSC Napoli" ↔ "Napoli").
-const DOI_TEN: Record<string, string> = { munchen: "munich", rasenballsport: "rb" };
+const DOI_TEN: Record<string, string> = { munchen: "munich", rasenballsport: "rb", bodoe: "bodo", prague: "praha" };
 const BO = new Set(["fc", "ssc", "as", "ac", "sc", "cf", "afc", "club", "cp", "sv", "vfb", "vfl", "1"]);
 const tu = (s: string): string[] =>
   s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ø/g, "o")
