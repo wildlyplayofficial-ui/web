@@ -21,6 +21,7 @@ import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
 import { cungGiai } from "@/lib/giai-cua-bai";
 import { laBaiDuDoan } from "@/lib/du-doan-cham";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { timTran } from "@/lib/du-doan-tran";
@@ -364,6 +365,8 @@ function DeskArticleView({
         </div>
       )}
 
+      <KhoiLinkDuDoan chu={`${article.title} ${article.slug}`} lang={lang} />
+
       {/* Internal links */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
         {giai && (
@@ -547,6 +550,8 @@ export default async function AnalysisArticlePage({ params }: Props) {
       </div>
 
       <RelatedArticles slug={slug} lang={lang} currentType={post.type} pickIds={post.pick_ids} />
+
+      <KhoiLinkDuDoan chu={`${post.title} ${post.slug}`} lang={lang} />
 
       {/* Internal links */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
