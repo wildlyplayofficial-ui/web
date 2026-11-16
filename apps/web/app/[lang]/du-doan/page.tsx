@@ -10,7 +10,8 @@ import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { Post } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DuDoanPZ } from "@/components/du-doan-pz";
-import { ngayVN } from "@/lib/du-doan-hang";
+import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
+import { tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
@@ -48,6 +49,34 @@ function HoiNhanh({ ds }: { ds: CauHoi[] }) {
           </div>
         ))}
       </dl>
+    </section>
+  );
+}
+
+/**
+ * 16/11 (soi chỉ mục): hub chỉ dẫn sang trang trận noindex/nofollow, còn ô "Chọn trận khác" trỏ
+ * /analysis/… (308). Thêm link thẳng tới bài nhận định /du-doan/nhan-dinh-… được index:
+ * trận sắp đá trước (gần nhất trước), rồi trận đã đá (mới nhất trước), tối đa 8.
+ */
+function NhanDinhChiTiet({ hang, lang }: { hang: HangDuDoan[]; lang: Lang }) {
+  const bayGio = new Date().toISOString();
+  const bai = hang.filter((h) => h.coBai && h.slug.startsWith("nhan-dinh-") && tranDuocIndex(h));
+  const sap = bai.filter((h) => h.kickoffUtc >= bayGio).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
+  const qua = bai.filter((h) => h.kickoffUtc < bayGio).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
+  const ds = [...sap, ...qua].slice(0, 8);
+  if (ds.length === 0) return null;
+  return (
+    <section aria-labelledby="nhan-dinh-chi-tiet" className="mt-6 px-2.5">
+      <h2 id="nhan-dinh-chi-tiet" className="font-display text-xl font-bold">Nhận định chi tiết</h2>
+      <ul className="mt-2 space-y-1">
+        {ds.map((h) => (
+          <li key={h.slug}>
+            <Link href={withLang(`/du-doan/${h.slug}`, lang)} className="inline-flex min-h-11 items-center text-brand hover:underline">
+              Nhận định {h.nha} vs {h.khach}, {h.gio} ngày {h.ngay.slice(5).split("-").reverse().join("/")}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -113,6 +142,7 @@ export default async function DuDoanHub({ params }: Props) {
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} />
+      <NhanDinhChiTiet hang={hang} lang={lang} />
       <nav aria-label="Dự đoán theo loại kèo" className="mt-6 flex flex-wrap gap-2 px-3.5 sm:px-2.5">
         {LOAI_TIP.map((l) => (
           <Link key={l} href={withLang(CAU_HINH[l].duong, lang)} className="inline-flex min-h-11 items-center rounded-lg border border-line px-3.5 text-sm font-semibold text-muted hover:text-ink">
