@@ -7,6 +7,7 @@ import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { dongDanDau, duDoanCuaGiai } from "@/lib/giai-dan-dau";
+import { hubCuaGiai } from "@/lib/giai-hub";
 
 export const revalidate = 3600;
 
@@ -48,6 +49,14 @@ export default async function CompetitionsHub({ params }: Props) {
   const danDau = lang === "vi"
     ? await Promise.all(active.map((c) => fetchCompetitionTable(c.livescoreId).then(dongDanDau).catch(() => null)))
     : active.map(() => null);
+  // Giải có hub: thêm 1 câu từ data/giai-hub.json (máy kéo FotMob/FPL) — vua phá lưới + số cầu thủ có thể vắng.
+  const soLieuHub = (slug: string): string | null => {
+    const d = lang === "vi" ? hubCuaGiai(slug)?.data : null;
+    const vua = d?.top.ban[0];
+    if (!d || !vua || !d.vongXong) return null;
+    const vang = d.vang.reduce((n, x) => n + x.ds.length, 0);
+    return `Sau vòng ${d.vongXong}, ${vua.ten} (${vua.doi}) ghi nhiều bàn nhất với ${vua.gt} bàn; ${vang} cầu thủ có thể vắng mặt.`;
+  };
 
   return (
     <div className="mx-auto max-w-[800px] px-5 pb-12">
@@ -73,6 +82,7 @@ export default async function CompetitionsHub({ params }: Props) {
           {active.map((comp, i) => {
             const colors = COMP_COLORS[comp.slug] ?? DEFAULT_COLORS;
             const dd = lang === "vi" ? duDoanCuaGiai(comp.slug) : null;
+            const hubCau = soLieuHub(comp.slug);
             return (
               <div key={comp.id}>
               <Link
@@ -91,9 +101,10 @@ export default async function CompetitionsHub({ params }: Props) {
                   {dict.nav.standings} &rarr;
                 </span>
               </Link>
-              {(danDau[i] || dd) && (
+              {(danDau[i] || hubCau || dd) && (
                 <p className="mt-2 px-1 text-sm leading-relaxed text-muted">
                   {danDau[i] && <span className="text-ink">{danDau[i]} </span>}
+                  {hubCau && <span className="text-ink">{hubCau} </span>}
                   {dd && (
                     <Link href={withLang(duongHubGiai(dd.slug, `/du-doan/${dd.slug}`), lang)} className="font-semibold text-brand hover:underline">
                       {`Dự đoán ${dd.ten}`}

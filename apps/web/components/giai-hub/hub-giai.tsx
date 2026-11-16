@@ -21,6 +21,8 @@ export interface DauBang {
   nhat: { ten: string; diem: number };
   nhi: { ten: string; diem: number };
   vong: number;
+  /** Bảng có tab sân nhà / sân khách (Cúp C1 không có). */
+  coSan: boolean;
 }
 
 interface Props {
@@ -48,7 +50,7 @@ function cauDauBang(compName: string, mua: string, d: DauBang): string {
   const dau = cach === 0
     ? `${d.nhat.ten} và ${d.nhi.ten} cùng có ${d.nhat.diem} điểm ở hai vị trí đầu bảng`
     : `${d.nhat.ten} đang dẫn đầu ${compName} với ${d.nhat.diem} điểm, hơn ${d.nhi.ten} ${cach} điểm`;
-  return `Bảng xếp hạng ${compName} mùa ${mua} cập nhật sau vòng ${d.vong}: ${dau}. Bảng dưới có đủ các đội, xem riêng thành tích sân nhà và sân khách.`;
+  return `Bảng xếp hạng ${compName} mùa ${mua} cập nhật sau vòng ${d.vong}: ${dau}. Bảng dưới có đủ các đội${d.coSan ? ", xem riêng thành tích sân nhà và sân khách" : ""}.`;
 }
 
 function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {

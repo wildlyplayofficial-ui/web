@@ -238,8 +238,9 @@ export default async function StandingSlugPage({ params }: Props) {
   const coSan = !hasGroups && khopBangTong(sortedRows, sanNha, sanKhach);
   const tabLabels = lang === "vi" ? { all: "Tất cả", home: "Sân nhà", away: "Sân khách" } : undefined;
 
-  // Hub 5 giải lớn (Peter duyệt mẫu 15/11): bản VI, bảng phẳng. Giải khác giữ trang cũ bên dưới.
-  const hub = lang === "vi" && showQualification && !hasGroups ? hubCuaGiai(slug) : null;
+  // Hub 5 giải lớn + Cúp C1 (Peter duyệt mẫu 15/11): bản VI, bảng phẳng, giải có khối trong data/giai-hub.json.
+  // 16/11: trước chốt thêm showQualification (chỉ 5 giải quốc nội) nên Cúp C1 rơi về trang cũ dù đã được 301 về đây.
+  const hub = lang === "vi" && !hasGroups ? hubCuaGiai(slug) : null;
   if (hub) {
     const { hang } = await taiDuDoan();
     const [nhat, nhi] = sortedRows;
@@ -261,7 +262,7 @@ export default async function StandingSlugPage({ params }: Props) {
           giai={hub.giai}
           data={hub.data}
           ngay={duDoanTheoNgay(hang, hub.giai, homNayVN())}
-          dauBang={nhat && nhi && nhat.played > 0 ? { nhat: { ten: nhat.name, diem: nhat.points }, nhi: { ten: nhi.name, diem: nhi.points }, vong: Math.max(...sortedRows.map((r) => r.played)) } : null}
+          dauBang={nhat && nhi && nhat.played > 0 ? { nhat: { ten: nhat.name, diem: nhat.points }, nhi: { ten: nhi.name, diem: nhi.points }, vong: Math.max(...sortedRows.map((r) => r.played)), coSan } : null}
           tenBang={sortedRows.map((r) => r.name)}
           bai={baiCuaGiai.filter((a) => !laBaiTru(a.slug)).slice(0, 4)}
           trangTru={baiCuaGiai.filter((a) => laBaiTru(a.slug))}
