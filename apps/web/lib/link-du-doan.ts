@@ -1,4 +1,5 @@
 import { GIAI_TRANG, type GiaiTrang } from "./du-doan-loc";
+import { duongHubGiai } from "./duong-hub-giai";
 
 /**
  * Từ khoá nhận ra bài nói về giải nào (bài blog/phân tích tiếng Việt hay viết đủ kiểu).
@@ -23,5 +24,6 @@ export function linkDuDoanCuoiBai(chu: string): { href: string; ten: string }[] 
   const chinh = giaiTrongBai(chu);
   const lon = GIAI_TRANG.filter((g) => g.slug in TU_KHOA);
   const thuTu = chinh ? [chinh, ...lon.filter((g) => g.slug !== chinh.slug)] : lon;
-  return thuTu.map((g) => ({ href: `/du-doan/${g.slug}`, ten: `Dự đoán ${g.ten}` }));
+  // 17/11: trỏ thẳng hub giải — /du-doan/{giai} giờ 301 sang /competitions/{slug}.
+  return thuTu.map((g) => ({ href: duongHubGiai(g.slug, `/du-doan/${g.slug}`), ten: `Dự đoán ${g.ten}` }));
 }

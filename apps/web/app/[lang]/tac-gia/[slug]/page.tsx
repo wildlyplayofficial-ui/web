@@ -7,6 +7,8 @@ import { OG_VERSION, PETE } from "@/lib/brand";
 import { authorBySlug } from "@/lib/authors";
 import { getArticlesByByline, type AuthorArticle } from "@/lib/author-articles";
 import { getBlogs } from "@/lib/data";
+import { taiDuDoan } from "@/lib/du-doan-tai";
+import { duongTran } from "@/lib/du-doan-tran";
 import { buildPerson } from "@/lib/jsonld";
 import { locales } from "@/lib/format";
 import { resolveLang, withLang } from "@/lib/i18n";
@@ -45,13 +47,14 @@ export default async function AuthorPage({ params }: Props) {
   const a = authorBySlug(slug);
   if (!a) notFound();
 
-  const [articles, blogs] = await Promise.all([
+  const [articles, blogs, { hang }] = await Promise.all([
     getArticlesByByline(a.name),
     a.name === PETE ? getBlogs(lang) : Promise.resolve([]),
+    taiDuDoan().catch(() => ({ hang: [] })),
   ]);
   const list: AuthorArticle[] = [
     ...articles,
-    ...blogs.map((p) => ({ title: p.title, href: `/blog/${p.slug}`, published_at: p.published_at ?? "" })),
+    ...blogs.map((p) => ({ title: p.title, href: duongTran(hang, p.slug) ?? `/blog/${p.slug}`, published_at: p.published_at ?? "" })),
   ]
     .sort((x, y) => y.published_at.localeCompare(x.published_at))
     .slice(0, 20);
