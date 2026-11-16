@@ -21,6 +21,7 @@ import { lichSuTySo } from "@/lib/ket-qua-ls";
 import { getAnalysisArticles, getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laTrangLichCaMua, newsDuocIndex, demChu } from "@/lib/chi-muc";
 import { KhoiTrangTru } from "@/components/khoi-trang-tru";
+import { KhoiBaiNoiBat } from "@/components/khoi-bai-noi-bat";
 import { AnalysisCard, analysisExcerpt } from "@/components/analysis-card";
 import { getNewsItems, getHeadline, getBody } from "@/lib/news";
 import { getOddsBoard } from "@/lib/odds-data";
@@ -460,6 +461,9 @@ export default async function Home({ params }: Props) {
         blogs={blogConLai}
         giai={competitions.filter((c) => c.status === "active" && c.slug)}
       />
+
+      {/* 16/11: link tới phần blog còn lại chưa có link nào từ trang chủ (Google chỉ bò trang chủ). */}
+      <KhoiBaiNoiBat lang={lang} blogs={blogConLai} />
 
       {/* 4. Learn strip: calculators + guides */}
       <section className="grid gap-4 pb-10 sm:grid-cols-2">
