@@ -105,13 +105,13 @@ export default async function XemBongDaODau({ params }: Props) {
   ];
   const gio = trangLich.filter((b) => b.slug.includes("-da-may-gio-")).map(a);
 
-  // Bảng theo giải: chỉ dựng từ slug — giải nào có bài xem ở đâu / giờ đá / lịch thì có ô link.
+  // Bảng theo giải: chỉ dựng từ slug — giải nào có bài xem ở đâu / giờ đá thì có ô link.
+  // 16/11: bỏ cột "Lịch cả mùa" — gần hết ô trống và bị cắt trên điện thoại; lịch đã có danh sách riêng bên dưới.
   const khoa = [...new Set([...xem.map((m) => khoaXem(m.slug)), ...gio.map((m) => khoaGio(m.slug))].filter((k): k is string => !!k))];
   const bang = khoa.map((k) => ({
     k,
     xem: xem.find((m) => khoaXem(m.slug) === k),
     gio: gio.find((m) => khoaGio(m.slug) === k),
-    lich: lich.find((m) => m.slug.includes(`-${k}-`) || m.slug.endsWith(`-${k}`)),
   }));
   const o = (m: Muc | undefined, chu: string) =>
     m ? (
@@ -150,7 +150,6 @@ export default async function XemBongDaODau({ params }: Props) {
                   <th className="px-4 py-2 font-semibold">Giải</th>
                   <th className="px-4 py-2 font-semibold">Xem ở đâu</th>
                   <th className="px-4 py-2 font-semibold">Giờ đá (giờ VN)</th>
-                  <th className="px-4 py-2 font-semibold">Lịch cả mùa</th>
                 </tr>
               </thead>
               <tbody>
@@ -159,7 +158,6 @@ export default async function XemBongDaODau({ params }: Props) {
                     <td className="px-4 py-2 font-semibold">{tenGiai(r.k)}</td>
                     <td className="px-4 py-2">{o(r.xem, `Xem ${tenGiai(r.k)} ở đâu`)}</td>
                     <td className="px-4 py-2">{o(r.gio, `${tenGiai(r.k)} đá mấy giờ`)}</td>
-                    <td className="px-4 py-2">{o(r.lich, `Lịch ${tenGiai(r.k)}`)}</td>
                   </tr>
                 ))}
               </tbody>
