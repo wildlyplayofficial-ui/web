@@ -187,16 +187,16 @@ export function Header(_props: { competitions?: NavCompetition[] }) {
             type="button"
             aria-label="Toggle menu"
             aria-expanded={open}
-            className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] xl:hidden"
+            className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-95 xl:hidden"
             onClick={() => setOpen((v) => !v)}
           >
-            <span className="h-0.5 w-6 rounded bg-ink" />
-            <span className="h-0.5 w-6 rounded bg-ink" />
-            <span className="h-0.5 w-6 rounded bg-ink" />
+            <span className={`h-0.5 w-6 rounded bg-ink transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] ${open ? "translate-y-[7px] rotate-45" : ""}`} />
+            <span className={`h-0.5 w-6 rounded bg-ink transition-opacity duration-200 ${open ? "opacity-0" : ""}`} />
+            <span className={`h-0.5 w-6 rounded bg-ink transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] ${open ? "-translate-y-[7px] -rotate-45" : ""}`} />
           </button>
 
           <nav
-            className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 border-b border-line bg-bg p-6 xl:static xl:flex xl:flex-row xl:items-center xl:gap-6 xl:border-0 xl:p-0`}
+            className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-16 flex-col gap-4 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] starting:-translate-y-1 starting:opacity-0 border-b border-line bg-bg p-6 xl:static xl:flex xl:flex-row xl:items-center xl:gap-6 xl:border-0 xl:p-0`}
           >
             <ul className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-1">
               {clusters.map((cluster) => {

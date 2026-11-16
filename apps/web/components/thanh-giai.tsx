@@ -34,7 +34,7 @@ export function ThanhGiai({ lang, barePath }: { lang: Lang; barePath: string }) 
               <Link
                 href={withLang(m.href, lang)}
                 aria-current={on ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors ${on ? "bg-brand-dim text-brand ring-1 ring-inset ring-brand" : "text-muted hover:bg-card hover:text-ink"}`}
+                className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-[transform,color,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] ${on ? "bg-brand-dim text-brand ring-1 ring-inset ring-brand" : "text-muted hover:bg-card hover:text-ink"}`}
               >
                 {m.nhan}
               </Link>
