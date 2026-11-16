@@ -25,7 +25,18 @@ const MAU: Record<string, { the: string; chu: string; cham: string }> = {
   "Đá mấy giờ (giờ Việt Nam)": { the: "border-t-warning from-warning/10", chu: "text-warning", cham: "bg-warning" },
   "Bảng xếp hạng": { the: "border-t-violet-soft from-violet-soft/10", chu: "text-violet-soft", cham: "bg-violet-soft" },
   "Blog bóng đá": { the: "border-t-loss from-loss/10", chu: "text-loss", cham: "bg-loss" },
+  "Trang chính": { the: "border-t-scout from-scout/10", chu: "text-scout", cham: "bg-scout" },
 };
+
+/** 16/11: trang trụ cố định — GSC báo /doi/vietnam, /thong-so/hang-nhat-anh chưa được lập chỉ mục
+ *  (chỉ có link ở chân trang hoặc không có link nào từ trang chủ). Link thẳng trong thân trang chủ. */
+const TRANG_CHINH: Muc[] = [
+  { href: "/du-doan", ten: "Dự đoán bóng đá hôm nay" },
+  { href: "/doi/vietnam", ten: "Đội tuyển Việt Nam: tin & nhận định" },
+  { href: "/thong-so", ten: "Thông số các đội: xG, bàn thắng" },
+  { href: "/thong-so/hang-nhat-anh", ten: "Thông số Hạng Nhất Anh" },
+  { href: "/form", ten: "Phong độ 5 trận gần nhất" },
+];
 
 export function KhoiTrangTru({
   lang,
@@ -71,6 +82,7 @@ export function KhoiTrangTru({
       tatCa: { href: "/competitions", ten: "Tất cả giải đấu" },
     },
     { ten: "Blog bóng đá", muc: blogKhac.map(bl), tatCa: { href: "/blog", ten: "Tất cả bài blog" } },
+    { ten: "Trang chính", muc: TRANG_CHINH },
   ].filter((n) => n.muc.length > 0);
 
   if (nhom.length === 0) return null;
