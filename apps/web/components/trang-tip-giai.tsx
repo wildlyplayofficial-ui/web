@@ -14,6 +14,7 @@ import { demTran, duongTipGiai, giaiCoTip, SO_NGAY, tipGiai, type NgayTip } from
 import type { LoaiTip } from "@/lib/tip-ngay";
 import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 import { hubCuaGiai } from "@/lib/giai-hub";
+import { giaiXgTuSlug } from "@/lib/xg-doi";
 
 /**
  * Ba loại trang tip theo giải: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
@@ -160,6 +161,8 @@ export async function KhoiTipGiai({ bxh, lang }: { bxh: string; lang: Lang }) {
       <h2 id="tip-giai" className="font-display text-lg font-bold">Dự đoán {g.ten} {SO_NGAY} ngày tới</h2>
       <div className="mt-3 flex flex-wrap gap-2">
         <Link href={withLang(`/du-doan/${g.slug}`, lang)} className={CHIP}>Dự đoán {g.ten} vòng tới</Link>
+        {giaiXgTuSlug(g.slug) && <Link href={withLang(`/thong-so/${g.slug}`, lang)} className={CHIP}>Thống kê {g.ten}</Link>}
+        {giaiXgTuSlug(g.slug) && <Link href={withLang(`/form/${g.slug}`, lang)} className={CHIP}>Phong độ {g.ten}</Link>}
         {co.map((x) => (
           <Link key={x.loai} href={withLang(duongTipGiai(x.loai, g), lang)} className={CHIP}>
             {CH[x.loai].tieuDe(g.ten)} ({x.soTran} trận)
