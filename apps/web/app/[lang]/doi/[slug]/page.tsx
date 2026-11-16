@@ -10,6 +10,7 @@ import { getTeamHub, TEAM_HUBS } from "@/lib/teams";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { locales } from "@/lib/format";
 import { doiDuocIndex } from "@/lib/chi-muc";
+import { DuDoanVietNam } from "@/components/du-doan-viet-nam";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -149,6 +150,8 @@ export default async function TeamHub({ params }: Props) {
             <p className="mt-1 text-sm text-muted">{L.sub(team.name)}</p>
           </div>
         </header>
+
+        {slug === "vietnam" && <DuDoanVietNam lang={lang} />}
 
         {rows.length === 0 ? (
           <p className="py-10 text-muted">{L.empty}</p>

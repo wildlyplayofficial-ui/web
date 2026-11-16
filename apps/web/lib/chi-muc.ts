@@ -105,7 +105,7 @@ export const GIAI_INDEX_TRAN =
  * - Bài tay `nhan-dinh-…`: luôn có thân bài nên chỉ xét giải.
  */
 /** Trận có tuyển/đội Việt Nam được index dù giải nằm ngoài GIAI_INDEX_TRAN (Peter gật 16/11/2026). */
-const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
+export const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
 
 export function tranDuocIndex(h: { slug: string; giai: string; nha?: string; khach?: string; mong?: boolean }): boolean {
   const vietNam = DOI_VIET_NAM.test(h.nha ?? "") || DOI_VIET_NAM.test(h.khach ?? "");
