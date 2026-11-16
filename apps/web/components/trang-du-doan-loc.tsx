@@ -17,6 +17,7 @@ import { teamBadge } from "@/lib/team-badges";
 import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { boiCanhVongToi, hangCua } from "@/lib/boi-canh-vong";
+import { giaiXgTuSlug } from "@/lib/xg-doi";
 import { tomTatBanThang } from "@/lib/bxh-ban-thang";
 
 /**
@@ -175,7 +176,13 @@ async function TrangGiai({ g, lang }: { g: GiaiTrang; lang: Lang }) {
           ))}
         </>
       )}
-      <Link href={withLang("/du-doan", lang)} className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-brand hover:underline">
+      {giaiXgTuSlug(g.slug) && (
+        <p className="mt-6 flex flex-wrap gap-x-4 text-sm">
+          <Link href={withLang(`/thong-so/${g.slug}`, lang)} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">Thống kê {g.ten} ›</Link>
+          <Link href={withLang(`/form/${g.slug}`, lang)} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">Phong độ {g.ten} ›</Link>
+        </p>
+      )}
+      <Link href={withLang("/du-doan", lang)} className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-brand hover:underline">
         Dự đoán mọi giải hôm nay →
       </Link>
     </div>
