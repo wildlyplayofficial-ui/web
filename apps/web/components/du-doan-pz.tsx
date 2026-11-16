@@ -22,7 +22,7 @@ function coGiai(giai: string, dau: HangDuDoan): string | null {
   const g = giai.toLowerCase();
   const co = coGiaiGoc(giai);
   if (co) return co;
-  if (/premier league|ngoại hạng anh|fa cup|championship/.test(g)) return "https://flagcdn.com/w40/gb-eng.png";
+  if (/premier league|ngoại hạng anh|fa cup|^(efl )?championship$/.test(g)) return "https://flagcdn.com/w40/gb-eng.png";
   if (/v-league|vtv cup|casper|việt nam|vietnam|aff/.test(g)) return "https://flagcdn.com/w40/vn.png";
   if (/la liga|laliga/.test(g)) return "https://flagcdn.com/w40/es.png";
   if (/serie a/.test(g)) return "https://flagcdn.com/w40/it.png";
