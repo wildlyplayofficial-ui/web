@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { demTran } from "@/lib/chi-so-doi";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { withLang, type Lang } from "@/lib/i18n";
 import { badgeNho, teamBadge } from "@/lib/team-badges";
 import { BANG_XEP, dongFormGiai, tepXgDoi, topBang, xepForm, type DoiXg, type DongForm, type GiaiXg } from "@/lib/xg-doi";
 import { BangXepChip, type BangXepGon } from "./bang-xep-chip";
 import { FormBang } from "./form-bang";
 import { ChipGiai, KhungTrang } from "./khung";
-import { LinkGiai, meta } from "./trang";
+import { meta } from "./trang";
 
-/** /form và /form/{giai} — kiểu Flashscore (Peter gật mẫu 16/11/2026): 3 thẻ đáng chú ý, bảng đổi Tổng/Nhà/Khách, bảng xếp phụ gom chip. */
+/** /form (+ khối phong độ gắn vào hub giải, 16/11) — kiểu Flashscore (Peter gật mẫu 16/11/2026): 3 thẻ đáng chú ý, bảng đổi Tổng/Nhà/Khách, bảng xếp phụ gom chip. */
 
 const logoCua = (d: DoiXg) => badgeNho(teamBadge(d.ten)) ?? d.logo;
 
@@ -84,7 +85,7 @@ export function TrangForm({ lang }: { lang: Lang }) {
             const dau = xepForm(dongFormGiai(g).filter((d) => d.du))[0];
             return (
               <li key={g.slug}>
-                <Link href={withLang(`/form/${g.slug}`, lang)} className="flex min-h-14 items-center justify-between gap-3 rounded-card border border-line bg-card px-3.5 py-2.5 transition-colors active:bg-card-hover">
+                <Link href={withLang(duongHubGiai(g.slug, `/thong-so/${g.slug}`), lang)} className="flex min-h-14 items-center justify-between gap-3 rounded-card border border-line bg-card px-3.5 py-2.5 transition-colors active:bg-card-hover">
                   <span className="min-w-0">
                     <span className="block font-semibold">{g.ten}</span>
                     {dau && <span className="block truncate text-xs text-muted">Dẫn đầu: {dau.doi.ten} {dau.diem}/15 điểm</span>}
@@ -101,38 +102,28 @@ export function TrangForm({ lang }: { lang: Lang }) {
   );
 }
 
-// ---------- /form/{giai} ----------
+// ---------- khối phong độ của một giải ----------
 
-export const metaFormGiai = (g: GiaiXg, lang: Lang) =>
-  meta(`/form/${g.slug}`, `Phong độ ${g.ten}: form 5 trận gần nhất từng đội`, `Bảng phong độ ${g.doi.length} đội ${g.ten}: 5 trận gần nhất, điểm, bàn ghi và bàn thua, phong độ sân nhà và sân khách, chuỗi bất bại. Cập nhật hằng ngày.`, lang);
-
-export function TrangFormGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
-  const tep = tepXgDoi();
+/**
+ * 16/11 gộp trang giải: /form/{giai} 301 về hub của giải; nội dung của nó (3 thẻ đáng chú ý,
+ * bảng phong độ, xếp hạng phong độ) dựng nguyên ở đây để hub gắn vào làm một khối.
+ */
+export function KhoiFormGiai({ g }: { g: GiaiXg }) {
   const ds = dongFormGiai(g);
-  const top = xepForm(ds)[0];
   return (
-    <KhungTrang
-      duong={[{ ten: "Form", url: "/form" }, { ten: g.ten, url: `/form/${g.slug}` }]}
-      h1={`Phong độ ${g.ten}`}
-      mo={<p>{`Phong độ 5 trận giải gần nhất của ${g.doi.length} đội ${g.ten}. ${top.doi.ten} đang có phong độ tốt nhất với ${top.diem}/15 điểm, ghi ${top.ghi} và thủng lưới ${top.thua} bàn.`}</p>}
-      lang={lang}
-      chip={<ChipGiai goc="/form" giai={tep.giai} dang={g.slug} lang={lang} />}
-      nguon={tep.nguon}
-      capNhat={tep.capNhat}
-    >
+    <div className="space-y-6">
       <DangChuY ds={ds} nhieuGiai={false} />
       <section aria-labelledby="bang-h">
-        <h2 id="bang-h" className="font-display text-xl font-bold">Bảng phong độ {g.ten}</h2>
+        <h3 id="bang-h" className="font-display text-lg font-bold">Bảng phong độ {g.ten}</h3>
         <div className="mt-3">
           <FormBang doi={g.doi.map((d) => ({ id: d.id, ten: d.ten, logo: logoCua(d), hang: d.hang, gan: d.gan }))} />
         </div>
       </section>
       <section aria-labelledby="bang-xep-h">
-        <h2 id="bang-xep-h" className="font-display text-xl font-bold">Xếp hạng phong độ {g.ten}</h2>
+        <h3 id="bang-xep-h" className="font-display text-lg font-bold">Xếp hạng phong độ {g.ten}</h3>
         <div className="mt-3"><BangXepChip bang={gonBang(ds, 5, ["chuoi-bat-bai", "ghi-ban-lien-tiep", "ghi-ban-nhieu-nhat", "thung-luoi-it-nhat"], false)} /></div>
       </section>
-      <LinkGiai g={g} lang={lang} />
       <ChuThich />
-    </KhungTrang>
+    </div>
   );
 }

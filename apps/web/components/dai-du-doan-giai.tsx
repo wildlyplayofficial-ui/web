@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { withLang, type Lang } from "@/lib/i18n";
 import { GIAI_TRANG } from "@/lib/du-doan-loc";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { ScrollRow } from "@/components/scroll-row";
 
 /**
@@ -19,7 +20,7 @@ const SO_BAI = 4;
 
 export function DaiDuDoanGiai({ lang, baiMoi, blogMoi }: { lang: Lang; baiMoi: Bai[]; blogMoi: Bai[] }) {
   const the: The[] = [
-    ...GIAI_TRANG.map((g) => ({ href: `/du-doan/${g.slug}`, nhan: "Dự đoán", ten: `Dự đoán ${g.ten}` })),
+    ...GIAI_TRANG.map((g) => ({ href: duongHubGiai(g.slug, `/du-doan/${g.slug}`), nhan: "Dự đoán", ten: `Dự đoán ${g.ten}` })),
     ...baiMoi.slice(0, SO_BAI).map((b) => ({ href: b.href ?? `/analysis/${b.slug}`, nhan: "Phân tích", ten: b.title })),
     ...blogMoi.slice(0, SO_BAI).map((b) => ({ href: `/blog/${b.slug}`, nhan: "Blog", ten: b.title })),
   ];

@@ -148,9 +148,6 @@ const GIAI_BXH_TU_DUNG = new Set(["premier-league", "la-liga", "serie-a", "bunde
 export const giaiBxhDuocIndex = (slug: string, soDongBang: number): boolean =>
   GIAI_BXH_TU_DUNG.has(slug) || soDongBang > 0;
 
-/** Trang dự đoán theo giải (/du-doan/{giai}) vào sitemap: 5 giải lớn + Cúp C1. */
-export const GIAI_DU_DOAN_SITEMAP = new Set(["ngoai-hang-anh", "la-liga", "serie-a", "bundesliga", "ligue-1", "cup-c1"]);
-
 /** Trang trận /du-doan/{slug} chỉ vào sitemap khi đá trong N ngày tới (giờ VN, tính cả hôm nay). */
 export const SO_NGAY_TRAN_SITEMAP = 3;
 

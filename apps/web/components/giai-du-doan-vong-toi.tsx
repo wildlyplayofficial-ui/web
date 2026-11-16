@@ -5,7 +5,8 @@ import { taiDuDoan } from "@/lib/du-doan-tai";
 import { ngayThang } from "@/lib/du-doan-tran";
 import { withLang, type Lang } from "@/lib/i18n";
 
-const TOI_DA = 12;
+// 16/11 gộp trang giải: /du-doan/{giai} 301 về trang giải này, nên hiện đủ một lượt trận (C1: 18 trận).
+const TOI_DA = 18;
 
 /**
  * Khối "Dự đoán {giải} vòng tới" cho trang giải không có hub (16/11: Cúp C1 chỉ có bảng trần,
@@ -44,7 +45,6 @@ export async function DuDoanVongToi({ bxh, lang }: { bxh: string; lang: Lang }) 
         </ul>
       )}
       <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-        <Link href={withLang(`/du-doan/${g.slug}`, lang)} className="font-semibold text-brand hover:underline">{`Tất cả dự đoán ${g.ten}`}</Link>
         <Link href={withLang("/du-doan", lang)} className="font-semibold text-brand hover:underline">Dự đoán bóng đá hôm nay</Link>
       </p>
     </section>

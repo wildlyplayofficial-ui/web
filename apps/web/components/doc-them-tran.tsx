@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getBlogs } from "@/lib/data";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { GIAI_TRANG } from "@/lib/du-doan-loc";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { withLang, type Lang } from "@/lib/i18n";
 
 /**
@@ -37,7 +38,7 @@ export async function DocThemTran({ h, lang }: { h: HangDuDoan; lang: Lang }) {
         ))}
         {giai && (
           <li>
-            <Link href={withLang(`/du-doan/${giai.slug}`, lang)} className="inline-flex min-h-11 items-center text-brand hover:underline">Dự đoán {giai.ten} vòng tới</Link>
+            <Link href={withLang(duongHubGiai(giai.slug, `/du-doan/${giai.slug}`), lang)} className="inline-flex min-h-11 items-center text-brand hover:underline">Dự đoán {giai.ten} vòng tới</Link>
           </li>
         )}
       </ul>

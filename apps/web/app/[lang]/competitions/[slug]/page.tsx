@@ -24,6 +24,11 @@ import { HubGiai } from "@/components/giai-hub/hub-giai";
 import { duDoanTheoNgay, hubCuaGiai, muaGiai } from "@/lib/giai-hub";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { homNayVN } from "@/lib/ket-qua";
+import { Khoi } from "@/components/giai-hub/khoi";
+import { KhoiThongSoGiai } from "@/components/thong-so/trang";
+import { KhoiFormGiai } from "@/components/thong-so/trang-form";
+import { NEO_PHONG_DO, NEO_THONG_SO } from "@/lib/duong-hub-giai";
+import { giaiXgTuSlug } from "@/lib/xg-doi";
 
 // 10 phút (trước 3600): bản dựng lúc build có thể rỗng nếu nhà cung cấp chập chờn, phải tự lành nhanh.
 export const revalidate = 600;
@@ -238,6 +243,8 @@ export default async function StandingSlugPage({ params }: Props) {
   if (hub) {
     const { hang } = await taiDuDoan();
     const [nhat, nhi] = sortedRows;
+    // 16/11 gộp trang giải: /form/{giai} + /thong-so/{giai} 301 về đây, nội dung gắn thành hai khối.
+    const xg = giaiXgTuSlug(hub.giai.slug);
     return (
       <>
         <BreadcrumbJsonLd
@@ -258,6 +265,18 @@ export default async function StandingSlugPage({ params }: Props) {
           tenBang={sortedRows.map((r) => r.name)}
           bai={baiCuaGiai.filter((a) => !laBaiTru(a.slug)).slice(0, 4)}
           trangTru={baiCuaGiai.filter((a) => laBaiTru(a.slug))}
+          soLieuDoi={
+            xg && (
+              <>
+                <Khoi id={NEO_PHONG_DO} tieuDe={`Phong độ ${compName} 5 trận gần nhất`}>
+                  <KhoiFormGiai g={xg} />
+                </Khoi>
+                <Khoi id={NEO_THONG_SO} tieuDe={`Thông số đội ${compName}: xG, bàn thắng, sạch lưới`}>
+                  <KhoiThongSoGiai g={xg} />
+                </Khoi>
+              </>
+            )
+          }
           bang={
             sortedRows.length > 0 ? (
               <>
