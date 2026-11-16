@@ -35,7 +35,7 @@ export function ChonTran({ nhom, hienTai, lang }: { nhom: NhomNgay[]; hienTai?: 
                     return (
                       <li key={t.slug}>
                         <Link
-                          href={withLang(`/analysis/${t.slug}`, lang)}
+                          href={withLang(`/du-doan/${t.slug}`, lang)}
                           aria-current={la ? "page" : undefined}
                           className={`flex min-h-11 items-center px-4 text-sm transition-colors hover:bg-card-hover ${
                             la ? "border-l-2 border-brand font-bold text-brand" : ""
