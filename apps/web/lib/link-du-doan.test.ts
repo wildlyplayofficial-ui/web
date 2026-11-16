@@ -11,7 +11,7 @@ describe("giaiTrongBai", () => {
 describe("linkDuDoanCuoiBai", () => {
   it("giải của bài đứng đầu, đủ 6 giải lớn, không trùng", () => {
     const ds = linkDuDoanCuoiBai("Lịch thi đấu La Liga");
-    expect(ds[0]).toEqual({ href: "/du-doan/la-liga", ten: "Dự đoán La Liga" });
+    expect(ds[0]).toEqual({ href: "/competitions/la-liga", ten: "Dự đoán La Liga" });
     expect(new Set(ds.map((x) => x.href)).size).toBe(6);
   });
   it("bài chung chung vẫn có 6 link giải lớn", () => expect(linkDuDoanCuoiBai("Quả bóng vàng ai nhiều nhất")).toHaveLength(6));
