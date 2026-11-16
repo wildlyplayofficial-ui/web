@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import type { ReactNode } from "react";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LogoDoi } from "@/components/giai-hub/khoi";
@@ -68,7 +69,8 @@ export function ChipGiai({ goc, giai, dang, lang }: { goc: string; giai: readonl
       <ul className="flex flex-wrap gap-2">
         {ds.map((g) => {
           const on = g.slug === dang;
-          const href = g.slug ? `${goc}/${g.slug}` : goc;
+          // 16/11 gộp trang giải: chip giải trỏ thẳng về hub (/competitions/{slug} hoặc /thong-so/{giai}), không qua 301.
+          const href = g.slug ? duongHubGiai(g.slug, `/thong-so/${g.slug}`) : goc;
           return (
             <li key={href}>
               <Link

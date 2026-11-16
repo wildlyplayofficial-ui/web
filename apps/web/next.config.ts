@@ -1,4 +1,18 @@
 import type { NextConfig } from "next";
+import { HUB_GIAI } from "./lib/duong-hub-giai";
+
+/** 16/11/2026 (Peter gật gộp trang giải): mỗi giải MỘT hub — xem lib/duong-hub-giai.ts.
+ *  /du-doan/{giai}, /thong-so/{giai}, /form/{giai} của giải có hub → 301 thẳng về hub, một nhịp.
+ *  /form/{giai} còn lại → /thong-so/{giai} (hub của giải chỉ có số liệu đội). */
+const GIAI_XG_CO_HUB = ["ngoai-hang-anh", "la-liga", "serie-a", "bundesliga", "ligue-1"];
+const LUAT_GOP_GIAI = [
+  ...Object.entries(HUB_GIAI).map(([giai, hub]) => [`/du-doan/${giai}`, hub]),
+  ...GIAI_XG_CO_HUB.flatMap((giai) => [[`/thong-so/${giai}`, HUB_GIAI[giai]], [`/form/${giai}`, HUB_GIAI[giai]]]),
+  ["/form/:giai", "/thong-so/:giai"],
+].flatMap(([source, destination]) => [
+  { source, destination, statusCode: 301 as const },
+  { source: `/:lang(en|vi|th|es)${source}`, destination, statusCode: 301 as const },
+]);
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -127,6 +141,8 @@ const nextConfig: NextConfig = {
       { source: "/giai/:path*", destination: "/competitions/:path*", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/giai", destination: "/competitions", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/giai/:path*", destination: "/competitions/:path*", statusCode: 301 },
+      // Gộp trang giải về một hub (16/11) — đứng trước luật bắt-tất-cả ngoại ngữ để đi một nhịp.
+      ...LUAT_GOP_GIAI,
       // BẮT-TẤT-CẢ ngoại ngữ — phải nằm CUỐI, sau mọi luật :lang cụ thể ở trên.
       // Đặt trên đầu (như trước 10/9) thì nó cướp hết: /en/goalline bị nó cắt tiền tố
       // thành /goalline rồi mới bị luật goalline bắt tiếp — hai nhịp. Nay luật cụ thể

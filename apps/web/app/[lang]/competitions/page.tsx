@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
@@ -94,7 +95,7 @@ export default async function CompetitionsHub({ params }: Props) {
                 <p className="mt-2 px-1 text-sm leading-relaxed text-muted">
                   {danDau[i] && <span className="text-ink">{danDau[i]} </span>}
                   {dd && (
-                    <Link href={withLang(`/du-doan/${dd.slug}`, lang)} className="font-semibold text-brand hover:underline">
+                    <Link href={withLang(duongHubGiai(dd.slug, `/du-doan/${dd.slug}`), lang)} className="font-semibold text-brand hover:underline">
                       {`Dự đoán ${dd.ten}`}
                     </Link>
                   )}

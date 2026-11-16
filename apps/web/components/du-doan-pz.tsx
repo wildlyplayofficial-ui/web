@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { useState } from "react";
 import { DoiLogo } from "@/components/doi-logo";
 import { DongTran } from "@/components/dong-tran";
@@ -67,7 +68,7 @@ export function DuDoanPZ({
       </p>
       <nav aria-label="Dự đoán theo giải" className="mt-2.5 flex gap-x-4 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
         {GIAI_TRANG.map((g) => (
-          <Link key={g.slug} href={withLang(`/du-doan/${g.slug}`, lang)} className="inline-flex min-h-9 items-center text-brand hover:underline">
+          <Link key={g.slug} href={withLang(duongHubGiai(g.slug, `/du-doan/${g.slug}`), lang)} className="inline-flex min-h-9 items-center text-brand hover:underline">
             {g.ten}
           </Link>
         ))}

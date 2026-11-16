@@ -37,6 +37,8 @@ interface Props {
   tenBang: string[];
   bai: AnalysisArticle[];
   trangTru: AnalysisArticle[];
+  /** 16/11 gộp trang giải: khối phong độ + thông số xG (trước ở /form/{giai}, /thong-so/{giai}). */
+  soLieuDoi?: ReactNode;
 }
 
 const LINK_KHAC = "inline-flex min-h-11 items-center rounded-full border border-line bg-card px-4 text-sm font-semibold transition-colors hover:border-brand hover:text-brand";
@@ -136,6 +138,7 @@ export function HubGiai(p: Props) {
         <Khoi id="thong-ke" tieuDe={`Thống kê cầu thủ ${compName}`} phu={data.vongXong ? `Sau vòng ${data.vongXong}` : undefined}>
           <ThongKeCauThu top={data.top} logo={data.logo} />
         </Khoi>
+        {p.soLieuDoi}
         {data.ketQua.length > 0 && (
           <Khoi id="ket-qua" tieuDe={`Kết quả ${compName} vòng ${data.vongXong}`}>
             <KetQuaVong ds={data.ketQua} logo={data.logo} />

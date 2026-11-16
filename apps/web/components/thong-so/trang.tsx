@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FaqHub, type CauHoiHub } from "@/components/giai-hub/faq";
 import { OG_VERSION } from "@/lib/brand";
-import { GIAI_TRANG } from "@/lib/du-doan-loc";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { CHI_SO, NHOM, xepChiSo, type Nhom } from "@/lib/chi-so-doi";
 import { tepXgDoi, xepTheoChenh, type GiaiXg } from "@/lib/xg-doi";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { ChipGiai, KhungTrang } from "./khung";
+import { KhoiFormGiai } from "./trang-form";
 import { TheChiSo } from "./the-chi-so";
 
 /** Trang /thong-so, /thong-so/{giai} (Peter giao 15/11; 16/11 gật mẫu chia nhóm kiểu FotMob). /form ở trang-form.tsx. */
@@ -20,18 +21,6 @@ export function meta(duong: string, title: string, description: string, lang: La
     alternates: buildAlternates(duong, lang),
     openGraph: { locale: "vi_VN", title: `${title} | banhbong.net`, description, images: [{ url: `/api/og/editorial?title=${encodeURIComponent(title)}&v=${OG_VERSION}`, width: 1200, height: 630 }] },
   };
-}
-
-/** Link sang trang dự đoán / BXH của giải nếu web có. */
-export function LinkGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
-  const t = GIAI_TRANG.find((x) => x.slug === g.slug);
-  if (!t) return null;
-  return (
-    <p className="flex flex-wrap gap-x-4 text-sm">
-      <Link href={withLang(`/du-doan/${t.slug}`, lang)} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">Dự đoán {t.ten} vòng tới ›</Link>
-      {t.bxh && <Link href={withLang(`/competitions/${t.bxh}`, lang)} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">Bảng xếp hạng {t.ten} ›</Link>}
-    </p>
-  );
 }
 
 // ---------- /thong-so ----------
@@ -93,7 +82,7 @@ export function TrangThongSo({ lang }: { lang: Lang }) {
                   </div>
                 ))}
               </dl>
-              <Link href={withLang(`/thong-so/${g.slug}`, lang)} className="flex min-h-11 items-center justify-center border-t border-line text-sm font-semibold text-brand active:bg-card-hover">
+              <Link href={withLang(duongHubGiai(g.slug, `/thong-so/${g.slug}`), lang)} className="flex min-h-11 items-center justify-center border-t border-line text-sm font-semibold text-brand active:bg-card-hover">
                 Xem đủ thông số {g.ten} ›
               </Link>
             </li>
@@ -117,8 +106,20 @@ function faqThongSo(g: GiaiXg): CauHoiHub[] {
   ];
 }
 
+/** 16/11 gộp trang giải: các nhóm chỉ số xG của một giải, hub /competitions/{slug} gắn vào làm một khối. */
+export function KhoiThongSoGiai({ g }: { g: GiaiXg }) {
+  return (
+    <div className="space-y-6">
+      <ChipNhom />
+      {NHOM.map((n) => <NhomChiSo key={n.id} nhom={n.id} ten={n.ten} g={g} />)}
+      <p className="text-xs text-muted">Sạch lưới, Over 2.5 và cả 2 đội ghi bàn đếm trên tối đa 20 trận giải gần nhất của mỗi đội. Nội dung mang tính tham khảo.</p>
+    </div>
+  );
+}
+
+// 16/11 gộp trang giải: /form/{giai} 301 về đây nên trang mang luôn bảng phong độ.
 export const metaThongSoGiai = (g: GiaiXg, lang: Lang) =>
-  meta(`/thong-so/${g.slug}`, `Thông số ${g.ten}: xG, bàn thắng, sạch lưới từng đội`, `Thông số ${g.doi.length} đội ${g.ten} chia nhóm: chênh lệch xG, xG và xGA mỗi trận, bàn thắng so với xG, sút trúng đích, giữ sạch lưới, tỷ lệ Over 2.5, cả 2 đội ghi bàn, kiểm soát bóng. Cập nhật hằng ngày.`, lang);
+  meta(`/thong-so/${g.slug}`, `Thông số & phong độ ${g.ten}: xG, form 5 trận từng đội`, `Thông số ${g.doi.length} đội ${g.ten} chia nhóm: chênh lệch xG, xG và xGA mỗi trận, bàn thắng so với xG, giữ sạch lưới, tỷ lệ Over 2.5, cả 2 đội ghi bàn. Kèm bảng phong độ 5 trận gần nhất, sân nhà và sân khách. Cập nhật hằng ngày.`, lang);
 
 export function TrangThongSoGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
   const tep = tepXgDoi();
@@ -126,7 +127,7 @@ export function TrangThongSoGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
   return (
     <KhungTrang
       duong={[{ ten: "Thông số", url: "/thong-so" }, { ten: g.ten, url: `/thong-so/${g.slug}` }]}
-      h1={`Thông số ${g.ten}`}
+      h1={`Thông số & phong độ ${g.ten}`}
       mo={<p>{`Thông số của ${g.doi.length} đội ${g.ten} mùa này, chia theo nhóm. ${top.ten} đang áp đảo nhất: tạo ${so(top.xg)} xG và chỉ để đối thủ tạo ${so(top.xga)} xG mỗi trận. Mỗi thẻ hiện 3 đội dẫn đầu, bấm "Xem đủ" để thấy cả giải.`}</p>}
       lang={lang}
       chip={<ChipGiai goc="/thong-so" giai={tep.giai} dang={g.slug} lang={lang} />}
@@ -135,7 +136,10 @@ export function TrangThongSoGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
     >
       <ChipNhom />
       {NHOM.map((n) => <NhomChiSo key={n.id} nhom={n.id} ten={n.ten} g={g} />)}
-      <LinkGiai g={g} lang={lang} />
+      <section id="phong-do" aria-labelledby="phong-do-h" className="scroll-mt-24">
+        <h2 id="phong-do-h" className="font-display text-xl font-bold">Phong độ {g.ten} 5 trận gần nhất</h2>
+        <div className="mt-3"><KhoiFormGiai g={g} /></div>
+      </section>
       <section aria-labelledby="hoi-dap-h">
         <h2 id="hoi-dap-h" className="font-display text-xl font-bold">Hỏi đáp thông số {g.ten}</h2>
         <div className="mt-3"><FaqHub ds={faqThongSo(g)} /></div>

@@ -13,8 +13,8 @@ import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { demTran, duongTipGiai, giaiCoTip, SO_NGAY, tipGiai, type NgayTip } from "@/lib/tip-giai";
 import type { LoaiTip } from "@/lib/tip-ngay";
 import { NOINDEX_FOLLOW } from "@/lib/chi-muc";
+import { duongHubGiai } from "@/lib/duong-hub-giai";
 import { hubCuaGiai } from "@/lib/giai-hub";
-import { giaiXgTuSlug } from "@/lib/xg-doi";
 
 /**
  * Ba loại trang tip theo giải: /over-under/{giai}, /ca-2-doi-ghi-ban/{giai}, /ty-so/{giai}.
@@ -112,13 +112,13 @@ export async function TrangTipGiai({ loai, slug, lang }: { loai: LoaiTip; slug: 
 
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
-      <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: "Dự đoán", url: "/du-doan" }, { name: g.ten, url: `/du-doan/${g.slug}` }, { name: c.tieuDe(g.ten), url: duongTipGiai(loai, g) }]} />
+      <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: "Dự đoán", url: "/du-doan" }, { name: g.ten, url: duongHubGiai(g.slug, `/du-doan/${g.slug}`) }, { name: c.tieuDe(g.ten), url: duongTipGiai(loai, g) }]} />
       <nav aria-label="Đường dẫn" className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted">
         <Link href={withLang("/", lang)} className={MANH}>Trang chủ</Link>
         <span aria-hidden>›</span>
         <Link href={withLang("/du-doan", lang)} className={MANH}>Dự đoán</Link>
         <span aria-hidden>›</span>
-        <Link href={withLang(`/du-doan/${g.slug}`, lang)} className={MANH}>{g.ten}</Link>
+        <Link href={withLang(duongHubGiai(g.slug, `/du-doan/${g.slug}`), lang)} className={MANH}>{g.ten}</Link>
         <span aria-hidden>›</span>
         <span className="text-ink">{c.ten}</span>
       </nav>
@@ -134,8 +134,8 @@ export async function TrangTipGiai({ loai, slug, lang }: { loai: LoaiTip; slug: 
         {khac.map((l) => (
           <Link key={l} href={withLang(duongTipGiai(l, g), lang)} className={CHIP}>{CH[l].tieuDe(g.ten)}</Link>
         ))}
-        <Link href={withLang(`/du-doan/${g.slug}`, lang)} className={CHIP}>Dự đoán {g.ten}</Link>
-        {g.bxh && <Link href={withLang(`/competitions/${g.bxh}`, lang)} className={CHIP}>Bảng xếp hạng {g.ten}</Link>}
+        {/* 16/11 gộp trang giải: dự đoán + BXH của giải nằm chung một hub, bỏ chip BXH trùng đích. */}
+        <Link href={withLang(duongHubGiai(g.slug, `/du-doan/${g.slug}`), lang)} className={CHIP}>Dự đoán {g.ten}</Link>
       </nav>
 
       {ngay.map((n) => (
@@ -160,9 +160,6 @@ export async function KhoiTipGiai({ bxh, lang }: { bxh: string; lang: Lang }) {
     <section className="mt-8" aria-labelledby="tip-giai">
       <h2 id="tip-giai" className="font-display text-lg font-bold">Dự đoán {g.ten} {SO_NGAY} ngày tới</h2>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Link href={withLang(`/du-doan/${g.slug}`, lang)} className={CHIP}>Dự đoán {g.ten} vòng tới</Link>
-        {giaiXgTuSlug(g.slug) && <Link href={withLang(`/thong-so/${g.slug}`, lang)} className={CHIP}>Thống kê {g.ten}</Link>}
-        {giaiXgTuSlug(g.slug) && <Link href={withLang(`/form/${g.slug}`, lang)} className={CHIP}>Phong độ {g.ten}</Link>}
         {co.map((x) => (
           <Link key={x.loai} href={withLang(duongTipGiai(x.loai, g), lang)} className={CHIP}>
             {CH[x.loai].tieuDe(g.ten)} ({x.soTran} trận)

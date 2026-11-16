@@ -5,9 +5,10 @@ import { getAllGuideSlugs, getSettledPicks, isFeatureEnabled, getAllBlogSlugs } 
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
-import { giaiBxhDuocIndex, analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, GIAI_DU_DOAN_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
+import { giaiBxhDuocIndex, analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
-import { GIAI_TRANG, lechNgay } from "@/lib/du-doan-loc";
+import { lechNgay } from "@/lib/du-doan-loc";
+import { HUB_GIAI } from "@/lib/duong-hub-giai";
 import { ngayVN } from "@/lib/du-doan-hang";
 import { timTran } from "@/lib/du-doan-tran";
 import { duDoanCua } from "@/lib/du-doan-nguon";
@@ -133,16 +134,10 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  // Trang dự đoán theo giải: chỉ 5 giải lớn + Cúp C1. Trang khuôn (kèo xiên, tip theo
-  // ngày/loại kèo/giải, hôm nay/ngày mai, chuỗi, đội phong độ, /du-doan/{ngày}) rút hết
-  // khỏi sitemap 14/11 và tự đặt noindex,follow ở metadata của từng trang.
-  const giaiRoutes: MetadataRoute.Sitemap = GIAI_TRANG.filter((g) => GIAI_DU_DOAN_SITEMAP.has(g.slug)).map((g) => ({
-    url: `${BASE}/du-doan/${g.slug}`,
-    changeFrequency: "daily" as const,
-    priority: 0.6,
-  }));
-
-  return [...tranRoutes, ...giaiRoutes];
+  // 16/11 gộp trang giải: /du-doan/{giai} (5 giải lớn + Cúp C1) 301 về hub /competitions/{slug},
+  // nên rút khỏi sitemap — hub đã nằm ở nhóm static. Trang khuôn (kèo xiên, tip theo ngày/loại
+  // kèo/giải, /du-doan/{ngày}…) rút từ 14/11 và tự noindex,follow như cũ.
+  return tranRoutes;
 }
 
 async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
@@ -204,14 +199,14 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
 
   // /thong-so + /form (15/11): trang số liệu theo đội từ data/xg-doi.json — lastmod = ngày máy kéo FotMob.
   const xgDoi = tepXgDoi();
-  const soLieuRoutes: MetadataRoute.Sitemap = ["/thong-so", "/form"].flatMap((goc) =>
-    [goc, ...xgDoi.giai.map((g) => `${goc}/${g.slug}`)].map((u) => ({
-      url: `${BASE}${u}`,
-      lastModified: safeLastMod(xgDoi.capNhat),
-      changeFrequency: "daily" as const,
-      priority: u === goc ? 0.8 : 0.7,
-    })),
-  );
+  // 16/11 gộp trang giải: /form/{giai} 301 hết (về hub hoặc /thong-so/{giai}); /thong-so/{giai} của
+  // giải có hub /competitions cũng 301. Chỉ còn hai trang mục lục + /thong-so/{giai} của giải chưa có hub.
+  const soLieuRoutes: MetadataRoute.Sitemap = ["/thong-so", "/form", ...xgDoi.giai.filter((g) => !HUB_GIAI[g.slug]).map((g) => `/thong-so/${g.slug}`)].map((u) => ({
+    url: `${BASE}${u}`,
+    lastModified: safeLastMod(xgDoi.capNhat),
+    changeFrequency: "daily" as const,
+    priority: u.split("/").length === 2 ? 0.8 : 0.7,
+  }));
 
   // /match/* RÚT hết khỏi sitemap 14/11: trang trận có bài chỉ ~200 chữ (bài thật nằm ở
   // /analysis, /blog) — trang tự noindex,follow (xem match/[slug]/page.tsx).
