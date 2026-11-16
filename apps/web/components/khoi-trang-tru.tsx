@@ -16,7 +16,7 @@ type Bai = { slug: string; title: string };
 type Giai = { slug: string; name: string };
 type Muc = { href: string; ten: string };
 
-const SO_BLOG_MOI = 5;
+export const SO_BLOG_MOI = 5;
 
 /** Mỗi nhóm một màu riêng (Peter 11/11: "để màu hay highlight chỗ này") — vạch trên, nền ngả màu, chấm đầu dòng. */
 const MAU: Record<string, { the: string; chu: string; cham: string }> = {
