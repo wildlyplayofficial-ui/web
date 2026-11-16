@@ -48,6 +48,14 @@ const GIOI_THIEU: Record<string, GioiThieuGiai> = {
       ` Mỗi trận được xem qua xG, phong độ 5 trận gần nhất và tình hình lực lượng, làm mới hằng ngày, giờ Việt Nam.`,
     hoiDauBang: (mua) => `Đội nào đang đứng đầu Ligue 1 ${mua}?`,
   },
+  // 16/11: số đội + số lượt lấy từ bảng/lịch FotMob của mùa này (36 đội chung một bảng, 8 lượt).
+  "cup-c1": {
+    mo: (mua, v, n) =>
+      `Cúp C1 ${mua} đá vòng phân hạng chung một bảng 36 đội, mỗi đội 8 trận. banhbong có dự đoán tỷ số cho các trận Cúp C1, kèm Over/Under 2.5 và Cả 2 đội ghi bàn.` +
+      vongCo(v, n, (v, n) => `Lượt ${v} đã có dự đoán cho ${n} trận.`) +
+      ` Trang gom bảng xếp hạng, kết quả lượt vừa đá, top ghi bàn và danh sách chấn thương, giờ đá theo giờ Việt Nam.`,
+    hoiDauBang: (mua) => `Đội nào đang dẫn đầu Cúp C1 ${mua}?`,
+  },
 };
 
 export function gioiThieuGiai(slug: string, compName: string): GioiThieuGiai {
