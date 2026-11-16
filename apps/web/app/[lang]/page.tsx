@@ -355,7 +355,7 @@ export default async function Home({ params }: Props) {
               (fills the gap Nick flagged 17/8). Rest drop to a 3-up grid below. */}
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="flex flex-col gap-5 lg:col-span-2">
-              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" />
+              <AnalysisCard article={restArticles[0]} lang={lang} variant="lead" href={withLang(duongBai(restArticles[0].slug), lang)} />
               {/* Telegram CTA — lấp lỗ trống cột trái dưới thẻ nổi bật (Nick 21/8);
                   mobile: xếp dọc, nút full-width. */}
               <div className="flex flex-col gap-3 rounded-card border border-brand/30 bg-brand-dim/40 px-6 py-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
@@ -376,7 +376,7 @@ export default async function Home({ params }: Props) {
             {restArticles.length > 1 && (
               <div className="flex flex-col gap-5">
                 {restArticles.slice(1, 3).map((a) => (
-                  <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" />
+                  <AnalysisCard key={a.slug} article={a} lang={lang} variant="list" href={withLang(duongBai(a.slug), lang)} />
                 ))}
                 {predictions.length > 0 && (
                   <div className="rounded-2xl border border-line bg-card/40 p-4">

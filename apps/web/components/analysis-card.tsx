@@ -42,12 +42,14 @@ export function AnalysisCard({
   article,
   lang,
   variant = "lead",
+  href = withLang(`/analysis/${article.slug}`, lang),
 }: {
   article: AnalysisArticle;
   lang: Lang;
   variant?: "lead" | "list";
+  /** Đường đích cuối (vd /du-doan/{slug} khi bản /analysis chuyển hướng); mặc định /analysis/{slug}. */
+  href?: string;
 }) {
-  const href = withLang(`/analysis/${article.slug}`, lang);
   const hero = article.hero_image ?? `/api/og/analysis/${article.slug}?locale=${lang}&v=${OG_VERSION}`;
   const kindLabel = article.kind.charAt(0).toUpperCase() + article.kind.slice(1);
   const badgeColor = KIND_COLORS[article.kind] ?? KIND_COLORS.roundup;
