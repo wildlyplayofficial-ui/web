@@ -36,7 +36,7 @@ export function DongTran({ h, lang, hienGiai = false, phongDo = false }: { h: Ha
       // 15/11: trang trận được index (5 giải lớn + C1, đủ số liệu — lib/chi-muc.ts) → link thường.
       // Trang noindex thì nofollow để Google khỏi tốn công bò; người đọc vẫn bấm được.
       rel={tranDuocIndex(h) ? undefined : "nofollow"}
-      className={`grid min-h-[68px] grid-cols-[44px_minmax(0,1fr)_auto_12px] items-center gap-x-2.5 border-b border-line/60 px-0.5 py-2.5 transition-colors hover:bg-card-hover lg:min-h-[60px] lg:gap-x-3 lg:px-1.5 ${
+      className={`grid min-h-[68px] grid-cols-[44px_minmax(0,1fr)_auto_12px] items-center gap-x-2.5 border-b border-line/60 px-0.5 py-2.5 transition-colors hover:bg-card-hover active:bg-card-hover active:duration-0 lg:min-h-[60px] lg:gap-x-3 lg:px-1.5 ${
         hienGiai ? "lg:grid-cols-[150px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px]" : "lg:grid-cols-[58px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px]"
       } ${h.coBai ? "bg-brand/[.06] pl-2 shadow-[inset_3px_0_var(--color-brand)]" : ""}`}
     >

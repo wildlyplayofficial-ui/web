@@ -31,7 +31,7 @@ function coGiai(giai: string, dau: HangDuDoan): string | null {
   return dau.logoNha;
 }
 
-const NUT = "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-3.5 text-sm";
+const NUT = "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-3.5 text-sm transition-[transform,color,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]";
 
 export function DuDoanPZ({
   rows,
