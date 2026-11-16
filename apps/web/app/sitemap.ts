@@ -5,7 +5,7 @@ import { getAllGuideSlugs, getSettledPicks, isFeatureEnabled, getAllBlogSlugs } 
 import { getAllAnalysisArticleSlugs, getAnalysisByTeam } from "@/lib/analysis-articles";
 import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
-import { giaiBxhDuocIndex, analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
+import { giaiBxhDuocIndex, laBlogLichCaMua, laTrangLichCaMua, analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { lechNgay } from "@/lib/du-doan-loc";
 import { HUB_GIAI } from "@/lib/duong-hub-giai";
@@ -208,6 +208,17 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
     priority: u.split("/").length === 2 ? 0.8 : 0.7,
   }));
 
+  // Hub /xem-bong-da-o-dau (16/11): gom mọi bài lịch cả mùa / xem ở đâu / đá mấy giờ — lastmod = bài mới sửa nhất trong nhóm.
+  const hubXemRoute: MetadataRoute.Sitemap = [{
+    url: `${BASE}/xem-bong-da-o-dau`,
+    lastModified: moiNhat([
+      ...deskArticles.filter((a) => laTrangLichCaMua(a.slug)).map((a) => a.modified),
+      ...blogs.filter((b) => laBlogLichCaMua(b.slug)).map((b) => b.updated),
+    ]),
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }];
+
   // /match/* RÚT hết khỏi sitemap 14/11: trang trận có bài chỉ ~200 chữ (bài thật nằm ở
   // /analysis, /blog) — trang tự noindex,follow (xem match/[slug]/page.tsx).
 
@@ -250,5 +261,5 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [...staticRoutes, ...soLieuRoutes, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...soLieuRoutes, ...hubXemRoute, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
 }
