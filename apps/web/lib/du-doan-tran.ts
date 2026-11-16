@@ -108,6 +108,11 @@ export function timTran(hang: readonly HangDuDoan[], slug: string): HangDuDoan |
   return hang.find((h) => h.slug === slug) ?? null;
 }
 
+/** Bài nhận định đã có trang trận → link thẳng /du-doan/{slug} (bản /analysis 308, /blog 301 sang đó). */
+export function duongTran(hang: readonly HangDuDoan[], slug: string): string | null {
+  return slug.startsWith("nhan-dinh-") && timTran(hang, slug) ? `/du-doan/${slug}` : null;
+}
+
 const TOI_THIEU = 3;
 const TOI_DA = 5;
 const theoGio = (a: HangDuDoan, b: HangDuDoan) => a.kickoffUtc.localeCompare(b.kickoffUtc);

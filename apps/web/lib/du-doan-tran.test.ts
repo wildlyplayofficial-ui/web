@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { tranDuocIndex } from "./chi-muc";
 import type { HangDuDoan } from "./du-doan-hang";
-import { cauHaiDoiGhi, cauThang, cauTomTat, giaiThichTaiXiu, metaTran, ngayTabDuDoan, tieuDeH1, tieuDeTran, timTran, tranLienQuan } from "./du-doan-tran";
+import { cauHaiDoiGhi, cauThang, cauTomTat, giaiThichTaiXiu, metaTran, ngayTabDuDoan, tieuDeH1, tieuDeTran, timTran, tranLienQuan, duongTran } from "./du-doan-tran";
 
 const tran = (slug: string, sua: Partial<HangDuDoan> = {}): HangDuDoan => ({
   slug, coBai: false, giai: "Nations League", kickoffUtc: "2026-11-12T19:45:00Z", ngay: "2026-11-13", gio: "02:45",
@@ -119,5 +119,14 @@ describe("ngayTabDuDoan", () => {
 
   it("chỉ có trận hôm qua → một tab hôm nay", () => {
     expect(ngayTabDuDoan("2026-11-11", new Set(["2026-11-10"]))).toEqual({ ngays: ["2026-11-11"], macDinh: "2026-11-11" });
+  });
+});
+
+describe("duongTran — link thẳng sang trang trận", () => {
+  const nd = tran("nhan-dinh-anh-vs-croatia-13-11-2026");
+  it("bài nhận định có trang trận thì trỏ /du-doan, không có thì null", () => {
+    expect([duongTran([nd], nd.slug), duongTran([nd], "nhan-dinh-khac"), duongTran([ANH], ANH.slug)]).toEqual([
+      "/du-doan/nhan-dinh-anh-vs-croatia-13-11-2026", null, null,
+    ]);
   });
 });

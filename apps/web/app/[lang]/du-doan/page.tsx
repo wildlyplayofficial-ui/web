@@ -13,6 +13,7 @@ import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { duongTran } from "@/lib/du-doan-tran";
 import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
 export const revalidate = 300;
@@ -119,7 +120,9 @@ function GioiThieu({ blogs, lang }: { blogs: Post[]; lang: Lang }) {
 
 export default async function DuDoanHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
-  const [{ hang }, baiChon, blogs] = await Promise.all([taiDuDoan(), getBaiDuDoan(), getBlogs(lang)]);
+  const [{ hang }, baiChon, tatCaBlog] = await Promise.all([taiDuDoan(), getBaiDuDoan(), getBlogs(lang)]);
+  // 17/11: blog đã có trang trận thì bỏ (/blog/{slug} 301) — trận đó đã có link thẳng ở mục nhận định chi tiết.
+  const blogs = tatCaBlog.filter((b) => !duongTran(hang, b.slug));
   const hoi = cauHoiDuDoan(hang);
   // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));

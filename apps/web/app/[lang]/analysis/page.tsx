@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
+import { taiDuDoan } from "@/lib/du-doan-tai";
+import { duongTran } from "@/lib/du-doan-tran";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { canonicalTrang } from "@/lib/canonical-trang";
@@ -84,14 +86,14 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
 }
 
 /** Card for a Desk-authored analysis article (spec §2B). */
-function DeskCard({ article, lang }: { article: AnalysisArticle; lang: Lang }) {
+function DeskCard({ article, lang, href }: { article: AnalysisArticle; lang: Lang; href: string }) {
   const excerpt = extractExcerpt(article.body);
   const kindLabel = article.kind.charAt(0).toUpperCase() + article.kind.slice(1);
   const badgeColor = DESK_KIND_COLORS[article.kind] ?? DESK_KIND_COLORS.roundup;
 
   return (
     <Link
-      href={withLang(`/analysis/${article.slug}`, lang)}
+      href={withLang(href, lang)}
       className="group rounded-card border border-line bg-card shadow-card transition-colors hover:border-line-hover hover:bg-card-hover overflow-hidden"
     >
       <img
@@ -137,7 +139,8 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
   // nhưng người đọc vẫn thấy chúng ở đây — nên thôi lấy `posts` ra hẳn. Bộ tab
   // đi theo luôn vì 5/7 tab chỉ trỏ vào loại bài máy đẻ, lọc xong là rỗng.
   // Bài cũ KHÔNG xoá khỏi kho, địa chỉ cũ vẫn mở được.
-  const articles = await getAnalysisArticles(undefined, TRAN_BAI);
+  // 17/11: bài đã có trang trận → link thẳng /du-doan/{slug}, khỏi đi qua 308.
+  const [articles, { hang }] = await Promise.all([getAnalysisArticles(undefined, TRAN_BAI), taiDuDoan().catch(() => ({ hang: [] }))]);
 
   const totalPages = Math.max(1, Math.ceil(articles.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -165,7 +168,7 @@ export default async function AnalysisFeed({ params, searchParams }: Props) {
         <>
           <div className="flex flex-col gap-4 pb-4">
             {pageFeed.map((article) => (
-              <DeskCard key={article.id} article={article} lang={lang} />
+              <DeskCard key={article.id} article={article} lang={lang} href={duongTran(hang, article.slug) ?? `/analysis/${article.slug}`} />
             ))}
           </div>
 
