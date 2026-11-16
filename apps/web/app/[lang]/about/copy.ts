@@ -130,9 +130,9 @@ export const copy: Record<Lang, AboutCopy> = {
     title: "Về banhbong.net",
     metaTitle: "Về banhbong.net — Dự đoán bóng đá mỗi ngày",
     metaDescription:
-      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: chốt tỷ số kèm tỷ lệ 1X2, Over/Under, phong độ, đối đầu và bảng xếp hạng, do chuyên gia từng giải ký tên.",
+      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: chốt tỷ số kèm tỷ lệ 1X2, Over/Under, phong độ, đối đầu và bảng xếp hạng, do Pete Nguyễn ký tên.",
     intro:
-      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi chốt tỷ số các trận đáng chú ý, kèm tỷ lệ 1X2, Over/Under, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng. Mỗi trận do chuyên gia phụ trách giải đó ký tên.",
+      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi chốt tỷ số các trận đáng chú ý, kèm tỷ lệ 1X2, Over/Under, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng. Mỗi trận do Pete Nguyễn ký tên.",
     cardsTitle: "banhbong.net có gì",
     cards: [
       {
@@ -155,7 +155,7 @@ export const copy: Record<Lang, AboutCopy> = {
     methodIntro: "Trận nào cũng đi qua bốn bước giống nhau.",
     methodSteps: [
       { title: "Gom số liệu", body: "Phong độ 10 trận gần nhất của hai đội, lịch sử đối đầu, vị trí trên bảng xếp hạng và tỷ lệ thị trường của trận." },
-      { title: "Chuyên gia phụ trách giải đọc trận", body: "Người theo dõi giải đó xem số liệu cùng bối cảnh trận: lịch thi đấu dày hay thưa, đội nào cần điểm hơn, đá sân nhà hay sân khách." },
+      { title: "Người ký tên đọc trận", body: "Người ký tên xem số liệu cùng bối cảnh trận: lịch thi đấu dày hay thưa, đội nào cần điểm hơn, đá sân nhà hay sân khách." },
       { title: "Chốt tỷ số trước giờ bóng lăn", body: "Tỷ số dự đoán được chốt và đăng trước giờ đá. Trận đã bắt đầu thì dự đoán không được sửa nữa." },
       { title: "Cập nhật kết quả", body: "Sáng hôm sau, tỷ số thật được cập nhật ở trang Kết quả, đặt cạnh tỷ số đã dự đoán." },
     ],

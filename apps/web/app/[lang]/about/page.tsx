@@ -4,14 +4,13 @@ import Link from "next/link";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import { buildPerson, buildOrganization, buildWebSite } from "@/lib/jsonld";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
-import { DoiNguChuyenGia } from "@/components/doi-ngu-chuyen-gia";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { isFeatureEnabled } from "@/lib/data";
 import { copy } from "./copy";
 
 /**
- * /about soạn lại 11/11/2026 (Peter): giới thiệu trang DỰ ĐOÁN — có gì, đội ngũ 5 chuyên gia
- * (neo #slug cho dòng "Dự đoán bởi" trên trang trận), cách dự đoán, cam kết. Bỏ thẻ Chú Tám,
+ * /about soạn lại 11/11/2026 (Peter): giới thiệu trang DỰ ĐOÁN — có gì, cách dự đoán, cam kết.
+ * 16/11: gỡ khối 5 chuyên gia, mọi trận ký Pete Nguyễn (/tac-gia/pete-nguyen). Bỏ thẻ Chú Tám,
  * mục thành tích công khai (Peter không công khai thành tích), công cụ và đường dây hỗ trợ.
  */
 export const revalidate = 300;
@@ -97,8 +96,6 @@ export default async function AboutPage({ params }: Props) {
           })}
         </div>
       </section>
-
-      {lang === "vi" && <DoiNguChuyenGia />}
 
       <section className="mt-12">
         <h2 className={H2}>{c.methodTitle}</h2>
