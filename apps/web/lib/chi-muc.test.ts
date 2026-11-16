@@ -28,6 +28,13 @@ describe("tranDuocIndex — chỉ 5 giải lớn + C1 (15/11)", () => {
     expect(tranDuocIndex({ slug: "nhan-dinh-na-uy-vs-xu-wales-15-11-2026", giai: "UEFA Nations League" })).toBe(false);
   });
 
+  it("trận có Việt Nam ngoài 5 giải lớn → index (Peter 16/11)", () => {
+    expect(tranDuocIndex({ slug: "nhan-dinh-viet-nam-vs-kyrgyzstan-17-11-2026", giai: "Giao hữu", nha: "Việt Nam", khach: "Kyrgyzstan" })).toBe(true);
+    expect(tranDuocIndex({ ...tuan("AFC Asian Cup Qualification"), nha: "Malaysia", khach: "Vietnam" })).toBe(true);
+    expect(tranDuocIndex({ ...tuan("AFC Asian Cup Qualification", true), nha: "Vietnam", khach: "Laos" })).toBe(false);
+    expect(tranDuocIndex({ ...tuan("AFC Asian Cup Qualification"), nha: "Malaysia", khach: "Laos" })).toBe(false);
+  });
+
   it("bài nhận định tay giải lớn → index", () => {
     expect(tranDuocIndex({ slug: "nhan-dinh-arsenal-vs-chelsea-22-11-2026", giai: "Ngoại hạng Anh" })).toBe(true);
   });

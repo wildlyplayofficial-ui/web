@@ -99,13 +99,17 @@ export const GIAI_INDEX_TRAN =
   /^((england )?premier league|ngoại hạng anh|(spain )?la ?liga|(italy )?serie a|(germany )?bundesliga|(france )?ligue 1|(uefa )?champions league|cúp c1)$/i;
 
 /**
- * Trang trận được index khi: giải nằm trong GIAI_INDEX_TRAN VÀ đủ dữ liệu.
+ * Trang trận được index khi: (giải nằm trong GIAI_INDEX_TRAN HOẶC có đội Việt Nam) VÀ đủ dữ liệu.
  * - Trang tệp tuần `tuan-…`: đủ số liệu viết nhận định (`mong === false`, ngưỡng ở
  *   lib/tran-nhan-dinh-so.ts: có tỷ số dự đoán + phong độ hai đội hoặc đối đầu).
  * - Bài tay `nhan-dinh-…`: luôn có thân bài nên chỉ xét giải.
  */
-export function tranDuocIndex(h: { slug: string; giai: string; mong?: boolean }): boolean {
-  if (!GIAI_INDEX_TRAN.test(h.giai.trim())) return false;
+/** Trận có tuyển/đội Việt Nam được index dù giải nằm ngoài GIAI_INDEX_TRAN (Peter gật 16/11/2026). */
+const DOI_VIET_NAM = /vi[eệ]t nam|vietnam/i;
+
+export function tranDuocIndex(h: { slug: string; giai: string; nha?: string; khach?: string; mong?: boolean }): boolean {
+  const vietNam = DOI_VIET_NAM.test(h.nha ?? "") || DOI_VIET_NAM.test(h.khach ?? "");
+  if (!vietNam && !GIAI_INDEX_TRAN.test(h.giai.trim())) return false;
   return h.slug.startsWith("tuan-") ? h.mong === false : true;
 }
 
