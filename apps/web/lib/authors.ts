@@ -1,5 +1,4 @@
 import { CHU_TAM, PETE, SITE_NAME, SITE_URL } from "./brand";
-import { CHUYEN_GIA, duongDanChuyenGia } from "./chuyen-gia";
 
 /**
  * Hai tác giả của banhbong.net (Peter chốt 15/9/2026 trong group banhbong):
@@ -36,8 +35,8 @@ export const AUTHORS: readonly AuthorProfile[] = [
     name: PETE,
     slug: "pete-nguyen",
     path: "/tac-gia/pete-nguyen",
-    role: "Biên tập tin tức · Blog",
-    bio: "Pete Nguyễn biên tập mảng tin tức và blog của banhbong.net: tin chuyển nhượng, kết quả, bảng xếp hạng và các bài blog bóng đá.",
+    role: "Biên tập nhận định · Tin tức · Blog",
+    bio: "Pete Nguyễn ký các bài nhận định trước trận và biên tập mảng tin tức, blog của banhbong.net: tin chuyển nhượng, kết quả, bảng xếp hạng và các bài blog bóng đá.",
     disclosure: "Pete Nguyễn biên tập · nguồn tin ghi rõ trong bài",
     // Peter tạo 15/9/2026.
     sameAs: ["https://www.linkedin.com/in/pete-nguy%E1%BB%85n-518324437"],
@@ -51,22 +50,11 @@ export function postAuthorName(post: { type: string; author?: string }): string 
   if (post.type === "guide") return SITE_NAME;
   if (post.type === "news" || post.type === "blog") return PETE;
   if (post.author === "scout") return "Trợ lý AI";
-  return CHU_TAM;
+  return PETE; // 16/11/2026 Peter: mọi bài nhận định ký Pete Nguyễn
 }
 
-/** 5 chuyên gia ký bài nhận định (lib/chuyen-gia.ts): hồ sơ là neo trên /about, không trang /tac-gia riêng. */
-const CHUYEN_GIA_TAC_GIA: readonly AuthorProfile[] = CHUYEN_GIA.map((c) => ({
-  name: c.ten,
-  slug: c.slug,
-  path: duongDanChuyenGia(c),
-  role: `Chuyên gia ${c.phuTrach}`,
-  bio: c.gioiThieu.join(" "),
-  disclosure: `${c.ten} chọn trận và góc nhìn · số liệu ghi nguồn trong bài`,
-  sameAs: [],
-}));
-
 export function authorByName(name: string | null | undefined): AuthorProfile | null {
-  return AUTHORS.find((a) => a.name === name) ?? CHUYEN_GIA_TAC_GIA.find((a) => a.name === name) ?? null;
+  return AUTHORS.find((a) => a.name === name) ?? null;
 }
 
 export function authorBySlug(slug: string): AuthorProfile | null {
