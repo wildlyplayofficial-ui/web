@@ -38,11 +38,12 @@ export async function metaLoc(slug: string, lang: Lang): Promise<Metadata | null
   const duong = ngay ? duongDanNgay(ngay, homNay) : `/du-doan/${slug}`;
   // 14/11 gọn sitemap (Peter chốt): trang theo NGÀY là trang khuôn → luôn noindex,follow;
   // trang giải có lịch vòng tới nên vẫn index (chỉ giải lớn vào sitemap).
+  // 16/11: giải không có bảng xếp hạng (Nations League) ngoài sitemap, thường chỉ vài chục chữ → noindex,follow.
   return {
     title: tieuDe,
     description: moTa,
     alternates: buildAlternates(duong, lang),
-    ...(ngay ? { robots: NOINDEX_FOLLOW } : {}),
+    ...(ngay || !giai!.bxh ? { robots: NOINDEX_FOLLOW } : {}),
     openGraph: { locale: "vi_VN", title: `${tieuDe} | banhbong.net`, description: moTa, images: [og(tieuDe)] },
   };
 }
