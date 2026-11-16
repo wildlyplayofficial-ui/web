@@ -86,7 +86,7 @@ describe("tranDuocIndex", () => {
     // 15/11: chỉ 5 giải lớn + C1 được index (GIAI_INDEX_TRAN) — đội tuyển, giao hữu U23 thôi index.
     ["Nations League", "Anh", "Croatia", false],
     ["Ngoại hạng Anh", "Arsenal", "Chelsea", true],
-    ["Gia Lai VTV Cup 2026", "U23 Việt Nam", "U23 Thái Lan", false],
+    ["Gia Lai VTV Cup 2026", "U23 Việt Nam", "U23 Thái Lan", true], // 16/11: trận có Việt Nam mở index (Peter)
     ["Hạng 6 Anh miền Bắc", "Darlington", "Oxford City", false],
     ["VĐQG Bắc Ireland", "Larne", "Linfield", false],
     ["Serie C Ý", "Arezzo", "Pisa", false],
