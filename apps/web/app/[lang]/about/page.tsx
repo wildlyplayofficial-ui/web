@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { OG_VERSION, PETE } from "@/lib/brand";
+import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
-import { buildPerson, buildOrganization, buildWebSite } from "@/lib/jsonld";
+import { buildOrganization, buildWebSite } from "@/lib/jsonld";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { isFeatureEnabled } from "@/lib/data";
@@ -10,7 +10,7 @@ import { copy } from "./copy";
 
 /**
  * /about soạn lại 11/11/2026 (Peter): giới thiệu trang DỰ ĐOÁN — có gì, cách dự đoán, cam kết.
- * 16/11: gỡ khối 5 chuyên gia, mọi trận ký Pete Nguyễn (/tac-gia/pete-nguyen). Bỏ thẻ Chú Tám,
+ * 16/11: gỡ khối 5 chuyên gia; /about KHÔNG nhắc tên Pete (Peter 16/11), tên chỉ ở dòng tác giả trang trận. Bỏ thẻ Chú Tám,
  * mục thành tích công khai (Peter không công khai thành tích), công cụ và đường dây hỗ trợ.
  */
 export const revalidate = 300;
@@ -60,7 +60,6 @@ export default async function AboutPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-[800px] px-4 py-8 sm:px-5 sm:py-12">
       <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"About",url:"/about"}]} />
-      {lang === "vi" && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildPerson(PETE)) }} />}
       {/* Organization + WebSite + AboutPage: giúp Google/AI hiểu đây là trang
           thực thể chính → dễ index + dễ được trích dẫn (thiếu trước 28/7). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganization()) }} />
