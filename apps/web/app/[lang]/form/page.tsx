@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { metaForm, TrangForm } from "@/components/thong-so/trang";
+import { metaForm, TrangForm } from "@/components/thong-so/trang-form";
 import { resolveLang } from "@/lib/i18n";
 
 /** /form — phong độ 5 trận gần nhất từng đội (Peter giao 15/11). Dữ liệu từ data/xg-doi.json, dựng tĩnh. */

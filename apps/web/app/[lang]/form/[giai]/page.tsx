@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { metaFormGiai, TrangFormGiai } from "@/components/thong-so/trang";
+import { metaFormGiai, TrangFormGiai } from "@/components/thong-so/trang-form";
 import { resolveLang } from "@/lib/i18n";
 import { giaiXgTuSlug, tepXgDoi } from "@/lib/xg-doi";
 

@@ -4,12 +4,12 @@ import { FaqHub, type CauHoiHub } from "@/components/giai-hub/faq";
 import { OG_VERSION } from "@/lib/brand";
 import { GIAI_TRANG } from "@/lib/du-doan-loc";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
-import { dongFormGiai, tepXgDoi, xepTheoChenh, type GiaiXg } from "@/lib/xg-doi";
-import { BangFormGiai, LuoiBangXep } from "./bang-form";
-import { BangXg } from "./bang-xg";
+import { CHI_SO, NHOM, xepChiSo, type Nhom } from "@/lib/chi-so-doi";
+import { tepXgDoi, xepTheoChenh, type GiaiXg } from "@/lib/xg-doi";
 import { ChipGiai, KhungTrang } from "./khung";
+import { TheChiSo } from "./the-chi-so";
 
-/** Trang /thong-so, /thong-so/{giai}, /form, /form/{giai} (Peter giao 15/11, mẫu Statistics + Form của PredictZ, thêm xG). */
+/** Trang /thong-so, /thong-so/{giai} (Peter giao 15/11; 16/11 gật mẫu chia nhóm kiểu FotMob). /form ở trang-form.tsx. */
 
 const so = (x: number) => x.toFixed(2);
 
@@ -23,7 +23,7 @@ export function meta(duong: string, title: string, description: string, lang: La
 }
 
 /** Link sang trang dự đoán / BXH của giải nếu web có. */
-function LinkGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
+export function LinkGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
   const t = GIAI_TRANG.find((x) => x.slug === g.slug);
   if (!t) return null;
   return (
@@ -36,8 +36,31 @@ function LinkGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
 
 // ---------- /thong-so ----------
 
+/** Hàng chip nhảy tới từng nhóm (neo trong trang, không tách URL). */
+function ChipNhom() {
+  return (
+    <nav aria-label="Nhóm chỉ số" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+      {NHOM.map((n) => (
+        <a key={n.id} href={`#nhom-${n.id}`} className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border border-line px-4 text-sm font-semibold text-muted transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-card-hover">
+          {n.ten}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function NhomChiSo({ nhom, ten, g }: { nhom: Nhom; ten: string; g: GiaiXg }) {
+  const ds = CHI_SO.filter((c) => c.nhom === nhom);
+  return (
+    <section id={`nhom-${nhom}`} aria-labelledby={`nhom-${nhom}-h`} className="scroll-mt-24">
+      <h2 id={`nhom-${nhom}-h`} className="font-display text-xl font-bold">{ten}</h2>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">{ds.map((c) => <TheChiSo key={c.id} c={c} ds={g.doi} />)}</div>
+    </section>
+  );
+}
+
 export const metaThongSo = (lang: Lang) =>
-  meta("/thong-so", "Thông số xG các đội bóng châu Âu mùa này", `xG, xGA, chênh lệch xG, bàn thắng mỗi trận, sút trúng đích và kiểm soát bóng của từng đội ở ${tepXgDoi().giai.length} giải vô địch: Ngoại hạng Anh, La Liga, Serie A, Bundesliga, Ligue 1 và hơn nữa.`, lang);
+  meta("/thong-so", "Thông số các đội bóng châu Âu mùa này: xG, bàn thắng, sạch lưới", `xG, xGA, chênh lệch xG, bàn thắng, giữ sạch lưới, tỷ lệ Over 2.5 và cả 2 đội ghi bàn của từng đội ở ${tepXgDoi().giai.length} giải vô địch: Ngoại hạng Anh, La Liga, Serie A, Bundesliga, Ligue 1 và hơn nữa.`, lang);
 
 export function TrangThongSo({ lang }: { lang: Lang }) {
   const tep = tepXgDoi();
@@ -45,15 +68,39 @@ export function TrangThongSo({ lang }: { lang: Lang }) {
   return (
     <KhungTrang
       duong={[{ ten: "Thông số", url: "/thong-so" }]}
-      h1="Thông số xG các đội bóng"
-      mo={<p>{`xG (bàn thắng kỳ vọng) cho biết một đội tạo ra cơ hội tốt đến đâu, không phụ thuộc may rủi lúc dứt điểm. Trang này theo dõi ${soDoi} đội ở ${tep.giai.length} giải: xG và xGA mỗi trận, chênh lệch xG, số bàn thật so với xG, sút trúng đích và kiểm soát bóng. Mỗi giải xếp theo chênh lệch xG, đội đứng trên là đội áp đảo đối thủ nhiều nhất.`}</p>}
+      h1="Thông số các đội bóng"
+      mo={<p>{`xG (bàn thắng kỳ vọng) cho biết một đội tạo ra cơ hội tốt đến đâu, không phụ thuộc may rủi lúc dứt điểm. Trang này theo dõi ${soDoi} đội ở ${tep.giai.length} giải. Dưới đây là đội dẫn đầu từng giải; chọn một giải để xem đủ các nhóm chỉ số: tấn công, phòng ngự, bàn thắng, kiểm soát bóng.`}</p>}
       lang={lang}
       chip={<ChipGiai goc="/thong-so" giai={tep.giai} dang={null} lang={lang} />}
       nguon={tep.nguon}
       capNhat={tep.capNhat}
     >
-      {tep.giai.map((g) => <BangXg key={g.slug} g={g} lang={lang} link />)}
-      <p className="text-xs text-muted">Chênh = xG trừ xGA mỗi trận. Số trong ngoặc ở cột bàn thắng: bàn thật nhiều (xanh) hay ít (hồng) hơn xG. Nội dung mang tính tham khảo.</p>
+      <ul className="grid gap-3 md:grid-cols-2">
+        {tep.giai.map((g) => {
+          const dong = [
+            { nhan: "Chênh lệch xG", c: CHI_SO.find((c) => c.id === "chenh-xg") },
+            { nhan: "xG mỗi trận", c: CHI_SO.find((c) => c.id === "xg") },
+            { nhan: "xGA thấp nhất", c: CHI_SO.find((c) => c.id === "xga") },
+          ].map((x) => ({ nhan: x.nhan, dau: x.c ? xepChiSo(x.c, g.doi)[0] : undefined }));
+          return (
+            <li key={g.slug} className="rounded-card border border-line bg-card">
+              <h2 className="px-3.5 pt-3 text-[15px] font-bold">{g.ten}</h2>
+              <dl className="px-3.5 py-1.5">
+                {dong.map((x) => x.dau && (
+                  <div key={x.nhan} className="flex items-baseline justify-between gap-3 py-1 text-sm">
+                    <dt className="text-muted">{x.nhan}</dt>
+                    <dd className="min-w-0 truncate text-right"><span className="font-semibold">{x.dau.doi.ten}</span> <span className="font-display font-bold tabular-nums text-brand">{x.dau.chu}</span></dd>
+                  </div>
+                ))}
+              </dl>
+              <Link href={withLang(`/thong-so/${g.slug}`, lang)} className="flex min-h-11 items-center justify-center border-t border-line text-sm font-semibold text-brand active:bg-card-hover">
+                Xem đủ thông số {g.ten} ›
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-xs text-muted">Chênh = xG trừ xGA mỗi trận. Nội dung mang tính tham khảo.</p>
     </KhungTrang>
   );
 }
@@ -71,7 +118,7 @@ function faqThongSo(g: GiaiXg): CauHoiHub[] {
 }
 
 export const metaThongSoGiai = (g: GiaiXg, lang: Lang) =>
-  meta(`/thong-so/${g.slug}`, `Thông số xG ${g.ten}: xG, xGA từng đội mùa này`, `Bảng xG ${g.ten} cho cả ${g.doi.length} đội: xG và xGA mỗi trận, chênh lệch xG, bàn thắng so với xG, sút trúng đích, kiểm soát bóng. Nguồn FotMob, cập nhật hằng ngày.`, lang);
+  meta(`/thong-so/${g.slug}`, `Thông số ${g.ten}: xG, bàn thắng, sạch lưới từng đội`, `Thông số ${g.doi.length} đội ${g.ten} chia nhóm: chênh lệch xG, xG và xGA mỗi trận, bàn thắng so với xG, sút trúng đích, giữ sạch lưới, tỷ lệ Over 2.5, cả 2 đội ghi bàn, kiểm soát bóng. Cập nhật hằng ngày.`, lang);
 
 export function TrangThongSoGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
   const tep = tepXgDoi();
@@ -79,79 +126,21 @@ export function TrangThongSoGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
   return (
     <KhungTrang
       duong={[{ ten: "Thông số", url: "/thong-so" }, { ten: g.ten, url: `/thong-so/${g.slug}` }]}
-      h1={`Thông số xG ${g.ten}`}
-      mo={<p>{`Bảng xG của ${g.doi.length} đội ${g.ten} mùa này, xếp theo chênh lệch xG mỗi trận. ${top.ten} đang đứng đầu: tạo ${so(top.xg)} xG và chỉ để đối thủ tạo ${so(top.xga)} xG mỗi trận.`}</p>}
+      h1={`Thông số ${g.ten}`}
+      mo={<p>{`Thông số của ${g.doi.length} đội ${g.ten} mùa này, chia theo nhóm. ${top.ten} đang áp đảo nhất: tạo ${so(top.xg)} xG và chỉ để đối thủ tạo ${so(top.xga)} xG mỗi trận. Mỗi thẻ hiện 3 đội dẫn đầu, bấm "Xem đủ" để thấy cả giải.`}</p>}
       lang={lang}
       chip={<ChipGiai goc="/thong-so" giai={tep.giai} dang={g.slug} lang={lang} />}
       nguon={tep.nguon}
       capNhat={tep.capNhat}
     >
-      <BangXg g={g} lang={lang} tieuDe={false} />
+      <ChipNhom />
+      {NHOM.map((n) => <NhomChiSo key={n.id} nhom={n.id} ten={n.ten} g={g} />)}
       <LinkGiai g={g} lang={lang} />
       <section aria-labelledby="hoi-dap-h">
-        <h2 id="hoi-dap-h" className="font-display text-xl font-bold">Hỏi đáp xG {g.ten}</h2>
+        <h2 id="hoi-dap-h" className="font-display text-xl font-bold">Hỏi đáp thông số {g.ten}</h2>
         <div className="mt-3"><FaqHub ds={faqThongSo(g)} /></div>
       </section>
+      <p className="text-xs text-muted">Sạch lưới, Over 2.5 và cả 2 đội ghi bàn đếm trên tối đa 20 trận giải gần nhất của mỗi đội. Nội dung mang tính tham khảo.</p>
     </KhungTrang>
   );
-}
-
-// ---------- /form ----------
-
-export const metaForm = (lang: Lang) =>
-  meta("/form", "Phong độ các đội bóng: bảng form 5 trận gần nhất", "Đội phong độ tốt nhất, sân nhà và sân khách tốt nhất, ghi bàn nhiều nhất, thủng lưới ít nhất, chuỗi bất bại: xếp từ 5 trận giải gần nhất của các đội ở Ngoại hạng Anh, La Liga, Serie A, Bundesliga, Ligue 1 và hơn nữa.", lang);
-
-export function TrangForm({ lang }: { lang: Lang }) {
-  const tep = tepXgDoi();
-  const ds = tep.giai.flatMap(dongFormGiai);
-  return (
-    <KhungTrang
-      duong={[{ ten: "Form", url: "/form" }]}
-      h1="Phong độ các đội bóng (Form)"
-      mo={<p>{`Đội nào đang có phong độ tốt nhất, đội nào mạnh nhất trên sân nhà hay sân khách, hàng công nào nổ súng đều nhất? Các bảng dưới xếp ${ds.length} đội ở ${tep.giai.length} giải theo 5 trận giải gần nhất, kèm bảng phong độ riêng từng giải.`}</p>}
-      lang={lang}
-      chip={<ChipGiai goc="/form" giai={tep.giai} dang={null} lang={lang} />}
-      nguon={tep.nguon}
-      capNhat={tep.capNhat}
-    >
-      <section aria-labelledby="bang-xep-h">
-        <h2 id="bang-xep-h" className="font-display text-xl font-bold">Bảng xếp phong độ mọi giải</h2>
-        <div className="mt-3"><LuoiBangXep ds={ds} n={10} nhieuGiai /></div>
-      </section>
-      {tep.giai.map((g) => <BangFormGiai key={g.slug} g={g} ds={dongFormGiai(g)} lang={lang} link />)}
-      <ChuThich />
-    </KhungTrang>
-  );
-}
-
-export const metaFormGiai = (g: GiaiXg, lang: Lang) =>
-  meta(`/form/${g.slug}`, `Phong độ ${g.ten}: form 5 trận gần nhất từng đội`, `Bảng phong độ ${g.doi.length} đội ${g.ten}: 5 trận gần nhất, điểm, bàn ghi và bàn thua, phong độ sân nhà và sân khách, chuỗi bất bại. Cập nhật hằng ngày.`, lang);
-
-export function TrangFormGiai({ g, lang }: { g: GiaiXg; lang: Lang }) {
-  const tep = tepXgDoi();
-  const ds = dongFormGiai(g);
-  const top = [...ds].sort((a, b) => b.diem - a.diem || b.ghi - b.thua - (a.ghi - a.thua))[0];
-  return (
-    <KhungTrang
-      duong={[{ ten: "Form", url: "/form" }, { ten: g.ten, url: `/form/${g.slug}` }]}
-      h1={`Phong độ ${g.ten}`}
-      mo={<p>{`Phong độ 5 trận giải gần nhất của ${g.doi.length} đội ${g.ten}. ${top.doi.ten} đang có phong độ tốt nhất với ${top.diem}/15 điểm, ghi ${top.ghi} và thủng lưới ${top.thua} bàn.`}</p>}
-      lang={lang}
-      chip={<ChipGiai goc="/form" giai={tep.giai} dang={g.slug} lang={lang} />}
-      nguon={tep.nguon}
-      capNhat={tep.capNhat}
-    >
-      <BangFormGiai g={g} ds={ds} lang={lang} />
-      <section aria-labelledby="bang-xep-h">
-        <h2 id="bang-xep-h" className="font-display text-xl font-bold">Bảng xếp phong độ {g.ten}</h2>
-        <div className="mt-3"><LuoiBangXep ds={ds} n={5} nhieuGiai={false} /></div>
-      </section>
-      <LinkGiai g={g} lang={lang} />
-      <ChuThich />
-    </KhungTrang>
-  );
-}
-
-function ChuThich() {
-  return <p className="text-xs text-muted">T thắng · H hòa · B thua, ô bên phải là trận gần đây nhất. Chỉ tính trận giải vô địch quốc gia. Nội dung mang tính tham khảo.</p>;
 }
