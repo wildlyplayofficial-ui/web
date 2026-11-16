@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { getBlogs } from "@/lib/data";
+import { taiDuDoan } from "@/lib/du-doan-tai";
+import { duongTran } from "@/lib/du-doan-tran";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { Post } from "@/lib/types";
@@ -57,11 +59,11 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
   return plain.slice(0, cut > 0 ? cut : maxLen) + "\u2026";
 }
 
-function BlogCard({ post, lang }: { post: Post; lang: Lang }) {
+function BlogCard({ post, lang, href }: { post: Post; lang: Lang; href: string }) {
   const excerpt = post.meta_description || extractExcerpt(post.body_md);
   return (
     <Link
-      href={withLang(`/blog/${post.slug}`, lang)}
+      href={withLang(href, lang)}
       className="group rounded-card border border-line bg-card p-6 shadow-card transition-colors hover:border-line-hover hover:bg-card-hover"
     >
       <div className="flex items-center gap-3 text-xs text-muted">
@@ -85,7 +87,8 @@ function BlogCard({ post, lang }: { post: Post; lang: Lang }) {
 export default async function GuidesPage({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const baiBlog = await getBlogs(lang);
+  // 17/11: bài đã có trang trận → link thẳng /du-doan/{slug}, khỏi đi qua 301.
+  const [baiBlog, { hang }] = await Promise.all([getBlogs(lang), taiDuDoan().catch(() => ({ hang: [] }))]);
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
@@ -102,7 +105,7 @@ export default async function GuidesPage({ params }: Props) {
       ) : (
         <div className="flex flex-col gap-4 pb-8">
           {baiBlog.map((post) => (
-            <BlogCard key={post.id} post={post} lang={lang} />
+            <BlogCard key={post.id} post={post} lang={lang} href={duongTran(hang, post.slug) ?? `/blog/${post.slug}`} />
           ))}
           <p className="pt-2 text-center text-sm text-muted">
             Put it into practice with our{" "}
