@@ -66,7 +66,7 @@ const NUOC_GIAI: [RegExp, string][] = [
   [/^northern ireland/, "gb-nir"], [/^scotland/, "gb-sct"], [/^wales/, "gb-wls"], [/^england/, "gb-eng"],
   [/^germany/, "de"], [/^italy/, "it"], [/^spain/, "es"], [/^france/, "fr"], [/^brazil/, "br"], [/^colombia/, "co"],
   [/^algeria/, "dz"], [/^india/, "in"], [/^montenegro/, "me"], [/^serbia/, "rs"], [/^slovenia/, "si"],
-  [/^uganda/, "ug"], [/^ukraine/, "ua"], [/^uruguay/, "uy"], [/^uefa|nations league/, "eu"],
+  [/^uganda/, "ug"], [/^ukraine/, "ua"], [/^uruguay/, "uy"], [/^usa/, "us"], [/^uefa|nations league/, "eu"],
 ];
 
 /** Cờ giải theo tên nước trong tên gốc; nhận cả tên Việt (đổi ngược về tên gốc trước). */

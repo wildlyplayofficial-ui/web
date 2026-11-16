@@ -7,7 +7,7 @@ import { Ty } from "@/components/ty-le";
  * Thiếu dữ liệu thì không vẽ gì.
  */
 
-const NEN: Record<KQ, string> = { T: "bg-[#059652]", H: "bg-amber-500", B: "bg-[#f85149]" };
+const NEN: Record<KQ, string> = { T: "bg-[#047857] text-white", H: "bg-amber-500 text-black", B: "bg-[#c62828] text-white" };
 const TEN: Record<KQ, string> = { T: "thắng", H: "hoà", B: "bại" };
 
 export function PhongDoNho({ kq, doi }: { kq: readonly KQ[] | null; doi: string }) {
@@ -18,7 +18,7 @@ export function PhongDoNho({ kq, doi }: { kq: readonly KQ[] | null; doi: string 
         <span
           key={i}
           aria-hidden
-          className={`inline-flex h-4 w-4 items-center justify-center rounded-[3px] font-display text-[10px] font-bold leading-none text-white ${NEN[k]}`}
+          className={`inline-flex h-[18px] w-[18px] items-center justify-center rounded-[3px] font-display text-xs font-bold leading-none ${NEN[k]}`}
         >
           {k}
         </span>
@@ -35,7 +35,7 @@ export function DauCotKeo() {
   return (
     <div
       aria-hidden
-      className="grid grid-cols-[44px_minmax(0,1fr)_auto_12px] gap-x-2.5 border-b border-line/60 px-0.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted lg:grid-cols-[58px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px] lg:gap-x-3 lg:px-1.5"
+      className="grid grid-cols-[44px_minmax(0,1fr)_auto_12px] gap-x-2.5 border-b border-line/60 px-0.5 py-1 text-xs font-semibold uppercase tracking-wide text-muted lg:grid-cols-[58px_minmax(0,1fr)_150px_minmax(0,1fr)_176px_78px_16px] lg:gap-x-3 lg:px-1.5"
     >
       <div className="col-span-3 col-start-2 flex gap-1 lg:col-span-1 lg:col-start-5">
         {NHAN_KEO.map((n) => (

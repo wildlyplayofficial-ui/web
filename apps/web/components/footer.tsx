@@ -127,7 +127,7 @@ export function Footer() {
         </nav>
         <div className="text-center">
           <p className="text-xs text-muted">© 2026 banhbong.net. All rights reserved.</p>
-          <p className="mt-2 text-xs text-muted/60">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
+          <p className="mt-2 text-xs text-muted">Football data provided by the <a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">Football-Data.org API</a></p>
         </div>
       </div>
     </footer>
