@@ -64,6 +64,7 @@ export function KhoiTrangTru({
         ...trangLich.filter((b) => b.slug.startsWith("xem-")).map(a),
         ...blogLich.filter((b) => b.slug.startsWith("xem-")).map(bl),
       ],
+      tatCa: { href: "/xem-bong-da-o-dau", ten: "Tất cả kênh xem bóng đá" },
     },
     {
       ten: "Lịch thi đấu cả mùa",
