@@ -2,8 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LogoDoi } from "@/components/giai-hub/khoi";
-import { OPhongDo } from "@/components/phong-do";
-import type { KQ } from "@/lib/phong-do";
 import { withLang, type Lang } from "@/lib/i18n";
 import { ngayVi, type DoiXg, type GiaiXg } from "@/lib/xg-doi";
 
@@ -99,8 +97,4 @@ export function ODoi({ d, phu }: { d: DoiXg; phu?: ReactNode }) {
       </div>
     </div>
   );
-}
-
-export function Badge({ kq, nhan }: { kq: KQ[]; nhan: string }) {
-  return kq.length ? <OPhongDo kq={kq} nhan={nhan} to /> : <span className="text-xs text-muted">–</span>;
 }
