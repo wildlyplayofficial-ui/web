@@ -130,9 +130,9 @@ export const copy: Record<Lang, AboutCopy> = {
     title: "Về banhbong.net",
     metaTitle: "Về banhbong.net — Dự đoán bóng đá mỗi ngày",
     metaDescription:
-      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: chốt tỷ số kèm tỷ lệ 1X2, Over/Under, phong độ, đối đầu và bảng xếp hạng.",
+      "banhbong.net dự đoán bóng đá mỗi ngày theo giờ Việt Nam: tổng hợp số liệu và dự đoán từ nhiều nguồn, kèm tỷ lệ 1X2, Over/Under, phong độ, đối đầu và bảng xếp hạng.",
     intro:
-      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi chốt tỷ số các trận đáng chú ý, kèm tỷ lệ 1X2, Over/Under, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng.",
+      "banhbong.net là trang dự đoán bóng đá theo giờ Việt Nam. Mỗi ngày chúng tôi tổng hợp số liệu và dự đoán từ nhiều nguồn cho các trận đáng chú ý, kèm tỷ lệ 1X2, Over/Under, phong độ gần đây, lịch sử đối đầu và bảng xếp hạng.",
     cardsTitle: "banhbong.net có gì",
     cards: [
       {

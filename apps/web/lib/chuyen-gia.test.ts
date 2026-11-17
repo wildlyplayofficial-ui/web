@@ -16,6 +16,9 @@ describe("ganChuyenGia", () => {
     const a = ganChuyenGia({ byline: "Chú Tám Banh", body: "Chú Tám vẫn nghiêng về chủ nhà." });
     expect([a.byline, a.body]).toEqual(["Pete Nguyễn", "Pete Nguyễn vẫn nghiêng về chủ nhà."]);
   });
+  it("bài ký tên desk cũ ký Pete Nguyễn", () => {
+    expect(["Banh Bóng Desk", "Banh Bóng News"].map((byline) => ganChuyenGia({ byline }).byline)).toEqual(["Pete Nguyễn", "Pete Nguyễn"]);
+  });
   it("bài của tác giả khác giữ nguyên", () => {
     expect(ganChuyenGia({ byline: "Trợ lý AI" }).byline).toBe("Trợ lý AI");
   });
