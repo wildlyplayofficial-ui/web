@@ -29,6 +29,13 @@ const NHA_CAI_HIEN_CO: Readonly<Record<string, number>> = {
   "lib/mock.ts": 1, // dữ liệu mock
 };
 
+/** Tên nhà cái không được hiện cho khách (Peter 10/11: kèo được hiện, chỉ cấm nhà cái). */
+const TEN_NHA_CAI = /bet365|pinnacle|sbobet|1xbet|188bet|12bet|dafabet|fb88|w88|m88\b/i;
+/** Tệp được phép có tên nhà cái trong chuỗi vì KHÔNG hiển thị — mỗi dòng một lý do. */
+const CHO_PHEP_TEN_NHA_CAI: Readonly<Record<string, string>> = {
+  "app/api/goalline/debug-sports/route.ts": "tham số gọi API nguồn kèo trong đường dò lỗi nội bộ, không in ra trang",
+};
+
 type Doan = { tep: string; dong: number; chu: string };
 
 function lietKe(thuMuc: string): string[] {
@@ -126,5 +133,12 @@ describe("luật chữ hiển thị: không thêm 'nhà cái' mới", () => {
       if (n > 0) dem[d.tep] = (dem[d.tep] ?? 0) + n;
     }
     expect(dem).toEqual(NHA_CAI_HIEN_CO);
+  });
+});
+
+describe("luật chữ hiển thị: không tên nhà cái", () => {
+  it("không chuỗi/JSX text nào chứa tên nhà cái (trừ tham số gọi API đã ghi lý do)", () => {
+    const loi = docDoan().filter((d) => !(d.tep in CHO_PHEP_TEN_NHA_CAI) && TEN_NHA_CAI.test(d.chu)).map(viPham);
+    expect(loi).toEqual([]);
   });
 });

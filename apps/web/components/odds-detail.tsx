@@ -117,7 +117,7 @@ export function ChiTietTran({ match }: { match: OddsBoardMatch }) {
       </div>
 
       <p className="text-[11px] text-muted">
-        Kèo Bet365, {match.snapshotCount} lát cắt đã ghi nhận · Chỉ mang tính tham khảo, không phải lời mời cá cược.
+        Kèo tham khảo, {match.snapshotCount} lát cắt đã ghi nhận · Chỉ mang tính tham khảo, không phải lời mời cá cược.
       </p>
     </div>
   );
