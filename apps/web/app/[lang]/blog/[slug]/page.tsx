@@ -193,9 +193,6 @@ export default async function GuidePage({ params }: Props) {
         <Link href={withLang("/calculators", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
           {dict.nav.calculators} &rarr;
         </Link>
-        <Link href={withLang("/track-record", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
-          {dict.nav.trackRecord} &rarr;
-        </Link>
       </nav>
 
       <p className="mt-10 border-t border-line pt-4 text-xs text-muted">{authorByName(PETE)?.disclosure}</p>

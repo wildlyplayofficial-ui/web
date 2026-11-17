@@ -76,7 +76,7 @@ export default async function PlayArchive({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[1100px] px-5">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.nav.trackRecord, url: "/track-record" }, { name: dict.archive.title, url: "/archive" }]} />
+      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.archive.title, url: "/archive" }]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.archive.title}</h1>
         <p className="mt-3 text-muted">{dict.archive.subtitle}</p>

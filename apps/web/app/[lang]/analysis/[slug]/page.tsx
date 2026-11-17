@@ -555,9 +555,6 @@ export default async function AnalysisArticlePage({ params }: Props) {
 
       {/* Internal links */}
       <nav className="mt-8 flex flex-wrap gap-3 text-xs">
-        <Link href={withLang("/track-record", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
-          {dict.nav.trackRecord} &rarr;
-        </Link>
         <Link href={withLang("/analysis", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
           {dict.nav.analysis} &rarr;
         </Link>

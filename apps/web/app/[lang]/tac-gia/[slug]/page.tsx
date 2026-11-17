@@ -78,11 +78,6 @@ export default async function AuthorPage({ params }: Props) {
         <p className="mt-4 leading-relaxed text-ink/90">{a.bio}</p>
         <p className="mt-4 text-xs italic text-muted">{a.disclosure}</p>
         <nav className="mt-5 flex flex-wrap gap-3 text-xs">
-          {a.name !== PETE && (
-            <Link href={withLang("/track-record", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
-              Thành tích công khai &rarr;
-            </Link>
-          )}
           <Link href={withLang("/about", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
             Về banhbong.net &rarr;
           </Link>
