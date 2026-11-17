@@ -60,16 +60,20 @@ function HoiNhanh({ ds }: { ds: CauHoi[] }) {
  * /analysis/… (308). Thêm link thẳng tới bài nhận định /du-doan/nhan-dinh-… được index:
  * trận sắp đá trước (gần nhất trước), rồi trận đã đá (mới nhất trước), tối đa 8.
  */
-function NhanDinhChiTiet({ hang, lang }: { hang: HangDuDoan[]; lang: Lang }) {
-  const bayGio = new Date().toISOString();
+function NhanDinhChiTiet({ hang, lang, daDa = false }: { hang: HangDuDoan[]; lang: Lang; daDa?: boolean }) {
+  // 17/11: trận đã đá (ngày trước hôm nay) xuống dưới bảng — nằm trên đầu đẩy bảng trận xuống trên điện thoại.
+  const homNay = ngayVN(Date.now());
   const bai = hang.filter((h) => h.coBai && h.slug.startsWith("nhan-dinh-") && tranDuocIndex(h));
-  const sap = bai.filter((h) => h.kickoffUtc >= bayGio).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
-  const qua = bai.filter((h) => h.kickoffUtc < bayGio).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
-  const ds = [...sap, ...qua].slice(0, 8);
+  const ds = (
+    daDa
+      ? bai.filter((h) => h.ngay < homNay).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc))
+      : bai.filter((h) => h.ngay >= homNay).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))
+  ).slice(0, 8);
   if (ds.length === 0) return null;
+  const id = daDa ? "nhan-dinh-da-da" : "nhan-dinh-chi-tiet";
   return (
-    <section aria-labelledby="nhan-dinh-chi-tiet" className="mt-3">
-      <h2 id="nhan-dinh-chi-tiet" className="font-display text-xl font-bold">Nhận định chi tiết</h2>
+    <section aria-labelledby={id} className="mt-3">
+      <h2 id={id} className="font-display text-xl font-bold">{daDa ? "Nhận định trận đã đá" : "Nhận định chi tiết"}</h2>
       <ul className="mt-2 space-y-1">
         {ds.map((h) => (
           <li key={h.slug}>
@@ -176,6 +180,9 @@ export default async function DuDoanHub({ params }: Props) {
         <ChonTran nhom={cacTranChon(baiChon, Date.now())} lang={lang} />
       </div>
 
+      <div className="px-2.5">
+        <NhanDinhChiTiet hang={hang} lang={lang} daDa />
+      </div>
       <GioiThieu blogs={blogs.slice(0, 4)} lang={lang} />
 
       {/* Peter 11/11: bỏ danh sách bài Chú Tám Banh theo giải khỏi trang dự đoán. */}
