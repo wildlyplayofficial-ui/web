@@ -83,9 +83,6 @@ export default async function AuthorPage({ params }: Props) {
               Thành tích công khai &rarr;
             </Link>
           )}
-          <Link href={withLang("/transparency", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
-            Minh bạch &rarr;
-          </Link>
           <Link href={withLang("/about", lang)} className="rounded-full border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:text-brand">
             Về banhbong.net &rarr;
           </Link>

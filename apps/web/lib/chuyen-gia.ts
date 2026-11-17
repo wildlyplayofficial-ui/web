@@ -44,9 +44,14 @@ export function chuyenGiaCua(_h: { giai: string; nha: string; khach: string }): 
 /** Tên cũ của tác giả nhận định (lib/brand.ts CHU_TAM). */
 const CHU_TAM = "Chú Tám Banh";
 
-/** Bài nhận định ký "Chú Tám Banh" → ký Pete Nguyễn, đổi cả chữ "Chú Tám" trong thân bài. Bài tác giả khác giữ nguyên. */
+/** Tên ký "desk" cũ còn nằm trong DB (news_items, analysis_articles) — Peter 17/11/2026 gom hết về Pete Nguyễn. */
+const TEN_DESK_CU = ["Banh Bóng Desk", "Banh Bóng News", "WildlyPlay Desk"];
+
+/** Bài nhận định ký "Chú Tám Banh" → ký Pete Nguyễn, đổi cả chữ "Chú Tám" trong thân bài.
+ *  Bài ký tên desk cũ → ký Pete Nguyễn (thân bài giữ nguyên). Bài tác giả khác giữ nguyên. */
 export function ganChuyenGia<T extends { byline: string; body?: string }>(a: T): T {
-  if (a.byline !== CHU_TAM) return a;
   const ten = PETE_TAC_GIA.ten;
+  if (TEN_DESK_CU.includes(a.byline)) return { ...a, byline: ten };
+  if (a.byline !== CHU_TAM) return a;
   return { ...a, byline: ten, ...(a.body ? { body: a.body.replace(/Chú Tám( Banh)?/g, ten) } : {}) };
 }

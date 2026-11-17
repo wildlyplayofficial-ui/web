@@ -62,11 +62,11 @@ async function resolveArticle(slug: string, lang: Lang) {
   if (deskArticle) return { kind: "desk" as const, desk: deskArticle };
   const post = await getPost(slug, lang);
   if (post) {
-    // Bài type=guide có nhà riêng (/guides, báo cáo tháng ở /transparency).
+    // Bài type=guide có nhà riêng (/guides, báo cáo tháng đã gỡ → /du-doan).
     // Trước đây vẫn render thêm ở /analysis → 13 cặp URL trùng tự canonical
     // về chính nó, tự cạnh tranh (kiểm kê 25/8). 301 về nhà thật.
     if (post.type === "guide") {
-      const home = REPORT_SLUG_RE.test(slug) ? `/transparency/${slug}` : `/guides/${slug}`;
+      const home = REPORT_SLUG_RE.test(slug) ? "/du-doan" : `/guides/${slug}`;
       permanentRedirect(withLang(home, lang));
     }
     return { kind: "post" as const, post };
@@ -431,12 +431,12 @@ export default async function AnalysisArticlePage({ params }: Props) {
   const post = await getPost(slug, lang);
   if (!post) notFound();
 
-  // Bài type=guide có nhà riêng (/guides, báo cáo tháng ở /transparency). Redirect
+  // Bài type=guide có nhà riêng (/guides, báo cáo tháng đã gỡ → /du-doan). Redirect
   // phải nằm Ở ĐÂY (page component) mới ra HTTP 308 thật — permanentRedirect trong
   // resolveArticle chỉ chạy qua generateMetadata, mà Next 16 stream metadata nên
   // nó bị hạ cấp thành <meta http-equiv=refresh> + HTTP 200 (đo local 25/8).
   if (post.type === "guide") {
-    const home = REPORT_SLUG_RE.test(slug) ? `/transparency/${slug}` : `/guides/${slug}`;
+    const home = REPORT_SLUG_RE.test(slug) ? "/du-doan" : `/guides/${slug}`;
     permanentRedirect(withLang(home, lang));
   }
 

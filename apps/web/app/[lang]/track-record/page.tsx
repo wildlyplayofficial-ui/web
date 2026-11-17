@@ -49,12 +49,6 @@ export default async function TrackRecordHub({ params }: Props) {
       href: "/stats",
       accent: "border-blue-400/30 bg-blue-400/10",
     },
-    {
-      title: dict.transparency.title,
-      description: dict.transparency.subtitle,
-      href: "/transparency",
-      accent: "border-amber-400/30 bg-amber-400/10",
-    },
   ];
 
   return (

@@ -90,9 +90,14 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/news/what-is-devigging", destination: "/guides/what-is-devigging", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/no-play-discipline", destination: "/guides/no-play-discipline", permanent: true },
       { source: "/:lang(en|vi|th|es)/news/what-makes-a-good-tipster", destination: "/guides/what-makes-a-good-tipster", permanent: true },
-      // 301 redirect old /guides/transparency-report-* to /transparency/*
-      { source: "/guides/transparency-report-:slug", destination: "/transparency/:slug", permanent: true },
-      { source: "/:lang(en|vi|th|es)/guides/transparency-report-:slug", destination: "/transparency/:slug", permanent: true },
+      // 17/11/2026 (Peter duyệt): gỡ trang /transparency — thành tích chỉ để nội bộ.
+      // /transparency + báo cáo tháng + /guides/transparency-report-* cũ dồn 301 về /du-doan, một nhịp.
+      { source: "/transparency", destination: "/du-doan", statusCode: 301 },
+      { source: "/transparency/:path*", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/transparency", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/transparency/:path*", destination: "/du-doan", statusCode: 301 },
+      { source: "/guides/transparency-report-:slug", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/guides/transparency-report-:slug", destination: "/du-doan", statusCode: 301 },
       // 301 migrate /standings -> /competitions (moved 9/7/2026, IA rebuild)
       { source: "/standings", destination: "/competitions", statusCode: 301 },
       { source: "/standings/:path*", destination: "/competitions/:path*", statusCode: 301 },
