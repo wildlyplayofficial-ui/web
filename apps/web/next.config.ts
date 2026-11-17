@@ -92,6 +92,9 @@ const nextConfig: NextConfig = {
       { source: "/:lang(en|vi|th|es)/news/what-makes-a-good-tipster", destination: "/guides/what-makes-a-good-tipster", permanent: true },
       // 17/11/2026 (Peter duyệt): gỡ trang /transparency — thành tích chỉ để nội bộ.
       // /transparency + báo cáo tháng + /guides/transparency-report-* cũ dồn 301 về /du-doan, một nhịp.
+      // 17/11/2026 (Peter gật): gỡ luôn /track-record — cùng lý do, thành tích chỉ coi nội bộ.
+      { source: "/track-record", destination: "/du-doan", statusCode: 301 },
+      { source: "/:lang(en|vi|th|es)/track-record", destination: "/du-doan", statusCode: 301 },
       { source: "/transparency", destination: "/du-doan", statusCode: 301 },
       { source: "/transparency/:path*", destination: "/du-doan", statusCode: 301 },
       { source: "/:lang(en|vi|th|es)/transparency", destination: "/du-doan", statusCode: 301 },

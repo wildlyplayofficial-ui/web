@@ -142,10 +142,7 @@ export function KeoSeoContent({ lang }: { lang: Lang }) {
       </P>
       <P>
         Vì vậy, bảng kèo có thể hiển thị nhiều trận trong khi bảng dự đoán chỉ chọn một vài trận, thậm chí không
-        chọn trận nào. Đây là quyết định có chủ đích, không phải thiếu dữ liệu. Mọi lựa chọn đã công bố đều được lưu
-        lại, bao gồm cả kết quả thắng, thua và hòa — bạn có thể kiểm tra{" "}
-        <Link href={L("/track-record")} className="text-brand underline">toàn bộ thành tích công khai</Link> thay vì
-        chỉ xem những kết quả thuận lợi.
+        chọn trận nào. Đây là quyết định có chủ đích, không phải thiếu dữ liệu.
       </P>
 
       <H2>Câu hỏi thường gặp về kèo bóng đá hôm nay</H2>
