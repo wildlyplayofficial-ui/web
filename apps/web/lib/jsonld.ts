@@ -11,7 +11,7 @@ const BASE = SITE_URL;
 /** Mô tả thực thể theo ngôn ngữ — AI Overview trả lời bằng tiếng người dùng, để
  *  đúng ngôn ngữ thì AI dễ lấy đúng câu mô tả mình (Jane 21/8). */
 const ORG_DESCRIPTION: Record<string, string> = {
-  vi: "Nhận định bóng đá, tin chuyển nhượng và tỉ số trực tiếp — cập nhật mỗi ngày, ghi rõ nguồn.",
+  vi: "Dự đoán bóng đá mỗi ngày: tỷ số dự đoán, phong độ hai đội và nhận định từng trận — ghi rõ nguồn.",
   en: "Daily football match previews, transfer news and live scores — clearly sourced football analysis.",
   th: "พรีวิวและวิเคราะห์ฟุตบอล ข่าวย้ายทีม และผลบอลสด — อัปเดตทุกวัน พร้อมอ้างอิงแหล่งที่มา",
   es: "Previas y análisis de fútbol, noticias de fichajes y resultados en vivo — con fuentes citadas.",

@@ -13,6 +13,7 @@ import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { capNhatDuDoan, chuCapNhat } from "@/lib/du-doan-cap-nhat";
 import { duongTran } from "@/lib/du-doan-tran";
 import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
@@ -67,7 +68,7 @@ function NhanDinhChiTiet({ hang, lang }: { hang: HangDuDoan[]; lang: Lang }) {
   const ds = [...sap, ...qua].slice(0, 8);
   if (ds.length === 0) return null;
   return (
-    <section aria-labelledby="nhan-dinh-chi-tiet" className="mt-6 px-2.5">
+    <section aria-labelledby="nhan-dinh-chi-tiet" className="mt-3">
       <h2 id="nhan-dinh-chi-tiet" className="font-display text-xl font-bold">Nhận định chi tiết</h2>
       <ul className="mt-2 space-y-1">
         {ds.map((h) => (
@@ -125,11 +126,12 @@ export default async function DuDoanHub({ params }: Props) {
   const blogs = tatCaBlog.filter((b) => !duongTran(hang, b.slug));
   const hoi = cauHoiDuDoan(hang);
   // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
+  const capNhat = capNhatDuDoan(hang, Date.now());
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
 
   return (
     <div className="mx-auto max-w-[1100px] px-0 py-4 sm:px-5 sm:py-8">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Dự đoán", url: "/du-doan" }]} />
+      <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: "Dự đoán", url: "/du-doan" }]} />
       {suKien.length > 0 && (
         <script
           type="application/ld+json"
@@ -138,14 +140,28 @@ export default async function DuDoanHub({ params }: Props) {
               "@context": "https://schema.org",
               "@type": "ItemList",
               name: "Dự đoán bóng đá",
+              ...(capNhat ? { dateModified: new Date(capNhat).toISOString() } : {}),
               itemListElement: suKien.map((item, i) => ({ "@type": "ListItem", position: i + 1, item })),
             }),
           }}
         />
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
-      <DuDoanPZ rows={hang} homNay={ngayVN(Date.now())} lang={lang} />
-      <NhanDinhChiTiet hang={hang} lang={lang} />
+      <DuDoanPZ
+        rows={hang}
+        homNay={ngayVN(Date.now())}
+        lang={lang}
+        sauMoDau={
+          <>
+            {capNhat && (
+              <p className="mt-1 text-[13px] text-muted">
+                Cập nhật: <time dateTime={new Date(capNhat).toISOString()}>{chuCapNhat(capNhat)}</time> (giờ Việt Nam)
+              </p>
+            )}
+            <NhanDinhChiTiet hang={hang} lang={lang} />
+          </>
+        }
+      />
       <nav aria-label="Dự đoán theo loại kèo" className="mt-6 flex flex-wrap gap-2 px-3.5 sm:px-2.5">
         {LOAI_TIP.map((l) => (
           <Link key={l} href={withLang(CAU_HINH[l].duong, lang)} className="inline-flex min-h-11 items-center rounded-lg border border-line px-3.5 text-sm font-semibold text-muted hover:text-ink">

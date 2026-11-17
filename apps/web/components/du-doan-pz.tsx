@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { duongHubGiai } from "@/lib/duong-hub-giai";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { DoiLogo } from "@/components/doi-logo";
 import { DongTran } from "@/components/dong-tran";
 import { ChuThichPhongDo, DauCotKeo } from "@/components/phong-do-dong";
@@ -39,6 +39,7 @@ export function DuDoanPZ({
   homNay,
   ngayChon,
   lang,
+  sauMoDau,
 }: {
   rows: HangDuDoan[];
   /** Khoá ngày hôm nay giờ VN, dựng ở server. */
@@ -46,6 +47,8 @@ export function DuDoanPZ({
   /** Ngày trang này hiện (trang ngày /du-doan/ngay-mai, /du-doan/thu-bay…); bỏ trống = ngày đầu có trận. */
   ngayChon?: string;
   lang: Lang;
+  /** Khối chèn ngay dưới H1 + dòng mở đầu, trên bảng trận (trang hub: dòng cập nhật + nhận định). */
+  sauMoDau?: ReactNode;
 }) {
   const t = getDict(lang).duDoan;
   // Hôm nay → 5 ngày tới, CHỈ ngày có trận; hôm qua không hiện (Peter 11/11, xem /ket-qua).
@@ -66,6 +69,7 @@ export function DuDoanPZ({
       <p className="mt-1.5 text-[13px] text-muted sm:text-[15px]">
         {trongNgay.length} {t.matchesUnit} · {cacGiai.length} giải · giờ Việt Nam · tỷ số chốt trước giờ bóng lăn
       </p>
+      {sauMoDau}
       <nav aria-label="Dự đoán theo giải" className="mt-2.5 flex gap-x-4 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
         {GIAI_TRANG.map((g) => (
           <Link key={g.slug} href={withLang(duongHubGiai(g.slug, `/du-doan/${g.slug}`), lang)} className="inline-flex min-h-9 items-center text-brand hover:underline">

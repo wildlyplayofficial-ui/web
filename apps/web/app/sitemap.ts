@@ -7,6 +7,7 @@ import { getAllNewsItemSlugs, getNewsByTeam } from "@/lib/news";
 import { TEAM_HUBS } from "@/lib/teams";
 import { giaiBxhDuocIndex, laBlogLichCaMua, laTrangLichCaMua, analysisDuocIndex, analysisVaoSitemap, blogVaoSitemap, doiDuocIndex, guideDuocIndex, tranDuocIndex, GIAI_BXH_SITEMAP, SO_NGAY_TRAN_SITEMAP, NHOM_SITEMAP, type NhomSitemap } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
+import { capNhatDuDoan } from "@/lib/du-doan-cap-nhat";
 import { lechNgay } from "@/lib/du-doan-loc";
 import { HUB_GIAI } from "@/lib/duong-hub-giai";
 import { ngayVN } from "@/lib/du-doan-hang";
@@ -173,9 +174,11 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
   const lmNews = moiNhat(newsItems.map((n) => n.updated));
   const lmBlog = moiNhat(blogs.map((b) => b.updated));
   const lmHome = moiNhat([lmPick, lmAnalysis, lmNews, lmBlog].map((d) => d?.toISOString()));
+  const { hang: hangDuDoan } = await taiDuDoan().catch(() => ({ hang: [] }));
+  const lmDuDoan = capNhatDuDoan(hangDuDoan, Date.now());
   const LASTMOD: Record<string, Date | undefined> = {
     "": lmHome,
-    "/du-doan": lmAnalysis,
+    "/du-doan": lmDuDoan ? new Date(lmDuDoan) : undefined,
     "/blog": lmBlog,
   };
 

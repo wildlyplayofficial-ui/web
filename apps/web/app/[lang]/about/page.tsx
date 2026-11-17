@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OG_VERSION } from "@/lib/brand";
 import Link from "next/link";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
-import { buildOrganization, buildWebSite } from "@/lib/jsonld";
+import { buildWebSite } from "@/lib/jsonld";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { isFeatureEnabled } from "@/lib/data";
@@ -59,10 +59,8 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[800px] px-4 py-8 sm:px-5 sm:py-12">
-      <BreadcrumbJsonLd items={[{name:"Home",url:"/"},{name:"About",url:"/about"}]} />
-      {/* Organization + WebSite + AboutPage: giúp Google/AI hiểu đây là trang
-          thực thể chính → dễ index + dễ được trích dẫn (thiếu trước 28/7). */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganization()) }} />
+      <BreadcrumbJsonLd items={[{name:"Trang chủ",url:"/"},{name:"Giới thiệu",url:"/about"}]} />
+      {/* WebSite + AboutPage (Organization đã in ở app/[lang]/layout.tsx — chỉ một bản mỗi trang). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSite()) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
