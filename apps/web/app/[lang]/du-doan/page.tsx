@@ -155,7 +155,7 @@ export default async function DuDoanHub({ params }: Props) {
           <>
             {capNhat && (
               <p className="mt-1 text-[13px] text-muted">
-                Cập nhật: <time dateTime={new Date(capNhat).toISOString()}>{chuCapNhat(capNhat)}</time> (giờ Việt Nam)
+                Cập nhật: <time dateTime={new Date(capNhat).toISOString()}>{chuCapNhat(capNhat)}</time>
               </p>
             )}
             <NhanDinhChiTiet hang={hang} lang={lang} />
