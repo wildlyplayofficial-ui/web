@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DongTran } from "@/components/dong-tran";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
+import { tranDuocIndex } from "@/lib/chi-muc";
 import { ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { getDict, withLang, type Lang } from "@/lib/i18n";
 
@@ -23,10 +24,13 @@ export function KhoiDuDoanHomNay({
 }) {
   const t = getDict(lang).duDoan;
   // Xếp theo ngày rồi giờ; trận chưa ghép được giờ ("--:--") đứng cuối ngày của nó.
+  // 19/11: chọn 8 trận Google được index trước (giải lớn, Việt Nam), thiếu mới lấy trận giải nhỏ;
+  // chọn xong mới xếp lại theo ngày giờ để hiển thị.
   const sapDa = rows
     .filter((r) => r.sapDa)
-    .sort((a, b) => a.ngay.localeCompare(b.ngay) || Number(a.gio === "--:--") - Number(b.gio === "--:--") || a.kickoffUtc.localeCompare(b.kickoffUtc))
-    .slice(0, SO_TRAN);
+    .sort((a, b) => Number(tranDuocIndex(b)) - Number(tranDuocIndex(a)) || a.kickoffUtc.localeCompare(b.kickoffUtc))
+    .slice(0, SO_TRAN)
+    .sort((a, b) => a.ngay.localeCompare(b.ngay) || Number(a.gio === "--:--") - Number(b.gio === "--:--") || a.kickoffUtc.localeCompare(b.kickoffUtc));
   const ngays = [...new Set(sapDa.map((r) => r.ngay))];
   // Số thật cho đoạn giới thiệu (Peter 13/11: câu giới thiệu phải đủ cho SEO và GEO).
   const tatCa = rows.filter((r) => r.sapDa);
