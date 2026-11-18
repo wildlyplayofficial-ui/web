@@ -59,7 +59,7 @@ function HoiNhanh({ ds }: { ds: CauHoi[] }) {
 /** 18/11 (soi chỉ mục): đoạn mở + bảng theo giải, toàn số đếm từ bảng trận đang có. Sát đầu trang. */
 function TongQuanHub({ tq }: { tq: TongQuan }) {
   return (
-    <section aria-labelledby="tong-quan" className="mt-3 px-2.5 text-[15px] leading-relaxed">
+    <section aria-labelledby="tong-quan" className="mt-10 text-[15px] leading-relaxed">
       <h2 id="tong-quan" className="font-display text-xl font-bold">Tổng quan các trận sắp đá</h2>
       <p className="mt-2">{tq.mo}</p>
       <div className="mt-3 overflow-x-auto">
@@ -69,7 +69,7 @@ function TongQuanHub({ tq }: { tq: TongQuan }) {
             <tr><th className="py-1.5 pr-3 font-semibold">Giải</th><th className="py-1.5 pr-3 font-semibold">Số trận</th><th className="py-1.5 font-semibold">Ngày đá</th></tr>
           </thead>
           <tbody className="divide-y divide-line">
-            {tq.bang.map((g) => (
+            {tq.bang.slice(0, 12).map((g) => (
               <tr key={g.giai}>
                 <td className="py-1.5 pr-3">{g.giai}</td>
                 <td className="py-1.5 pr-3 tabular-nums">{g.so}</td>
@@ -79,6 +79,7 @@ function TongQuanHub({ tq }: { tq: TongQuan }) {
           </tbody>
         </table>
       </div>
+      {tq.bang.length > 12 && <p className="mt-2 text-sm text-muted">Và {tq.bang.length - 12} giải khác, xem đủ trong bảng trận phía trên.</p>}
     </section>
   );
 }
@@ -191,7 +192,6 @@ export default async function DuDoanHub({ params }: Props) {
                 Cập nhật: <time dateTime={new Date(capNhat).toISOString()}>{chuCapNhat(capNhat)}</time>
               </p>
             )}
-            {tq && <TongQuanHub tq={tq} />}
             <NhanDinhChiTiet hang={hang} lang={lang} />
           </>
         }
@@ -213,6 +213,8 @@ export default async function DuDoanHub({ params }: Props) {
       <div className="px-2.5">
         <NhanDinhChiTiet hang={hang} lang={lang} daDa />
       </div>
+      {/* 18/11: tổng quan để DƯỚI bảng trận — nằm trên đầu đẩy bảng trận xuống quá xa trên điện thoại. */}
+      {tq && <div className="px-2.5"><TongQuanHub tq={tq} /></div>}
       <GioiThieu blogs={blogs.slice(0, 4)} lang={lang} />
 
       {/* Peter 11/11: bỏ danh sách bài Chú Tám Banh theo giải khỏi trang dự đoán. */}
