@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ClientChrome } from "@/components/client-chrome";
 import { Inter, Space_Grotesk, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
-import { SITE_NAME, SITE_URL, DEFAULT_TITLE } from "@/lib/brand";
+import { SITE_NAME, SITE_URL, DEFAULT_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,20 +26,19 @@ export const metadata: Metadata = {
     default: DEFAULT_TITLE,
     template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis, odds tools and guides across Premier League, La Liga, Serie A and more.",
+  description: SITE_DESCRIPTION,
   openGraph: {
     siteName: SITE_NAME,
     type: "website",
     locale: "vi_VN",
     title: DEFAULT_TITLE,
-    description:
-      "Free daily football picks by a human curator — every play public forever, wins and losses. Track record, analysis and odds tools.",
+    description: SITE_DESCRIPTION,
     images: [{ url: "/og-home.png", width: 1200, height: 630, type: "image/png" }],
   },
   twitter: {
     card: "summary_large_image",
     title: DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
     images: [{ url: "/og-home.png", width: 1200, height: 630 }],
   },
   // Không có max-image-preview:large thì Google Discover gần như không lấy bài —
