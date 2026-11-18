@@ -60,7 +60,7 @@ const NGOAI_HANG_ANH: PhanTichRieng = {
       tieuDe: "Vòng 11 nên theo dõi gì",
       noiDung: [
         "Newcastle gặp Arsenal lúc 0h30 ngày 22/11 (giờ Việt Nam). Newcastle hạng 12, chỉ có 4 điểm trong 5 trận gần nhất, nhưng thủ môn Horníček đã cứu 36 cú sút, thuộc nhóm nhiều nhất giải. Đây là phép thử cho hàng thủ của đội đầu bảng. Man City tiếp Fulham lúc 19h30 ngày 21/11 và cần cắt chuỗi 3 trận thua.",
-        "Ở nhóm cuối, Coventry tiếp Crystal Palace lúc 22h ngày 21/11 là trận giữa hạng 17 và hạng 20. Aston Villa tiếp Sunderland cùng giờ. Lúc 23h30 ngày 22/11, Liverpool đấu Manchester United tại Anfield, trận mà Liverpool cần điểm để giữ chỗ trong top 4, còn United chưa thắng ở giải kể từ cuối tháng 8. Cuối vòng, Brentford tiếp Everton lúc 3h ngày 24/11.",
+        "Ở nhóm cuối, Coventry tiếp Crystal Palace lúc 22h ngày 21/11 là trận giữa hạng 17 và hạng 20. Aston Villa tiếp Sunderland cùng giờ. Lúc 23h30 ngày 22/11, Liverpool đấu Manchester United tại Anfield, trận mà Liverpool cần điểm để giữ chỗ trong top 4, còn United cần điểm để thoát nhóm cuối. Cuối vòng, Brentford tiếp Everton lúc 3h ngày 24/11.",
       ],
     },
   ],
