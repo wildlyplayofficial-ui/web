@@ -115,7 +115,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const mua = muaGiai();
     const bang = await fetchCompetitionTable(comp.livescoreId).catch(() => []);
     const dau = bang.slice().sort((a, b) => a.rank - b.rank)[0];
-    const tieuDe = `Lịch thi đấu, kết quả, bảng xếp hạng ${compName} ${mua} | banhbong`;
+    const tieuDe = `Lịch thi đấu, kết quả, bảng xếp hạng ${compName} ${mua} | banhbong.net`;
     const moTa = [
       `Lịch thi đấu ${compName}${hub.data.vongToi ? ` vòng ${hub.data.vongToi}` : ""} giờ Việt Nam, kết quả${hub.data.vongXong ? ` vòng ${hub.data.vongXong}` : ""} và bảng xếp hạng ${compName} ${mua}`,
       dau && dau.played > 0 ? `: ${dau.name} dẫn đầu với ${dau.points} điểm.` : ".",
