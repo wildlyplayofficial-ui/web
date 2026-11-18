@@ -9,7 +9,7 @@ import type { Post } from "@/lib/types";
  * Dẫn thẳng tới /du-doan, từng trận hôm nay và 5 bài blog mới nhất.
  */
 export function KhoiHomNayBlog({ rows, homNay, blogs, lang }: { rows: HangDuDoan[]; homNay: string; blogs: Post[]; lang: Lang }) {
-  const homNayRows = rows.filter((r) => r.ngay === homNay).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc)).slice(0, 8);
+  const homNayRows = rows.filter((r) => r.ngay === homNay && !(Date.parse(r.kickoffUtc) <= Date.now())) // 18/11: bỏ trận đã bắt đầu.sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc)).slice(0, 8);
   const bai = blogs.slice(0, 5);
   return (
     <section aria-label="Dự đoán hôm nay và bài mới" className="mt-4 rounded-card border border-brand/40 bg-brand-dim/30 p-4">
@@ -29,7 +29,7 @@ export function KhoiHomNayBlog({ rows, homNay, blogs, lang }: { rows: HangDuDoan
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-muted">Hôm nay chưa có trận nào lên dự đoán, xem các ngày tới ở trang dự đoán.</p>
+            <p className="mt-2 text-sm text-muted">Trận hôm nay đã đá hết hoặc chưa lên dự đoán, xem các ngày tới ở trang dự đoán.</p>
           )}
           <Link href={withLang("/du-doan", lang)} className="mt-1 inline-flex min-h-11 items-center font-semibold text-brand hover:underline">Xem tất cả dự đoán →</Link>
         </div>
