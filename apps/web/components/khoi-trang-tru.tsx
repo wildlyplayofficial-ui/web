@@ -36,10 +36,6 @@ const TRANG_CHINH: Muc[] = [
   { href: "/thong-so", ten: "Thông số các đội: xG, bàn thắng" },
   { href: "/thong-so/hang-nhat-anh", ten: "Thông số Hạng Nhất Anh" },
   { href: "/form", ten: "Phong độ 5 trận gần nhất" },
-  // 16/11 audit: 3 bài hướng dẫn 0 link nội bộ trỏ vào, GSC "Crawled - not indexed".
-  { href: "/guides/what-is-asian-handicap", ten: "Kèo châu Á là gì? Giải thích + ví dụ" },
-  { href: "/guides/how-to-read-betting-odds", ten: "Cách đọc tỷ lệ kèo thập phân" },
-  { href: "/guides/vi-sao-ty-le-keo-khac-nhau-giua-cac-nguon", ten: "Vì sao mỗi nơi ra tỷ lệ kèo khác nhau" },
 ];
 
 export function KhoiTrangTru({
