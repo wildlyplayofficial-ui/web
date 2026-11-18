@@ -1,6 +1,6 @@
 # banhbong.net
 
-> banhbong.net (Banh Bóng Network) là trang tin tức và phân tích bóng đá tiếng Việt: tin chuyển nhượng, kết quả, nhận định trước trận, kèo bóng đá hôm nay và bảng xếp hạng các giải lớn châu Âu (Ngoại hạng Anh, La Liga, Serie A...) cùng đội tuyển Việt Nam.
+> banhbong.net: dự đoán tỷ số bóng đá mỗi ngày, Over/Under 2.5, phong độ hai đội, BXH và lịch thi đấu các giải lớn. Công khai thành tích, miễn phí.
 
 Nhận định trước trận do Chú Tám Banh chọn trận và góc nhìn, AI viết bài từ số liệu. Tin tức và blog do Pete Nguyễn biên tập, AI hỗ trợ viết từ nguồn công khai. Thành tích nhận định công khai, không sửa, không xoá.
 
