@@ -11,6 +11,7 @@ import { gioiThieuGiai } from "@/lib/gioi-thieu-giai";
 import { withLang, type Lang } from "@/lib/i18n";
 import { duongTipGiai } from "@/lib/tip-giai";
 import type { AnalysisArticle } from "@/lib/types";
+import { LogoLoi } from "@/components/logo-loi";
 import { BaiMoi } from "./bai-moi";
 import { DuDoanTheoNgay } from "./du-doan-ngay";
 import { FaqHub, type CauHoiHub } from "./faq";
@@ -106,6 +107,7 @@ export function HubGiai(p: Props) {
   };
   return (
     <div className="mx-auto max-w-[860px] px-4 pb-12 sm:px-5">
+      <LogoLoi />
       <header className="pt-6 pb-4">
         <h1 className="font-display text-[26px] font-bold leading-tight sm:text-3xl">{`Lịch thi đấu, kết quả, dự đoán ${compName} ${mua}`}</h1>
         <p className="mt-2 text-sm text-muted">

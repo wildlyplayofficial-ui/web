@@ -2,6 +2,7 @@ import Link from "next/link";
 import { duongHubGiai } from "@/lib/duong-hub-giai";
 import type { ReactNode } from "react";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { LogoLoi } from "@/components/logo-loi";
 import { LogoDoi } from "@/components/giai-hub/khoi";
 import { withLang, type Lang } from "@/lib/i18n";
 import { ngayVi, type DoiXg, type GiaiXg } from "@/lib/xg-doi";
@@ -37,6 +38,7 @@ export function KhungTrang({
   const ds = [{ ten: "Trang chủ", url: "/" }, ...duong];
   return (
     <div className="mx-auto max-w-[1100px] px-3.5 py-2 sm:px-5 sm:py-6">
+      <LogoLoi />
       <BreadcrumbJsonLd items={ds.map((b) => ({ name: b.ten, url: b.url }))} />
       <nav aria-label="Đường dẫn" className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-muted">
         {ds.map((b, i) =>
