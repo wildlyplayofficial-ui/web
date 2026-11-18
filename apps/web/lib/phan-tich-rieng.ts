@@ -135,7 +135,7 @@ const SERIE_A: PhanTichRieng = {
     {
       tieuDe: "Vòng 12 nên theo dõi gì",
       noiDung: [
-        "Trang hiện có 4 trận của vòng 12, chưa có lịch của Inter và Milan. Lúc 21h ngày 21/11 (giờ Việt Nam), Lazio tiếp Lecce. Lazio thắng 4 trong 5 trận gần nhất, Lecce chỉ có 4 điểm. Cùng giờ, Como tiếp Cagliari. Cagliari chỉ thắng 1 trong 5 trận gần nhất, nhưng thủ môn Elia Caprile có 48 pha cứu thua, nhiều nhất giải.",
+        "Trang hiện có 4 trận của vòng 12, chưa có lịch của Inter và Milan. Lúc 21h ngày 21/11 (giờ Việt Nam), Lazio tiếp Lecce. Lazio thắng 4 trong 5 trận gần nhất, Lecce chỉ lấy 4 điểm trong 5 trận gần nhất. Cùng giờ, Como tiếp Cagliari. Cagliari chỉ thắng 1 trong 5 trận gần nhất, nhưng thủ môn Elia Caprile có 48 pha cứu thua, nhiều nhất giải.",
         "Lúc 0h ngày 22/11, Parma (hạng 16) tiếp Roma, đội đang có phong độ tốt nhất giải. Cuối vòng, Napoli tiếp Torino lúc 2h45, trận giữa hạng 10 và hạng 11, hơn kém nhau 1 điểm.",
       ],
     },
