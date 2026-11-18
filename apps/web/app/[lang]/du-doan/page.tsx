@@ -14,6 +14,7 @@ import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { capNhatDuDoan, chuCapNhat } from "@/lib/du-doan-cap-nhat";
+import { tongQuanDuDoan, type TongQuan } from "@/lib/du-doan-tong-quan";
 import { duongTran } from "@/lib/du-doan-tran";
 import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
@@ -51,6 +52,34 @@ function HoiNhanh({ ds }: { ds: CauHoi[] }) {
           </div>
         ))}
       </dl>
+    </section>
+  );
+}
+
+/** 18/11 (soi chỉ mục): đoạn mở + bảng theo giải, toàn số đếm từ bảng trận đang có. Sát đầu trang. */
+function TongQuanHub({ tq }: { tq: TongQuan }) {
+  return (
+    <section aria-labelledby="tong-quan" className="mt-10 text-[15px] leading-relaxed">
+      <h2 id="tong-quan" className="font-display text-xl font-bold">Tổng quan các trận sắp đá</h2>
+      <p className="mt-2">{tq.mo}</p>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <caption className="sr-only">Số trận dự đoán theo giải</caption>
+          <thead className="text-muted">
+            <tr><th className="py-1.5 pr-3 font-semibold">Giải</th><th className="py-1.5 pr-3 font-semibold">Số trận</th><th className="py-1.5 font-semibold">Ngày đá</th></tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {tq.bang.slice(0, 12).map((g) => (
+              <tr key={g.giai}>
+                <td className="py-1.5 pr-3">{g.giai}</td>
+                <td className="py-1.5 pr-3 tabular-nums">{g.so}</td>
+                <td className="py-1.5 tabular-nums">{g.tu === g.den ? g.tu : `${g.tu} - ${g.den}`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {tq.bang.length > 12 && <p className="mt-2 text-sm text-muted">Và {tq.bang.length - 12} giải khác, xem đủ trong bảng trận phía trên.</p>}
     </section>
   );
 }
@@ -128,7 +157,8 @@ export default async function DuDoanHub({ params }: Props) {
   const [{ hang }, baiChon, tatCaBlog] = await Promise.all([taiDuDoan(), getBaiDuDoan(), getBlogs(lang)]);
   // 17/11: blog đã có trang trận thì bỏ (/blog/{slug} 301) — trận đó đã có link thẳng ở mục nhận định chi tiết.
   const blogs = tatCaBlog.filter((b) => !duongTran(hang, b.slug));
-  const hoi = cauHoiDuDoan(hang);
+  const tq = tongQuanDuDoan(hang, ngayVN(Date.now()));
+  const hoi = [...cauHoiDuDoan(hang), ...(tq?.faq ?? [])];
   // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
   const capNhat = capNhatDuDoan(hang, Date.now());
   const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
@@ -183,6 +213,8 @@ export default async function DuDoanHub({ params }: Props) {
       <div className="px-2.5">
         <NhanDinhChiTiet hang={hang} lang={lang} daDa />
       </div>
+      {/* 18/11: tổng quan để DƯỚI bảng trận — nằm trên đầu đẩy bảng trận xuống quá xa trên điện thoại. */}
+      {tq && <div className="px-2.5"><TongQuanHub tq={tq} /></div>}
       <GioiThieu blogs={blogs.slice(0, 4)} lang={lang} />
 
       {/* Peter 11/11: bỏ danh sách bài Chú Tám Banh theo giải khỏi trang dự đoán. */}

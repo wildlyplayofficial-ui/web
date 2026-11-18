@@ -126,11 +126,14 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
   const homNay = ngayVN(Date.now());
   const hanCuoi = lechNgay(homNay, SO_NGAY_TRAN_SITEMAP);
+  const lmHub = capNhatDuDoan(hang, Date.now());
   const tranRoutes: MetadataRoute.Sitemap = hang
     .filter((h) => tranDuocIndex(h) && h.ngay >= homNay && h.ngay <= hanCuoi)
     .map((h) => ({
       url: `${BASE}/du-doan/${h.slug}`,
-      ...(h.sapDa ? {} : { lastModified: safeLastMod(Date.parse(h.kickoffUtc) + 2 * 3_600_000) }),
+      // 18/11: trận chưa đá trước đây KHÔNG khai lastmod. Giờ dùng mốc 00:00 giờ VN hôm nay (cùng mốc
+      // dateModified của hub /du-doan: danh sách trận đổi theo ngày), không dùng lúc dựng trang.
+      lastModified: h.sapDa && lmHub ? new Date(lmHub) : safeLastMod(Date.parse(h.kickoffUtc) + 2 * 3_600_000),
       changeFrequency: "daily" as const,
       priority: 0.6,
     }));
