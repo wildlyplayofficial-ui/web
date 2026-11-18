@@ -15,6 +15,7 @@ import { timTran } from "@/lib/du-doan-tran";
 import { duDoanCua } from "@/lib/du-doan-nguon";
 import { getStandingsCompetitions } from "@/lib/standings-extra";
 import { hubCuaGiai } from "@/lib/giai-hub";
+import { phanTichRieng } from "@/lib/phan-tich-rieng";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { tepXgDoi } from "@/lib/xg-doi";
 
@@ -262,10 +263,15 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE}/competitions/${c.slug}`,
       // lastmod chỉ khai cho hub 5 giải lớn: data/giai-hub.json có giờ máy cập nhật thật (capNhat).
       // Giải khác không có cột ngày sửa thật nên không khai.
-      ...(hubCuaGiai(c.slug) ? { lastModified: hubCuaGiai(c.slug)!.data.capNhat } : {}),
+      // 19/11: trang có khối phân tích viết tay thì lấy ngày mới hơn giữa số liệu và bài phân tích.
+      ...(hubCuaGiai(c.slug) ? { lastModified: ngayMoiHon(hubCuaGiai(c.slug)!.data.capNhat, phanTichRieng(c.slug)?.capNhatIso) } : {}),
       changeFrequency: "daily" as const,
       priority: 0.7,
     }));
 
   return [...staticRoutes, ...soLieuRoutes, ...hubXemRoute, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
+}
+
+function ngayMoiHon(a: string, b?: string): string {
+  return b && Date.parse(b) > Date.parse(a) ? b : a;
 }
