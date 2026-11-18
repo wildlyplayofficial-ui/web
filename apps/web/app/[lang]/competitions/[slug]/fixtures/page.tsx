@@ -14,7 +14,8 @@ export const revalidate = 3600;
 type Props = { params: Promise<{ lang: string; slug: string }> };
 
 async function resolveCompetition(slug: string) {
-  const competitions = await getStandingsCompetitions().catch(() => []);
+  // Không nuốt lỗi thành [] → tránh 404 giả bị ISR giữ khi nguồn dữ liệu lỗi (19/11).
+  const competitions = await getStandingsCompetitions();
   return competitions.find((c) => c.slug === slug) ?? null;
 }
 
