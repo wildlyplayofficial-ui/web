@@ -63,7 +63,9 @@ export async function generateStaticParams() {
 }
 
 async function resolveCompetition(slug: string) {
-  const competitions = await getStandingsCompetitions().catch(() => []);
+  // KHÔNG nuốt lỗi thành []: nguồn dữ liệu lỗi mà trả [] là notFound() → trang giải
+  // thật ra 404 và bị ISR giữ. Để lỗi nổi lên thì Next giữ bản tốt cũ (19/11).
+  const competitions = await getStandingsCompetitions();
   return competitions.find((c) => c.slug === slug) ?? null;
 }
 
