@@ -30,6 +30,9 @@ import { doiCanPhongDo, dungHang } from "@/lib/du-doan-hang";
 import { getTranDaDa } from "@/lib/phong-do-db";
 import { doiThieuPhongDo, dongTuan, gopTuan, hangTuan } from "@/lib/du-doan-tuan";
 import { KhoiDuDoanHomNay } from "@/components/khoi-du-doan-hom-nay";
+import { KhoiHomNayBlog } from "@/components/khoi-hom-nay-blog";
+import { getBlogs } from "@/lib/data";
+import { duongTran } from "@/lib/du-doan-tran";
 
 export const revalidate = 300;
 
@@ -131,6 +134,8 @@ export default async function Home({ params }: Props) {
   const daDoi = new Set(hangDuDoan.map((h) => h.slug));
   const duongBai = (slug: string) => (daDoi.has(slug) ? `/du-doan/${slug}` : `/analysis/${slug}`);
   const blogConLai = blogs.filter((b) => !daDoi.has(b.slug));
+  // 18/11: 5 bài blog mới nhất cho khối link đầu trang; blog đã có trang trận (301) thì bỏ.
+  const blogMoiNhat = (await getBlogs(lang).catch(() => [])).filter((b) => !duongTran(hangDuDoan, b.slug));
   const railMatches = railTran(hangDuDoan, bayGioMs(), tySoTuLS(canTraTySo(dongTuan()), lsKq));
   // Mùa nghỉ: bảng rỗng HẲN và đã biết ngày khai mạc. Chỉ rỗng thôi thì vẫn giữ
   // teaser cũ vì có thể là ngày trống giữa mùa, không phải trước khai mạc.
@@ -231,6 +236,7 @@ export default async function Home({ params }: Props) {
       {/* Thiết kế lại 10/11 (Peter duyệt mẫu): h1 + Chú Tám chọn + 8 trận sắp đá + MỘT nút
           sang /du-doan. Đã gỡ khối hero cũ, băng "Bảng Dự Đoán Hôm Nay" và thẻ pick nổi bật
           — ba lối vào dự đoán chồng nhau; pick Chú Tám nay nằm ở dòng vàng trong khối này. */}
+      <KhoiHomNayBlog rows={hangDuDoan} homNay={homNay} blogs={blogMoiNhat} lang={lang} />
       <KhoiDuDoanHomNay rows={hangDuDoan} homNay={homNay} lang={lang} />
       {/* Mùa nghỉ: đếm ngược tới ngày khai mạc (bảng rỗng hẳn và đã biết ngày mở màn). */}
       {preseason && (

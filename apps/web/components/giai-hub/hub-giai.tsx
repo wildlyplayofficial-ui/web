@@ -4,6 +4,8 @@ import { SITE_URL } from "@/lib/brand";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import type { GiaiTrang } from "@/lib/du-doan-loc";
 import { ngayThang, thuVN } from "@/lib/du-doan-tran";
+import { tomTatGiai } from "@/lib/du-doan-loc";
+import { bangTheoNgay, faqGiai } from "@/lib/du-doan-tong-quan";
 import type { HubGiaiData, NgayDuDoan } from "@/lib/giai-hub";
 import { gioiThieuGiai } from "@/lib/gioi-thieu-giai";
 import { withLang, type Lang } from "@/lib/i18n";
@@ -75,6 +77,7 @@ function cauHoi({ compName, mua, data, ngay, dauBang }: Props): CauHoiHub[] {
       dap: `${dau === cuoi ? `Ngày ${tu}` : `Từ ${tu} đến ${den}`} (giờ Việt Nam). Trận đầu tiên: ${dau.ds[0].nha} vs ${dau.ds[0].khach} lúc ${dau.ds[0].gio}. Trang đang có dự đoán tỷ số cho ${soTran} trận.`,
     });
   }
+  ds.push(...faqGiai(ngay.flatMap((d) => d.ds), compName));
   const vua = data.top.ban[0];
   if (vua) {
     ds.push({
@@ -91,6 +94,9 @@ export function HubGiai(p: Props) {
   const tran = ngay.flatMap((d) => d.ds);
   const hoiDap = cauHoi(p);
   const gt = gioiThieuGiai(giai.slug, compName);
+  // 18/11: câu số liệu thật (số trận, khoảng ngày, chia thắng/hòa/thua) đứng TRƯỚC đoạn giới thiệu chung.
+  const tomTat = tomTatGiai(tran, compName);
+  const theoNgay = bangTheoNgay(tran);
   const suKien = tran.length > 0 && {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -105,6 +111,7 @@ export function HubGiai(p: Props) {
           {[`Mùa ${mua}`, data.vongXong ? `cập nhật sau vòng ${data.vongXong}` : null, "giờ Việt Nam"].filter(Boolean).join(" · ")}
         </p>
         {/* Peter 15/11: đoạn giới thiệu cho SEO/GEO kiểu PredictZ, chỉ ghi điều mình làm thật. */}
+        {tomTat && <p className="mt-3 text-[15px] font-medium leading-relaxed text-ink">{tomTat}</p>}
         <p className="mt-3 text-[15px] leading-relaxed text-ink">
           {gt.mo(mua, data.vongToi ?? null, tran.length)}
         </p>
@@ -122,6 +129,29 @@ export function HubGiai(p: Props) {
 
       {/* Peter 15/11: 1 cột, BXH → thống kê cầu thủ → kết quả vòng. */}
       <div className="space-y-10">
+        {theoNgay.length > 0 && (
+          <Khoi id="lich-tom-tat" tieuDe={`Lịch ${compName} sắp tới theo ngày`}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <caption className="sr-only">{`Số trận ${compName} theo ngày`}</caption>
+                <thead className="text-muted">
+                  <tr><th className="py-1.5 pr-3 font-semibold">Ngày</th><th className="py-1.5 pr-3 font-semibold">Số trận</th><th className="py-1.5 font-semibold">Trận đá đầu tiên (giờ VN)</th></tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {theoNgay.map((d) => (
+                    <tr key={d.ngay}>
+                      <td className="py-1.5 pr-3">{d.nhan}</td>
+                      <td className="py-1.5 pr-3 tabular-nums">{d.so}</td>
+                      <td className="py-1.5">
+                        <Link href={withLang(`/du-doan/${d.dau.slug}`, lang)} className="text-brand hover:underline">{d.dau.nha} vs {d.dau.khach}</Link> · {d.dau.gio}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Khoi>
+        )}
         <Khoi id="du-doan" tieuDe={`Lịch thi đấu & dự đoán vòng ${data.vongToi ?? ""}`.trim()}>
           <DuDoanTheoNgay
             ngay={ngay}
