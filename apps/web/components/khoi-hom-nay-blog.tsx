@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { HangDuDoan } from "@/lib/du-doan-hang";
+import { tranDuocIndex } from "@/lib/chi-muc";
 import { ngayThang } from "@/lib/du-doan-tran";
 import { withLang, type Lang } from "@/lib/i18n";
 import type { Post } from "@/lib/types";
@@ -9,7 +10,12 @@ import type { Post } from "@/lib/types";
  * Dẫn thẳng tới /du-doan, từng trận hôm nay và 5 bài blog mới nhất.
  */
 export function KhoiHomNayBlog({ rows, homNay, blogs, lang }: { rows: HangDuDoan[]; homNay: string; blogs: Post[]; lang: Lang }) {
-  const homNayRows = rows.filter((r) => r.ngay === homNay && !(Date.parse(r.kickoffUtc) <= Date.now())) // 18/11: bỏ trận đã bắt đầu.sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc)).slice(0, 8);
+  // 19/11: dòng cũ bị chú thích nuốt mất .sort/.slice nên liệt kê cả chục trận hôm nay (toàn trận noindex).
+  // Nay: trận chưa đá, trận được index (tranDuocIndex) đứng trước, rồi theo giờ đá; tối đa 8 trận.
+  const homNayRows = rows
+    .filter((r) => !(Date.parse(r.kickoffUtc) <= Date.now()))
+    .sort((a, b) => Number(tranDuocIndex(b)) - Number(tranDuocIndex(a)) || a.kickoffUtc.localeCompare(b.kickoffUtc))
+    .slice(0, 8);
   const bai = blogs.slice(0, 5);
   return (
     <section aria-label="Dự đoán hôm nay và bài mới" className="mt-4 rounded-card border border-brand/40 bg-brand-dim/30 p-4">
@@ -23,13 +29,13 @@ export function KhoiHomNayBlog({ rows, homNay, blogs, lang }: { rows: HangDuDoan
               {homNayRows.map((h) => (
                 <li key={h.slug}>
                   <Link href={withLang(`/du-doan/${h.slug}`, lang)} className="inline-flex min-h-11 items-center text-brand hover:underline">
-                    {h.gio === "--:--" ? "" : `${h.gio} · `}{h.nha} vs {h.khach} ({h.giai})
+                    {h.ngay === homNay ? "" : `${ngayThang(h.ngay)} · `}{h.gio === "--:--" ? "" : `${h.gio} · `}{h.nha} vs {h.khach} ({h.giai})
                   </Link>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-muted">Trận hôm nay đã đá hết hoặc chưa lên dự đoán, xem các ngày tới ở trang dự đoán.</p>
+            <p className="mt-2 text-sm text-muted">Chưa có trận sắp đá được dự đoán, xem các ngày tới ở trang dự đoán.</p>
           )}
           <Link href={withLang("/du-doan", lang)} className="mt-1 inline-flex min-h-11 items-center font-semibold text-brand hover:underline">Xem tất cả dự đoán →</Link>
         </div>
