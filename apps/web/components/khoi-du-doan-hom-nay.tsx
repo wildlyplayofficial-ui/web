@@ -34,7 +34,8 @@ export function KhoiDuDoanHomNay({
   const ngays = [...new Set(sapDa.map((r) => r.ngay))];
   // Số thật cho đoạn giới thiệu (Peter 13/11: câu giới thiệu phải đủ cho SEO và GEO).
   const tatCa = rows.filter((r) => r.sapDa);
-  const giai = [...new Set(tatCa.map((r) => r.giai))];
+  // 19/11: câu giới thiệu kể giải có trận được index trước (giải lớn), không kể VĐQG Brazil/Ấn Độ lên đầu.
+  const giai = [...new Set([...tatCa].sort((a, b) => Number(tranDuocIndex(b)) - Number(tranDuocIndex(a))).map((r) => r.giai))];
   return (
     <section aria-label={t.title} className="pb-8 pt-4 sm:pt-6">
       <h1 className="font-display text-[21px] font-bold leading-tight sm:text-[28px]">{t.homeTitle}</h1>
