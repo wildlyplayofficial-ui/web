@@ -17,6 +17,7 @@ import { FaqHub, type CauHoiHub } from "./faq";
 import { KetQuaVong } from "./ket-qua";
 import { Khoi } from "./khoi";
 import { LucLuong } from "./luc-luong";
+import { PhanTichRieng } from "./phan-tich-rieng";
 import { ThongKeCauThu } from "./thong-ke";
 
 export interface DauBang {
@@ -129,6 +130,7 @@ export function HubGiai(p: Props) {
 
       {/* Peter 15/11: 1 cột, BXH → thống kê cầu thủ → kết quả vòng. */}
       <div className="space-y-10">
+        <PhanTichRieng slug={giai.bxh ?? ""} />
         {theoNgay.length > 0 && (
           <Khoi id="lich-tom-tat" tieuDe={`Lịch ${compName} sắp tới theo ngày`}>
             <div className="overflow-x-auto">
