@@ -73,6 +73,8 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <meta name="theme-color" content="#00e676" />
+        {/* Trang con tự khai openGraph nên Next bỏ siteName của layout → in thẳng ở đây cho mọi trang (19/11). */}
+        <meta property="og:site_name" content={SITE_NAME} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
