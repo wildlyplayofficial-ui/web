@@ -124,11 +124,9 @@ export const NOINDEX_FOLLOW = { index: false, follow: true } as const;
 
 /** Guide đủ dài, không phải biến thể từng mức tỷ lệ (keo-0-5, keo-goc-8-5…) — chỉ các guide này index + vào sitemap.
  *  Guide có tiêu đề dùng chữ cấm (luật Over/Under 14/11) không vào danh sách. */
-const GUIDE_GIU_INDEX = new Set([
-  "vi-sao-ty-le-keo-khac-nhau-giua-cac-nguon",
-  "how-to-read-betting-odds",
-  "what-is-asian-handicap",
-]);
+// 19/11 Peter gật: rút cả 3 guide kèo (Google "Crawled - not indexed", lệch chủ đề trang dự đoán)
+// → noindex,follow + ra khỏi sitemap. Không xoá route.
+const GUIDE_GIU_INDEX = new Set<string>([]);
 export const guideDuocIndex = (slug: string): boolean => GUIDE_GIU_INDEX.has(slug);
 
 /** Hub /doi/{slug}: chỉ hub Việt Nam đủ nội dung (~950 chữ); hub CLB chỉ là danh sách link (~270–410 chữ, đo 14/11). */
