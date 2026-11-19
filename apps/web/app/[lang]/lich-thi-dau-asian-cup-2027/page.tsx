@@ -3,6 +3,8 @@ import Link from "next/link";
 import { OG_VERSION } from "@/lib/brand";
 import { buildAlternates, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { HinhLich } from "@/components/trang-lich-2027";
+import { hinhLich2027 } from "@/lib/lich-2027-hinh";
 import { TRANG_LICH_2027 } from "@/lib/lich-2027-ds";
 import { BANG_DAU, CAP_NHAT, HOI_DAP, MOC_LICH, NGUON, SAN_DAU, TRAN_VIET_NAM } from "@/lib/asian-cup-2027";
 
@@ -17,7 +19,8 @@ type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
-  const og = `/api/og/editorial?title=${encodeURIComponent("Lịch thi đấu Asian Cup 2027")}&subtitle=${encodeURIComponent("23/12/2027 – 21/1/2028 · Việt Nam ở bảng E")}&v=${OG_VERSION}`;
+  const h = hinhLich2027(DUONG);
+  const og = `${h.src}?v=${OG_VERSION}`;
   return {
     title: TIEU_DE,
     description: MO_TA,
@@ -27,8 +30,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "vi_VN",
       title: `${TIEU_DE} | banhbong.net`,
       description: MO_TA,
-      images: [{ url: og, width: 1200, height: 630 }],
+      images: [{ url: og, width: h.width, height: h.height, alt: h.alt }],
     },
+    twitter: { card: "summary_large_image", images: [og] },
   };
 }
 
@@ -59,6 +63,7 @@ export default async function LichAsianCup2027({ params }: Props) {
           cùng Hàn Quốc, UAE và Yemen. Ngày giờ từng trận theo lịch mới thì AFC chưa công bố; trang này sẽ
           điền ngay khi có.
         </p>
+        <HinhLich duong={DUONG} />
       </header>
 
       <section aria-labelledby="lich-moi">
