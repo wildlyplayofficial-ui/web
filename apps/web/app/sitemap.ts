@@ -18,6 +18,7 @@ import { hubCuaGiai } from "@/lib/giai-hub";
 import { phanTichRieng } from "@/lib/phan-tich-rieng";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { tepXgDoi } from "@/lib/xg-doi";
+import { TRANG_LICH_2027 } from "@/lib/lich-2027-ds";
 
 /** SEO: mọi kèo đã chốt + bài đã đăng, chỉ bản tiếng Việt (site bỏ en/th/es từ 23/8).
  *
@@ -226,6 +227,15 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }];
 
+  // Trang lịch thi đấu 2027 (19/11): hub + Asian Cup + C1 + World Cup nữ + SEA Games, index,follow.
+  // lastmod = ngày kiểm dữ kiện ghi trong tệp lib của từng trang.
+  const lich2027Routes: MetadataRoute.Sitemap = TRANG_LICH_2027.map((t) => ({
+    url: `${BASE}${t.duong}`,
+    lastModified: safeLastMod(t.capNhatIso),
+    changeFrequency: "weekly" as const,
+    priority: t.duong === "/lich-thi-dau-bong-da-2027" ? 0.8 : 0.7,
+  }));
+
   // /match/* RÚT hết khỏi sitemap 14/11: trang trận có bài chỉ ~200 chữ (bài thật nằm ở
   // /analysis, /blog) — trang tự noindex,follow (xem match/[slug]/page.tsx).
 
@@ -269,7 +279,7 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [...staticRoutes, ...soLieuRoutes, ...hubXemRoute, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
+  return [...staticRoutes, ...soLieuRoutes, ...hubXemRoute, ...lich2027Routes, ...hubRoutes, ...guideRoutes, ...standingsRoutes];
 }
 
 function ngayMoiHon(a: string, b?: string): string {
