@@ -1,6 +1,7 @@
 /**
  * Dữ kiện trang /world-cup-nu-2027 (19/11/2026). Mọi dòng có nguồn ở NGUON.
  * Danh sách đội có vé theo ESPN; các suất còn lại quyết ở play-off, nên danh sách sẽ đổi.
+ * Đổi ngày ở đây thì vẽ lại hình lịch: node apps/web/scripts/ve-hinh-lich-2027.mjs (chạy từ gốc repo).
  */
 import type { DuLieuTrang } from "@/lib/lich-2027-kieu";
 

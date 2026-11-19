@@ -1,6 +1,7 @@
 /**
  * Dữ kiện trang /sea-games-2027 (19/11/2026). Mọi dòng có nguồn ở NGUON.
  * Lịch từng trận bóng đá và quy định độ tuổi chưa có nguồn chính thức: để CHUA_CONG_BO.
+ * Đổi ngày ở đây thì vẽ lại hình lịch: node apps/web/scripts/ve-hinh-lich-2027.mjs (chạy từ gốc repo).
  */
 import type { DuLieuTrang } from "@/lib/lich-2027-kieu";
 

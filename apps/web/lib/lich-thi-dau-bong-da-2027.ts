@@ -1,6 +1,7 @@
 /**
  * Dữ kiện hub /lich-thi-dau-bong-da-2027 (19/11/2026). Ngày lấy từ các tệp dữ kiện của từng
  * trang sự kiện (cùng nguồn); mục chưa công bố ghi "Chưa công bố".
+ * Đổi ngày ở đây thì vẽ lại hình lịch: node apps/web/scripts/ve-hinh-lich-2027.mjs (chạy từ gốc repo).
  */
 import type { DuLieuTrang } from "@/lib/lich-2027-kieu";
 import { NGUON as NGUON_ASIAN_CUP } from "@/lib/asian-cup-2027";

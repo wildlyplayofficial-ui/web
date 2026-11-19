@@ -1,6 +1,7 @@
 /**
  * Dữ kiện trang /chung-ket-c1-2027 (19/11/2026). Mọi dòng có nguồn ở NGUON.
  * Giờ bóng lăn UEFA chưa công bố: để CHUA_CONG_BO, KHÔNG suy ra từ các mùa trước.
+ * Đổi ngày ở đây thì vẽ lại hình lịch: node apps/web/scripts/ve-hinh-lich-2027.mjs (chạy từ gốc repo).
  */
 import type { DuLieuTrang } from "@/lib/lich-2027-kieu";
 

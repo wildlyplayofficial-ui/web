@@ -98,6 +98,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|icons|images|brand/|sw\\.js|manifest\\.webmanifest|manifest|api|robots\\.txt|sitemap\\.xml|sitemap-index\\.xml|sitemap/|news-sitemap\\.xml|og-home\\.png|f29229590981931e9c15bc0efdb0dff0\\.txt|llms\\.txt).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icons|images|brand/|lich-2027/|sw\\.js|manifest\\.webmanifest|manifest|api|robots\\.txt|sitemap\\.xml|sitemap-index\\.xml|sitemap/|news-sitemap\\.xml|og-home\\.png|f29229590981931e9c15bc0efdb0dff0\\.txt|llms\\.txt).*)",
   ],
 };

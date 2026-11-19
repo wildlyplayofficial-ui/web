@@ -2,6 +2,7 @@
  * Dữ kiện trang /lich-thi-dau-asian-cup-2027 (kiểm lại 19/11/2026).
  * Mọi dòng đều có nguồn ở NGUON bên dưới. Mục nào AFC chưa công bố thì ghi CHUA_CONG_BO,
  * KHÔNG suy ra ngày đá từ lịch cũ. AFC ra lịch mới → sửa file này, trang tự đổi theo.
+ * Đổi ngày ở đây thì vẽ lại hình lịch: node apps/web/scripts/ve-hinh-lich-2027.mjs (chạy từ gốc repo).
  */
 export const CAP_NHAT = "19/11/2026";
 export const CAP_NHAT_ISO = "2026-11-19";

@@ -1,18 +1,36 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { OG_VERSION } from "@/lib/brand";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import type { DuLieuTrang } from "@/lib/lich-2027-kieu";
 import { TRANG_LICH_2027 } from "@/lib/lich-2027-ds";
+import { hinhLich2027 } from "@/lib/lich-2027-hinh";
 
 const H2 = "font-display text-xl font-bold";
 const DOAN = "mt-3 text-[15px] leading-relaxed text-ink";
 const KHUNG_BANG = "mt-4 overflow-x-auto rounded-card border border-line bg-card shadow-card";
 const LINK = "font-semibold text-brand hover:underline";
 
+export function HinhLich({ duong, priority = true }: { duong: string; priority?: boolean }) {
+  const h = hinhLich2027(duong);
+  return (
+    <Image
+      src={`${h.src}?v=${OG_VERSION}`}
+      alt={h.alt}
+      width={h.width}
+      height={h.height}
+      priority={priority}
+      unoptimized
+      className="mt-5 h-auto w-full rounded-card border border-line"
+    />
+  );
+}
+
 export function metadataLich2027(d: DuLieuTrang, lang: Lang): Metadata {
-  const og = `/api/og/editorial?title=${encodeURIComponent(d.h1.split(":")[0])}&subtitle=${encodeURIComponent(d.ogPhu)}&v=${OG_VERSION}`;
+  const h = hinhLich2027(d.duong);
+  const og = `${h.src}?v=${OG_VERSION}`;
   return {
     title: d.h1,
     description: d.moTa,
@@ -22,8 +40,9 @@ export function metadataLich2027(d: DuLieuTrang, lang: Lang): Metadata {
       locale: "vi_VN",
       title: `${d.h1} | banhbong.net`,
       description: d.moTa,
-      images: [{ url: og, width: 1200, height: 630 }],
+      images: [{ url: og, width: h.width, height: h.height, alt: h.alt }],
     },
+    twitter: { card: "summary_large_image", images: [og] },
   };
 }
 
@@ -44,6 +63,7 @@ export async function TrangLich2027({ d, params }: { d: DuLieuTrang; params: Pro
         <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">{d.h1}</h1>
         <p className="mt-2 text-sm text-muted">{`Cập nhật ${d.capNhat}`}</p>
         <p className={DOAN}>{d.moDau}</p>
+        <HinhLich duong={d.duong} />
         <p className={DOAN}>
           {"Dự đoán các trận bóng đá hôm nay nằm ở "}
           {d.lienKetDuDoan.map((l, i) => (
