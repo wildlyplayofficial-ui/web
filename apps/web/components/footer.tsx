@@ -58,6 +58,7 @@ export function Footer() {
         { href: "/doi/chelsea", label: "Chelsea" },
         { href: "/doi/man-city", label: "Manchester City" },
         { href: "/doi/vietnam", label: "Việt Nam" },
+        { href: "/lich-thi-dau-bong-da-2027", label: "Lịch thi đấu bóng đá 2027" },
       ],
     },
     {
