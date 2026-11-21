@@ -10,6 +10,7 @@ import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
 import type { MatchData, Pick, Post, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
 import { buildPlaySlug } from "./play-slug";
+import { chuanHoaAnh } from "./anh-qua-cong";
 
 /**
  * Data layer. Every function queries Supabase when configured and falls back
@@ -253,7 +254,7 @@ async function getPostsImpl(lang: Lang): Promise<Post[]> {
   return [...bySlug.values()]
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
-    .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
+    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_TEXT_FIELDS)));
 }
 
 export const getPosts = unstable_cache(getPostsImpl, ["posts"], {
@@ -278,7 +279,7 @@ async function getPostImpl(slug: string, lang: Lang): Promise<Post | null> {
     candidates = (data ?? []) as Post[];
   }
   const found = candidates.find((p) => p.lang === lang) ?? candidates.find((p) => p.lang === "en") ?? null;
-  return found ? viPersonaFields(found, POST_TEXT_FIELDS) : null;
+  return found ? chuanHoaAnh(viPersonaFields(found, POST_TEXT_FIELDS)) : null;
 }
 
 export const getPost = unstable_cache(getPostImpl, ["post"], {
@@ -338,7 +339,7 @@ async function getPostsOfTypeImpl(lang: Lang, loai: "guide" | "blog"): Promise<P
   return [...bySlug.values()]
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
-    .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
+    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_TEXT_FIELDS)));
 }
 
 export const getGuides = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "guide"), ["guides"], {
@@ -410,7 +411,7 @@ async function getReportsImpl(lang: Lang): Promise<Post[]> {
   return [...bySlug.values()]
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
-    .map((p) => viPersonaFields(p, POST_TEXT_FIELDS));
+    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_TEXT_FIELDS)));
 }
 
 export const getReports = unstable_cache(getReportsImpl, ["reports"], {

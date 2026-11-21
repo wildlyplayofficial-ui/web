@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
 import type { AnalysisArticle } from "./types";
 import { ganChuyenGia } from "./chuyen-gia";
+import { chuanHoaAnh } from "./anh-qua-cong";
 
 /**
  * Data layer for Desk-authored analysis articles (spec §2A-B).
@@ -29,7 +30,7 @@ async function getAnalysisArticlesImpl(
     if (error.code === "42P01" || error.message.includes("does not exist")) return [];
     throw new Error(`getAnalysisArticles: ${error.message}`);
   }
-  return ((data ?? []) as AnalysisArticle[]).map(ganChuyenGia);
+  return ((data ?? []) as AnalysisArticle[]).map((a) => chuanHoaAnh(ganChuyenGia(a)));
 }
 
 export const getAnalysisArticles = unstable_cache(
@@ -54,7 +55,7 @@ async function getAnalysisArticleBySlugImpl(
     if (error.code === "42P01" || error.message.includes("does not exist")) return null;
     throw new Error(`getAnalysisArticleBySlug: ${error.message}`);
   }
-  return data ? ganChuyenGia(data as AnalysisArticle) : null;
+  return data ? chuanHoaAnh(ganChuyenGia(data as AnalysisArticle)) : null;
 }
 
 export const getAnalysisArticleBySlug = unstable_cache(
@@ -114,7 +115,7 @@ async function getAnalysisByTeamImpl(team: string, limit = 40): Promise<Analysis
     if (error.code === "42703" || error.message.includes("column") || error.message.includes("does not exist")) return [];
     throw new Error(`getAnalysisByTeam: ${error.message}`);
   }
-  return ((data ?? []) as AnalysisArticle[]).map(ganChuyenGia);
+  return ((data ?? []) as AnalysisArticle[]).map((a) => chuanHoaAnh(ganChuyenGia(a)));
 }
 
 export const getAnalysisByTeam = unstable_cache(getAnalysisByTeamImpl, ["analysis-by-team-cg"], {
