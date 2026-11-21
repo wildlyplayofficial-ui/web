@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { getSupabase } from "./supabase";
 import { demChu } from "./chi-muc";
 import { ganChuyenGia } from "./chuyen-gia";
+import { chuanHoaAnh } from "./anh-qua-cong";
 import type { Lang } from "./i18n";
 
 /** Canonical news type list — single source of truth (worker/generator must use these values). */
@@ -69,7 +70,7 @@ async function getNewsItemsImpl(
 
   const { data, error } = await query;
   if (error) throw new Error(`getNewsItems: ${error.message}`);
-  return ((data ?? []) as NewsItem[]).map(ganChuyenGia);
+  return ((data ?? []) as NewsItem[]).map((a) => chuanHoaAnh(ganChuyenGia(a)));
 }
 
 export const getNewsItems = unstable_cache(
@@ -126,7 +127,7 @@ async function getNewsItemBySlugImpl(slug: string): Promise<NewsItem | null> {
   if (error && error.code !== "PGRST116") {
     throw new Error(`getNewsItemBySlug: ${error.message}`);
   }
-  return data ? ganChuyenGia(data as NewsItem) : null;
+  return data ? chuanHoaAnh(ganChuyenGia(data as NewsItem)) : null;
 }
 
 export const getNewsItemBySlug = unstable_cache(
@@ -175,7 +176,7 @@ async function getNewsByTeamImpl(team: string, limit = 40): Promise<NewsItem[]> 
     if (error.code === "42703" || error.message.includes("column")) return [];
     throw new Error(`getNewsByTeam: ${error.message}`);
   }
-  return ((data ?? []) as NewsItem[]).map(ganChuyenGia);
+  return ((data ?? []) as NewsItem[]).map((a) => chuanHoaAnh(ganChuyenGia(a)));
 }
 
 export const getNewsByTeam = unstable_cache(getNewsByTeamImpl, ["news-by-team"], {
