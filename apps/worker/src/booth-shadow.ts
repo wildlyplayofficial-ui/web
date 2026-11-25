@@ -46,6 +46,13 @@ function getState(matchId: string): MatchState {
 async function getLivePickMatches(
   supabase: SupabaseClient,
 ): Promise<Array<{ pick: PickRow; eventsUrl: string; matchId: string }>> {
+  // Get live matches first — no live match means no need to pull picks (saves Supabase egress every 30s tick)
+  const { data: matches } = await supabase
+    .from('match_live_state')
+    .select('id, home_team, away_team, status, events_url')
+    .eq('status', 'live');
+  if (!matches?.length) return [];
+
   // Get published (unsettled) picks — phân trang qua trần 1000 của PostgREST, order('id') để trang ổn định
   const picks = await layHet<PickRow>(() => supabase
     .from('picks')
@@ -54,13 +61,6 @@ async function getLivePickMatches(
     .not('thesis', 'is', null)
     .order('id'));
   if (!picks.length) return [];
-
-  // Get live matches
-  const { data: matches } = await supabase
-    .from('match_live_state')
-    .select('id, home_team, away_team, status, events_url')
-    .eq('status', 'live');
-  if (!matches?.length) return [];
 
   // Match picks to live matches by team names
   const results: Array<{ pick: PickRow; eventsUrl: string; matchId: string }> = [];
