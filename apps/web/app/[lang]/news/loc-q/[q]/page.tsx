@@ -4,7 +4,7 @@ import { giaiMaQuery } from "@/lib/query-segment";
 import { NewsView, metadataTrang } from "../../view";
 
 // Đích viết lại của proxy.ts cho `?query` — xem lib/query-segment.ts. Giữ revalidate = trang gốc.
-export const revalidate = 300;
+export const revalidate = 3600;
 
 // Không dựng sẵn bản nào: mỗi tổ hợp query được ISR theo yêu cầu rồi cache (khai báo này để Next coi là SSG/ISR, không phải động).
 export function generateStaticParams() {
