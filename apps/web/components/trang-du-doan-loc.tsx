@@ -10,7 +10,7 @@ import { giaiTuSlug, metaGiai, metaNgay, ngayTuSlug, duongDanNgay, tomTatGiai, t
 import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
 import { jsonLd, suKienTran } from "@/lib/du-doan-schema";
 import { taiDuDoan } from "@/lib/du-doan-tai";
-import { ngayThang, thuVN } from "@/lib/du-doan-tran";
+import { duLieuBang, ngayThang, thuVN } from "@/lib/du-doan-tran";
 import { buildAlternates, withLang, type Lang } from "@/lib/i18n";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { teamBadge } from "@/lib/team-badges";
@@ -199,7 +199,7 @@ async function TrangNgay({ ngay, lang }: { ngay: string; lang: Lang }) {
     <div className="mx-auto max-w-[1100px] px-0 py-4 sm:px-5 sm:py-8">
       <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: "Dự đoán", url: "/du-doan" }, { name: ten, url: duongDanNgay(ngay, homNay) }]} />
       <DanhSachSuKien ds={trongNgay} ten={`Dự đoán bóng đá ${ten}`} />
-      <DuDoanPZ rows={hang} homNay={homNay} ngayChon={ngay} lang={lang} />
+      <DuDoanPZ {...duLieuBang(hang, homNay, ngay)} homNay={homNay} ngayChon={ngay} lang={lang} />
     </div>
   );
 }

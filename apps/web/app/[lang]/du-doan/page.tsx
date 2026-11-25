@@ -15,7 +15,7 @@ import { tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { capNhatDuDoan, chuCapNhat } from "@/lib/du-doan-cap-nhat";
 import { tongQuanDuDoan, type TongQuan } from "@/lib/du-doan-tong-quan";
-import { duongTran } from "@/lib/du-doan-tran";
+import { duLieuBang, duongTran } from "@/lib/du-doan-tran";
 import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
 export const revalidate = 300;
@@ -157,11 +157,17 @@ export default async function DuDoanHub({ params }: Props) {
   const [{ hang }, baiChon, tatCaBlog] = await Promise.all([taiDuDoan(), getBaiDuDoan(), getBlogs(lang)]);
   // 17/11: blog đã có trang trận thì bỏ (/blog/{slug} 301) — trận đó đã có link thẳng ở mục nhận định chi tiết.
   const blogs = tatCaBlog.filter((b) => !duongTran(hang, b.slug));
-  const tq = tongQuanDuDoan(hang, ngayVN(Date.now()));
+  const homNay = ngayVN(Date.now());
+  const tq = tongQuanDuDoan(hang, homNay);
   const hoi = [...cauHoiDuDoan(hang), ...(tq?.faq ?? [])];
-  // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
+  // Mỗi trận một SportsEvent, 60 trận từ HÔM NAY trở đi, gần giờ đá trước, url = trang riêng của trận.
+  // (`hang` không xếp theo ngày: cắt 60 dòng đầu từng khai toàn trận tuần trước, đo 25/11.)
   const capNhat = capNhatDuDoan(hang, Date.now());
-  const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
+  const suKien = hang
+    .filter((h) => h.ngay >= homNay)
+    .sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))
+    .slice(0, 60)
+    .map((h) => suKienTran(h, SITE_URL, true));
 
   return (
     <div className="mx-auto max-w-[1100px] px-0 py-4 sm:px-5 sm:py-8">
@@ -182,8 +188,8 @@ export default async function DuDoanHub({ params }: Props) {
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <DuDoanPZ
-        rows={hang}
-        homNay={ngayVN(Date.now())}
+        {...duLieuBang(hang, homNay)}
+        homNay={homNay}
         lang={lang}
         sauMoDau={
           <>
