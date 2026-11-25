@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { laBaiMayDe } from "@/lib/bai-may-de";
+import { DOAN_LOC, KHOA_THEO_TRANG, chuanHoaQuery, maHoaQuery } from "@/lib/query-segment";
 
 const LANG_PREFIX_RE = /^\/(en|vi|th|es)(\/|$)/;
 const ANALYSIS_SLUG_RE = /^\/analysis\/([^/]+)$/;
+const DOAN_LOC_RE = new RegExp(`^/(${Object.keys(KHOA_THEO_TRANG).map((p) => p.slice(1)).join("|")})/${DOAN_LOC}(/|$)`);
 
 /**
  * Next.js 16 Proxy — path-based i18n routing.
@@ -50,6 +52,27 @@ export async function proxy(request: NextRequest) {
       '<!doctype html><html lang="vi"><meta charset="utf-8"><title>Bài đã gỡ | banhbong.net</title><p>Bài này đã gỡ khỏi banhbong.net. <a href="/">Về trang chủ</a></p></html>',
       { status: 410, headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex" } },
     );
+  }
+
+  // ── Trang mục lục có ?page/?league/... → đường nội bộ để ISR (lib/query-segment.ts) ──
+  // Trang đọc `searchParams` bị Next coi là động: `revalidate` mất tác dụng, mỗi lượt
+  // xem chạy một function (Vercel tạm khoá vì fluidCpuDuration). Ở đây ta đổi query
+  // thành một đoạn đường dẫn; URL người dùng/Google thấy KHÔNG đổi.
+  if (DOAN_LOC_RE.test(pathname)) {
+    // Đoạn nội bộ không được mở trực tiếp (khỏi đẻ URL trùng).
+    return new NextResponse(null, { status: 404 });
+  }
+  if (KHOA_THEO_TRANG[pathname] && (request.method === "GET" || request.method === "HEAD") && [...searchParams.keys()].length > 0) {
+    const chuan = chuanHoaQuery(searchParams, pathname);
+    const url = request.nextUrl.clone();
+    url.pathname = chuan ? `/vi${pathname}/${DOAN_LOC}/${maHoaQuery(chuan)}` : `/vi${pathname}`;
+    // Giữ `_rsc` (khoá cache điều hướng client), bỏ mọi tham số còn lại.
+    const rsc = searchParams.get("_rsc");
+    url.search = rsc ? `?_rsc=${encodeURIComponent(rsc)}` : "";
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-pathname", pathname);
+    response.headers.set("x-lang", "vi");
+    return response;
   }
 
   // ── TMA routes: pass through unchanged (no lang rewrite) ──
