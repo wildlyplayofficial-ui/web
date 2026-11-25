@@ -13,6 +13,7 @@ import { buildPerson } from "@/lib/jsonld";
 import { locales } from "@/lib/format";
 import { resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 
 export const revalidate = 3600;
 
@@ -110,6 +111,8 @@ export default async function AuthorPage({ params }: Props) {
           </ul>
         )}
       </section>
+
+      <KhoiLinkDuDoan chu={a.path} lang={lang} />
     </div>
   );
 }
