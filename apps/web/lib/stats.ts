@@ -1,4 +1,4 @@
-import type { Pick } from "./types";
+import type { SettledPick } from "./types";
 
 /**
  * Aggregations for the Stats page — everything derives from a single
@@ -22,7 +22,7 @@ export interface StatsSummary extends Omit<GroupStats, "key"> {
   avgClv: number | null;
 }
 
-function tally(picks: Pick[]): Omit<GroupStats, "key"> {
+function tally(picks: SettledPick[]): Omit<GroupStats, "key"> {
   return {
     settled: picks.length,
     wins: picks.filter((p) => p.status === "won").length,
@@ -32,7 +32,7 @@ function tally(picks: Pick[]): Omit<GroupStats, "key"> {
   };
 }
 
-export function summarize(picks: Pick[]): StatsSummary {
+export function summarize(picks: SettledPick[]): StatsSummary {
   const base = tally(picks);
   const staked = picks.reduce((sum, p) => sum + p.stake_units, 0);
   // CLV per pick = (odds_publish / odds_close − 1) × 100, same as the play page.
@@ -47,8 +47,8 @@ export function summarize(picks: Pick[]): StatsSummary {
 }
 
 /** Group settled picks (e.g. by league or market), sorted by settled count desc. */
-export function groupStats(picks: Pick[], keyOf: (pick: Pick) => string): GroupStats[] {
-  const groups = new Map<string, Pick[]>();
+export function groupStats(picks: SettledPick[], keyOf: (pick: SettledPick) => string): GroupStats[] {
+  const groups = new Map<string, SettledPick[]>();
   for (const pick of picks) {
     const key = keyOf(pick);
     groups.set(key, [...(groups.get(key) ?? []), pick]);
@@ -59,7 +59,7 @@ export function groupStats(picks: Pick[], keyOf: (pick: Pick) => string): GroupS
 }
 
 /** Running units P/L ordered by kickoff ascending — one point per settled pick. */
-export function cumulativeUnits(picks: Pick[]): { date: string; total: number }[] {
+export function cumulativeUnits(picks: SettledPick[]): { date: string; total: number }[] {
   let total = 0;
   return [...picks]
     .sort((a, b) => a.kickoff_utc.localeCompare(b.kickoff_utc))
