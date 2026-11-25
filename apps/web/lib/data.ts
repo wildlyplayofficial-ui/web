@@ -279,8 +279,10 @@ async function getPostsImpl(lang: Lang): Promise<PostListItem[]> {
     .map((p) => chuanHoaAnh(viPersonaFields(p, POST_LIST_TEXT_FIELDS)));
 }
 
+// Bài viết: đệm 1 giờ (đăng/sửa bài đã gọi /api/revalidate xoá đệm theo tag).
+// Đệm ngắn hơn sẽ kéo revalidate của cả trang xuống theo → tốn CPU Vercel.
 export const getPosts = unstable_cache(getPostsImpl, ["posts"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -305,7 +307,7 @@ async function getPostImpl(slug: string, lang: Lang): Promise<Post | null> {
 }
 
 export const getPost = unstable_cache(getPostImpl, ["post"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -326,7 +328,7 @@ async function getPostLangsImpl(slug: string): Promise<Lang[]> {
 }
 
 export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -364,7 +366,7 @@ async function getPostsOfTypeImpl(lang: Lang, loai: "guide" | "blog"): Promise<P
 }
 
 export const getGuides = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "guide"), ["guides"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -372,7 +374,7 @@ export const getGuides = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang,
  *  hướng dẫn đang bị cố ý ẩn khỏi Google (Nick+Peter 28/7) và cả mục đó không
  *  đem lên fanpage được (trang bị chặn tuổi). Blog thì index và đăng thoải mái. */
 export const getBlogs = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "blog"), ["blogs"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -406,7 +408,7 @@ async function getRecentRecapPostsImpl(lang: Lang, limit: number): Promise<PostL
 }
 
 export const getRecentRecapPosts = unstable_cache(getRecentRecapPostsImpl, ["recent-recaps"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -436,7 +438,7 @@ async function getReportsImpl(lang: Lang): Promise<PostListItem[]> {
 }
 
 export const getReports = unstable_cache(getReportsImpl, ["reports"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
