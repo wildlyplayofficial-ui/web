@@ -6,6 +6,7 @@ import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laBlogLichCaMua, laTrangLichCaMua } from "@/lib/chi-muc";
 import { resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 
 /**
  * Hub /xem-bong-da-o-dau (16/11/2026). GSC: nhóm "xem … ở đâu / lịch cả mùa / đá mấy giờ" là nhóm
@@ -173,6 +174,10 @@ export default async function XemBongDaODau({ params }: Props) {
       {xem.length + lich.length + gio.length === 0 && (
         <p className="pb-10 text-muted">Chưa có bài nào. Ghé lại sau nhé.</p>
       )}
+
+      <div className="pb-10">
+        <KhoiLinkDuDoan chu={DUONG} lang={lang} />
+      </div>
     </div>
   );
 }
