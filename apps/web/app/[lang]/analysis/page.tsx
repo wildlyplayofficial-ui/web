@@ -10,7 +10,7 @@ import { canonicalTrang } from "@/lib/canonical-trang";
 import type { AnalysisArticle } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;

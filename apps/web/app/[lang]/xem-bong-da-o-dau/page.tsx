@@ -14,7 +14,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
  * khoi-trang-tru.tsx), dựng phía server. Toàn bộ lấy từ dữ liệu, không ghi cứng đường dẫn bài.
  */
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const DUONG = "/xem-bong-da-o-dau";
 const TIEU_DE = "Xem bóng đá ở đâu: kênh chiếu & lịch thi đấu các giải 2026-27";

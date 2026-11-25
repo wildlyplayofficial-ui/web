@@ -3,7 +3,7 @@ import { CopyButton } from "@/components/copy-button";
 import { getDict, resolveLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const USDT_TRC20_ADDRESS = "TQGw1vmaVX7fWoJDSjBk7zgc8TRSP8ZC3G";
 

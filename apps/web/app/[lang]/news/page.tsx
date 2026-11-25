@@ -19,7 +19,7 @@ import { LocalKickoffTime } from "@/components/local-kickoff-time";
 
 /* eslint-disable @next/next/no-img-element */
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const EPL_LIVESCORE_ID = 2;
 

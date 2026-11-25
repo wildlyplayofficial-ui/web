@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { buildAlternates, resolveLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;
