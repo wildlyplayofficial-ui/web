@@ -13,7 +13,7 @@ import { copy } from "./copy";
  * 16/11: gỡ khối 5 chuyên gia; /about KHÔNG nhắc tên Pete (Peter 16/11), tên chỉ ở dòng tác giả trang trận. Bỏ thẻ Chú Tám,
  * mục thành tích công khai (Peter không công khai thành tích), công cụ và đường dây hỗ trợ.
  */
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;
