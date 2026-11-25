@@ -36,12 +36,16 @@ const NUT = "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounde
 
 export function DuDoanPZ({
   rows,
+  ngayCoTran,
   homNay,
   ngayChon,
   lang,
   sauMoDau,
 }: {
+  /** CHỈ dòng của ngày đang xem — lấy từ duLieuBang(), đừng đưa cả danh sách. */
   rows: HangDuDoan[];
+  /** Các ngày có trận cho hàng nút (cũng từ duLieuBang()). */
+  ngayCoTran: string[];
   /** Khoá ngày hôm nay giờ VN, dựng ở server. */
   homNay: string;
   /** Ngày trang này hiện (trang ngày /du-doan/ngay-mai, /du-doan/thu-bay…); bỏ trống = ngày đầu có trận. */
@@ -53,7 +57,7 @@ export function DuDoanPZ({
   const t = getDict(lang).duDoan;
   // Hôm nay → 5 ngày tới, CHỈ ngày có trận; hôm qua không hiện (Peter 11/11, xem /ket-qua).
   // Mỗi tab ngày là LINK riêng (Peter 11/11: Google phải thấy được trang từng ngày).
-  const tab = ngayTabDuDoan(homNay, new Set(rows.map((r) => r.ngay)));
+  const tab = ngayTabDuDoan(homNay, new Set(ngayCoTran));
   const ngay = ngayChon ?? tab.macDinh;
   const ngays = tab.ngays.includes(ngay) ? tab.ngays : [...tab.ngays, ngay].sort();
   const [giai, setGiai] = useState("");
