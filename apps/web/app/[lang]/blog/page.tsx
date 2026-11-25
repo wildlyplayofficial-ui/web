@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getBlogs } from "@/lib/data";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { duongTran } from "@/lib/du-doan-tran";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { PostListItem } from "@/lib/types";
@@ -115,6 +116,10 @@ export default async function GuidesPage({ params }: Props) {
           </p>
         </div>
       )}
+
+      <div className="pb-10">
+        <KhoiLinkDuDoan chu="/blog" lang={lang} />
+      </div>
     </div>
   );
 }
