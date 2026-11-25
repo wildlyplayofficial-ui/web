@@ -646,5 +646,7 @@ async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]>
 export const getStandingsCompetitions = unstable_cache(
   fetchStandingsCompetitionsImpl,
   ["standings-competitions"],
-  { revalidate: 600 },
+  // Layout [lang] gọi hàm này: số ở đây là TRẦN revalidate của MỌI trang trong site.
+  // Để 600 thì trang khai 3600/86400 vẫn dựng lại mỗi 10 phút.
+  { revalidate: 3600 },
 );
