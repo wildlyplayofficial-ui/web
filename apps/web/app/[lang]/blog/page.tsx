@@ -12,7 +12,7 @@ import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
 import type { Post } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;

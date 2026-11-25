@@ -11,7 +11,6 @@ import { SITE_URL, SITE_NAME, PETE } from "@/lib/brand";
 
 const BASE = SITE_URL;
 
-export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 function escapeXml(s: string): string {

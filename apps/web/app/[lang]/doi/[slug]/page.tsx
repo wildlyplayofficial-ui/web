@@ -14,7 +14,7 @@ import { DuDoanVietNam } from "@/components/du-doan-viet-nam";
 
 /* eslint-disable @next/next/no-img-element */
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 /** Đủ bài mới cho Google index — dưới ngưỡng thì noindex để tránh "trang mỏng" dìm
  *  cả site (Jane 21/8). Tự bật index khi 1 đội tích đủ bài, không cần sửa tay. */

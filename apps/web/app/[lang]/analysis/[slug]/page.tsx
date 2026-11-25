@@ -41,7 +41,7 @@ export const dynamic = "force-static";
 export async function generateStaticParams() {
   return [];
 }
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const BASE = SITE_URL;
 

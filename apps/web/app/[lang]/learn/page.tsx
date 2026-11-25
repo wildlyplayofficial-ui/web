@@ -5,7 +5,7 @@ import Link from "next/link";
 import { buildAlternates, getDict, resolveLang, withLang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;

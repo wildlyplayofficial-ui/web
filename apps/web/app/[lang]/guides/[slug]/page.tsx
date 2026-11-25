@@ -12,7 +12,7 @@ import { isViBlockedGuide } from "@/lib/vi-blocked-guides";
 import { biaUrl, biaKhongChuUrl, SO_DO_VI } from "@/lib/bia-guide";
 import { guideDuocIndex, NOINDEX_FOLLOW } from "@/lib/chi-muc";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const BASE = "https://www.banhbong.net";
 
