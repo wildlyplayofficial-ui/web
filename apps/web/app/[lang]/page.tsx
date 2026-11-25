@@ -179,7 +179,7 @@ export default async function Home({ params }: Props) {
       hero: `/api/og/news/${p.slug}?locale=${lang}&v=${OG_VERSION}`,
       // Recap posts thường không có meta_description → rơi về tóm tắt lấy từ đầu
       // thân bài (Nick 13/9: thẻ nổi bật thiếu phần tóm tắt dưới tiêu đề).
-      excerpt: p.meta_description || analysisExcerpt(p.body_md),
+      excerpt: p.meta_description || analysisExcerpt(p.body_md ?? null),
       href: withLang(duongBai(p.slug), lang),
       nhan: dict.analysis.tabs.recap,
     })),

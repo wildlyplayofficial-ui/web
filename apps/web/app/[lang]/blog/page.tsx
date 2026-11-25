@@ -9,7 +9,7 @@ import { taiDuDoan } from "@/lib/du-doan-tai";
 import { duongTran } from "@/lib/du-doan-tran";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
-import type { Post } from "@/lib/types";
+import type { PostListItem } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
 export const revalidate = 300;
@@ -51,7 +51,7 @@ function formatDate(iso: string | null, lang: Lang): string {
   }).format(new Date(iso));
 }
 
-function extractExcerpt(body: string | null, maxLen = 140): string {
+function extractExcerpt(body: string | null | undefined, maxLen = 140): string {
   if (!body) return "";
   const plain = body.replace(/[#*_`>\[\]()!]/g, "").replace(/\n+/g, " ").trim();
   if (plain.length <= maxLen) return plain;
@@ -59,7 +59,7 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
   return plain.slice(0, cut > 0 ? cut : maxLen) + "\u2026";
 }
 
-function BlogCard({ post, lang, href }: { post: Post; lang: Lang; href: string }) {
+function BlogCard({ post, lang, href }: { post: PostListItem; lang: Lang; href: string }) {
   const excerpt = post.meta_description || extractExcerpt(post.body_md);
   return (
     <Link

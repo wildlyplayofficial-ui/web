@@ -3,13 +3,13 @@ import type { HangDuDoan } from "@/lib/du-doan-hang";
 import { tranDuocIndex } from "@/lib/chi-muc";
 import { ngayThang } from "@/lib/du-doan-tran";
 import { withLang, type Lang } from "@/lib/i18n";
-import type { Post } from "@/lib/types";
+import type { PostListItem } from "@/lib/types";
 
 /**
  * 18/11 (soi chỉ mục): khối link thường (<a href>) sát đầu trang chủ — Google chỉ bò trang chủ.
  * Dẫn thẳng tới /du-doan, từng trận hôm nay và 5 bài blog mới nhất.
  */
-export function KhoiHomNayBlog({ rows, homNay, blogs, lang }: { rows: HangDuDoan[]; homNay: string; blogs: Post[]; lang: Lang }) {
+export function KhoiHomNayBlog({ rows, homNay, blogs, lang }: { rows: HangDuDoan[]; homNay: string; blogs: PostListItem[]; lang: Lang }) {
   // 19/11: dòng cũ bị chú thích nuốt mất .sort/.slice nên liệt kê cả chục trận hôm nay (toàn trận noindex).
   // Nay: trận chưa đá, trận được index (tranDuocIndex) đứng trước, rồi theo giờ đá; tối đa 8 trận.
   const homNayRows = rows
