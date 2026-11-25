@@ -143,7 +143,12 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   // 16/11 gộp trang giải: /du-doan/{giai} (5 giải lớn + Cúp C1) 301 về hub /competitions/{slug},
   // nên rút khỏi sitemap — hub đã nằm ở nhóm static. Trang khuôn (kèo xiên, tip theo ngày/loại
   // kèo/giải, /du-doan/{ngày}…) rút từ 14/11 và tự noindex,follow như cũ.
-  return tranRoutes;
+  // 25/11: urlset rỗng thì Search Console báo lỗi (như news.xml 15/11). Không có trận sắp đá
+  // (nghỉ giải, dữ liệu chưa kéo) tệp vẫn phải có ít nhất hub /du-doan.
+  return [
+    { url: `${BASE}/du-doan`, ...(lmHub ? { lastModified: new Date(lmHub) } : {}), changeFrequency: "daily", priority: 0.8 },
+    ...tranRoutes,
+  ];
 }
 
 async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
