@@ -32,6 +32,15 @@ export function ngayTabDuDoan(homNay: string, coDuLieu: ReadonlySet<string>): { 
   return { ngays, macDinh: ngays[0] };
 }
 
+/** Phần dữ liệu bảng dự đoán cần: dòng của ĐÚNG ngày đang xem + các ngày cho hàng nút.
+ *  Cắt ở server vì bảng là client component: đưa cả `hang` xuống thì mọi trận cũ bị
+ *  nhét vào HTML (trang /du-doan hơn 1MB, đo 25/11). */
+export function duLieuBang<H extends Pick<HangDuDoan, "ngay">>(hang: readonly H[], homNay: string, ngayChon?: string): { rows: H[]; ngayCoTran: string[] } {
+  const tab = ngayTabDuDoan(homNay, new Set(hang.map((r) => r.ngay)));
+  const ngay = ngayChon ?? tab.macDinh;
+  return { rows: hang.filter((r) => r.ngay === ngay), ngayCoTran: tab.ngays };
+}
+
 type Tran = Pick<HangDuDoan, "nha" | "khach" | "ngay" | "gio">;
 
 /** H1 trang trận: "Nhận định, dự đoán Anh vs Croatia, 02h45 ngày 13/11" (15/11: khớp tiêu đề thẻ title). */
