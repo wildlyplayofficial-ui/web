@@ -36,7 +36,7 @@ async function getAnalysisArticlesImpl(
 export const getAnalysisArticles = unstable_cache(
   getAnalysisArticlesImpl,
   ["analysis-articles-cg"],
-  { revalidate: 300, tags: ["analysis-articles"] },
+  { revalidate: 3600, tags: ["analysis-articles"] },
 );
 
 /** Single published Desk article by slug. */
@@ -61,7 +61,7 @@ async function getAnalysisArticleBySlugImpl(
 export const getAnalysisArticleBySlug = unstable_cache(
   getAnalysisArticleBySlugImpl,
   ["analysis-article-by-slug-cg"],
-  { revalidate: 300, tags: ["analysis-articles"] },
+  { revalidate: 3600, tags: ["analysis-articles"] },
 );
 
 /** All published Desk article slugs for sitemap. */
@@ -119,6 +119,7 @@ async function getAnalysisByTeamImpl(team: string, limit = 40): Promise<Analysis
 }
 
 export const getAnalysisByTeam = unstable_cache(getAnalysisByTeamImpl, ["analysis-by-team-cg"], {
-  revalidate: 300,
-  tags: ["analysis-articles-cg"],
+  revalidate: 3600,
+  // Tag phải nằm trong ALLOWED_TAGS của /api/revalidate, nếu không đăng bài không xoá được đệm.
+  tags: ["analysis-articles"],
 });
