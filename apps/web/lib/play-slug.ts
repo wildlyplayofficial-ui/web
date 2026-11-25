@@ -7,7 +7,7 @@
 // /play/<uuid>. Hai dạng khác nhau nên 24 địa chỉ dạng slug không có đường vào
 // nào — Google chỉ tới được qua chuyển hướng (đo GSC 8/9: cả 24 trang /play kẹt
 // "Discovered – currently not indexed", 0 link nội bộ trỏ thẳng).
-import type { Pick } from "./types";
+import type { SettledPick } from "./types";
 
 export function slugifyPlay(s: string): string {
   return s
@@ -20,7 +20,7 @@ export function slugifyPlay(s: string): string {
 
 /** Địa chỉ SEO của một pick: home-vs-away-selection-date (Nick 17/6).
  *  Có đuôi ngày để hai đội gặp lại ở vòng khác không đụng địa chỉ nhau. */
-export function buildPlaySlug(pick: Pick): string {
+export function buildPlaySlug(pick: Pick<SettledPick, "kickoff_utc" | "home_team" | "away_team" | "selection">): string {
   const date = pick.kickoff_utc.slice(0, 10);
   const homeSl = slugifyPlay(pick.home_team);
   const awaySl = slugifyPlay(pick.away_team);

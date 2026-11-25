@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getGuides } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
-import type { Post } from "@/lib/types";
+import type { PostListItem } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { biaUrl, hasBia } from "@/lib/bia-guide";
 
@@ -47,7 +47,7 @@ function formatDate(iso: string | null, lang: Lang): string {
   }).format(new Date(iso));
 }
 
-function extractExcerpt(body: string | null, maxLen = 140): string {
+function extractExcerpt(body: string | null | undefined, maxLen = 140): string {
   if (!body) return "";
   const plain = body.replace(/[#*_`>\[\]()!]/g, "").replace(/\n+/g, " ").trim();
   if (plain.length <= maxLen) return plain;
@@ -55,7 +55,7 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
   return plain.slice(0, cut > 0 ? cut : maxLen) + "\u2026";
 }
 
-function GuideCard({ post, lang }: { post: Post; lang: Lang }) {
+function GuideCard({ post, lang }: { post: PostListItem; lang: Lang }) {
   const excerpt = post.meta_description || extractExcerpt(post.body_md);
   const bia = hasBia(post.slug, lang) ? biaUrl(post.slug, lang, post.title) : null;
   return (

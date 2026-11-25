@@ -7,7 +7,7 @@ import { getBlogs } from "@/lib/data";
 import { cacTranChon } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
-import type { Post } from "@/lib/types";
+import type { PostListItem } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
@@ -120,7 +120,7 @@ function NhanDinhChiTiet({ hang, lang, daDa = false }: { hang: HangDuDoan[]; lan
  * 15/11 (soi chỉ mục): Google bò /du-doan 11/11 rồi bỏ, không lập chỉ mục — trang gần như chỉ là
  * bảng trận đổi mỗi ngày. Thêm một đoạn giới thiệu cố định + link sang vài bài blog mới nhất.
  */
-function GioiThieu({ blogs, lang }: { blogs: Post[]; lang: Lang }) {
+function GioiThieu({ blogs, lang }: { blogs: PostListItem[]; lang: Lang }) {
   return (
     <section aria-labelledby="ve-du-doan" className="mt-10 px-2.5 text-[15px] leading-relaxed">
       <h2 id="ve-du-doan" className="font-display text-2xl font-bold">Dự đoán bóng đá trên banhbong</h2>

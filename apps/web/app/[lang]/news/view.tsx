@@ -7,7 +7,7 @@ import { canonicalTrang } from "@/lib/canonical-trang";
 import { getNewsItems, getHeadline, type NewsItem } from "@/lib/news";
 import { getPosts } from "@/lib/data";
 import { getAnalysisArticles } from "@/lib/analysis-articles";
-import type { AnalysisArticle, Post } from "@/lib/types";
+import type { AnalysisArticle, PostListItem } from "@/lib/types";
 import { fetchCompetitionTable } from "@/lib/standings";
 import { getCompetitionFixtures, getStandingsCompetitions } from "@/lib/standings-extra";
 import { localizedCompetitionName } from "@/lib/competition-logos";
@@ -330,7 +330,7 @@ export async function NewsView({ lang, sp }: { lang: Lang; sp: Sp }) {
         // ("Theo dõi tỷ số trực tiếp…" ×14) — đọc như robot.
       };
     }),
-    ...(league ? [] : posts.filter((p) => p.type === "news")).map((post: Post): Card => ({
+    ...(league ? [] : posts.filter((p) => p.type === "news")).map((post: PostListItem): Card => ({
       key: `p-${post.id}`,
       href: withLang(`/analysis/${post.slug}`, lang),
       title: post.title,
