@@ -1,0 +1,236 @@
+import type { Metadata } from "next";
+import type { Sp } from "@/lib/query-segment";
+import { OG_VERSION } from "@/lib/brand";
+import Link from "next/link";
+import { getAllMatchSlugs } from "@/lib/data";
+import { getDict, withLang, type Lang } from "@/lib/i18n";
+import { canonicalTrang } from "@/lib/canonical-trang";
+import { MatchDateGroups } from "./match-date-groups";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+
+export function metadataTrang(lang: Lang, sp: Sp): Metadata {
+  const dict = getDict(lang);
+  return {
+    title: dict.matches.allMatches,
+    description: dict.matches.matchesSubtitle,
+    openGraph: {
+      locale: "vi_VN",
+      title: `${dict.matches.allMatches} | banhbong.net`,
+      description: dict.matches.matchesSubtitle,
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(dict.matches.allMatches)}&v=${OG_VERSION}`, width: 1200, height: 630 }],
+    },
+    ...canonicalTrang("/matches", lang, sp),
+  };
+}
+
+const SLUG_OVERRIDES: Record<string, string> = {
+  usa: "USA", "dr-congo": "DR Congo", "congo-dr": "Congo DR",
+  "bosnia-herzegovina": "Bosnia and Herzegovina", "bosnia-and-herzegovina": "Bosnia and Herzegovina",
+  "cape-verde": "Cape Verde", "south-korea": "South Korea", "south-africa": "South Africa",
+  "costa-rica": "Costa Rica", "czech-republic": "Czech Republic", "new-zealand": "New Zealand",
+  "saudi-arabia": "Saudi Arabia", "ivory-coast": "Ivory Coast", "cote-d-ivoire": "Ivory Coast",
+  "cura-ao": "Curacao", "c-te-d-ivoire": "Ivory Coast",
+};
+
+function deslugify(s: string): string {
+  if (SLUG_OVERRIDES[s]) return SLUG_OVERRIDES[s];
+  return s.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+function parseSlug(slug: string): { home: string; away: string; date: string } | null {
+  const vsIdx = slug.indexOf("-vs-");
+  if (vsIdx < 0) return null;
+  const home = slug.slice(0, vsIdx);
+  const rest = slug.slice(vsIdx + 4);
+  const dateMatch = rest.match(/(\d{4}-\d{2}-\d{2})$/);
+  if (!dateMatch) return null;
+  const date = dateMatch[1];
+  const away = rest.slice(0, rest.length - date.length - 1);
+  return home && away ? { home, away, date } : null;
+}
+
+const DEDUP_ALIASES: Record<string, string> = {
+  turkiye: "turkey", "czech republic": "czechia", "korea republic": "south korea", "congo dr": "dr congo",
+};
+
+function dedupName(display: string): string {
+  return DEDUP_ALIASES[display.toLowerCase()] ?? display.toLowerCase();
+}
+
+
+// 60 chứ không phải 30: 250 trang trận chia 30 là 9 trang, bot phải bấm Sau 9 lần
+// mới tới trang cuối. Chia 60 còn 5 trang, và bên dưới liệt kê đủ SỐ TRANG.
+const PER_PAGE = 60;
+
+export async function MatchesView({ lang, sp }: { lang: Lang; sp: Sp }) {
+  const page = Math.max(1, parseInt(String(sp.page ?? "1"), 10) || 1);
+  const leagueFilter = typeof sp.league === "string" ? sp.league : undefined;
+  const dict = getDict(lang);
+  const allSlugs = await getAllMatchSlugs();
+
+  const parsed = allSlugs
+    .map((entry) => {
+      const p = parseSlug(entry.slug);
+      if (!p) return null;
+      return { ...entry, ...p };
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null);
+
+  // Dedup same matchup ±1 day
+  const seen = new Set<string>();
+  const deduped = parsed.filter((m) => {
+    const home = dedupName(deslugify(m.home));
+    const away = dedupName(deslugify(m.away));
+    const teamKey = [home, away].sort().join("|");
+    const key = teamKey + "|" + m.date;
+    if (seen.has(key)) return false;
+    const d = new Date(m.date + "T00:00:00Z");
+    const prev = new Date(d.getTime() - 86400000).toISOString().slice(0, 10);
+    const next = new Date(d.getTime() + 86400000).toISOString().slice(0, 10);
+    if (seen.has(teamKey + "|" + prev) || seen.has(teamKey + "|" + next)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Normalize league names: strip group/round suffixes + unify WC variants
+  const normalizeLeague = (l: string): string => {
+    let n = l.replace(/\s*[—–-]\s*(Group\s+\w+(\s*\(MD\d\))?|Round of \d+|Quarter-final|Semi-final|Final|Group Stage(\s*\(MD\d\))?)$/i, "").trim();
+    // Bỏ đuôi mùa giải: /watching ghi "Premier League 2026-27" còn lịch mùa ghi
+    // "Premier League" → bộ lọc mọc ra HAI giải cho cùng một giải (Peter bắt 23/8).
+    n = n.replace(/\s+\d{4}([-/]\d{2,4})?$/, "").trim();
+    // Unify all World Cup variants to one canonical name
+    if (/^(FIFA\s+)?World\s+Cup(\s+2026)?$/i.test(n)) n = "FIFA World Cup 2026";
+    return n;
+  };
+
+  const leagueMap = new Map<string, string>(); // normalized → first raw
+  for (const m of deduped) {
+    if (!m.league) continue;
+    const norm = normalizeLeague(m.league);
+    if (!leagueMap.has(norm)) leagueMap.set(norm, norm);
+  }
+  const leagues = [...leagueMap.keys()].sort();
+
+  // Filter by league (match against normalized name)
+  const filtered = leagueFilter ? deduped.filter((m) => normalizeLeague(m.league) === leagueFilter) : deduped;
+
+  // Sort: upcoming first (kickoff ASC), then settled (kickoff DESC)
+  const now = new Date().toISOString();
+  // Kết quả vòng vừa đá lên TRƯỚC lịch sắp tới: xếp mọi trận đã đá xuống cuối thì
+  // 30 ngày lịch đẩy chúng sang trang 2, người vào xem "kết quả hôm qua" không
+  // thấy gì (Peter bắt 23/8 — 5 trận Ngoại hạng Anh biến mất khỏi trang 1).
+  const vuaXong = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  const recent = filtered.filter((m) => m.kickoffUtc < now && m.kickoffUtc >= vuaXong).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
+  const upcoming = filtered.filter((m) => m.kickoffUtc >= now).sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc));
+  const settled = filtered.filter((m) => m.kickoffUtc < vuaXong).sort((a, b) => b.kickoffUtc.localeCompare(a.kickoffUtc));
+  const matches = [...recent, ...upcoming, ...settled];
+
+  const trangHref = (p: number) =>
+    withLang(`/matches?page=${p}${leagueFilter ? `&league=${encodeURIComponent(leagueFilter)}` : ""}`, lang);
+  const totalPages = Math.max(1, Math.ceil(matches.length / PER_PAGE));
+  // Kẹp số trang vào phạm vi thật, giống /analysis. Trước đây ?page=999 trả mã 200
+  // kèm trang RỖNG — đó là 404 giả, Google chấm điểm xấu. Giờ trả trang cuối.
+  const safePage = Math.min(page, totalPages);
+  const pageMatches = matches.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+
+  // Prepare serializable match entries for client-side local-date grouping
+  const matchEntries = pageMatches.map((m) => ({
+    slug: m.slug,
+    kickoffUtc: m.kickoffUtc,
+    homeScore: m.homeScore,
+    awayScore: m.awayScore,
+    pickStatus: m.pickStatus,
+    liveStatus: m.liveStatus,
+    minute: m.minute,
+    league: normalizeLeague(m.league),
+    homeName: deslugify(m.home),
+    awayName: deslugify(m.away),
+  }));
+
+  function leagueHref(league: string | undefined): string {
+    const qs = league ? `?league=${encodeURIComponent(league)}` : "";
+    return withLang(`/matches${qs}`, lang);
+  }
+
+  return (
+    <div className="mx-auto max-w-[800px] px-5">
+      <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: dict.matches.allMatches, url: "/matches" }]} />
+      <section className="py-12 text-center">
+        <div className="flex items-center justify-center gap-4">
+          <img
+            src="/icons/icon-192x192.png"
+            alt=""
+            aria-hidden="true"
+            className="h-16 w-16 flex-shrink-0 object-contain"
+          />
+          <h1 className="gradient-text font-display text-4xl font-bold">{dict.matches.allMatches}</h1>
+        </div>
+        <p className="mt-3 text-muted">{dict.matches.matchesSubtitle}</p>
+      </section>
+
+      {/* Competition chips */}
+      {leagues.length > 0 && (
+        <nav className="mb-6 flex flex-wrap gap-2" aria-label="Lọc theo giải đấu">
+          <Link
+            href={leagueHref(undefined)}
+            className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${!leagueFilter ? "border-brand/40 bg-brand-dim text-brand" : "border-line bg-card text-muted hover:text-ink"}`}
+          >
+            Tất cả
+          </Link>
+          {leagues.map((l) => (
+            <Link
+              key={l}
+              href={leagueHref(leagueFilter === l ? undefined : l)}
+              className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${leagueFilter === l ? "border-brand/40 bg-brand-dim text-brand" : "border-line bg-card text-muted hover:text-ink"}`}
+            >
+              {l}
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {matchEntries.length === 0 ? (
+        <div className="rounded-card border border-line bg-card px-6 py-16 text-center text-muted">{dict.matches.empty}</div>
+      ) : (
+        <MatchDateGroups matches={matchEntries} lang={lang} />
+      )}
+
+      {totalPages > 1 && (
+        <nav className="flex flex-wrap items-center justify-center gap-2 pb-8 pt-4">
+          {safePage > 1 && (
+            <Link
+              href={trangHref(safePage - 1)}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
+            >
+              &larr; Trước
+            </Link>
+          )}
+          {/* Liệt kê ĐỦ số trang, không chỉ Trước/Sau: bot đi theo link, mỗi trang
+              sâu thêm một lớp là một lớp nữa Google có thể bỏ qua. */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <Link
+              key={p}
+              href={trangHref(p)}
+              aria-current={p === safePage ? "page" : undefined}
+              className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
+                p === safePage
+                  ? "border-brand text-brand"
+                  : "border-line text-muted hover:border-brand hover:text-brand"
+              }`}
+            >
+              {p}
+            </Link>
+          ))}
+          {safePage < totalPages && (
+            <Link
+              href={trangHref(safePage + 1)}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
+            >
+              Sau &rarr;
+            </Link>
+          )}
+        </nav>
+      )}
+    </div>
+  );
+}
