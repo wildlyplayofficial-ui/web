@@ -83,7 +83,7 @@ function GuideCard({ post, lang }: { post: PostListItem; lang: Lang }) {
       <div className="min-w-0">
         <div className="flex items-center gap-3 text-xs text-muted">
           <span className="rounded-full border border-brand/40 px-2 py-0.5 font-display font-semibold text-brand">
-            Guide
+            Hướng dẫn
           </span>
           <time dateTime={post.published_at ?? undefined}>
             {formatDate(post.published_at, lang)}
@@ -123,9 +123,9 @@ export default async function GuidesPage({ params }: Props) {
             <GuideCard key={post.id} post={post} lang={lang} />
           ))}
           <p className="pt-2 text-center text-sm text-muted">
-            Put it into practice with our{" "}
+            Muốn tự tính số liệu?{" "}
             <Link href={withLang("/calculators", lang)} className="font-semibold text-brand hover:underline">
-              free calculators &rarr;
+              Mở công cụ tính miễn phí &rarr;
             </Link>
           </p>
         </div>
