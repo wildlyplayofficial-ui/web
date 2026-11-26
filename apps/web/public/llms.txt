@@ -1,8 +1,8 @@
 # banhbong.net
 
-> banhbong.net: dự đoán tỷ số bóng đá mỗi ngày, Over/Under 2.5, phong độ hai đội, BXH và lịch thi đấu các giải lớn. Công khai thành tích, miễn phí.
+> banhbong.net: dự đoán tỷ số bóng đá mỗi ngày, Over/Under 2.5, phong độ hai đội, BXH và lịch thi đấu các giải lớn. Xem miễn phí.
 
-Nhận định trước trận do Chú Tám Banh chọn trận và góc nhìn, AI viết bài từ số liệu. Tin tức và blog do Pete Nguyễn biên tập, AI hỗ trợ viết từ nguồn công khai. Thành tích nhận định công khai, không sửa, không xoá.
+Nhận định trước trận do Chú Tám Banh chọn trận và góc nhìn, AI viết bài từ số liệu. Tin tức và blog do Pete Nguyễn biên tập, AI hỗ trợ viết từ nguồn công khai.
 
 ## Mục chính
 

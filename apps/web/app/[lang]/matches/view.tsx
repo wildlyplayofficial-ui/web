@@ -17,7 +17,7 @@ export function metadataTrang(lang: Lang, sp: Sp): Metadata {
       locale: "vi_VN",
       title: `${dict.matches.allMatches} | banhbong.net`,
       description: dict.matches.matchesSubtitle,
-      images: [{ url: `/api/og/editorial?title=Today%27s%20Matches&subtitle=World%20Cup%202026%20fixtures%20and%20predictions&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(dict.matches.allMatches)}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     ...canonicalTrang("/matches", lang, sp),
   };
@@ -154,7 +154,7 @@ export async function MatchesView({ lang, sp }: { lang: Lang; sp: Sp }) {
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: "Matches", url: "/matches" }]} />
+      <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: dict.matches.allMatches, url: "/matches" }]} />
       <section className="py-12 text-center">
         <div className="flex items-center justify-center gap-4">
           <img
@@ -170,12 +170,12 @@ export async function MatchesView({ lang, sp }: { lang: Lang; sp: Sp }) {
 
       {/* Competition chips */}
       {leagues.length > 0 && (
-        <nav className="mb-6 flex flex-wrap gap-2" aria-label="Filter by competition">
+        <nav className="mb-6 flex flex-wrap gap-2" aria-label="Lọc theo giải đấu">
           <Link
             href={leagueHref(undefined)}
             className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${!leagueFilter ? "border-brand/40 bg-brand-dim text-brand" : "border-line bg-card text-muted hover:text-ink"}`}
           >
-            All
+            Tất cả
           </Link>
           {leagues.map((l) => (
             <Link
@@ -202,7 +202,7 @@ export async function MatchesView({ lang, sp }: { lang: Lang; sp: Sp }) {
               href={trangHref(safePage - 1)}
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
             >
-              &larr; Prev
+              &larr; Trước
             </Link>
           )}
           {/* Liệt kê ĐỦ số trang, không chỉ Trước/Sau: bot đi theo link, mỗi trang
@@ -226,7 +226,7 @@ export async function MatchesView({ lang, sp }: { lang: Lang; sp: Sp }) {
               href={trangHref(safePage + 1)}
               className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
             >
-              Next &rarr;
+              Sau &rarr;
             </Link>
           )}
         </nav>

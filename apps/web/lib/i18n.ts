@@ -961,7 +961,7 @@ const vi: Dict = {
   },
   analysis: {
     title: "Nhận Định & Phân Tích Bóng Đá",
-    subtitle: "Nhận định, dự đoán tỷ số và phân tích các trận đấu — cập nhật liên tục, thành tích công khai.",
+    subtitle: "Nhận định, dự đoán tỷ số và phân tích các trận đấu.",
     seoDescription: "Recap trận đấu, nhận định trước trận và phân tích bóng đá miễn phí, xuất bản sau mỗi trận. Phân tích trung thực — điều gì đúng, điều gì sai và tại sao — mở cho tất cả, không tính phí.",
     empty: "Chưa có bài viết.",
     backTo: "Quay lại Phân Tích",
