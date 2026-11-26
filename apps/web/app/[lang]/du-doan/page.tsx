@@ -79,7 +79,7 @@ function TongQuanHub({ tq }: { tq: TongQuan }) {
           </tbody>
         </table>
       </div>
-      {tq.bang.length > 12 && <p className="mt-2 text-sm text-muted">Và {tq.bang.length - 12} giải khác, xem đủ trong bảng trận phía trên.</p>}
+      {tq.bang.length > 12 && <p className="mt-2 text-sm text-muted">Và {tq.bang.length - 12} giải khác cũng có trận sắp đá.</p>}
     </section>
   );
 }
