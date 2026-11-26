@@ -11,6 +11,15 @@ import { canonicalTrang } from "@/lib/canonical-trang";
 import type { AnalysisArticle } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 
+/** Nhãn tiếng Việt của loại bài Desk. */
+const DESK_KIND_LABELS: Record<string, string> = {
+  preview: "Trước trận",
+  recap: "Sau trận",
+  roundup: "Tổng hợp",
+  analysis: "Phân tích",
+  news: "Tin",
+};
+
 /** Badge colors for Desk article kinds. */
 const DESK_KIND_COLORS: Record<string, string> = {
   preview: "border-blue-400/40 text-blue-400",
@@ -44,7 +53,7 @@ export function metadataTrang(lang: Lang, sp: Sp): Metadata {
       locale: "vi_VN",
       title: `${dict.analysis.title} | banhbong.net`,
       description: dict.analysis.seoDescription,
-      images: [{ url: `/api/og/editorial?title=Analysis&subtitle=Previews%2C%20recaps%2C%20and%20post-mortems&v=${OG_VERSION}`, width: 1200, height: 630 }],
+      images: [{ url: `/api/og/editorial?title=${encodeURIComponent(dict.analysis.title)}&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -81,7 +90,7 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
 /** Card for a Desk-authored analysis article (spec §2B). */
 function DeskCard({ article, lang, href }: { article: AnalysisArticle; lang: Lang; href: string }) {
   const excerpt = extractExcerpt(article.body);
-  const kindLabel = article.kind.charAt(0).toUpperCase() + article.kind.slice(1);
+  const kindLabel = DESK_KIND_LABELS[article.kind] ?? "Bài viết";
   const badgeColor = DESK_KIND_COLORS[article.kind] ?? DESK_KIND_COLORS.roundup;
 
   return (
@@ -139,7 +148,7 @@ export async function AnalysisView({ lang, sp }: { lang: Lang; sp: Sp }) {
 
   return (
     <div className="mx-auto max-w-[800px] px-5">
-      <BreadcrumbJsonLd items={[{ name: "Home", url: "/" }, { name: dict.analysis.title, url: "/analysis" }]} />
+      <BreadcrumbJsonLd items={[{ name: "Trang chủ", url: "/" }, { name: dict.analysis.title, url: "/analysis" }]} />
       <section className="py-12 text-center">
         <h1 className="gradient-text font-display text-4xl font-bold">{dict.analysis.title}</h1>
         <p className="mt-3 text-muted">{dict.analysis.subtitle}</p>
@@ -170,7 +179,7 @@ export async function AnalysisView({ lang, sp }: { lang: Lang; sp: Sp }) {
                   href={buildPageHref(lang, safePage - 1)}
                   className="rounded-card border border-line bg-card px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-line-hover hover:text-foreground"
                 >
-                  &larr; Prev
+                  &larr; Trước
                 </Link>
               )}
               {/* Số trang: mỗi trang cách trang đầu ĐÚNG 1 cú bấm. Trước đây chỉ có
@@ -195,7 +204,7 @@ export async function AnalysisView({ lang, sp }: { lang: Lang; sp: Sp }) {
                   href={buildPageHref(lang, safePage + 1)}
                   className="rounded-card border border-line bg-card px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-line-hover hover:text-foreground"
                 >
-                  Next &rarr;
+                  Sau &rarr;
                 </Link>
               )}
             </nav>
@@ -204,9 +213,9 @@ export async function AnalysisView({ lang, sp }: { lang: Lang; sp: Sp }) {
       )}
 
       <p className="pb-10 pt-2 text-center text-sm text-muted">
-        Want to crunch the numbers yourself?{" "}
+        Muốn tự tính số liệu?{" "}
         <Link href={withLang("/calculators", lang)} className="font-semibold text-brand hover:underline">
-          Try our free calculators &rarr;
+          Mở công cụ tính miễn phí &rarr;
         </Link>
       </p>
     </div>

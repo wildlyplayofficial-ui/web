@@ -19,7 +19,7 @@ export const TAGLINE = "Dự đoán bóng đá mỗi ngày";
 export const DEFAULT_TITLE = "Dự đoán bóng đá hôm nay, nhận định tỷ số miễn phí | banhbong.net";
 /** Mô tả site DUY NHẤT (~150 ký tự) — meta description gốc, og/twitter, JSON-LD, manifest, llms.txt. */
 export const SITE_DESCRIPTION =
-  "banhbong.net: dự đoán tỷ số bóng đá mỗi ngày, Over/Under 2.5, phong độ hai đội, BXH và lịch thi đấu các giải lớn. Công khai thành tích, miễn phí.";
+  "banhbong.net: dự đoán tỷ số bóng đá mỗi ngày, Over/Under 2.5, phong độ hai đội, BXH và lịch thi đấu các giải lớn. Xem miễn phí.";
 export const SAME_AS = [
   "https://t.me/banhbongnet",
   "https://facebook.com/xemthethaotructiep",
