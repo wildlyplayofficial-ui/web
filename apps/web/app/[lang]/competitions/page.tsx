@@ -42,7 +42,7 @@ const DEFAULT_COLORS = { border: "border-line", bg: "bg-card", text: "text-muted
 export default async function CompetitionsHub({ params }: Props) {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
-  const competitions = await getStandingsCompetitions().catch(() => []);
+  const competitions = await getStandingsCompetitions();
   const active = competitions.filter((c) => c.status === "active" && c.slug);
   // 16/11: trang chỉ còn ~62 chữ. Mỗi giải thêm 1 dòng đội đầu bảng (số thật từ BXH, đã đệm 1 giờ);
   // lỗi hoặc bảng rỗng → không hiện gì.
