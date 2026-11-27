@@ -148,7 +148,7 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
 
 async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
   // Bài/tin/blog chỉ lấy NGÀY để tính lastmod trang mục lục — URL của chúng nằm ở nhóm riêng.
-  const [guides, blogs, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllGuideSlugs(), getAllBlogSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
+  const [guides, blogs, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllGuideSlugs(), getAllBlogSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   // Hub theo đội: 14/11 chỉ hub Việt Nam (doiDuocIndex) — hub CLB là danh sách link mỏng,
   // trang tự noindex. Vẫn giữ ngưỡng HUB_MIN = MIN_INDEX bên trang hub (khớp robots).
