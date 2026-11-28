@@ -585,10 +585,15 @@ async function getVoteCountsImpl(pickIds: string[]): Promise<Record<string, Vote
   return counts;
 }
 
-export const getVoteCounts = unstable_cache(getVoteCountsImpl, ["vote-counts"], {
+const getVoteCountsCached = unstable_cache(getVoteCountsImpl, ["vote-counts"], {
   revalidate: 60,
   tags: ["votes"],
 });
+
+// Không có kèo thì đừng chạm đệm: gọi unstable_cache 60s là kéo cả trang xuống 60s.
+export async function getVoteCounts(pickIds: string[]): Promise<Record<string, VoteCounts>> {
+  return pickIds.length === 0 ? {} : getVoteCountsCached(pickIds);
+}
 
 /** Thesis translations from `pick_content`, keyed by pick id then language.
  *  The English thesis lives on the pick itself — callers fall back to it. */
