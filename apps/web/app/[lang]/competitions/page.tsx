@@ -18,13 +18,19 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang = resolveLang((await params).lang);
   const dict = getDict(lang);
+  // 28/11: tựa "Bảng xếp hạng" + mô tả 49 ký tự quá ngắn trên kết quả Google.
+  const title = lang === "vi" ? "Bảng xếp hạng, lịch thi đấu các giải bóng đá" : dict.standings.title;
+  const description =
+    lang === "vi"
+      ? "Bảng xếp hạng, lịch thi đấu và phong độ 5 trận gần nhất của từng giải bóng đá, cập nhật mỗi giờ. Kèm đường dẫn tới trang dự đoán tỷ số theo giải."
+      : dict.standings.subtitle;
   return {
-    title: dict.standings.title,
-    description: dict.standings.subtitle,
+    title,
+    description,
     openGraph: {
       locale: "vi_VN",
-      title: `${dict.standings.title} | banhbong.net`,
-      description: dict.standings.subtitle,
+      title: `${title} | banhbong.net`,
+      description,
       images: [{ url: `/api/og/editorial?title=Competitions&subtitle=Standings%2C%20fixtures%2C%20and%20predictions%20by%20league&v=${OG_VERSION}`, width: 1200, height: 630 }],
     },
     alternates: buildAlternates("/competitions", lang),
