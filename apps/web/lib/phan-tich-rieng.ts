@@ -7,6 +7,8 @@
 export interface PhanTichDoan {
   tieuDe: string;
   noiDung: string[];
+  /** Đoạn nói về lịch sắp đá: qua mốc này (ISO) thì không hiện nữa. Bỏ trống = luôn hiện. */
+  anSau?: string;
 }
 
 export interface PhanTichRieng {
@@ -58,6 +60,7 @@ const NGOAI_HANG_ANH: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 12 nên theo dõi gì",
+      anSau: "2026-11-30T03:00:00+07:00",
       noiDung: [
         "Trận lớn nhất vòng là Arsenal tiếp Manchester City lúc 23h30 ngày 29/11 (giờ Việt Nam). Đội đầu bảng có hàng thủ tốt nhất gặp đội có hiệu số xG cao nhất nhưng đã 4 trận không thắng. Nếu Arsenal thắng, khoảng cách với City lên 9 điểm. Cùng ngày, lúc 19h, Everton tiếp Liverpool trong trận derby Merseyside, và lúc 21h05 Brighton tiếp Newcastle. Thủ môn Horníček của Newcastle có 38 pha cứu thua, thuộc nhóm nhiều nhất giải.",
         "Ở nhóm cuối, Crystal Palace tiếp Hull City lúc 21h05 ngày 29/11 mà không có Mateta và Yeremy, cả hai đang bị treo giò. Thủ môn Tzolakis của Hull có 48 pha cứu thua, nhiều nhất giải. Manchester United tiếp Brentford lúc 22h ngày 28/11, còn vòng đấu mở màn bằng trận Nottingham Forest tiếp Chelsea lúc 3h sáng 28/11. Bournemouth sang sân Fulham lúc 21h05 ngày 29/11 để nối dài chuỗi 5 trận thắng.",
@@ -96,6 +99,7 @@ const LA_LIGA: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 13 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Trang hiện có 5 trận của vòng 13, lịch của Barcelona chưa lên. Athletic Club tiếp Espanyol lúc 3h ngày 21/11 (giờ Việt Nam), hạng 7 gặp hạng 13. Lúc 20h cùng ngày, Alavés tiếp Deportivo La Coruña. Deportivo đã hòa 6 trận, nhiều thứ hai giải. Rayo Vallecano tiếp Valencia lúc 22h15, trận giữa hạng 14 và hạng 19.",
         "Sáng Chủ nhật 22/11, Sevilla gặp Real Betis lúc 0h30, hạng 6 gặp hạng 4. Cuối vòng là Real Madrid tiếp Celta Vigo lúc 3h. Celta hòa 7 trong 12 trận, nhiều nhất giải, và chỉ thủng 10 bàn, 0,83 mỗi trận, ngang Real Madrid và Atlético. Đây là phép thử cho chuỗi 5 trận thắng liên tiếp của Real.",
@@ -134,6 +138,7 @@ const SERIE_A: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 12 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Trang hiện có 4 trận của vòng 12, chưa có lịch của Inter và Milan. Lúc 21h ngày 21/11 (giờ Việt Nam), Lazio tiếp Lecce. Lazio thắng 4 trong 5 trận gần nhất, Lecce chỉ lấy 4 điểm trong 5 trận gần nhất. Cùng giờ, Como tiếp Cagliari. Cagliari chỉ thắng 1 trong 5 trận gần nhất, nhưng thủ môn Elia Caprile có 48 pha cứu thua, nhiều nhất giải.",
         "Lúc 0h ngày 22/11, Parma (hạng 16) tiếp Roma, đội đang có phong độ tốt nhất giải. Cuối vòng, Napoli tiếp Torino lúc 2h45, trận giữa hạng 10 và hạng 11, hơn kém nhau 1 điểm.",
@@ -179,6 +184,7 @@ const BUNDESLIGA: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 10 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Bayern tiếp Köln lúc 2h30 ngày 21/11 (giờ Việt Nam). Lúc 21h30 cùng ngày có năm trận: Leverkusen gặp Paderborn, Eintracht Frankfurt gặp Hoffenheim, Elversberg gặp Freiburg, Union Berlin gặp Leipzig và Gladbach gặp Dortmund. Trận cuối là đội cuối bảng đối đầu đội chưa thua và có hàng thủ giữ sạch lưới nhiều nhất giải.",
         "Union vừa có ba trận hòa trong 5 trận gần nhất, và sẽ gặp Leipzig, đội ghi 18 bàn trong 5 trận đó. Sáng Chủ nhật 22/11, Schalke tiếp Stuttgart lúc 0h30. Stuttgart thắng 3 trong 5 trận gần nhất, còn Schalke chưa thắng trận nào trong 5 trận ấy.",
@@ -223,6 +229,7 @@ const LIGUE_1: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 11 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Troyes tiếp Le Havre lúc 3h05 ngày 21/11 (giờ Việt Nam), trận giữa hạng 17 và hạng 18, đây là cơ hội cho Le Havre cắt chuỗi thua. Nice tiếp PSG lúc 23h15 cùng ngày: Nice thắng 4 trong 5 trận gần nhất, còn PSG thắng cả 5.",
         "Sáng Chủ nhật 22/11, có bốn trận lúc 2h45: Lens gặp Toulouse, Lille gặp Lyon, Monaco gặp Auxerre và Strasbourg gặp Brest. Lille gặp Lyon là trận giữa hạng 2 và hạng 5, hai đội giữ sạch lưới nhiều thứ hai và thứ ba giải. Strasbourg gặp Brest cũng đáng chú ý: 90% trận của Strasbourg có từ 3 bàn trở lên, Brest là 60%.",
@@ -265,9 +272,15 @@ const CUP_C1: PhanTichRieng = {
       ],
     },
     {
-      tieuDe: "Số liệu cá nhân và lực lượng trước vòng 5",
+      tieuDe: "Số liệu cá nhân sau vòng 4",
       noiDung: [
         "Về xG, Serhou Guirassy (Borussia Dortmund) dẫn đầu với 4,50, rồi đến Harry Kane (4,30) và Luis Suárez (4,20). Joshua Kimmich dẫn đầu xA với 2,30, còn Nico Paz của Como dẫn đầu kiến tạo với 5. Thủ môn Yann Sommer của Club Brugge có 27 pha cứu thua, nhiều nhất.",
+      ],
+    },
+    {
+      tieuDe: "Lực lượng trước vòng 5",
+      anSau: "2026-11-26T06:00:00+07:00",
+      noiDung: [
         "Trang chưa có lịch vòng 5. Danh sách chấn thương của trang ghi 127 cầu thủ có thể vắng ở vòng này, Barcelona và Liverpool mỗi đội có 7 người, nhiều nhất. PSG có 5 người trong danh sách, trong đó Khvicha Kvaratskhelia nghỉ hết mùa.",
       ],
     },
@@ -283,6 +296,8 @@ const THEO_GIAI: Record<string, PhanTichRieng> = {
   "champions-league": CUP_C1,
 };
 
-export function phanTichRieng(slug: string): PhanTichRieng | null {
-  return THEO_GIAI[slug] ?? null;
+export function phanTichRieng(slug: string, bayGio: number = Date.now()): PhanTichRieng | null {
+  const pt = THEO_GIAI[slug];
+  if (!pt) return null;
+  return { ...pt, doan: pt.doan.filter((d) => !d.anSau || Date.parse(d.anSau) > bayGio) };
 }
