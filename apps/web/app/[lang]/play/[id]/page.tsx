@@ -48,6 +48,13 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+// Thiếu generateStaticParams thì Next coi trang là động: `revalidate` mất tác dụng,
+// mỗi lượt xem (kể cả bot) chạy một function. Mảng rỗng = dựng lúc có người mở rồi đệm.
+export const dynamic = "force-static";
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id, lang: rawLang } = await params;
   const lang = resolveLang(rawLang);

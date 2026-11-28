@@ -46,6 +46,6 @@ async function getArticlesByBylineImpl(name: string, limit = 20): Promise<Author
 }
 
 export const getArticlesByByline = unstable_cache(getArticlesByBylineImpl, ["articles-by-byline"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["analysis-articles", "news"],
 });

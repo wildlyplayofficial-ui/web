@@ -4,11 +4,11 @@ import Link from "next/link";
 import { getGuides } from "@/lib/data";
 import { locales } from "@/lib/format";
 import { getDict, resolveLang, withLang, type Lang } from "@/lib/i18n";
-import type { Post } from "@/lib/types";
+import type { PostListItem } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { biaUrl, hasBia } from "@/lib/bia-guide";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;
@@ -47,7 +47,7 @@ function formatDate(iso: string | null, lang: Lang): string {
   }).format(new Date(iso));
 }
 
-function extractExcerpt(body: string | null, maxLen = 140): string {
+function extractExcerpt(body: string | null | undefined, maxLen = 140): string {
   if (!body) return "";
   const plain = body.replace(/[#*_`>\[\]()!]/g, "").replace(/\n+/g, " ").trim();
   if (plain.length <= maxLen) return plain;
@@ -55,7 +55,7 @@ function extractExcerpt(body: string | null, maxLen = 140): string {
   return plain.slice(0, cut > 0 ? cut : maxLen) + "\u2026";
 }
 
-function GuideCard({ post, lang }: { post: Post; lang: Lang }) {
+function GuideCard({ post, lang }: { post: PostListItem; lang: Lang }) {
   const excerpt = post.meta_description || extractExcerpt(post.body_md);
   const bia = hasBia(post.slug, lang) ? biaUrl(post.slug, lang, post.title) : null;
   return (
@@ -83,7 +83,7 @@ function GuideCard({ post, lang }: { post: Post; lang: Lang }) {
       <div className="min-w-0">
         <div className="flex items-center gap-3 text-xs text-muted">
           <span className="rounded-full border border-brand/40 px-2 py-0.5 font-display font-semibold text-brand">
-            Guide
+            Hướng dẫn
           </span>
           <time dateTime={post.published_at ?? undefined}>
             {formatDate(post.published_at, lang)}
@@ -123,9 +123,9 @@ export default async function GuidesPage({ params }: Props) {
             <GuideCard key={post.id} post={post} lang={lang} />
           ))}
           <p className="pt-2 text-center text-sm text-muted">
-            Put it into practice with our{" "}
+            Muốn tự tính số liệu?{" "}
             <Link href={withLang("/calculators", lang)} className="font-semibold text-brand hover:underline">
-              free calculators &rarr;
+              Mở công cụ tính miễn phí &rarr;
             </Link>
           </p>
         </div>

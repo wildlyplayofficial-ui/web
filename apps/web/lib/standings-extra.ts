@@ -629,7 +629,9 @@ async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]>
     .select("id, name, short_name, season, livescore_id, slug, status")
     .order("id", { ascending: true });
 
-  if (error) return [];
+  // KHÔNG trả [] khi cơ sở dữ liệu lỗi: unstable_cache giữ mảng rỗng, trang giải thành 404
+  // và sitemap mất hub. Ném lỗi để Next giữ bản tốt cũ (27/11).
+  if (error) throw new Error(`Không đọc được danh sách giải: ${error.message}`);
 
   return (data ?? []).map((r) => ({
     id: r.id as string,
@@ -646,5 +648,7 @@ async function fetchStandingsCompetitionsImpl(): Promise<StandingsCompetition[]>
 export const getStandingsCompetitions = unstable_cache(
   fetchStandingsCompetitionsImpl,
   ["standings-competitions"],
-  { revalidate: 600 },
+  // Layout [lang] gọi hàm này: số ở đây là TRẦN revalidate của MỌI trang trong site.
+  // Để 600 thì trang khai 3600/86400 vẫn dựng lại mỗi 10 phút.
+  { revalidate: 3600 },
 );

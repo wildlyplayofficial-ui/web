@@ -6,10 +6,10 @@ import { teamFlag } from "@/lib/flags";
 import { formatUnits } from "@/lib/format";
 import { withLang, type Lang } from "@/lib/i18n";
 import { buildPlaySlug } from "@/lib/play-slug";
-import type { Pick } from "@/lib/types";
+import type { SettledPick } from "@/lib/types";
 
 /** CLV = (publish / close - 1) × 100. Only when close is known. */
-function clv(pick: Pick): string | null {
+function clv(pick: SettledPick): string | null {
   if (!pick.odds_close || pick.odds_close <= 0) return null;
   const pct = (pick.odds_publish / pick.odds_close - 1) * 100;
   return `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
@@ -26,7 +26,7 @@ export function ArchiveRow({
   lang,
   thesisText,
 }: {
-  pick: Pick;
+  pick: SettledPick;
   lang: Lang;
   thesisText?: string;
 }) {

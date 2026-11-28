@@ -91,7 +91,9 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 async function nhomBlog(): Promise<MetadataRoute.Sitemap> {
   // 14/11 gọn sitemap: bỏ lịch cuối tuần đã qua + ASEAN Cup 2026 đã xong (bài vẫn index).
   // 15/11: bỏ bài đã dời sang trang trận /du-doan/{slug} (/blog/{slug} 301 sang đó) — sitemap chỉ chứa URL cuối.
-  const [blogs, { hang }] = await Promise.all([getAllBlogSlugs(), taiDuDoan().catch(() => ({ hang: [] }))]);
+  // 27/11: KHÔNG .catch taiDuDoan trong sitemap. Nuốt lỗi thành rỗng thì ISR đệm bản sai cả giờ (mất
+  // URL trận, lọt URL blog/analysis đã 301). Để lỗi nổi lên thì Next giữ bản tốt trước đó.
+  const [blogs, { hang }] = await Promise.all([getAllBlogSlugs(), taiDuDoan()]);
   return blogs.filter((b) => blogVaoSitemap(b.slug) && !timTran(hang, b.slug)).map((b) => ({
     url: `${BASE}/blog/${b.slug}`,
     lastModified: safeLastMod(b.updated),
@@ -104,7 +106,7 @@ async function nhomBlog(): Promise<MetadataRoute.Sitemap> {
 // 14/11 gọn sitemap: chỉ nộp nhóm "xem … ở đâu"; bài lịch/mấy giờ/nhận định vẫn index nhưng thôi mời.
 async function nhomAnalysis(): Promise<MetadataRoute.Sitemap> {
   // 15/11: bỏ bài có trang trận /du-doan/{slug} (/analysis/nhan-dinh-… chuyển hẳn sang đó).
-  const [deskArticles, { hang }] = await Promise.all([getAllAnalysisArticleSlugs(), taiDuDoan().catch(() => ({ hang: [] }))]);
+  const [deskArticles, { hang }] = await Promise.all([getAllAnalysisArticleSlugs(), taiDuDoan()]);
   return deskArticles.filter((a) => analysisDuocIndex(a.slug, a.updated) && analysisVaoSitemap(a.slug) && !timTran(hang, a.slug)).map((a) => ({
     url: `${BASE}/analysis/${a.slug}`,
     lastModified: lastmodBaiDuDoan(a.slug, a.modified),
@@ -125,7 +127,7 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   // robots ở trang trận (tranDuocIndex: chỉ 5 giải lớn + C1, trang `tuan-…` phải đủ số liệu — 15/11).
   // 14/11 gọn sitemap (Peter chốt): chỉ trận đá trong SO_NGAY_TRAN_SITEMAP ngày tới (giờ VN,
   // tính cả hôm nay); trận đã qua hoặc còn xa vẫn sống, vẫn theo robots cũ, chỉ thôi mời.
-  const { hang } = await taiDuDoan().catch(() => ({ hang: [] }));
+  const { hang } = await taiDuDoan();
   const homNay = ngayVN(Date.now());
   const hanCuoi = lechNgay(homNay, SO_NGAY_TRAN_SITEMAP);
   const lmHub = capNhatDuDoan(hang, Date.now());
@@ -143,12 +145,17 @@ async function nhomDuDoan(): Promise<MetadataRoute.Sitemap> {
   // 16/11 gộp trang giải: /du-doan/{giai} (5 giải lớn + Cúp C1) 301 về hub /competitions/{slug},
   // nên rút khỏi sitemap — hub đã nằm ở nhóm static. Trang khuôn (kèo xiên, tip theo ngày/loại
   // kèo/giải, /du-doan/{ngày}…) rút từ 14/11 và tự noindex,follow như cũ.
-  return tranRoutes;
+  // 25/11: urlset rỗng thì Search Console báo lỗi (như news.xml 15/11). Không có trận sắp đá
+  // (nghỉ giải, dữ liệu chưa kéo) tệp vẫn phải có ít nhất hub /du-doan.
+  return [
+    { url: `${BASE}/du-doan`, ...(lmHub ? { lastModified: new Date(lmHub) } : {}), changeFrequency: "daily", priority: 0.8 },
+    ...tranRoutes,
+  ];
 }
 
 async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
   // Bài/tin/blog chỉ lấy NGÀY để tính lastmod trang mục lục — URL của chúng nằm ở nhóm riêng.
-  const [guides, blogs, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllGuideSlugs(), getAllBlogSlugs(), getStandingsCompetitions().catch(() => []), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
+  const [guides, blogs, competitions, deskArticles, newsItems, settledPicks] = await Promise.all([getAllGuideSlugs(), getAllBlogSlugs(), getStandingsCompetitions(), getAllAnalysisArticleSlugs(), getAllNewsItemSlugs(), getSettledPicks()]);
 
   // Hub theo đội: 14/11 chỉ hub Việt Nam (doiDuocIndex) — hub CLB là danh sách link mỏng,
   // trang tự noindex. Vẫn giữ ngưỡng HUB_MIN = MIN_INDEX bên trang hub (khớp robots).
@@ -179,7 +186,7 @@ async function nhomStatic(): Promise<MetadataRoute.Sitemap> {
   const lmNews = moiNhat(newsItems.map((n) => n.updated));
   const lmBlog = moiNhat(blogs.map((b) => b.updated));
   const lmHome = moiNhat([lmPick, lmAnalysis, lmNews, lmBlog].map((d) => d?.toISOString()));
-  const { hang: hangDuDoan } = await taiDuDoan().catch(() => ({ hang: [] }));
+  const { hang: hangDuDoan } = await taiDuDoan();
   const lmDuDoan = capNhatDuDoan(hangDuDoan, Date.now());
   const LASTMOD: Record<string, Date | undefined> = {
     "": lmHome,

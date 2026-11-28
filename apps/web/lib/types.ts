@@ -100,6 +100,26 @@ export interface Pick {
   confidence?: Confidence | null;
 }
 
+/** `Pick` ở file này là interface của bảng picks nên không dùng được utility Pick của TS. */
+type Cols<T, K extends keyof T> = { [P in K]: T[P] };
+
+/** Cột của `picks` mà các trang danh sách đã chốt đọc tới (stats, archive, daily-board, sitemap).
+ *  Cố ý bỏ fixture_id, line, published_at, raw_outcome, publish_score_*, home_id, away_id,
+ *  sources, confidence để bớt egress Supabase. */
+export type SettledPick = Cols<
+  Pick,
+  | "id" | "league" | "kickoff_utc" | "home_team" | "away_team" | "market" | "selection"
+  | "odds_publish" | "odds_close" | "stake_units" | "thesis" | "status"
+  | "home_score" | "away_score" | "units_pl" | "settled_at" | "author"
+>;
+
+/** Bài trong danh sách (news/blog/guides/recap): không kéo `body_md` trừ khi trang cần
+ *  làm tóm tắt — chỉ có khi `meta_description` rỗng. */
+export type PostListItem = Cols<
+  Post,
+  "id" | "type" | "slug" | "lang" | "title" | "published_at" | "meta_description"
+> & { body_md?: string };
+
 export interface Post {
   id: string;
   type: PostType;

@@ -76,7 +76,7 @@ async function getNewsItemsImpl(
 export const getNewsItems = unstable_cache(
   getNewsItemsImpl,
   ["news-items"],
-  { revalidate: 300, tags: ["news"] },
+  { revalidate: 3600, tags: ["news"] },
 );
 
 /** Every published news_item slug + date + headline — for the sitemap. No limit:
@@ -108,9 +108,9 @@ async function getAllNewsItemSlugsImpl(): Promise<{ slug: string; updated: strin
 
 export const getAllNewsItemSlugs = unstable_cache(
   getAllNewsItemSlugsImpl,
-  // Đổi khoá khi thêm `soChu`: khoá cũ trả bản đệm thiếu trường này tới 5 phút.
+  // Đổi khoá khi thêm `soChu`: khoá cũ trả bản đệm thiếu trường này tới khi hết hạn.
   ["news-item-slugs-v2"],
-  { revalidate: 300, tags: ["news"] },
+  { revalidate: 3600, tags: ["news"] },
 );
 
 async function getNewsItemBySlugImpl(slug: string): Promise<NewsItem | null> {
@@ -133,7 +133,7 @@ async function getNewsItemBySlugImpl(slug: string): Promise<NewsItem | null> {
 export const getNewsItemBySlug = unstable_cache(
   getNewsItemBySlugImpl,
   ["news-item-by-slug"],
-  { revalidate: 300, tags: ["news"] },
+  { revalidate: 3600, tags: ["news"] },
 );
 
 /** Fetch kickoff_utc by livescore match id. Tries fixtures first (available from ingest,
@@ -180,6 +180,6 @@ async function getNewsByTeamImpl(team: string, limit = 40): Promise<NewsItem[]> 
 }
 
 export const getNewsByTeam = unstable_cache(getNewsByTeamImpl, ["news-by-team"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["news"],
 });

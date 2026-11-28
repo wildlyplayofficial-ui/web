@@ -13,6 +13,7 @@ interface TickerMatch {
 }
 
 const POLL_INTERVAL = 30_000;
+const IDLE_INTERVAL = 300_000;
 
 /** Horizontal scrolling ticker of live scores. Hidden when no matches are live. */
 export function LiveTicker() {
@@ -20,24 +21,38 @@ export function LiveTicker() {
 
   useEffect(() => {
     let cancelled = false;
+    let busy = false;
+    let delay = POLL_INTERVAL;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
+    // Thanh này nằm trên MỌI trang: tab ẩn thì ngưng gọi, không có trận thì gọi thưa.
     async function poll(): Promise<void> {
+      clearTimeout(timer);
+      if (document.hidden || busy) return;
+      busy = true;
       try {
         const res = await fetch("/api/matches?live=1");
         if (!res.ok) return;
         const json = await res.json();
         const data = (json.matches || json) as TickerMatch[];
+        delay = data.length > 0 ? POLL_INTERVAL : IDLE_INTERVAL;
         if (!cancelled) setMatches(data);
       } catch {
         // Silently degrade — ticker hidden.
+      } finally {
+        busy = false;
+        if (!cancelled) timer = setTimeout(() => void poll(), delay);
       }
     }
 
+    // Quay lại tab thì cập nhật ngay.
+    const onVisibility = (): void => void poll();
+    document.addEventListener("visibilitychange", onVisibility);
     void poll();
-    const timer = setInterval(() => void poll(), POLL_INTERVAL);
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 

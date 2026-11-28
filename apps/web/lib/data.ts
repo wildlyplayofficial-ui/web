@@ -8,7 +8,7 @@ import { getSupabase } from "./supabase";
 import { viPersona, viPersonaFields } from "./persona";
 import { mockFlags, mockPicks, mockPosts, mockVoteCounts } from "./mock";
 import type { Lang } from "./i18n";
-import type { MatchData, Pick, Post, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
+import type { MatchData, Pick, Post, PostListItem, SettledPick, TrackRecord, VoteCounts, VoteKind, WatchingRow } from "./types";
 import { buildPlaySlug } from "./play-slug";
 import { chuanHoaAnh } from "./anh-qua-cong";
 
@@ -119,7 +119,10 @@ export const getPick = unstable_cache(getPickImpl, ["pick"], {
 });
 
 /** Settled picks (won/lost/push), newest first. Optional `month` filter: "YYYY-MM". */
-async function getSettledPicksImpl(month?: string): Promise<Pick[]> {
+const SETTLED_PICK_COLS =
+  "id,league,kickoff_utc,home_team,away_team,market,selection,odds_publish,odds_close,stake_units,thesis,status,home_score,away_score,units_pl,settled_at,author";
+
+async function getSettledPicksImpl(month?: string): Promise<SettledPick[]> {
   const supabase = getSupabase();
   if (!supabase) {
     return mockPicks
@@ -129,7 +132,7 @@ async function getSettledPicksImpl(month?: string): Promise<Pick[]> {
   }
   let query = supabase
     .from("picks")
-    .select("*")
+    .select(SETTLED_PICK_COLS)
     .in("status", [...SETTLED])
     .neq("author", AN_AUTHOR)
     .order("kickoff_utc", { ascending: false });
@@ -141,7 +144,7 @@ async function getSettledPicksImpl(month?: string): Promise<Pick[]> {
   }
   const { data, error } = await query;
   if (error) throw new Error(`getSettledPicks: ${error.message}`);
-  return (data ?? []) as Pick[];
+  return (data ?? []) as SettledPick[];
 }
 
 export const getSettledPicks = unstable_cache(getSettledPicksImpl, ["settled-picks"], {
@@ -226,25 +229,44 @@ export const getPickById = unstable_cache(getPickByIdImpl, ["pick-by-id"], {
 /** Các trường chữ của bài có thể dính tên nhân vật cũ. */
 const POST_TEXT_FIELDS = ["title", "body_md", "meta_title", "meta_description"] as const;
 
-/** Published posts for a language, newest first. Falls back to EN when a VI version is missing. */
-async function getPostsImpl(lang: Lang): Promise<Post[]> {
+/** Cột `posts` cho danh sách — KHÔNG kéo `body_md` (nặng nhất, gây vượt egress Supabase). */
+const POST_LIST_COLS = "id,type,slug,lang,title,published_at,status,meta_description";
+const POST_LIST_TEXT_FIELDS = ["title", "body_md", "meta_description"] as const;
+type PostRow = PostListItem & { status: "published" };
+
+/** Trang danh sách chỉ cần thân bài để làm tóm tắt khi bài KHÔNG có meta_description.
+ *  Chỉ kéo `body_md` của đúng những bài đó (đã chọn xong bản ngôn ngữ thắng). */
+async function themThanBaiChoBaiThieuTomTat(rows: PostListItem[]): Promise<PostListItem[]> {
   const supabase = getSupabase();
-  let all: Post[];
+  const ids = rows.filter((r) => !r.meta_description && r.body_md === undefined).map((r) => r.id);
+  if (!supabase || ids.length === 0) return rows;
+  const { data, error } = await supabase.from("posts").select("id,body_md").in("id", ids);
+  if (error) throw new Error(`themThanBai: ${error.message}`);
+  const thanBai = new Map((data ?? []).map((d: { id: string; body_md: string }) => [d.id, d.body_md]));
+  return rows.map((r) => (thanBai.has(r.id) ? { ...r, body_md: thanBai.get(r.id) } : r));
+}
+
+/** Published posts for a language, newest first. Falls back to EN when a VI version is missing. */
+async function getPostsImpl(lang: Lang): Promise<PostListItem[]> {
+  const supabase = getSupabase();
+  let all: PostRow[];
   if (!supabase) {
     all = mockPosts;
   } else {
     const { data, error } = await supabase
       .from("posts")
-      .select("*")
+      // Chỉ trang /news dùng và chỉ giữ type "news" → lọc luôn ở DB; cần body_md để tính phút đọc + tóm tắt.
+      .select(`${POST_LIST_COLS},body_md`)
       .eq("status", "published")
+      .eq("type", "news")
       .neq("author", AN_AUTHOR)
       .in("lang", ["en", lang])
       .order("published_at", { ascending: false });
     if (error) throw new Error(`getPosts: ${error.message}`);
-    all = (data ?? []) as Post[];
+    all = (data ?? []) as PostRow[];
   }
   // Nick 15/6: hide preview posts from /news listing — previews live on /play + social only
-  const bySlug = new Map<string, Post>();
+  const bySlug = new Map<string, PostListItem>();
   for (const post of all.filter((p) => p.status === "published" && p.type !== "preview" && p.type !== "guide")) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
@@ -254,11 +276,13 @@ async function getPostsImpl(lang: Lang): Promise<Post[]> {
   return [...bySlug.values()]
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
-    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_TEXT_FIELDS)));
+    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_LIST_TEXT_FIELDS)));
 }
 
+// Bài viết: đệm 1 giờ (đăng/sửa bài đã gọi /api/revalidate xoá đệm theo tag).
+// Đệm ngắn hơn sẽ kéo revalidate của cả trang xuống theo → tốn CPU Vercel.
 export const getPosts = unstable_cache(getPostsImpl, ["posts"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -283,7 +307,7 @@ async function getPostImpl(slug: string, lang: Lang): Promise<Post | null> {
 }
 
 export const getPost = unstable_cache(getPostImpl, ["post"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -304,7 +328,7 @@ async function getPostLangsImpl(slug: string): Promise<Lang[]> {
 }
 
 export const getPostLangs = unstable_cache(getPostLangsImpl, ["post-langs"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -313,37 +337,36 @@ export const REPORT_SLUG_RE = /^(january|february|march|april|may|june|july|augu
 
 /** Published posts of one type for a language, newest first. Excludes transparency reports.
  *  Dùng chung cho /guides và /blog — hai mục khác nhau ở đúng giá trị `type`. */
-async function getPostsOfTypeImpl(lang: Lang, loai: "guide" | "blog"): Promise<Post[]> {
+async function getPostsOfTypeImpl(lang: Lang, loai: "guide" | "blog"): Promise<PostListItem[]> {
   const supabase = getSupabase();
-  let all: Post[];
+  let all: PostRow[];
   if (!supabase) {
     all = mockPosts;
   } else {
     const { data, error } = await supabase
       .from("posts")
-      .select("*")
+      .select(POST_LIST_COLS)
       .eq("status", "published")
       .eq("type", loai)
       .in("lang", ["en", lang])
       .order("published_at", { ascending: false });
     if (error) throw new Error(`getPostsOfType(${loai}): ${error.message}`);
-    all = (data ?? []) as Post[];
+    all = (data ?? []) as PostRow[];
   }
-  const bySlug = new Map<string, Post>();
+  const bySlug = new Map<string, PostListItem>();
   for (const post of all.filter((p) => p.status === "published" && p.type === loai && !REPORT_SLUG_RE.test(p.slug))) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
     }
   }
-  return [...bySlug.values()]
-    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
-    // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
-    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_TEXT_FIELDS)));
+  const sorted = [...bySlug.values()].sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+  // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
+  return (await themThanBaiChoBaiThieuTomTat(sorted)).map((p) => chuanHoaAnh(viPersonaFields(p, POST_LIST_TEXT_FIELDS)));
 }
 
 export const getGuides = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "guide"), ["guides"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -351,19 +374,19 @@ export const getGuides = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang,
  *  hướng dẫn đang bị cố ý ẩn khỏi Google (Nick+Peter 28/7) và cả mục đó không
  *  đem lên fanpage được (trang bị chặn tuổi). Blog thì index và đăng thoải mái. */
 export const getBlogs = unstable_cache((lang: Lang) => getPostsOfTypeImpl(lang, "blog"), ["blogs"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
 /** Newest published recap posts (worker auto-recaps live in `posts`, not
  *  `analysis_articles`) — for the homepage "recent recaps" block (Nick 22/8).
  *  Same lang-preference/dedup dance as getGuides. */
-async function getRecentRecapPostsImpl(lang: Lang, limit: number): Promise<Post[]> {
+async function getRecentRecapPostsImpl(lang: Lang, limit: number): Promise<PostListItem[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select(POST_LIST_COLS)
     .eq("status", "published")
     .eq("type", "recap")
     .neq("author", AN_AUTHOR)
@@ -371,51 +394,51 @@ async function getRecentRecapPostsImpl(lang: Lang, limit: number): Promise<Post[
     .order("published_at", { ascending: false })
     .limit(limit * 8); // headroom: rows are per-language duplicates of each slug
   if (error) throw new Error(`getRecentRecapPosts: ${error.message}`);
-  const bySlug = new Map<string, Post>();
-  for (const post of (data ?? []) as Post[]) {
+  const bySlug = new Map<string, PostListItem>();
+  for (const post of (data ?? []) as PostRow[]) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
     }
   }
-  return [...bySlug.values()]
+  const top = [...bySlug.values()]
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     .slice(0, limit);
+  return themThanBaiChoBaiThieuTomTat(top);
 }
 
 export const getRecentRecapPosts = unstable_cache(getRecentRecapPostsImpl, ["recent-recaps"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
 /** Published transparency reports for a language, newest first. */
-async function getReportsImpl(lang: Lang): Promise<Post[]> {
+async function getReportsImpl(lang: Lang): Promise<PostListItem[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select(POST_LIST_COLS)
     .eq("status", "published")
     .eq("type", "guide")
     .in("lang", ["en", lang])
     .order("published_at", { ascending: false });
   if (error) throw new Error(`getReports: ${error.message}`);
-  const all = (data ?? []) as Post[];
-  const bySlug = new Map<string, Post>();
+  const all = (data ?? []) as PostRow[];
+  const bySlug = new Map<string, PostListItem>();
   for (const post of all.filter((p) => REPORT_SLUG_RE.test(p.slug))) {
     const existing = bySlug.get(post.slug);
     if (!existing || (post.lang === lang && existing.lang !== lang)) {
       if (post.lang === lang || post.lang === "en") bySlug.set(post.slug, post);
     }
   }
-  return [...bySlug.values()]
-    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
-    // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
-    .map((p) => chuanHoaAnh(viPersonaFields(p, POST_TEXT_FIELDS)));
+  const sorted = [...bySlug.values()].sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+  // Tên nhân vật cũ còn nằm trong bài máy sinh — đổi lúc đọc (xem persona.ts).
+  return (await themThanBaiChoBaiThieuTomTat(sorted)).map((p) => chuanHoaAnh(viPersonaFields(p, POST_LIST_TEXT_FIELDS)));
 }
 
 export const getReports = unstable_cache(getReportsImpl, ["reports"], {
-  revalidate: 300,
+  revalidate: 3600,
   tags: ["posts"],
 });
 
@@ -585,10 +608,15 @@ async function getVoteCountsImpl(pickIds: string[]): Promise<Record<string, Vote
   return counts;
 }
 
-export const getVoteCounts = unstable_cache(getVoteCountsImpl, ["vote-counts"], {
+const getVoteCountsCached = unstable_cache(getVoteCountsImpl, ["vote-counts"], {
   revalidate: 60,
   tags: ["votes"],
 });
+
+// Không có kèo thì đừng chạm đệm: gọi unstable_cache 60s là kéo cả trang xuống 60s.
+export async function getVoteCounts(pickIds: string[]): Promise<Record<string, VoteCounts>> {
+  return pickIds.length === 0 ? {} : getVoteCountsCached(pickIds);
+}
 
 /** Thesis translations from `pick_content`, keyed by pick id then language.
  *  The English thesis lives on the pick itself — callers fall back to it. */

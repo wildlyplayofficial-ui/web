@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { LogoLoi } from "@/components/logo-loi";
 import { LogoDoi } from "@/components/giai-hub/khoi";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 import { withLang, type Lang } from "@/lib/i18n";
 import { ngayVi, type DoiXg, type GiaiXg } from "@/lib/xg-doi";
 
@@ -59,6 +60,7 @@ export function KhungTrang({
       </p>
       <div className="mt-4">{chip}</div>
       <div className="mt-6 space-y-8">{children}</div>
+      <KhoiLinkDuDoan chu={h1} lang={lang} />
     </div>
   );
 }

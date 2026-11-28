@@ -6,6 +6,7 @@ import { getAllAnalysisArticleSlugs } from "@/lib/analysis-articles";
 import { laBlogLichCaMua, laTrangLichCaMua } from "@/lib/chi-muc";
 import { resolveLang, withLang, type Lang } from "@/lib/i18n";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
+import { KhoiLinkDuDoan } from "@/components/khoi-link-du-doan";
 
 /**
  * Hub /xem-bong-da-o-dau (16/11/2026). GSC: nhóm "xem … ở đâu / lịch cả mùa / đá mấy giờ" là nhóm
@@ -14,7 +15,7 @@ import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
  * khoi-trang-tru.tsx), dựng phía server. Toàn bộ lấy từ dữ liệu, không ghi cứng đường dẫn bài.
  */
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const DUONG = "/xem-bong-da-o-dau";
 const TIEU_DE = "Xem bóng đá ở đâu: kênh chiếu & lịch thi đấu các giải 2026-27";
@@ -173,6 +174,10 @@ export default async function XemBongDaODau({ params }: Props) {
       {xem.length + lich.length + gio.length === 0 && (
         <p className="pb-10 text-muted">Chưa có bài nào. Ghé lại sau nhé.</p>
       )}
+
+      <div className="pb-10">
+        <KhoiLinkDuDoan chu={DUONG} lang={lang} />
+      </div>
     </div>
   );
 }

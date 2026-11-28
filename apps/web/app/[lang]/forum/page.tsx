@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { isFeatureEnabled } from "@/lib/data";
 import { getDict, resolveLang } from "@/lib/i18n";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ lang: string }>;

@@ -10,11 +10,11 @@ interface Props {
 }
 
 function formatCountdown(diffMs: number): string {
-  if (diffMs <= 0) return "Starting soon";
+  if (diffMs <= 0) return "Sắp bắt đầu";
   const h = Math.floor(diffMs / 3_600_000);
   const m = Math.floor((diffMs % 3_600_000) / 60_000);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
+  if (h > 0) return `Còn ${h} giờ ${m} phút`;
+  return `Còn ${m} phút`;
 }
 
 function formatKickoffTime(utc: string): string {
@@ -37,7 +37,7 @@ export function MatchStatus({ kickoffUtc, liveStatus, minute }: Props) {
   if (liveStatus === "ft") {
     return (
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold text-muted">FT</span>
+        <span className="font-semibold text-muted">KT</span>
         <span className="text-muted">{timeStr}</span>
       </div>
     );
@@ -47,7 +47,7 @@ export function MatchStatus({ kickoffUtc, liveStatus, minute }: Props) {
     return (
       <div className="flex items-center justify-between text-xs">
         <span className="font-semibold text-brand">
-          LIVE{minute ? ` ${minute}'` : ""}
+          ĐANG ĐÁ{minute ? ` ${minute}'` : ""}
         </span>
         <span className="text-muted">{timeStr}</span>
       </div>
@@ -60,7 +60,7 @@ export function MatchStatus({ kickoffUtc, liveStatus, minute }: Props) {
   if (diff < -MAX_LIVE_MS) {
     return (
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold text-muted">FT</span>
+        <span className="font-semibold text-muted">KT</span>
         <span className="text-muted">{timeStr}</span>
       </div>
     );
@@ -68,7 +68,7 @@ export function MatchStatus({ kickoffUtc, liveStatus, minute }: Props) {
 
   return (
     <div className="flex items-center justify-between text-xs">
-      <span className="text-muted">Kicks off in {formatCountdown(diff)}</span>
+      <span className="text-muted">{formatCountdown(diff)}</span>
       <span className="text-muted">{timeStr}</span>
     </div>
   );

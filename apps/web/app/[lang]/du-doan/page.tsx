@@ -7,7 +7,7 @@ import { getBlogs } from "@/lib/data";
 import { cacTranChon } from "@/lib/chon-tran";
 import { ChonTran } from "@/components/chon-tran";
 import { buildAlternates, resolveLang, withLang, type Lang } from "@/lib/i18n";
-import type { Post } from "@/lib/types";
+import type { PostListItem } from "@/lib/types";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-jsonld";
 import { DuDoanPZ } from "@/components/du-doan-pz";
 import { ngayVN, type HangDuDoan } from "@/lib/du-doan-hang";
@@ -15,7 +15,7 @@ import { tranDuocIndex } from "@/lib/chi-muc";
 import { taiDuDoan } from "@/lib/du-doan-tai";
 import { capNhatDuDoan, chuCapNhat } from "@/lib/du-doan-cap-nhat";
 import { tongQuanDuDoan, type TongQuan } from "@/lib/du-doan-tong-quan";
-import { duongTran } from "@/lib/du-doan-tran";
+import { duLieuBang, duongTran } from "@/lib/du-doan-tran";
 import { CAU_HINH, LOAI_TIP } from "@/components/trang-tip-ngay";
 
 export const revalidate = 300;
@@ -79,7 +79,7 @@ function TongQuanHub({ tq }: { tq: TongQuan }) {
           </tbody>
         </table>
       </div>
-      {tq.bang.length > 12 && <p className="mt-2 text-sm text-muted">Và {tq.bang.length - 12} giải khác, xem đủ trong bảng trận phía trên.</p>}
+      {tq.bang.length > 12 && <p className="mt-2 text-sm text-muted">Và {tq.bang.length - 12} giải khác cũng có trận sắp đá.</p>}
     </section>
   );
 }
@@ -120,7 +120,7 @@ function NhanDinhChiTiet({ hang, lang, daDa = false }: { hang: HangDuDoan[]; lan
  * 15/11 (soi chỉ mục): Google bò /du-doan 11/11 rồi bỏ, không lập chỉ mục — trang gần như chỉ là
  * bảng trận đổi mỗi ngày. Thêm một đoạn giới thiệu cố định + link sang vài bài blog mới nhất.
  */
-function GioiThieu({ blogs, lang }: { blogs: Post[]; lang: Lang }) {
+function GioiThieu({ blogs, lang }: { blogs: PostListItem[]; lang: Lang }) {
   return (
     <section aria-labelledby="ve-du-doan" className="mt-10 px-2.5 text-[15px] leading-relaxed">
       <h2 id="ve-du-doan" className="font-display text-2xl font-bold">Dự đoán bóng đá trên banhbong</h2>
@@ -157,11 +157,17 @@ export default async function DuDoanHub({ params }: Props) {
   const [{ hang }, baiChon, tatCaBlog] = await Promise.all([taiDuDoan(), getBaiDuDoan(), getBlogs(lang)]);
   // 17/11: blog đã có trang trận thì bỏ (/blog/{slug} 301) — trận đó đã có link thẳng ở mục nhận định chi tiết.
   const blogs = tatCaBlog.filter((b) => !duongTran(hang, b.slug));
-  const tq = tongQuanDuDoan(hang, ngayVN(Date.now()));
+  const homNay = ngayVN(Date.now());
+  const tq = tongQuanDuDoan(hang, homNay);
   const hoi = [...cauHoiDuDoan(hang), ...(tq?.faq ?? [])];
-  // Mỗi trận một SportsEvent (60 trận gần nhất là đủ — như FixturesJsonLd), url = trang riêng của trận.
+  // Mỗi trận một SportsEvent, 60 trận từ HÔM NAY trở đi, gần giờ đá trước, url = trang riêng của trận.
+  // (`hang` không xếp theo ngày: cắt 60 dòng đầu từng khai toàn trận tuần trước, đo 25/11.)
   const capNhat = capNhatDuDoan(hang, Date.now());
-  const suKien = hang.slice(0, 60).map((h) => suKienTran(h, SITE_URL, true));
+  const suKien = hang
+    .filter((h) => h.ngay >= homNay)
+    .sort((a, b) => a.kickoffUtc.localeCompare(b.kickoffUtc))
+    .slice(0, 60)
+    .map((h) => suKienTran(h, SITE_URL, true));
 
   return (
     <div className="mx-auto max-w-[1100px] px-0 py-4 sm:px-5 sm:py-8">
@@ -182,8 +188,8 @@ export default async function DuDoanHub({ params }: Props) {
       )}
       {hoi.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(hoi)) }} />}
       <DuDoanPZ
-        rows={hang}
-        homNay={ngayVN(Date.now())}
+        {...duLieuBang(hang, homNay)}
+        homNay={homNay}
         lang={lang}
         sauMoDau={
           <>
