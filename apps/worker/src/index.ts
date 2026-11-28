@@ -30,7 +30,7 @@ import { startBoothShadow } from './booth-shadow';
 import { startOddsCollector } from './odds-collect';
 import { createIndexNowPinger } from './indexnow';
 import { runDailyLineAlerts } from './dl-alerts';
-import { checkDailyLineHealth } from './dl-monitor';
+import { checkDailyLineHealth, alertJobFailures } from './dl-monitor';
 import { generatePostmortemDraft } from './postmortem';
 import { runProviderMatcher } from './provider-matcher';
 import { ingestFixtures } from './fixture-ingest';
@@ -205,9 +205,14 @@ let persistTimer = setInterval(() => void persistTick(), PERSIST_SLOW);
 if (persistDb) log.info('persist-state cron started (every 10 min)');
 else log.warn('SUPABASE_URL unset — persist-state disabled');
 
+// Daily Line retired (14/11/2026, /daily-line 301s to /du-doan). Its timers stay off
+// unless DAILY_LINE_ENABLED=true, so the worker stops spending web CPU on it.
+const dailyLineEnabled = process.env.DAILY_LINE_ENABLED === 'true';
+if (!dailyLineEnabled) log.info('daily-line: disabled (DAILY_LINE_ENABLED !== "true")');
+
 // ── Daily Line gradual seed (every 30 min) ──
 const SEED_INTERVAL = 30 * 60_000;
-if (siteUrl && process.env.REVALIDATE_SECRET) {
+if (dailyLineEnabled && siteUrl && process.env.REVALIDATE_SECRET) {
   const seedTick = async () => {
     try {
       const res = await fetch(`${siteUrl}/api/goalline/seed-tick`, {
@@ -474,7 +479,7 @@ const glCronSecret = process.env.REVALIDATE_SECRET ?? '';
 const glLastCronSuccess = { ts: 0 };
 
 let glCronRunning = false;
-const glCronTimer = setInterval(async () => {
+const runGlCron = async () => {
   if (glCronRunning) return; // skip if previous run still going
   glCronRunning = true;
   try {
@@ -503,13 +508,15 @@ const glCronTimer = setInterval(async () => {
   } finally {
     glCronRunning = false;
   }
-}, GL_CRON_INTERVAL);
-
-log.info('GoalLine cron started (every 15 min)');
+};
+const glCronTimer = dailyLineEnabled
+  ? setInterval(() => void runGlCron(), GL_CRON_INTERVAL)
+  : null;
+if (glCronTimer) log.info('GoalLine cron started (every 15 min)');
 
 // ── R5: Daily Line settlement monitor (every 15 min) ──
 const DL_MONITOR_INTERVAL = 15 * 60 * 1000;
-const dlMonitorTimer = persistDb
+const dlMonitorTimer = dailyLineEnabled && persistDb
   ? setInterval(() => void checkDailyLineHealth({
       db: persistDb,
       botToken: token,
@@ -517,7 +524,12 @@ const dlMonitorTimer = persistDb
     }), DL_MONITOR_INTERVAL)
   : null;
 if (dlMonitorTimer) log.info('dl-monitor started (every 15 min)');
-else log.warn('dl-monitor disabled — no Supabase client');
+else if (dailyLineEnabled) log.warn('dl-monitor disabled — no Supabase client');
+
+// Job failure alerts used to ride on dl-monitor — keep them when Daily Line is off.
+const jobAlertTimer = dailyLineEnabled
+  ? null
+  : setInterval(() => void alertJobFailures(token), DL_MONITOR_INTERVAL);
 
 // ── Canh kèo TREO (mỗi 30 phút) ──
 // Bộ tự chấm bỏ qua kèo không có mã trận và kèo quá 8 tiếng, chỉ ghi nhật ký mà
@@ -538,7 +550,7 @@ else log.warn('canh kèo treo disabled — CURATOR_USER_IDS rỗng');
 // ── D7: Daily Line Telegram alerts (every 5 min) ──
 const DL_ALERTS_INTERVAL = 5 * 60 * 1000;
 const tmaBotToken = process.env.TMA_BOT_TOKEN;
-const dlAlertsTimer = persistDb && tmaBotToken
+const dlAlertsTimer = dailyLineEnabled && persistDb && tmaBotToken
   ? setInterval(() => void runDailyLineAlerts({
       db: persistDb,
       tmaBotToken,
@@ -546,14 +558,15 @@ const dlAlertsTimer = persistDb && tmaBotToken
     }), DL_ALERTS_INTERVAL)
   : null;
 if (dlAlertsTimer) log.info('dl-alerts started (every 5 min)');
-else if (!tmaBotToken) log.warn('dl-alerts disabled — TMA_BOT_TOKEN missing');
-else log.warn('dl-alerts disabled — no Supabase client');
+else if (dailyLineEnabled && !tmaBotToken) log.warn('dl-alerts disabled — TMA_BOT_TOKEN missing');
+else if (dailyLineEnabled) log.warn('dl-alerts disabled — no Supabase client');
 
 async function shutdown(signal: string): Promise<void> {
   log.info(`${signal} received — shutting down`);
-  clearInterval(glCronTimer);
+  if (glCronTimer) clearInterval(glCronTimer);
   if (dlAlertsTimer) clearInterval(dlAlertsTimer);
   if (dlMonitorTimer) clearInterval(dlMonitorTimer);
+  if (jobAlertTimer) clearInterval(jobAlertTimer);
   clearInterval(persistTimer);
   if (jobQueueTimer) clearInterval(jobQueueTimer);
   stopPoller();
