@@ -7,6 +7,8 @@
 export interface PhanTichDoan {
   tieuDe: string;
   noiDung: string[];
+  /** Đoạn nói về lịch sắp đá: qua mốc này (ISO) thì không hiện nữa. Bỏ trống = luôn hiện. */
+  anSau?: string;
 }
 
 export interface PhanTichRieng {
@@ -22,45 +24,46 @@ export interface PhanTichRieng {
 }
 
 const NGOAI_HANG_ANH: PhanTichRieng = {
-  tieuDe: "Nhận định Ngoại hạng Anh sau vòng 10: Arsenal dẫn đầu, cuộc đua top 4 và nhóm cuối sát nhau",
-  capNhat: "19/11/2026",
-  capNhatIso: "2026-11-19",
+  tieuDe: "Nhận định Ngoại hạng Anh sau vòng 11: Arsenal hơn 6 điểm, Man City chưa thắng 4 trận, Crystal Palace thua 5 trận liền",
+  capNhat: "25/11/2026",
+  capNhatIso: "2026-11-25",
   tacGia: "Ban biên tập banhbong.net",
-  sauVong: 10,
+  sauVong: 11,
   doan: [
     {
-      tieuDe: "Cuộc đua vô địch: Arsenal hơn 5 điểm nhờ hàng thủ",
+      tieuDe: "Cuộc đua vô địch: Arsenal hơn 6 điểm dù hòa ở Newcastle",
       noiDung: [
-        "Arsenal thắng 9 trong 10 trận, có 27 điểm, hơn Brighton 5 điểm và Manchester City 6 điểm. Điểm khác biệt nằm ở phía sau lưng: họ chỉ thủng lưới 5 bàn, ít nhất giải, và giữ sạch lưới 7 trận. Năm trận gần nhất đều thắng, ghi 7 bàn và chỉ thủng 1.",
-        "Đây không phải kết quả may mắn. Hiệu số xG trừ xGA của Arsenal là +0,86 mỗi trận, cao nhất giải. Nhưng họ ghi 15 bàn sau 10 trận, thấp hơn nhiều so với Brighton (26 bàn) hay Man City (21 bàn), nên một trận hàng thủ lỡ nhịp có thể đủ để họ mất điểm. Trận thua duy nhất là 0-3 trên sân Brighton ngày 19/9. Lực lượng cũng có dấu hỏi: Saka đang chấn thương đùi chưa rõ ngày trở lại, Zubimendi chỉ có khoảng 75% khả năng ra sân.",
+        "Arsenal có 28 điểm sau 11 trận (9 thắng, 1 hòa, 1 thua), hơn Brighton và Manchester City 6 điểm. Trận hòa 2-2 trên sân Newcastle ở vòng 11 làm dừng chuỗi thắng, nhưng vì cả hai đội bám đuổi cùng mất điểm nên khoảng cách còn nới rộng thêm 1 điểm so với sau vòng 10. Hàng thủ vẫn là nền tảng: Arsenal thủng 7 bàn, ít nhất giải, và giữ sạch lưới 7 trận.",
+        "Điểm cần lưu ý là hàng công. Arsenal ghi 17 bàn, 1,55 bàn mỗi trận, kém Brighton 9 bàn và kém Man City 5 bàn. Hiệu số xG trừ xGA của họ là +0,76 mỗi trận, giờ xếp thứ hai, chỉ sau Man City. Lực lượng đang mỏng: Saka chấn thương đùi, dự kiến trở lại khoảng 20/12, Zubimendi chấn thương gân kheo chưa rõ ngày về, còn thủ môn Raya chấn thương vai, khoảng 50% khả năng ra sân.",
       ],
     },
     {
-      tieuDe: "Brighton và Man City: bàn thắng nhiều, nhưng kết quả chưa phản ánh hết",
+      tieuDe: "Brighton và Man City: cùng 22 điểm, cùng hụt hơi",
       noiDung: [
-        "Brighton đứng nhì với 22 điểm, ghi 26 bàn, thủng 7 bàn, hiệu số +19. Có một điểm cần lưu ý: họ tạo ra trung bình 1,93 xG mỗi trận nhưng ghi thật 2,60 bàn, tức đang vượt kỳ vọng khoảng 0,67 bàn mỗi trận. Mức đó hiếm khi giữ được cả mùa. Tuy vậy hiệu số xG +0,57 vẫn xếp thứ tư giải, nên họ không chỉ dựa vào sút may. Chủ nhật 22/11 Brighton sang làm khách của Hull City, đội đang đứng thứ 13.",
-        "Man City có 21 điểm nhưng phong độ đang xuống: năm trận gần nhất thắng 2, rồi thua liền 3, gần nhất là 1-3 trên sân Nottingham Forest. Họ thủng 13 bàn sau 10 trận, nhiều hơn Arsenal 8 bàn. Ngược lại, hiệu số xG của City là +0,74, cao thứ hai giải, nghĩa là số liệu tạo cơ hội tốt hơn kết quả trên bảng. Haaland dẫn đầu danh sách ghi bàn với 9 bàn (xG 7,06). Semenyo đang nghỉ vì chấn thương đầu gối, Guéhi và Gvardiol cũng chỉ ở mức khoảng 75% khả năng ra sân.",
+        "Brighton thua 0-2 trên sân Hull City, trận thua thứ hai trong 5 vòng gần nhất. Họ vẫn ghi nhiều nhất giải với 26 bàn và chỉ thủng 9, hiệu số +17, nên đứng trên Man City nhờ hiệu số. Mức ghi bàn vượt xG đã giảm từ khoảng 0,67 xuống 0,40 bàn mỗi trận, đúng như số liệu báo trước. Mitoma chấn thương gân kheo và Costinha bị treo giò, cả hai dự kiến trở lại khoảng 2/12. Groß, người dẫn đầu kiến tạo cùng Wirtz với 6 lần, đang mang 4 thẻ vàng.",
+        "Man City hòa Fulham 1-1 trên sân nhà, nâng chuỗi không thắng lên 4 trận (thua 3, hòa 1). Năm trận gần nhất họ chỉ có 4 điểm và thủng 9 bàn. Nghịch lý là hiệu số xG +0,77 mỗi trận của City vẫn cao nhất giải, và họ tạo ra 2,0 xG mỗi trận, cũng nhiều nhất. Haaland vẫn dẫn đầu danh sách ghi bàn với 9 bàn (xG 8,09). Semenyo tiếp tục nghỉ vì chấn thương đầu gối.",
       ],
     },
     {
-      tieuDe: "Top 4: sáu đội cách nhau 4 điểm",
+      tieuDe: "Top 4: Liverpool chỉ kém nhóm nhì 1 điểm, Bournemouth thắng 5 trận liền",
       noiDung: [
-        "Liverpool đứng thứ 4 với 18 điểm (5 thắng, 3 hòa, 2 thua), hơn Chelsea và Everton 2 điểm, hơn Bournemouth 3 điểm. Từ hạng 4 đến hạng 9 chỉ cách nhau 4 điểm nên thứ hạng có thể đảo liên tục từng vòng. Liverpool vừa thắng Crystal Palace 3-1, Isak có 7 bàn, Wirtz có 5 kiến tạo. Nhưng danh sách chấn thương khá dài, gồm Ekitiké (gân Achilles), Leoni, Frimpong và Bradley.",
-        "Chelsea (16 điểm) vừa thua 0-1 ở Sunderland và João Pedro đang chấn thương đùi. Everton (16 điểm) thắng 2 trận liền, và Barry có 7,29 xG, cao nhất giải. Bournemouth (15 điểm) thắng 4 trong 5 trận gần nhất, hiệu số xG +0,67 xếp thứ ba. Đây là đội đáng theo dõi nhất ở nhóm săn vé châu Âu, nhưng họ có ba cầu thủ (Silva, Smith, Tavernier) đang mang 4 thẻ vàng, thêm một thẻ là nghỉ trận kế.",
+        "Liverpool thắng Manchester United 4-0, có 21 điểm, kém Brighton và Man City đúng 1 điểm. Bốn trong 5 trận gần nhất họ thắng, ghi 11 bàn và chỉ thủng 3. Isak có 7 bàn, Wirtz 6 kiến tạo. Danh sách vắng mặt vẫn dài: Ekitiké (gân Achilles), Bradley và Leoni (đầu gối, dự kiến trở lại khoảng 12/12), còn Gakpo và Gravenberch chỉ khoảng 75% khả năng ra sân.",
+        "Bournemouth thắng Nottingham Forest 2-0, chuỗi thắng lên 5 trận, ghi 11 bàn và chỉ thủng 1 trong giai đoạn này. Với 18 điểm, họ đứng thứ 5, kém Liverpool 3 điểm, và hiệu số xG +0,69 xếp thứ ba giải. Evanilson có 6 bàn. Silva, Smith và Tavernier vẫn đang mang 4 thẻ vàng. Phía sau là Brentford (thắng Everton 4-0) và Leeds (thắng 4-1 trên sân Chelsea) cùng 17 điểm. Chelsea và Everton cùng 16 điểm nhưng thua đậm ở vòng này, và Chelsea thua 3 trong 5 trận gần nhất, hiệu số xG -0,28.",
       ],
     },
     {
-      tieuDe: "Cuộc chiến trụ hạng: Man United, Sunderland, Crystal Palace",
+      tieuDe: "Cuộc chiến trụ hạng: Crystal Palace thua 5 trận liền, United thủng 14 bàn trong 5 trận",
       noiDung: [
-        "Crystal Palace xếp cuối với 7 điểm, thua 7 trong 10 trận và thủng 24 bàn, tệ nhất giải. Họ chỉ có 3 điểm trong 5 trận gần nhất, và hiệu số xG -0,81 cũng thấp nhất giải. Sunderland (19) và Manchester United (18) cùng có 8 điểm. United mới thắng 1 trận sau 10 vòng, hòa 5 và vừa có trận hòa 4-4 với Aston Villa; cả hai đội ghi tổng 8 bàn trong một trận.",
-        "Khoảng cách trong nhóm này rất nhỏ. Coventry (hạng 17) và Nottingham Forest (hạng 16) cùng 9 điểm, Fulham hạng 15 có 10 điểm, Hull và Ipswich 11 điểm. Từ hạng 20 lên hạng 11 chỉ cách 5 điểm. Forest là trường hợp đáng chú ý: hiệu số xG +0,47, cao thứ năm giải, nhưng chỉ đứng thứ 16, cho thấy kết quả của họ đang thấp hơn chất lượng chơi. Còn 28 vòng nên chưa đội nào ở nửa dưới có thể coi là an toàn.",
+        "Crystal Palace vẫn đứng cuối với 7 điểm sau khi thua Coventry 2-3. Đây là trận thua thứ 5 liên tiếp, trong 5 trận đó họ thủng 15 bàn. Palace thủng 27 bàn, nhiều nhất giải, và hiệu số xG -0,77 cũng tệ nhất. Manchester United hạng 19 có 8 điểm (1 thắng, 5 hòa, 5 thua), chưa giữ sạch lưới trận nào và chỉ lấy 2 điểm trong 5 vòng gần nhất. United tạo ra 1,66 xG mỗi trận nhưng chỉ ghi 1,27 bàn, còn hàng thủ để đối thủ tạo 2,02 xG mỗi trận.",
+        "Sunderland hạng 18 và Nottingham Forest hạng 17 cùng 9 điểm. Sunderland ghi 8 bàn sau 11 trận, ít nhất giải. Forest là đội chơi tốt hơn kết quả rõ nhất: hiệu số xG +0,34, thứ sáu giải, nhưng mỗi trận ghi ít hơn xG khoảng 0,79 bàn, mức hụt lớn nhất Ngoại hạng Anh. Phía trên, Ipswich và Fulham cùng 11 điểm, Coventry 12 điểm. Ipswich chỉ có 2 điểm trong 5 trận gần nhất và chưa giữ sạch lưới trận nào. Từ hạng 20 lên hạng 13 chỉ cách 6 điểm, còn 27 vòng.",
       ],
     },
     {
-      tieuDe: "Vòng 11 nên theo dõi gì",
+      tieuDe: "Vòng 12 nên theo dõi gì",
+      anSau: "2026-11-30T03:00:00+07:00",
       noiDung: [
-        "Newcastle gặp Arsenal lúc 0h30 ngày 22/11 (giờ Việt Nam). Newcastle hạng 12, chỉ có 4 điểm trong 5 trận gần nhất, nhưng thủ môn Horníček đã cứu 36 cú sút, thuộc nhóm nhiều nhất giải. Đây là phép thử cho hàng thủ của đội đầu bảng. Man City tiếp Fulham lúc 19h30 ngày 21/11 và cần cắt chuỗi 3 trận thua.",
-        "Ở nhóm cuối, Coventry tiếp Crystal Palace lúc 22h ngày 21/11 là trận giữa hạng 17 và hạng 20. Aston Villa tiếp Sunderland cùng giờ. Lúc 23h30 ngày 22/11, Liverpool đấu Manchester United tại Anfield, trận mà Liverpool cần điểm để giữ chỗ trong top 4, còn United cần điểm để thoát nhóm cuối. Cuối vòng, Brentford tiếp Everton lúc 3h ngày 24/11.",
+        "Trận lớn nhất vòng là Arsenal tiếp Manchester City lúc 23h30 ngày 29/11 (giờ Việt Nam). Đội đầu bảng có hàng thủ tốt nhất gặp đội có hiệu số xG cao nhất nhưng đã 4 trận không thắng. Nếu Arsenal thắng, khoảng cách với City lên 9 điểm. Cùng ngày, lúc 19h, Everton tiếp Liverpool trong trận derby Merseyside, và lúc 21h05 Brighton tiếp Newcastle. Thủ môn Horníček của Newcastle có 38 pha cứu thua, thuộc nhóm nhiều nhất giải.",
+        "Ở nhóm cuối, Crystal Palace tiếp Hull City lúc 21h05 ngày 29/11 mà không có Mateta và Yeremy, cả hai đang bị treo giò. Thủ môn Tzolakis của Hull có 48 pha cứu thua, nhiều nhất giải. Manchester United tiếp Brentford lúc 22h ngày 28/11, còn vòng đấu mở màn bằng trận Nottingham Forest tiếp Chelsea lúc 3h sáng 28/11. Bournemouth sang sân Fulham lúc 21h05 ngày 29/11 để nối dài chuỗi 5 trận thắng.",
       ],
     },
   ],
@@ -96,6 +99,7 @@ const LA_LIGA: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 13 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Trang hiện có 5 trận của vòng 13, lịch của Barcelona chưa lên. Athletic Club tiếp Espanyol lúc 3h ngày 21/11 (giờ Việt Nam), hạng 7 gặp hạng 13. Lúc 20h cùng ngày, Alavés tiếp Deportivo La Coruña. Deportivo đã hòa 6 trận, nhiều thứ hai giải. Rayo Vallecano tiếp Valencia lúc 22h15, trận giữa hạng 14 và hạng 19.",
         "Sáng Chủ nhật 22/11, Sevilla gặp Real Betis lúc 0h30, hạng 6 gặp hạng 4. Cuối vòng là Real Madrid tiếp Celta Vigo lúc 3h. Celta hòa 7 trong 12 trận, nhiều nhất giải, và chỉ thủng 10 bàn, 0,83 mỗi trận, ngang Real Madrid và Atlético. Đây là phép thử cho chuỗi 5 trận thắng liên tiếp của Real.",
@@ -134,6 +138,7 @@ const SERIE_A: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 12 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Trang hiện có 4 trận của vòng 12, chưa có lịch của Inter và Milan. Lúc 21h ngày 21/11 (giờ Việt Nam), Lazio tiếp Lecce. Lazio thắng 4 trong 5 trận gần nhất, Lecce chỉ lấy 4 điểm trong 5 trận gần nhất. Cùng giờ, Como tiếp Cagliari. Cagliari chỉ thắng 1 trong 5 trận gần nhất, nhưng thủ môn Elia Caprile có 48 pha cứu thua, nhiều nhất giải.",
         "Lúc 0h ngày 22/11, Parma (hạng 16) tiếp Roma, đội đang có phong độ tốt nhất giải. Cuối vòng, Napoli tiếp Torino lúc 2h45, trận giữa hạng 10 và hạng 11, hơn kém nhau 1 điểm.",
@@ -179,6 +184,7 @@ const BUNDESLIGA: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 10 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Bayern tiếp Köln lúc 2h30 ngày 21/11 (giờ Việt Nam). Lúc 21h30 cùng ngày có năm trận: Leverkusen gặp Paderborn, Eintracht Frankfurt gặp Hoffenheim, Elversberg gặp Freiburg, Union Berlin gặp Leipzig và Gladbach gặp Dortmund. Trận cuối là đội cuối bảng đối đầu đội chưa thua và có hàng thủ giữ sạch lưới nhiều nhất giải.",
         "Union vừa có ba trận hòa trong 5 trận gần nhất, và sẽ gặp Leipzig, đội ghi 18 bàn trong 5 trận đó. Sáng Chủ nhật 22/11, Schalke tiếp Stuttgart lúc 0h30. Stuttgart thắng 3 trong 5 trận gần nhất, còn Schalke chưa thắng trận nào trong 5 trận ấy.",
@@ -223,6 +229,7 @@ const LIGUE_1: PhanTichRieng = {
     },
     {
       tieuDe: "Vòng 11 nên theo dõi gì",
+      anSau: "2026-11-23T06:00:00+07:00",
       noiDung: [
         "Troyes tiếp Le Havre lúc 3h05 ngày 21/11 (giờ Việt Nam), trận giữa hạng 17 và hạng 18, đây là cơ hội cho Le Havre cắt chuỗi thua. Nice tiếp PSG lúc 23h15 cùng ngày: Nice thắng 4 trong 5 trận gần nhất, còn PSG thắng cả 5.",
         "Sáng Chủ nhật 22/11, có bốn trận lúc 2h45: Lens gặp Toulouse, Lille gặp Lyon, Monaco gặp Auxerre và Strasbourg gặp Brest. Lille gặp Lyon là trận giữa hạng 2 và hạng 5, hai đội giữ sạch lưới nhiều thứ hai và thứ ba giải. Strasbourg gặp Brest cũng đáng chú ý: 90% trận của Strasbourg có từ 3 bàn trở lên, Brest là 60%.",
@@ -265,9 +272,15 @@ const CUP_C1: PhanTichRieng = {
       ],
     },
     {
-      tieuDe: "Số liệu cá nhân và lực lượng trước vòng 5",
+      tieuDe: "Số liệu cá nhân sau vòng 4",
       noiDung: [
         "Về xG, Serhou Guirassy (Borussia Dortmund) dẫn đầu với 4,50, rồi đến Harry Kane (4,30) và Luis Suárez (4,20). Joshua Kimmich dẫn đầu xA với 2,30, còn Nico Paz của Como dẫn đầu kiến tạo với 5. Thủ môn Yann Sommer của Club Brugge có 27 pha cứu thua, nhiều nhất.",
+      ],
+    },
+    {
+      tieuDe: "Lực lượng trước vòng 5",
+      anSau: "2026-11-26T06:00:00+07:00",
+      noiDung: [
         "Trang chưa có lịch vòng 5. Danh sách chấn thương của trang ghi 127 cầu thủ có thể vắng ở vòng này, Barcelona và Liverpool mỗi đội có 7 người, nhiều nhất. PSG có 5 người trong danh sách, trong đó Khvicha Kvaratskhelia nghỉ hết mùa.",
       ],
     },
@@ -283,6 +296,8 @@ const THEO_GIAI: Record<string, PhanTichRieng> = {
   "champions-league": CUP_C1,
 };
 
-export function phanTichRieng(slug: string): PhanTichRieng | null {
-  return THEO_GIAI[slug] ?? null;
+export function phanTichRieng(slug: string, bayGio: number = Date.now()): PhanTichRieng | null {
+  const pt = THEO_GIAI[slug];
+  if (!pt) return null;
+  return { ...pt, doan: pt.doan.filter((d) => !d.anSau || Date.parse(d.anSau) > bayGio) };
 }
