@@ -191,7 +191,11 @@ export async function checkDailyLineHealth({ db, botToken, lastCronSuccess }: De
     }
   } catch (err) { log.warn('dl-monitor: inconsistent-totals check failed', err); }
 
-  // R9: AI/social job failures — drain and alert
+  await alertJobFailures(botToken);
+}
+
+/** R9: AI/social job failures — drain and alert. Not Daily Line specific. */
+export async function alertJobFailures(botToken: string) {
   try {
     const drained = drainFailures();
     const msg = formatFailureAlert(drained);

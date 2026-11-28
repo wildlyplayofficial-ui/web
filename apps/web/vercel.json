@@ -1,9 +1,3 @@
 {
-  "regions": ["sin1"],
-  "crons": [
-    {
-      "path": "/api/goalline/cron",
-      "schedule": "0 18 * * *"
-    }
-  ]
+  "regions": ["sin1"]
 }
